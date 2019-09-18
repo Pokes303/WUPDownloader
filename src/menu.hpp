@@ -1,0 +1,2 @@
+void writeMainMenu();
+void writeFolderMenu();
