@@ -13,8 +13,7 @@ void writeMainMenu() {
 	write(0, 4, "Press (A) to download a content from the NUS with the title ID");
 	write(0, 5, "Press (Y) to generate a fake <title.tik> file");
 	
-	write(0, 7, "Press (HOME) to exit");
-	
+	write(0, 7, "Press (HOME) to exit on HBL");
 	
 	write(0, 14, "DO NOT EJECT THE SD CARD OR THE APPLICATION WILL CRASH!");
 	

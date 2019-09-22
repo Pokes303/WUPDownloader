@@ -67,13 +67,13 @@ void readInput() {
 }
 
 size_t write_callback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
-	WHBLogPrintf("Writing file...");
+	//WHBLogPrintf("Writing file...");
 	size_t written = fwrite(ptr, size, nmemb, stream);
 	return written;
 }
 
 static int progressCallback(void *clientp, double dltotal, double dlnow) {
-	WHBLogPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", downloading, dcontent, contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
+	//WHBLogPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", downloading, dcontent, contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
 	startRefresh();
 	if (dltotal == 0)
 		write(0, 0, "Preparing");
@@ -570,7 +570,6 @@ mainLoop:
 		}
 	}
 exit:
-	WHBLogPrintf("Exiting...");
 	SWKBD_Shutdown();
 	shutdownScreen();
 	
@@ -580,7 +579,6 @@ exit:
    
 	FSShutdown();
 	VPADShutdown();
-	socket_lib_finish();
 	WHBLogUdpDeinit();
 	WHBProcShutdown();
 
