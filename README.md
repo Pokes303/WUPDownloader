@@ -8,6 +8,7 @@ Please, don't do piracy with this app! Only download games that you had bought b
 - Create fake tickets at the start of a download if not found on the NUS
 - Also, generate fake tickets for other downloaded titles on <SD:/install/> folder (To fix missing ticket downloads)
 - WiiU Software Keyboard library support (SWKBD)
+- Download System/vWii titles
 - Downloaded titles can be installed through WUPInstaller
 - Download file hashes support (.h3)
 - Custom folder names
