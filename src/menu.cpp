@@ -31,17 +31,13 @@ void writeFolderMenu() {
 	write(16, 17, "Searching on => SD:/install/");
 }
 
-/*	TODO:
-*Support for 'that title key site'
+/*	Some ideas:
 *Support for modding games (like VC black screen)??
 *Multiple downloads
 *Custom download servers
-*SWKBD Support for search
-*Download system updates
-*Fix downloads/tickets
-*Use DRC or WiiMote
+*Use WiiMote
 *Download's error code buffer set
 *Download titles to USB
 *Create manual
-*Decrypt downloads (Loadiine mode?)
+*Decrypt downloads
 */
