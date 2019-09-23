@@ -8,7 +8,6 @@ void writeMainMenu() {
 	write(0, 2, "==============================================================");
 	
 	//write(0, 1, "=           WiiU Title Downloader by Pokes303          [1.0] =");
-	//write(0, 1, "=              WiiU-FreeShop by Pokes303               [1.0] =");
 	
 	write(0, 4, "Press (A) to download a content from the NUS with the title ID");
 	write(0, 5, "Press (Y) to generate a fake <title.tik> file");
