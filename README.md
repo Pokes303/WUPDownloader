@@ -3,7 +3,6 @@ Download installable content from the NUS, directly on the WiiU SD Card
 
 This app doesn't support piracy. Only download games that you had bought before!
 
-**WIP WUPDownloaderGX2**
 # Features
 - Download titles from Nintendo's servers (NUS) on the SD Card (SD:/install/)
 - Create fake tickets at the start of a download if not found on the NUS
