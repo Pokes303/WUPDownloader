@@ -1,7 +1,7 @@
 # WUPDownloader
 Download installable content from the NUS, directly on the WiiU SD Card
 
-Please, don't do piracy with this app! Only download games that you had bought before
+This app doesn't support piracy. Only download games that you had bought before!
 
 **WIP WUPDownloaderGX2**
 # Features
