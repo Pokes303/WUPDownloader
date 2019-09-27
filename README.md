@@ -33,7 +33,7 @@ Run it from the HOME Menu (With a CFW)
 3. Unzip the contents of the repo at any folder on your system
 4. Open the terminal and run:
 ```
-cd drc-test-master
+cd wupdownloader-master
 make
 ```
 5.- If everything goes fine, you will have the resulting file "WUPDownloader.rpx"
