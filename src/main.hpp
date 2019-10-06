@@ -15,7 +15,7 @@
 #include <whb/log_udp.h>
 #include <whb/gfx.h>
 
-#define DEBUG false
+extern bool hbl;
 
 extern FSClient *fsCli;
 extern FSCmdBlock *fsCmd;

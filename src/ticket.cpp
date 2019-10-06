@@ -4,6 +4,7 @@
 #include "file.hpp"
 #include "menu.hpp"
 #include "input.hpp"
+#include "status.hpp"
 
 #include <whb/proc.h>
 
@@ -49,7 +50,10 @@ bool generateFakeTicket() {
 	uint32_t tikPos = 0;
 	bool mov = tikFolders.size() >= 12;
 	
-	while(WHBProcIsRunning()) {
+	while(AppRunning()) {
+		if (app == 2)
+			continue;
+		
 		readInput();
 		
 		startRefresh();
@@ -119,7 +123,10 @@ inputTikValues:
 	std::string titleID;
 	std::string encKey;
 
-	while (WHBProcIsRunning()) {
+	while (AppRunning()) {
+		if (app == 2)
+			continue;
+		
 		readInput();
 
 		startRefresh();
@@ -153,7 +160,10 @@ inputTikValues:
 					generateTik(fakeTik, titleID, encKey);
 					fclose(fakeTik);
 					
-					while(WHBProcIsRunning()) {
+					while(AppRunning()) {
+						if (app == 2)
+							continue;
+		
 						readInput();
 						
 						colorStartRefresh(0x00800000);

@@ -140,7 +140,7 @@ const char* SWKBD_GetError(KeyboardChecks check) {
 					return "The wrote string must be only hexadecimal [0->F]";
 				break;
 			case CHECK_NOSPECIAL:
-				if (!((output[i] >= '0' && output[i] <= '9') || (output[i] >= 'A' && output[i] <= 'Z') || (output[i] >= 'a' && output[i] <= 'z') || output[i] != ' '))
+				if (!((output[i] >= '0' && output[i] <= '9') || (output[i] >= 'A' && output[i] <= 'Z') || (output[i] >= 'a' && output[i] <= 'z') || output[i] == ' '))
 					return "The wrote string must not have special characters [A->Z->9->Space]";
 				break;
 		}

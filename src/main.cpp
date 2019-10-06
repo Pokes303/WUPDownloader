@@ -1,18 +1,29 @@
 #include "main.hpp"
 
-#include "utils.hpp"
-#include "file.hpp"
-#include "menu.hpp"
-#include "input.hpp"
-#include "ticket.hpp"
-
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
+#include <coreinit/title.h>
+#include <coreinit/foreground.h>
+
+#include <proc_ui/procui.h>
+
+#include <sysapp/launch.h>
 
 #include <curl/curl.h>
 #include <nsysnet/socket.h>
 
 #include <whb/proc.h>
+
+#include "utils.hpp"
+#include "file.hpp"
+#include "menu.hpp"
+#include "input.hpp"
+#include "ticket.hpp"
+#include "status.hpp"
+
+#define VERSION 1.0
+
+bool hbl = true;
 
 FSClient *fsCli;
 FSCmdBlock *fsCmd;
@@ -24,7 +35,7 @@ std::string downloadUrl = "http://ccs.cdn.wup.shop.nintendo.net/ccs/download/";
 std::string installDir = "/vol/external01/install/";
 
 uint16_t contents = 0xFFFF; //Contents count
-uint16_t dcontent = 0xFFFF; //Actual content downloading
+uint16_t dcontent = 0xFFFF; //Actual content number
 
 typedef struct {
 	uint32_t app;
@@ -33,6 +44,10 @@ typedef struct {
 } File_to_download;
 
 const char* downloading = "UNKNOWN";
+uint32_t downloaded = 0;
+uint8_t second = 0xFF;
+bool showSpeed = true;
+std::string downloadSpeed;
 
 bool vibrateWhenFinished = true;
 uint8_t vibrationPattern[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
@@ -45,19 +60,18 @@ void readInput() {
 		write(0, 0, "Error reading the WiiU Gamepad:");
 		switch(vError) {
 			case VPAD_READ_SUCCESS: //Prevent 'default' detection
-				write(0, 1, "Success for an strange reason");
-				WHBLogPrintf("VPAD Error: Success for an strange reason");
+				write(2, 1, "Success for an strange reason");
 				return;
 			case VPAD_READ_NO_SAMPLES:
-				write(0, 1, "Waiting for samples...");
+				write(2, 1, "Waiting for samples...");
 				WHBLogPrintf("VPAD Error: Waiting for samples...");
 				break;
 			case VPAD_READ_INVALID_CONTROLLER:
-				write(0, 1, "Invalid controller");
+				write(2, 1, "Invalid controller");
 				WHBLogPrintf("VPAD Error: Invalid controller");
 				break;
 			default:
-				swrite(0, 1, std::string("Unknown error: 0x") + hex0(vError, 8));
+				swrite(2, 1, std::string("Unknown error: 0x") + hex0(vError, 8));
 				WHBLogPrintf("VPAD Error: Unknown error: 0x%s", hex0(vError, 8).c_str());
 				break;
 		}
@@ -66,12 +80,13 @@ void readInput() {
     VPADGetTPCalibratedPoint(VPAD_CHAN_0, &vpad.tpNormal, &vpad.tpNormal);
 }
 
-size_t write_callback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
-	//WHBLogPrintf("Writing file...");
+size_t writeCallback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 	size_t written = fwrite(ptr, size, nmemb, stream);
 	return written;
 }
 
+uint32_t multiplier;
+std::string multiplierName;
 static int progressCallback(void *clientp, double dltotal, double dlnow) {
 	//WHBLogPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", downloading, dcontent, contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
 	startRefresh();
@@ -79,12 +94,49 @@ static int progressCallback(void *clientp, double dltotal, double dlnow) {
 		write(0, 0, "Preparing");
 	else {
 		write(0, 0, "Downloading");
-		if ((uint32_t)dltotal > 0)
-			swrite(0, 1, "[" + std::to_string((uint32_t)(dlnow / dltotal * 100)) + "%] " + std::to_string((uint32_t)dlnow / 1024 / 1024) + " / " + std::to_string((uint32_t)dltotal / 1024 / 1024) + " Mb");
+		if ((uint32_t)dltotal > 0) {
+			if (multiplier == 0) {
+				if (dltotal < 1024)
+					multiplierName = "B";
+				else if (dltotal < 1024 * 1024) {
+					multiplier = 1024;
+					multiplierName = "Kb";
+				}
+				else {
+					multiplier = 1024 * 1024;
+					multiplierName = "Mb";
+				}
+			}
+			swrite(0, 1, "[" + std::to_string((uint32_t)(dlnow / dltotal * 100)) + "%] " + std::to_string((uint32_t)dlnow / multiplier) + " / " + std::to_string((uint32_t)dltotal / multiplier) + " " + multiplierName);
+		}
 	}
 	write(12, 0, downloading);
 	if (contents < 0xFFFF)
 		swrite(25, 0, "(" + std::to_string(dcontent) + "/" + std::to_string(contents) + ")");
+	
+	swrite(60 - downloadSpeed.size(), 1, downloadSpeed);
+	
+	OSCalendarTime osc;
+	OSTicksToCalendarTime(OSGetTime(), &osc);
+	if (second != osc.tm_sec) {
+		second = osc.tm_sec;
+		
+		if (dlnow != 0) {
+			uint32_t dl = dlnow - downloaded;
+			char buf[16];
+			if (dl < 1024)
+				sprintf(buf, "%u B/s", dl);
+			else if (dl < 1024 * 1024)
+				sprintf(buf, "%.2f Kb/s", (float)dl / 1024);
+			else
+				sprintf(buf, "%.2f Mb/s", (float)dl / 1024 / 1024);
+			
+			downloaded = dlnow;
+			downloadSpeed = buf;
+		}
+		else
+			downloadSpeed = "-- B/s";
+	}
 	
 	writeDownloadLog();
 	endRefresh();
@@ -92,7 +144,7 @@ static int progressCallback(void *clientp, double dltotal, double dlnow) {
 }
 
 uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
-	//Results: 0 = OK | 1 = Error | 2 = No ticket aviable
+	//Results: 0 = OK | 1 = Error | 2 = No ticket aviable | 3 = Exit
 	//Types: 0 = .app | 1 = .h3 | 2 = title.tmd | 3 = tilte.tik
 	downloading = file.c_str();
 	
@@ -104,7 +156,6 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 	
 	curl = curl_easy_init();
 	if (!curl) {
-		WHBLogPrintf("curl_easy_init failed");
 		colorStartRefresh(0xFF000000);
 		write(0, 0, "ERROR: curl_easy_init failed");
 		write(0, 2, "File: ");
@@ -119,10 +170,16 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 	std::string tUrl = downloadUrl + url;
 	std::string tFile = installDir + file;
 	
+	multiplier = 0;
+	multiplierName = "Unk";
+	
+	second = 0xFF;
+	downloaded = 0;
+	downloadSpeed = "";
+	
 	fp = fopen(tFile.c_str(), "wb");
-	WHBLogPrintf("File opened successfully");
 	curl_easy_setopt(curl, CURLOPT_URL, tUrl.c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
@@ -181,6 +238,7 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 					return downloadFile(url, file, type);
 			}
 		}
+		return 1;
 	}
 	WHBLogPrintf("curl_easy_perform executed successfully");
 
@@ -212,6 +270,7 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 						return downloadFile(url, file, type);
 				}
 			}
+			return 1;
 		}
 		else if (type == 3 && resp == 404) { //Fake ticket needed
 			fclose(fp);
@@ -245,6 +304,7 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 						return downloadFile(url, file, type);
 				}
 			}
+			return 1;
 		}
 	}
 	else {
@@ -258,7 +318,7 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 }
 
 bool downloadTitle(std::string titleID, std::string titleVer, std::string folderName) {
-	WHBLogPrintf("Downloading title... tID: %s, tVer: %s, fName: %s", titleID.c_str(), titleVer.c_str(), folderName.c_str());
+	//WHBLogPrintf("Downloading title... tID: %s, tVer: %s, fName: %s", titleID.c_str(), titleVer.c_str(), folderName.c_str());
 	
 	downloadUrl = "http://ccs.cdn.wup.shop.nintendo.net/ccs/download/" + titleID + "/";
 	
@@ -328,18 +388,17 @@ bool downloadTitle(std::string titleID, std::string titleVer, std::string folder
 	addToDownloadLog("=>Title type: " + titleType);
 	
 	uint8_t tikRes = downloadFile("cetk", "title.tik", 3);
-	if (tikRes == 1) {
+	if (tikRes == 1)
 		return true;
-	}
 	else if (tikRes == 2) {
 		addToDownloadLog("Title.tik not found on the NUS. A fake ticket can be created");
 		std::string encKey = "";
 		while (true) {
 			readInput();
 
-			startRefresh();
+			colorStartRefresh(0x00404000);
 			swrite(0, 0, "Input the Encrypted title key of " + titleID + " to create a");
-			write(0, 1, " fake ticket (Without it, the download could not be installed)");
+			write(0, 1, " fake ticket (Without it, the download cannot be installed)");
 			write(0, 3, "You can get it from any 'WiiU title key site'");
 			write(0, 5, "Press (A) to show the keyboard [32 hexadecimal numbers]");
 			write(0, 6, "Press (B) to continue the download without the fake ticket");
@@ -428,10 +487,13 @@ bool downloadTitle(std::string titleID, std::string titleVer, std::string folder
 	
 	for (int i = 0; i < 0x10; i++)
 		VPADControlMotor(VPAD_CHAN_0, vibrationPattern, 0xF);
-				
+		
 	enableShutdown();
 	
-	while (WHBProcIsRunning()) {
+	while (AppRunning()) {
+		if (app == 2)
+			continue;
+		
 		readInput();
 	
 		colorStartRefresh(0x00800000);
@@ -449,9 +511,21 @@ bool downloadTitle(std::string titleID, std::string titleVer, std::string folder
 }
 
 int main() {
-	WHBProcInit();
 	WHBLogUdpInit();
-	WHBLogPrintf("\nInitialising libraries...");
+	WHBLogPrintf("Initialising libraries...");
+	
+	if (OSGetTitleID() != 0 &&
+        OSGetTitleID() != 0x000500101004A200 && // Mii Maker EUR
+        OSGetTitleID() != 0x000500101004A100 && // Mii Maker USA
+        OSGetTitleID() != 0x000500101004A000 && // Mii Maker JPN
+        OSGetTitleID() != 0x0005000013374842) { // HBL Channel
+			hbl = false;
+			ProcUIInit(&OSSavesDone_ReadyToRelease);
+		}
+		else //HBL = true
+			WHBProcInit();
+	
+	WHBLogPrintf("Init");
 	
 	FSInit();
 	fsCli = (FSClient*)MEMAllocFromDefaultHeap(sizeof(FSClient));
@@ -459,9 +533,6 @@ int main() {
 	fsCmd = (FSCmdBlock*)MEMAllocFromDefaultHeap(sizeof(FSCmdBlock));
 	FSInitCmdBlock(fsCmd);
 	WHBLogPrintf("FS started successfully");
-	
-	VPADInit();
-	WHBLogPrintf("VPAD started successfully");
 	
 	SWKBD_Init();
 	WHBLogPrintf("SWKBD started successfully");
@@ -474,26 +545,31 @@ int main() {
 	
 	makeDir(installDir.c_str());
 	
-	while(WHBProcIsRunning()) {
-mainLoop:
+	while(AppRunning()) {
+		WHBLogPrintf("Refresh");
+		if (app == 2)
+			continue;
+		
 		readInput();
 		
 		writeMainMenu();
 		
 		switch (vpad.trigger) {
 			case VPAD_BUTTON_A: { //Download title
-				WHBLogPrintf("Download title screen");
 				std::string titleID;
 				std::string titleVer;
 				std::string folderName;
 				
-				while (true) {
+				while (AppRunning()) {
+					if (app == 2)
+						continue;
+		
 					readInput();
 
 					startRefresh();
 					write(0, 0, "Input a title ID to download their content [Ex: 000500001234ABCD]");
-					write(0, 2, "If creating a fake ticket.tik is needed, you will need to write");
-					write(0, 3, " his encrypted tile key (Check it on any 'WiiU title key site')");
+					write(0, 2, "If a fake ticket.tik is needed, you will need to write his");
+					write(0, 3, " encrypted tile key (Check it on any 'WiiU title key site')");
 					write(0, 5, "[USE THE VALID ENCRYPTED TITLE KEY FOR EACH TITLE, OTHERWISE, ");
 					write(0, 6, " IT WILL THROW A TITLE.TIK ERROR WHILE INSTALLING IT]");
 					write(0, 8, "Downloaded titles can be installed with WUP Installer GX2");
@@ -503,13 +579,18 @@ mainLoop:
 
 					if (vpad.trigger == VPAD_BUTTON_A) {
 						if (showKeyboard(&titleID, CHECK_HEXADECIMAL, 16, true))
-							break;
+							goto dnext;
 					}
 					else if (vpad.trigger == VPAD_BUTTON_B)
 						goto mainLoop;
 				}
+				break;
 				
-				while(true) {
+dnext:
+				while(AppRunning()) {
+					if (app == 2)
+						continue;
+		
 					readInput();
 
 					startRefresh();
@@ -532,7 +613,7 @@ mainLoop:
 					endRefresh();
 					
 					if (vpad.trigger == VPAD_BUTTON_A)
-						break;
+						goto ddnext;
 					else if (vpad.trigger == VPAD_BUTTON_B)
 						goto mainLoop;
 					else if (vpad.trigger == VPAD_BUTTON_UP) {
@@ -548,39 +629,52 @@ mainLoop:
 						if (!showKeyboard(&folderName, CHECK_NOSPECIAL, FILENAME_MAX, false))
 							folderName == "";
 					}
-					else if (vpad.trigger == VPAD_BUTTON_Y) {
+					else if (vpad.trigger == VPAD_BUTTON_Y)
 						vibrateWhenFinished = !vibrateWhenFinished;
-					}
 				}
+				break;
+ddnext:
 				disableShutdown();
 
-				if (!downloadTitle(titleID, titleVer, folderName))
+				if (!downloadTitle(titleID, titleVer, folderName)) {
+					WHBLogPrintf("return");
 					goto exit;
+				}
 				
 				downloadUrl = "http://ccs.cdn.wup.shop.nintendo.net/ccs/download/";
 				installDir = "/vol/external01/install/";
 				break;
 			}
-			case VPAD_BUTTON_Y: {
-				WHBLogPrintf("Generate fake ticket screen");
+			case VPAD_BUTTON_Y:
 				if (!generateFakeTicket())
 					goto exit;
 				break;
-			}
+			case VPAD_BUTTON_B:
+				if (!hbl)
+					SYSLaunchMenu();
+				else
+					goto exit;
 		}
+mainLoop:;
 	}
 exit:
+	WHBLogPrintf("SWKBD");
 	SWKBD_Shutdown();
-	shutdownScreen();
+	WHBLogPrintf("screen");
+	if (hbl)
+		shutdownScreen();
 	
+	WHBLogPrintf("fs");
 	FSDelClient(fsCli, 0);
 	MEMFreeToDefaultHeap(fsCli);
 	MEMFreeToDefaultHeap(fsCmd);
    
+	WHBLogPrintf("fs shutdown");
 	FSShutdown();
-	VPADShutdown();
+	WHBLogPrintf("proc&udp");
+	if (hbl)
+		WHBProcShutdown();
 	WHBLogUdpDeinit();
-	WHBProcShutdown();
 
 	return 1;
 }

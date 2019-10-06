@@ -118,14 +118,13 @@ void writeRetry() {
 }
 
 void enableShutdown() {
-	OSEnableHomeButtonMenu(true);
+	if (!hbl)
+		OSEnableHomeButtonMenu(true);
 	IMEnableAPD();
 }
 void disableShutdown() {
-	OSEnableHomeButtonMenu(false);
-	uint32_t enabled = 0;
-	IMIsAPDEnabled(&enabled);
-	WHBLogPrintf("Enabled: %u", enabled);
+	if (!hbl)
+		OSEnableHomeButtonMenu(false);
 	IMDisableAPD();
 }
 
