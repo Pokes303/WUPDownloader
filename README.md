@@ -6,12 +6,14 @@ This app doesn't support piracy. Only download games that you had bought before!
 # Features
 - Download titles from Nintendo's servers (NUS) on the SD Card (SD:/install/)
 - Create fake tickets at the start of a download if not found on the NUS
+- Shows the download speed for any title
 - Also, generate fake tickets for other downloaded titles on <SD:/install/> folder (To fix missing ticket downloads)
 - WiiU Software Keyboard library support (SWKBD)
-- Download System/vWii titles
-- Downloaded titles can be installed through WUPInstaller
-- Download file hashes support (.h3)
-- Custom folder names
+- Can download System/vWii titles
+- Complete HOME Menu support for channel version
+- Downloaded titles can be installed with WUPInstaller
+- Download app hashes support (.h3)
+- Custom folder names for downloaded titles
 
 # Usage
 To download a title, search on a Title Database for a title ID (Ex: WiiUBrew's database)\
@@ -26,6 +28,18 @@ Run the app from HBL through Haxchi, Browserhax or any exploit you want
 ### Home Menu
 Move the folder to (SD:/install/) and install it with WUPInstaller\
 Run it from the HOME Menu (With a CFW)
+
+# Changelog
+### 1.0 [22 Sep. 2019]
+- Initial release
+
+### 1.1 [6 Oct. 2019]
+- Added download speed
+- (Channel ver.) Fixed crash while trying to exit to HOME Menu
+- (Channel ver.) Now you can place the app on the background process
+- Fixed a bug where you cannot write an space on SWKBD
+- Updated download size to be showed as "B", "Kb" or "Mb"
+- Some other fixes
 
 # Building
 1. On Linux/WSL, download and install WUT from devkitPRO's github [https://github.com/devkitPro/wut]
