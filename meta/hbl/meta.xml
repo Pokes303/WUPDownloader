@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <app version="1">
-  <name>WUPDownload</name>
+  <name>WUP Downloader</name>
   <coder>Pokes303</coder>
-  <version>1.0</version>
-  <release_date>20191809000000</release_date>
-  <short_description>WiiU NUS Downloader</short_description> 
+  <version>1.1</version>
+  <release_date>20192209000000</release_date>
+  <short_description>Download content from the NUS on the WiiU</short_description> 
   <long_description>This app is made for downloading installable content from the NUS directly onto the WiiU SD Card.
-  If a ticket isn't found on the NUS, you can create fake ones (title.tik) at the start of a download.
-  Please, don't do piracy with this app (Only download games that you have bought).
+  If a ticket isn't found on the NUS, you can create fake ones (title.tik) at the start of a download, or in the main menu
+  Please, don't do piracy with this app (Only download games that you had bought)
   
-  Source code can be found here: https://github.com/Pokes303/WUPDownloader
+  Releases: https://github.com/Pokes303/WUPDownloader/releases
+  Source code: https://github.com/Pokes303/WUPDownloader
   </long_description> 
 
 </app>
