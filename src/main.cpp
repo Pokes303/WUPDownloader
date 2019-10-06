@@ -148,8 +148,9 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 	//Types: 0 = .app | 1 = .h3 | 2 = title.tmd | 3 = tilte.tik
 	downloading = file.c_str();
 	
-	WHBLogPrintf("Download URL: %s", url.c_str());
-	WHBLogPrintf("Download NAME: %s", file.c_str());
+	//WHBLogPrintf("Download URL: %s", url.c_str());
+	//WHBLogPrintf("Download NAME: %s", file.c_str());
+	
 	CURL* curl = NULL;
     FILE* fp;
 	int ret = 0;
@@ -165,7 +166,6 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 		curl_easy_cleanup(curl);
 		return 1;
 	}
-	WHBLogPrintf("curl_easy_init executed successfully");
 
 	std::string tUrl = downloadUrl + url;
 	std::string tFile = installDir + file;
@@ -636,10 +636,8 @@ dnext:
 ddnext:
 				disableShutdown();
 
-				if (!downloadTitle(titleID, titleVer, folderName)) {
-					WHBLogPrintf("return");
+				if (!downloadTitle(titleID, titleVer, folderName))
 					goto exit;
-				}
 				
 				downloadUrl = "http://ccs.cdn.wup.shop.nintendo.net/ccs/download/";
 				installDir = "/vol/external01/install/";
@@ -658,20 +656,15 @@ ddnext:
 mainLoop:;
 	}
 exit:
-	WHBLogPrintf("SWKBD");
 	SWKBD_Shutdown();
-	WHBLogPrintf("screen");
 	if (hbl)
 		shutdownScreen();
 	
-	WHBLogPrintf("fs");
 	FSDelClient(fsCli, 0);
 	MEMFreeToDefaultHeap(fsCli);
 	MEMFreeToDefaultHeap(fsCmd);
    
-	WHBLogPrintf("fs shutdown");
 	FSShutdown();
-	WHBLogPrintf("proc&udp");
 	if (hbl)
 		WHBProcShutdown();
 	WHBLogUdpDeinit();

@@ -12,33 +12,21 @@
 uint8_t app = 1;
 uint8_t AppRunning() {
 	if (!hbl) {
-		if(!OSIsMainCore()) {
-			WHBLogPrintf("Os not main core");
+		if(!OSIsMainCore())
 			ProcUISubProcessMessages(true);
-		}
 		else {
-			WHBLogPrintf("haha yess");
 			ProcUIStatus status = ProcUIProcessMessages(true);
-			WHBLogPrintf("status: %d", status);
 		
 			switch (status) {
 				case PROCUI_STATUS_EXITING: {
-					WHBLogPrintf("exiting");
 					// Being closed, deinit, free, and prepare to exit
-					WHBLogPrintf("procui");
 					ProcUIShutdown();
-					WHBLogPrintf("screen");
-					WHBLogPrintf("ok!");
 					app = 0;
 					break;
 				}
 				case PROCUI_STATUS_RELEASE_FOREGROUND: {
-					WHBLogPrintf("release");
 					// Free up MEM1 to next foreground app, deinit screen, etc.
-					
 					ProcUIDrawDoneRelease();
-					
-					//shutdownScreen();
 					
 					WHBGfxInit();
 					WHBGfxBeginRender();
@@ -53,14 +41,11 @@ uint8_t AppRunning() {
 					
 					WHBGfxFinishRender();
 					
-					WHBLogPrintf("draw ok");
 					app = 2;
-					WHBLogPrintf("-------------------");
-					//OSScreenShutdown();??
 					break;
 				}
 				case PROCUI_STATUS_IN_FOREGROUND: {
-					WHBLogPrintf("foreground");
+					// Executed while app is in foreground
 					if (app == 2) {
 						WHBGfxShutdown();
 						shutdownScreen();
@@ -68,19 +53,13 @@ uint8_t AppRunning() {
 					}
 					
 					app = 1;
-					// Executed while app is in foreground
 					break;
 				}
 				case PROCUI_STATUS_IN_BACKGROUND: {
-					WHBLogPrintf("background");
 					app = 2;
 					break;
 				}
-				default: {
-					WHBLogPrintf("default");
-				}
 			}
-			WHBLogPrintf("app: %d", app);
 			return app;
 		}
 	}
