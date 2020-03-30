@@ -1,6 +1,6 @@
 #include "input.h"
 #include "utils.h"
-#include "swkbd_mapper.h"
+#include "swkbd_wrapper.h"
 
 //WIP. This need a better implementation
 

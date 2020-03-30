@@ -5,7 +5,7 @@
 
 #include <whb/log.h>
 
-#include "swkbd_mapper.h"
+#include "swkbd_wrapper.h"
 
 uint32_t Swkbd_GetWorkMemorySize(uint32_t unk)
 {
