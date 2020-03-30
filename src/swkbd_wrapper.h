@@ -1,5 +1,5 @@
-#ifndef SWKBD_MAPPER_H
-#define SWKBD_MAPPER_H
+#ifndef WUPD_SWKBD_MAPPER_H
+#define WUPD_SWKBD_MAPPER_H
 
 #include <stdbool.h>
 
@@ -111,4 +111,4 @@ void Swkbd_Destroy();
 	}
 #endif
 
-#endif //ifndef HEADER_FILE
+#endif // ifndef ifndef WUPD_SWKBD_MAPPER_H
