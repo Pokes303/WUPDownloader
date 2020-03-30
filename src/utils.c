@@ -165,10 +165,7 @@ char* hex(uint64_t i, uint8_t digits) {
 	{
 		int i = 0;
 		for( ; i < n; i++)
-		{
-			WHBLogPrintf("Adding zero");
 			result[i] = '0';
-		}
 		result[i] = '\0';
 		strcat(result, h);
 	}
