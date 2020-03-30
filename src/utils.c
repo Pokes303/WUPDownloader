@@ -1,4 +1,8 @@
-#include "utils.hpp"
+#include "utils.h"
+
+#ifdef DEBUG_BUILD
+#include <stdio.h>
+#endif
 
 #include <coreinit/screen.h>
 #include <coreinit/cache.h>
@@ -59,33 +63,48 @@ void write(uint32_t row, uint32_t column, const char* str) { //Write to the two 
 	OSScreenPutFontEx(SCREEN_TV, row, column, str);
 	OSScreenPutFontEx(SCREEN_DRC, row, column, str);
 }
-void swrite(uint32_t row, uint32_t column, std::string str) { //string write()
-	OSScreenPutFontEx(SCREEN_TV, row, column, str.c_str());
-	OSScreenPutFontEx(SCREEN_DRC, row, column, str.c_str());
-}
 
 /*void dwrite(uint32_t column, const char* str, ...) { //const char* write
 	OSScreenPutFontEx(SCREEN_TV, 0, column, str);
 	OSScreenPutFontEx(SCREEN_DRC, 0, column, str);
 }*/
 
-std::vector<std::string> downloadLog;
-void addToDownloadLog(std::string str) {
-	if (downloadLog.size() >= MAX_DOWNLOADLOG_DRC)
-		downloadLog.erase(downloadLog.begin());
-	downloadLog.push_back(str);
-	WHBLogPrintf(str.c_str());
+char* downloadLog[MAX_DOWNLOADLOG_DRC + 1];
+size_t downloadLogSize = 0;
+void addToDownloadLog(char* str) {
+	//TODO: We copy the string here for fast porting purposes
+	char *toAdd = malloc(sizeof(char) * (strlen(str) + 1));
+	if(toAdd == NULL)
+		return;
+	strcpy(toAdd, str);
+	
+	bool needsIncrement;
+	if(downloadLogSize == MAX_DOWNLOADLOG_DRC)
+	{
+		free(downloadLog[0]);
+		for(int i = 0; i < MAX_DOWNLOADLOG_DRC - 1; i++)
+			downloadLog[i] = downloadLog[i + 1];
+		needsIncrement = false;
+	}
+	else
+		needsIncrement = true;
+	
+	WHBLogPrintf("Adding %s at %d", toAdd, downloadLogSize);
+	downloadLog[downloadLogSize] = toAdd;
+	WHBLogPrintf(toAdd);
+	
+	if(needsIncrement)
+		downloadLogSize++;
 }
 void clearDownloadLog() {
-	downloadLog.clear();
+	for(int i = 0; i < downloadLogSize; i++)
+		free(downloadLog[i]);
+	downloadLogSize = 0;
 }
 void writeDownloadLog() {
 	write(0, 2, "------------------------------------------------------------");
-	for (uint8_t i = 0; i < MAX_DOWNLOADLOG_DRC; i++) {
-		if (i >= downloadLog.size())
-			break;
-		write(0, i + 3, downloadLog[i].c_str());
-	}
+	for (uint8_t i = 0; i < downloadLogSize; i++)
+		write(0, i + 3, downloadLog[i]);
 }
 
 void colorStartRefresh(uint32_t color) {
@@ -128,82 +147,33 @@ void disableShutdown() {
 	IMDisableAPD();
 }
 
-std::string hex(uint64_t i) {
-	std::string result;
-	while (true) {
-		uint64_t div = i / 16;
-		uint64_t remainder = i % 16;
-		std::string wRemainder = std::to_string(remainder);
-		if (remainder > 9) {
-			switch (remainder) {
-			case 10:
-				wRemainder = "A";
-				break;
-			case 11:
-				wRemainder = "B";
-				break;
-			case 12:
-				wRemainder = "C";
-				break;
-			case 13:
-				wRemainder = "D";
-				break;
-			case 14:
-				wRemainder = "E";
-				break;
-			case 15:
-				wRemainder = "F";
-				break;
-			}
+char* hex(uint64_t i, uint8_t digits) {
+	unsigned long l1 = (unsigned long)((i & 0xFFFF0000) >> 16 );
+	unsigned long l2 = (unsigned long)((i & 0x0000FFFF));
+	char h[32];
+	sprintf(h, "%lx%lx", l1, l2); //TODO: We removed 0x as it's not shown in the headers example and to reuse this in function hex0
+	size_t hexDigits = strlen(h);
+	if (hexDigits > digits)
+		return "too few digits error";
+	
+	char *result = malloc(sizeof(char) * (digits + 1));
+	if(result == NULL)
+		return NULL;
+	
+	int n = digits - hexDigits;
+	if(n > 0)
+	{
+		int i = 0;
+		for( ; i < n; i++)
+		{
+			WHBLogPrintf("Adding zero");
+			result[i] = '0';
 		}
-		result = wRemainder + result;
-
-		if (div != 0)
-			i = div;
-		else
-			break;
+		result[i] = '\0';
+		strcat(result, h);
 	}
-	result = "0x" + result;
-	return result;
-}
-std::string hex0(uint64_t i, uint8_t digits) {
-	std::string result;
-	while (true) {
-		uint64_t div = i / 16;
-		uint64_t remainder = i % 16;
-		std::string wRemainder = std::to_string(remainder);
-		if (remainder > 9) {
-			switch (remainder) {
-			case 10:
-				wRemainder = "A";
-				break;
-			case 11:
-				wRemainder = "B";
-				break;
-			case 12:
-				wRemainder = "C";
-				break;
-			case 13:
-				wRemainder = "D";
-				break;
-			case 14:
-				wRemainder = "E";
-				break;
-			case 15:
-				wRemainder = "F";
-				break;
-			}
-		}
-		result = wRemainder + result;
-
-		if (div != 0)
-			i = div;
-		else
-			break;
-	}
-	if (result.size() > digits)
-		return std::string("too few digits error");
-	for (int i = digits - result.size(); i > 0; i--)
-		result = "0" + result;
+	else
+		strcat(result, h);
+	
 	return result;
 }

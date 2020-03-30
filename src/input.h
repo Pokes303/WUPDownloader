@@ -1,11 +1,11 @@
-#include "main.hpp"
+#include "main.h"
 
-enum KeyboardChecks {
+typedef enum {
 	CHECK_NONE = 0,			//No check
 	CHECK_NUMERICAL = 1,	//Only numbers
 	CHECK_HEXADECIMAL = 2,	//Only hex
 	CHECK_NOSPECIAL = 3		//Only letters or numbers
-};
+} KeyboardChecks;
 
 bool SWKBD_Init();
 bool SWKBD_Show(int maxlength, bool limit);
@@ -14,7 +14,8 @@ void SWKBD_Hide(VPADStatus* vpad);
 bool SWKBD_IsOkButton();
 bool SWKBD_IsCancelButton();
 const char* SWKBD_GetError(KeyboardChecks check);
-std::string SWKBD_GetText();
+char* SWKBD_GetText();
+void SWKBD_CleanupText();
 void SWKBD_Shutdown();
 
-bool showKeyboard(std::string* output, KeyboardChecks check, int maxlength, bool limit);
+bool showKeyboard(char** output, KeyboardChecks check, int maxlength, bool limit);

@@ -1,7 +1,7 @@
-#include "status.hpp"
+#include "status.h"
 
-#include "utils.hpp"
-#include "input.hpp"
+#include "utils.h"
+#include "input.h"
 
 #include <coreinit/core.h>
 #include <coreinit/screen.h>

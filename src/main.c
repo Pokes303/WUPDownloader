@@ -1,4 +1,6 @@
-#include "main.hpp"
+#include "main.h"
+
+#include <errno.h>
 
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
@@ -14,14 +16,13 @@
 
 #include <whb/proc.h>
 
-#include "utils.hpp"
-#include "file.hpp"
-#include "menu.hpp"
-#include "input.hpp"
-#include "ticket.hpp"
-#include "status.hpp"
-
-#define VERSION 1.0
+#include "main.h"
+#include "utils.h"
+#include "file.h"
+#include "menu.h"
+#include "input.h"
+#include "ticket.h"
+#include "status.h"
 
 bool hbl = true;
 
@@ -30,9 +31,6 @@ FSCmdBlock *fsCmd;
 
 VPADStatus vpad;
 VPADReadError vError;
-
-std::string downloadUrl = "http://ccs.cdn.wup.shop.nintendo.net/ccs/download/";
-std::string installDir = "/vol/external01/install/";
 
 uint16_t contents = 0xFFFF; //Contents count
 uint16_t dcontent = 0xFFFF; //Actual content number
@@ -47,14 +45,16 @@ const char* downloading = "UNKNOWN";
 uint32_t downloaded = 0;
 uint8_t second = 0xFF;
 bool showSpeed = true;
-std::string downloadSpeed;
+char* downloadSpeed = NULL;
 
 bool vibrateWhenFinished = true;
 uint8_t vibrationPattern[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
 void readInput() {
 	VPADRead(VPAD_CHAN_0, &vpad, 1, &vError);
+	char *err;
 	while (vError != VPAD_READ_SUCCESS) {
+		err = NULL;
 		VPADRead(VPAD_CHAN_0, &vpad, 1, &vError);
 		colorStartRefresh(0xFF00FF00);
 		write(0, 0, "Error reading the WiiU Gamepad:");
@@ -71,10 +71,14 @@ void readInput() {
 				WHBLogPrintf("VPAD Error: Invalid controller");
 				break;
 			default:
-				swrite(2, 1, std::string("Unknown error: 0x") + hex0(vError, 8));
-				WHBLogPrintf("VPAD Error: Unknown error: 0x%s", hex0(vError, 8).c_str());
+				err = hex(vError, 8);
+				write(2, 1, "Unknown error: 0x");
+				write(19,1, err);
+//TODO				WHBLogPrintf("VPAD Error: Unknown error: 0x%s", hex(vError, 8).c_str());
 				break;
 		}
+		if(err != NULL)
+			free(err);
 		endRefresh();
 	}
     VPADGetTPCalibratedPoint(VPAD_CHAN_0, &vpad.tpNormal, &vpad.tpNormal);
@@ -86,9 +90,9 @@ size_t writeCallback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 }
 
 uint32_t multiplier;
-std::string multiplierName;
+char* multiplierName;
 static int progressCallback(void *clientp, double dltotal, double dlnow) {
-	//WHBLogPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", downloading, dcontent, contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
+	WHBLogPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", downloading, dcontent, contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
 	startRefresh();
 	if (dltotal == 0)
 		write(0, 0, "Preparing");
@@ -97,24 +101,31 @@ static int progressCallback(void *clientp, double dltotal, double dlnow) {
 		if ((uint32_t)dltotal > 0) {
 			if (multiplier == 0) {
 				if (dltotal < 1024)
-					multiplierName = "B";
+					strcpy(multiplierName, "B");
 				else if (dltotal < 1024 * 1024) {
 					multiplier = 1024;
-					multiplierName = "Kb";
+					strcpy(multiplierName, "Kb");
 				}
 				else {
 					multiplier = 1024 * 1024;
-					multiplierName = "Mb";
+					strcpy(multiplierName, "Mb");
 				}
 			}
-			swrite(0, 1, "[" + std::to_string((uint32_t)(dlnow / dltotal * 100)) + "%] " + std::to_string((uint32_t)dlnow / multiplier) + " / " + std::to_string((uint32_t)dltotal / multiplier) + " " + multiplierName);
+			char tmpString[64];
+			sprintf(tmpString, "[%d%%] %.2f / %.2f %s", (uint32_t)(dlnow / dltotal * 100), dlnow / multiplier, dltotal / multiplier, multiplierName);
+			write(0, 1, tmpString);
 		}
 	}
+	
 	write(12, 0, downloading);
 	if (contents < 0xFFFF)
-		swrite(25, 0, "(" + std::to_string(dcontent) + "/" + std::to_string(contents) + ")");
+	{
+		char tmpString[16];
+		sprintf(tmpString, "(%d/%d)", dcontent, contents);
+		write(25, 0, tmpString);
+	}
 	
-	swrite(60 - downloadSpeed.size(), 1, downloadSpeed);
+	write(60 - strlen(downloadSpeed), 1, downloadSpeed);
 	
 	OSCalendarTime osc;
 	OSTicksToCalendarTime(OSGetTime(), &osc);
@@ -123,19 +134,19 @@ static int progressCallback(void *clientp, double dltotal, double dlnow) {
 		
 		if (dlnow != 0) {
 			uint32_t dl = dlnow - downloaded;
-			char buf[16];
+			char buf[32];
 			if (dl < 1024)
 				sprintf(buf, "%u B/s", dl);
 			else if (dl < 1024 * 1024)
-				sprintf(buf, "%.2f Kb/s", (float)dl / 1024);
+				sprintf(buf, "%.2f Kb/s", (float)dl / 1024.0F);
 			else
-				sprintf(buf, "%.2f Mb/s", (float)dl / 1024 / 1024);
+				sprintf(buf, "%.2f Mb/s", (float)dl / 1024.0F / 1024.0F);
 			
 			downloaded = dlnow;
-			downloadSpeed = buf;
+			strcpy(downloadSpeed, buf);
 		}
 		else
-			downloadSpeed = "-- B/s";
+			strcpy(downloadSpeed, "-- B/s");
 	}
 	
 	writeDownloadLog();
@@ -143,13 +154,13 @@ static int progressCallback(void *clientp, double dltotal, double dlnow) {
 	return 0;
 }
 
-uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
+uint8_t downloadFile(char* url, char* file, uint8_t type) {
 	//Results: 0 = OK | 1 = Error | 2 = No ticket aviable | 3 = Exit
 	//Types: 0 = .app | 1 = .h3 | 2 = title.tmd | 3 = tilte.tik
-	downloading = file.c_str();
+	downloading = file;
 	
-	//WHBLogPrintf("Download URL: %s", url.c_str());
-	//WHBLogPrintf("Download NAME: %s", file.c_str());
+	WHBLogPrintf("Download URL: %s", url);
+	WHBLogPrintf("Download PATH: %s", file);
 	
 	CURL* curl = NULL;
     FILE* fp;
@@ -160,25 +171,25 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 		colorStartRefresh(0xFF000000);
 		write(0, 0, "ERROR: curl_easy_init failed");
 		write(0, 2, "File: ");
-		write(6, 2, downloading);
+		write(6, 2, file);
 		errorScreen(3, B_RETURN);
 		
 		curl_easy_cleanup(curl);
 		return 1;
 	}
-
-	std::string tUrl = downloadUrl + url;
-	std::string tFile = installDir + file;
 	
 	multiplier = 0;
-	multiplierName = "Unk";
+	multiplierName = malloc(sizeof(char) * 4);
+	if(multiplierName == NULL)
+		return 1;
+	strcpy(multiplierName, "Unk");
 	
 	second = 0xFF;
 	downloaded = 0;
-	downloadSpeed = "";
+	downloadSpeed[0] = '\0';
 	
-	fp = fopen(tFile.c_str(), "wb");
-	curl_easy_setopt(curl, CURLOPT_URL, tUrl.c_str());
+	fp = fopen(file, "wb");
+	curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
@@ -191,27 +202,32 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 	if (ret) {
 		WHBLogPrintf("curl_easy_perform returned an error: %d", ret);
 		
-		std::vector<std::string> err;
+		char* err[4];
+		int errSize;
 		switch(ret) {
 			default:
-				err.push_back("---> Unknown error");
-				err.push_back("See: https://curl.haxx.se/libcurl/c/libcurl-errors.html");
+				err[0] = "---> Unknown error";
+				err[1] = "See: https://curl.haxx.se/libcurl/c/libcurl-errors.html";
+				errSize = 2;
 				break;
 			case 6:
-				err.push_back("---> Network error");
-				err.push_back("Your WiiU is not connected to the internet, check the");
-				err.push_back("network settings and try again");
+				err[0] = "---> Network error";
+				err[1] = "Your WiiU is not connected to the internet, check the";
+				err[2] = "network settings and try again";
+				errSize = 3;
 				break;
 			case 23:
-				err.push_back("---> Error from SD Card");
-				err.push_back("The SD Card was extracted or invalid to write data,");
-				err.push_back("re-insert it or use another one and restart the app");
+				err[0] = "---> Error from SD Card";
+				err[1] = "The SD Card was extracted or invalid to write data,";
+				err[2] = "re-insert it or use another one and restart the app";
+				errSize = 3;
 				break;
 			case 56:
-				err.push_back("---> Network error");
-				err.push_back("Failed while trying to download data, probably your");
-				err.push_back("router was turned off, check the internet connecition");
-				err.push_back("and try again");
+				err[0] = "---> Network error";
+				err[1] = "Failed while trying to download data, probably your";
+				err[2] = "router was turned off, check the internet connecition";
+				err[3] = "and try again";
+				errSize = 4;
 				break;
 		}
 		
@@ -219,30 +235,37 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 			readInput();
 
 			colorStartRefresh(0xFF000000);
-			swrite(0, 0, "curl_easy_perform returned a non-valid value: " + std::to_string(ret));
-			for (uint32_t i = 0; i < err.size(); i++)
-				swrite(0, i + 2, err[i]);
-			swrite(0, err.size() + 3, "File: " + std::string(downloading));
-			errorScreen(err.size() + 4, B_RETURN__Y_RETRY); //CHANGE TO RETURN
+			char toScreen[1024];
+			sprintf(toScreen, "curl_easy_perform returned a non-valid value: %d", ret);
+			write(0, 0, toScreen);
+			for (uint32_t i = 0; i < errSize; i++)
+				write(0, i + 2, err[i]);
+			sprintf(toScreen, "File: %s", file);
+			write(0, errSize + 3, toScreen);
+			errorScreen(errSize + 4, B_RETURN__Y_RETRY); //CHANGE TO RETURN
 			endRefresh();
 			
 			switch (vpad.trigger) {
 				case VPAD_BUTTON_B:
 					curl_easy_cleanup(curl);
 					fclose(fp);
+					free(multiplierName);
 					return 1;
 				case VPAD_BUTTON_Y:
 					writeRetry();
 					curl_easy_cleanup(curl);
 					fclose(fp);
+					free(multiplierName);
 					return downloadFile(url, file, type);
 			}
 		}
+		free(multiplierName);
 		return 1;
 	}
+	free(multiplierName);
 	WHBLogPrintf("curl_easy_perform executed successfully");
 
-	int resp = 404;
+	long resp = 404;
 	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &resp);
 	WHBLogPrintf("The download returned: %u", resp);
 	if (resp != 200) {
@@ -251,8 +274,7 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 				readInput();
 				
 				colorStartRefresh(0xFF000000);
-				write(0, 0, "The download of title.tmd failed with error: ");
-				write(45, 0, std::to_string(resp).c_str());
+				write(0, 0, "The download of title.tmd failed with error: 404");
 				write(0, 2, "The title cannot be found on the NUS, maybe the provided");
 				write(0, 3, "title ID doesn't exists or the TMD was deleted");
 				errorScreen(4, B_RETURN__Y_RETRY);
@@ -277,20 +299,23 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 			return 2;
 		}
 		else {
-			uint8_t errLn = 2;
+			uint8_t errLn;
 			while(true) {
 				readInput();
 				
 				colorStartRefresh(0xFF000000);
-				write(0, 0, "The download returned a result different to 200 (OK): ");
-				write(54, 0, std::to_string(resp).c_str());
+				char toScreen[128];
+				sprintf(toScreen, "The download returned a result different to 200 (OK): %ld", resp);
+				write(0, 0, toScreen);
 				if (resp == 400) {
 					write(0, 2, "Request failed. Try again");
 					errLn = 4;
 				}
+				else
+					errLn = 2;
 				write(0, errLn, "File: ");
-				write(6, errLn, downloading);
-				errorScreen(++errLn, B_RETURN__Y_RETRY);
+				write(6, errLn, file);
+				errorScreen(errLn + 1, B_RETURN__Y_RETRY);
 				endRefresh();
 
 				switch (vpad.trigger) {
@@ -309,7 +334,10 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 	}
 	else {
 		WHBLogPrintf("The file was downloaded successfully");
-		addToDownloadLog("Download " + std::string(downloading));
+		char toAdd[512];
+		strcpy(toAdd, "Download ");
+		strcat(toAdd, file);
+		addToDownloadLog(toAdd);
 	}
 	
 	curl_easy_cleanup(curl);
@@ -317,24 +345,53 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 	return 0;
 }
 
-bool downloadTitle(std::string titleID, std::string titleVer, std::string folderName) {
-	//WHBLogPrintf("Downloading title... tID: %s, tVer: %s, fName: %s", titleID.c_str(), titleVer.c_str(), folderName.c_str());
+bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
+	WHBLogPrintf("Downloading title... tID: %s, tVer: %s, fName: %s", titleID, titleVer, folderName);
 	
-	downloadUrl = "http://ccs.cdn.wup.shop.nintendo.net/ccs/download/" + titleID + "/";
+	char downloadUrl[256];
+	strcpy(downloadUrl, DOWNLOAD_URL);
+	strcat(downloadUrl, titleID);
+	strcat(downloadUrl, "/");
 	
-	std::string verLog = "";
-	if (titleVer != "") {
-		verLog = " [v" + titleVer + "]";
+	if(strlen(folderName) == 0)
+		folderName = titleID;
+	else {
+		strcat(folderName, " [");
+		strcat(folderName, titleID);
+		strcat(folderName, "]");
 	}
-	folderName = (folderName == "") ? titleID : (folderName + " [" + titleID + "]" + verLog);
+	if (strlen(titleVer) > 0) {
+		strcat(folderName, " [v");
+		strcat(folderName, titleVer);
+		strcat(folderName, "]");
+	}
 	
-	installDir = "/vol/external01/install/" + folderName + "/";
+	char installDir[256];
+	strcpy(installDir, "/vol/external01/install/");
+	strcat(installDir, folderName);
+	strcat(installDir, "/");
 	
-	addToDownloadLog("Started the download of: " + titleID + verLog);
-	addToDownloadLog("The content will be saved on \"sd:/install/" + folderName + "\"");
+	char toScreen[512];
+	strcpy(toScreen, "Started the download of: ");
+	strcat(toScreen, titleID);
+	addToDownloadLog(toScreen);
+	strcpy(toScreen, "The content will be saved on \"sd:/install/");
+	strcat(toScreen, folderName);
+	strcat(toScreen, "\"");
+	addToDownloadLog(toScreen);
 	
-	if (makeDir(installDir.c_str()) == FS_STATUS_EXISTS)
-		addToDownloadLog("WARNING: The download directory already exists");
+	WHBLogPrintf("Creating directory");
+	if(mkdir(installDir, 777) == -1)
+	{
+		int err = errno;
+		if(errno == EEXIST)
+			addToDownloadLog("WARNING: The download directory already exists");
+		else
+		{
+			sprintf(toScreen, "Error creating directory: %d %s", err, strerror(err));
+			addToDownloadLog(toScreen);
+		}
+	}
 	else
 		addToDownloadLog("Download directory successfully created");
 	
@@ -344,60 +401,84 @@ bool downloadTitle(std::string titleID, std::string titleVer, std::string folder
 	endRefresh();
 	
 	WHBLogPrintf("Downloading TMD...");
-	if (downloadFile((titleVer == "") ? "tmd" : ("tmd." + titleVer), "title.tmd", 2))
+	char tDownloadUrl[256];
+	strcpy(tDownloadUrl, downloadUrl);
+	strcat(tDownloadUrl, "tmd");
+	if(strlen(titleVer) > 0)
+	{
+		strcat(tDownloadUrl, ".");
+		strcat(tDownloadUrl, titleVer);
+	}
+	char tInstallDir[256];
+	strcpy(tInstallDir, installDir);
+	strcat(tInstallDir, "title.tmd");
+	if (downloadFile(tDownloadUrl, tInstallDir, 2))
+	{
+		WHBLogPrintf("Error downloading TMD");
 		return true;
+	}
 	addToDownloadLog("TMD Downloaded");
 	
-	std::string titleType;
-	switch (readUInt32("title.tmd", 0x18C)) { //Title type
+	strcpy(toScreen, "=>Title type: ");
+	switch (readUInt32(tInstallDir, 0x18C)) { //Title type
 		case 0x00050000:
-			titleType = "eShop or Packed";
+			strcat(toScreen, "eShop or Packed");
 			break;
 		case 0x00050002:
-			titleType = "eShop/Kiosk demo";
+			strcat(toScreen, "eShop/Kiosk demo");
 			break;
 		case 0x0005000C:
-			titleType = "eShop DLC";
+			strcat(toScreen, "eShop DLC");
 			break;
 		case 0x0005000E:
-			titleType = "eShop Update";
+			strcat(toScreen, "eShop Update");
 			break;
 		case 0x00050010:
-			titleType = "System Application";
+			strcat(toScreen, "System Application");
 			break;
 		case 0x0005001B:
-			titleType = "System Data Archive";
+			strcat(toScreen, "System Data Archive");
 			break;
 		case 0x00050030:
-			titleType = "Applet";
+			strcat(toScreen, "Applet");
 			break;
 		// vWii //
 		case 0x7:
-			titleType = "vWii IOS";
+			strcat(toScreen, "Wii IOS");
 			break;
 		case 0x00070002:
-			titleType = "vWii Default Channel";
+			strcat(toScreen, "vWii Default Channel");
 			break;
 		case 0x00070008:
-			titleType = "vWii System Channel";
+			strcat(toScreen, "vWii System Channel");
 			break;
 		default:
-			titleType = "Unknown (" + hex0(readUInt32("title.tmd", 0x18C), 8) + ")";
+			strcat(toScreen, "Unknown (");
+			char *h = hex(readUInt32(tInstallDir, 0x18C), 8);
+			strcat(toScreen, h);
+			free(h);
+			strcat(toScreen, ")");
 			break;
 	}
-	addToDownloadLog("=>Title type: " + titleType);
-	
-	uint8_t tikRes = downloadFile("cetk", "title.tik", 3);
+	addToDownloadLog(toScreen);
+	strcpy(tDownloadUrl, downloadUrl);
+	strcat(tDownloadUrl, "cetk");
+	strcpy(tInstallDir, installDir);
+	strcat(tInstallDir, "title.tik");
+	uint8_t tikRes = downloadFile(tDownloadUrl, tInstallDir, 3);
 	if (tikRes == 1)
 		return true;
 	else if (tikRes == 2) {
 		addToDownloadLog("Title.tik not found on the NUS. A fake ticket can be created");
-		std::string encKey = "";
+		char* encKey = "";
 		while (true) {
 			readInput();
 
 			colorStartRefresh(0x00404000);
-			swrite(0, 0, "Input the Encrypted title key of " + titleID + " to create a");
+			strcpy(toScreen, "Input the Encrypted title key of ");
+			strcat(toScreen, titleID);
+			strcat(toScreen, " to create a");
+			write(0, 0, toScreen);
 			write(0, 1, " fake ticket (Without it, the download cannot be installed)");
 			write(0, 3, "You can get it from any 'WiiU title key site'");
 			write(0, 5, "Press (A) to show the keyboard [32 hexadecimal numbers]");
@@ -411,7 +492,9 @@ bool downloadTitle(std::string titleID, std::string titleVer, std::string folder
 					writeDownloadLog();
 					endRefresh();
 					FILE* tik;
-					tik = fopen((installDir + "title.tik").c_str(), "wb");
+					strcpy(toScreen, installDir);
+					strcat(toScreen, "title.tik");
+					tik = fopen(toScreen, "wb");
 					generateTik(tik, titleID, encKey);
 					fclose(tik);
 					addToDownloadLog("Fake ticket created successfully");
@@ -421,28 +504,50 @@ bool downloadTitle(std::string titleID, std::string titleVer, std::string folder
 			else if (vpad.trigger == VPAD_BUTTON_B) {
 				addToDownloadLog("Encrypted key wasn't wrote. Continuing without fake ticket");
 				addToDownloadLog("(The download needs a fake ticket to be installed)");
-					break;
+				break;
 			}
 		}
 	}
 
-	contents = readUInt16("title.tmd", 0x1DE);
+	strcpy(tInstallDir, installDir);
+	strcat(tInstallDir, "title.tmd");
+	contents = readUInt16(tInstallDir, 0x1DE);
 	File_to_download ftd[contents]; //Files to download
 
 	//Get .app and .h3 files
 	for (uint16_t i = 0; i < contents; i++) {
-		ftd[i].app = readUInt32("title.tmd", 0xB04 + i * 0x30); //.app file
-		ftd[i].h3 = readUInt16("title.tmd", 0xB0A + i * 0x30) == 0x2003 ? true : false; //.h3?
-		ftd[i].size = readUInt64("title.tmd", 0xB0C + i * 0x30); //size
+		ftd[i].app = readUInt32(tInstallDir, 0xB04 + i * 0x30); //.app file
+		ftd[i].h3 = readUInt16(tInstallDir, 0xB0A + i * 0x30) == 0x2003 ? true : false; //.h3?
+		ftd[i].size = readUInt64(tInstallDir, 0xB0C + i * 0x30); //size
 	}
 	
+	char *tmpHex;
+	char tmpFileName[256];
 	for (dcontent = 0; dcontent < contents; dcontent++) {
-		if (downloadFile(hex0(ftd[dcontent].app, 8), hex0(ftd[dcontent].app, 8) + std::string(".app"), 0) == 1)
+		tmpHex = hex(ftd[dcontent].app, 8);
+		strcpy(tDownloadUrl, downloadUrl);
+		strcat(tDownloadUrl, tmpHex);
+		strcpy(tmpFileName, installDir);
+		strcat(tmpFileName, tmpHex);
+		strcpy(tInstallDir, tmpFileName);
+		strcat(tInstallDir, ".app");
+		if (downloadFile(tDownloadUrl, tInstallDir, 0) == 1)
+		{
+			free(tmpHex);
 			return true;
-		if (ftd[dcontent].h3) { //.h3 download
-			if (downloadFile(hex0(ftd[dcontent].app, 8) + std::string(".h3"), hex0(ftd[dcontent].app, 8) + std::string(".h3"), 1) == 1)
-				return true;
 		}
+		strcpy(tInstallDir, tmpFileName);
+		strcat(tInstallDir, ".h3");
+		if (ftd[dcontent].h3) { //.h3 download
+			strcat(tmpHex, ".h3");
+			strcat(tDownloadUrl, ".h3");
+			if (downloadFile(tDownloadUrl, tInstallDir, 1) == 1)
+			{
+				free(tmpHex);
+				return true;
+			}
+		}
+		free(tmpHex);
 	}
 	
 	WHBLogPrintf("Creating CERT...");
@@ -452,7 +557,9 @@ bool downloadTitle(std::string titleID, std::string titleVer, std::string folder
 	endRefresh();
 	
     FILE* cert;
-	cert = fopen((installDir + "title.cert").c_str(), "wb");
+	strcpy(tmpFileName, installDir);
+	strcat(tmpFileName, "title.cert");
+	cert = fopen(tmpFileName, "wb");
 	
 	writeCustomBytes(cert, "000100042EA66C66CFF335797D0497B77A197F9FE51AB5A41375DC73FD9E0B10669B1B9A5B7E8AB28F01B67B6254C14AA1331418F25BA549004C378DD72F0CE63B1F7091AAFE3809B7AC6C2876A61D60516C43A63729162D280BE21BE8E2FE057D8EB6E204242245731AB6FEE30E5335373EEBA970D531BBA2CB222D9684387D5F2A1BF75200CE0656E390CE19135B59E14F0FA5C1281A7386CCD1C8EC3FAD70FBCE74DEEE1FD05F46330B51F9B79E1DDBF4E33F14889D05282924C5F5DC2766EF0627D7EEDC736E67C2E5B93834668072216D1C78B823A072D34FF3ECF9BD11A29AF16C33BD09AFB2D74D534E027C19240D595A68EBB305ACC44AB38AB820C6D426560C");
 	writeVoidBytes(cert, 0x3C);
@@ -497,7 +604,10 @@ bool downloadTitle(std::string titleID, std::string titleVer, std::string folder
 		readInput();
 	
 		colorStartRefresh(0x00800000);
-		swrite(0, 0, "Title " + titleID + " downloaded successfully");
+		strcpy(toScreen, "Title ");
+		strcat(toScreen, titleID);
+		strcat(toScreen, " downloaded successfully");
+		write(0, 0, toScreen);
 		write(0, 1, "Press (A) to return");
 		writeDownloadLog();
 		endRefresh();
@@ -543,7 +653,11 @@ int main() {
 	initRandom();
 	WHBLogPrintf("Random started successfully");
 	
-	makeDir(installDir.c_str());
+	mkdir(INSTALL_DIR, 777);
+	
+	downloadSpeed = malloc(sizeof(char) * 32);
+	if(downloadSpeed == NULL)
+		goto exit;
 	
 	while(AppRunning()) {
 		WHBLogPrintf("Refresh");
@@ -556,9 +670,9 @@ int main() {
 		
 		switch (vpad.trigger) {
 			case VPAD_BUTTON_A: { //Download title
-				std::string titleID;
-				std::string titleVer;
-				std::string folderName;
+				char* titleID = "";
+				char* titleVer = "";
+				char* folderName = "";
 				
 				while (AppRunning()) {
 					if (app == 2)
@@ -595,12 +709,14 @@ dnext:
 
 					startRefresh();
 					write(0, 0, "Provided title ID [Only 16 digit hexadecimal]:");
-					swrite(3, 1, titleID);
+					write(3, 1, titleID);
+					
 					write(0, 2, "Provided title version [Only numbers]:");
-					swrite(3, 3, (titleVer != "") ? titleVer : "<LATEST>");
+					write(3, 3, strlen(titleVer) > 0 ? titleVer : "<LATEST>");
+					
 					write(0, 4, "Custom folder name [Only text and numbers]:");
-					swrite(3, 5, "sd:/install/");
-					swrite(15, 5, (folderName != "") ? folderName : "<Title ID>");
+					write(3, 5, "sd:/install/");
+					write(15, 5, strlen(folderName) > 0 ? folderName : "<Title ID>");
 					
 					write(0, 7, "Press (A) to download");
 					write(0, 8, "Press (B) to return");
@@ -609,7 +725,12 @@ dnext:
 					write(0, 11, "Press (RIGHT) to set the title version");
 					write(0, 12, "Press (DOWN) to set a custom name to the download folder");
 					write(0, 13, "-------------------------------------------------------");
-					swrite(0, 14, "Press (Y) to " + std::string((vibrateWhenFinished) ? "deactivate" : "activate") + " the vibration when download finish"); //Thinking to change this to activate HOME Button led
+					char toScreen[59];
+					
+					strcpy(toScreen, "Press (Y) to ");
+					strcat(toScreen, vibrateWhenFinished ? "deactivate" : "activate");
+					strcat(toScreen, " the vibration when download finish");
+					write(0, 14, toScreen); //Thinking to change this to activate HOME Button led
 					endRefresh();
 					
 					if (vpad.trigger == VPAD_BUTTON_A)
@@ -617,20 +738,21 @@ dnext:
 					else if (vpad.trigger == VPAD_BUTTON_B)
 						goto mainLoop;
 					else if (vpad.trigger == VPAD_BUTTON_UP) {
-						std::string tmpTitleID = titleID;
+						char* tmpTitleID = titleID;
 						if (!showKeyboard(&titleID, CHECK_HEXADECIMAL, 16, true))
 							titleID = tmpTitleID;
 					}
 					else if (vpad.trigger == VPAD_BUTTON_RIGHT) {
 						if (!showKeyboard(&titleVer, CHECK_NUMERICAL, 5, false))
-							titleVer == "";
+							titleVer = "";
 					}
 					else if (vpad.trigger == VPAD_BUTTON_DOWN) {
 						if (!showKeyboard(&folderName, CHECK_NOSPECIAL, FILENAME_MAX, false))
-							folderName == "";
+							folderName = "";
 					}
 					else if (vpad.trigger == VPAD_BUTTON_Y)
 						vibrateWhenFinished = !vibrateWhenFinished;
+					
 				}
 				break;
 ddnext:
@@ -639,8 +761,6 @@ ddnext:
 				if (!downloadTitle(titleID, titleVer, folderName))
 					goto exit;
 				
-				downloadUrl = "http://ccs.cdn.wup.shop.nintendo.net/ccs/download/";
-				installDir = "/vol/external01/install/";
 				break;
 			}
 			case VPAD_BUTTON_Y:
@@ -656,6 +776,8 @@ ddnext:
 mainLoop:;
 	}
 exit:
+	if(downloadSpeed != NULL)
+		free(downloadSpeed);
 	SWKBD_Shutdown();
 	if (hbl)
 		shutdownScreen();

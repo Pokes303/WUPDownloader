@@ -1,17 +1,16 @@
-#include "input.hpp"
-#include "utils.hpp"
-
-#include <nn/swkbd.h>
+#include "input.h"
+#include "utils.h"
+#include "swkbd_mapper.h"
 
 //WIP. This need a better implementation
 
 FSClient* swkbdCli;
-nn::swkbd::CreateArg createArg;
+Swkbd_CreateArg createArg;
 
 int globalMaxlength;
 bool globalLimit;
 
-std::string outputStr;
+char* outputStr = NULL;
 
 bool showed;
 
@@ -20,11 +19,11 @@ bool SWKBD_Init() {
 	FSAddClient(swkbdCli, 0);
 	
 	WHBGfxInit();
-	//createArg = nn::swkbd::CreateArg();
-	createArg.regionType = nn::swkbd::RegionType::Europe;
-	createArg.workMemory = MEMAllocFromDefaultHeap(nn::swkbd::GetWorkMemorySize(0));
+	createArg.regionType = Swkbd_RegionType__Europe;
+	createArg.workMemory = MEMAllocFromDefaultHeap(Swkbd_GetWorkMemorySize(0));
+	createArg.unk_0x08 = 0;
 	createArg.fsClient = swkbdCli;
-	if (!nn::swkbd::Create(createArg)) {
+	if (!Swkbd_Create(createArg)) {
 		WHBLogPrintf("nn::swkbd::Create failed");
 		WHBGfxShutdown();
 		return false;
@@ -34,47 +33,53 @@ bool SWKBD_Init() {
 	return true;
 }
 bool SWKBD_Show(int maxlength, bool limit) {
-	outputStr = "none";
+	outputStr = NULL;
 	showed = true;
 	
 	WHBLogPrintf("WHBGfxInit(): %d", WHBGfxInit());
 	// Show the keyboard
-	nn::swkbd::AppearArg appearArg;
-	appearArg.keyboardArg.configArg.languageType = nn::swkbd::LanguageType::English;
-	appearArg.inputFormArg.maxTextLength = maxlength; //-1 For unlimited size
+	Swkbd_AppearArg appearArg;
+	appearArg.keyboardArg.configArg = (Swkbd_ConfigArg){ Swkbd_LanguageType__English, 4, 0, 0x7FFFF, 19, -1,  1, 1 };
+	appearArg.keyboardArg.receiverArg = (Swkbd_ReceiverArg){ 0, 0, 0, -1, 0, -1 };
+	appearArg.inputFormArg = (Swkbd_InputFormArg){ -1, -1, 0, 0, maxlength, 0, 0, false, false, false };
 	globalMaxlength = maxlength;
-	if (!nn::swkbd::AppearInputForm(appearArg)) {
+	if (!Swkbd_AppearInputForm(appearArg)) {
 		WHBLogPrintf("nn::swkbd::AppearInputForm failed");
 		WHBGfxShutdown();
 		return false;
 	}
 	globalLimit = limit;
 	if (!limit && maxlength != -1)
-		nn::swkbd::SetEnableOkButton(false);
+		Swkbd_SetEnableOkButton(false);
 	WHBLogPrintf("nn::swkbd::AppearInputForm success");
 	return true;
 }
 void SWKBD_Render(VPADStatus* vpad) {
 	if (globalMaxlength != -1) {
-		uint32_t len = std::u16string(nn::swkbd::GetInputFormString()).size();
-		nn::swkbd::SetEnableOkButton((globalLimit) ? (len == (uint32_t)globalMaxlength) : (len <= (uint32_t)globalMaxlength));
+		char *inputFormString = Swkbd_GetInputFormString();
+		if(inputFormString != NULL)
+		{
+			uint32_t len = strlen(inputFormString);
+			free(inputFormString);
+			Swkbd_SetEnableOkButton((globalLimit) ? (len == (uint32_t)globalMaxlength) : (len <= (uint32_t)globalMaxlength));
+		}
 	}
 	
-	nn::swkbd::ControllerInfo controllerInfo;
+	Swkbd_ControllerInfo controllerInfo;
 	controllerInfo.vpad = vpad;
-	controllerInfo.kpad[0] = nullptr;
-	controllerInfo.kpad[1] = nullptr;
-	controllerInfo.kpad[2] = nullptr;
-	controllerInfo.kpad[3] = nullptr;
-	nn::swkbd::Calc(controllerInfo);
+	controllerInfo.kpad[0] =
+		controllerInfo.kpad[1] =
+		controllerInfo.kpad[2] =
+		controllerInfo.kpad[3] = NULL;
+	Swkbd_Calc(controllerInfo);
 
-	if (nn::swkbd::IsNeedCalcSubThreadFont()) {
-		nn::swkbd::CalcSubThreadFont();
+	if (Swkbd_IsNeedCalcSubThreadFont()) {
+		Swkbd_CalcSubThreadFont();
 		WHBLogPrintf("SWKBD nn::swkbd::IsNeedCalcSubThreadFont()");
 	}
 
-	if (nn::swkbd::IsNeedCalcSubThreadPredict()) {
-		nn::swkbd::CalcSubThreadPredict();
+	if (Swkbd_IsNeedCalcSubThreadPredict()) {
+		Swkbd_CalcSubThreadPredict();
 		WHBLogPrintf("SWKBD nn::swkbd::CalcSubThreadPredict()");
 	}
 
@@ -82,12 +87,12 @@ void SWKBD_Render(VPADStatus* vpad) {
 
 	WHBGfxBeginRenderTV();
 	WHBGfxClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	nn::swkbd::DrawTV();
+	Swkbd_DrawTV();
 	WHBGfxFinishRenderTV();
 	
 	WHBGfxBeginRenderDRC();
 	WHBGfxClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	nn::swkbd::DrawDRC();
+	Swkbd_DrawDRC();
 	WHBGfxFinishRenderDRC();
 	
 	WHBGfxFinishRender();
@@ -99,60 +104,50 @@ void SWKBD_Hide(VPADStatus* vpad) {
 	WHBGfxShutdown();
 }
 bool SWKBD_IsOkButton() {
-	if (nn::swkbd::IsDecideOkButton(nullptr)) {
-		nn::swkbd::DisappearInputForm();
-		return true;
-	}
-	return false;
+	bool ret = Swkbd_IsDecideOkButton(NULL);
+	if(ret)
+		Swkbd_DisappearInputForm();
+	return ret;
 }
 bool SWKBD_IsCancelButton() {
-	if (nn::swkbd::IsDecideCancelButton(nullptr)) {
-		nn::swkbd::DisappearInputForm();
-		return true;
-	}
-	return false;
+	bool ret = Swkbd_IsDecideCancelButton(NULL);
+	if(ret)
+		Swkbd_DisappearInputForm();
+	return ret;
 }
 const char* SWKBD_GetError(KeyboardChecks check) {
-	if (!nn::swkbd::GetInputFormString())
+	char* output = Swkbd_GetInputFormString();
+	if (!output)
 		return "nn::swkbd::GetInputFormString returned NULL";
-	
-	std::u16string output(nn::swkbd::GetInputFormString());
 
-	if (globalMaxlength != -1 && globalLimit && output.size() != (uint32_t)globalMaxlength)
-		return (std::string("Invalid input size (") + std::to_string(output.size()) + std::string("/") + std::to_string(globalMaxlength) + std::string(")")).c_str();
-
-	// Quick hack to get from a char16_t str to char for our log function
-	outputStr = "";
-
-	for (uint32_t i = 0; i < output.size(); ++i) {
-		if (output[i] > 0x7F)
-			outputStr += '?';
-		else
-			outputStr += output[i];
-		
-		switch (check) {
-			case CHECK_NUMERICAL:
-				if (!(output[i] >= '0' && output[i] <= '9'))
-					return "The wrote string must be only numerical [0->9]";
-				break;
-			case CHECK_HEXADECIMAL:
-				if (!((output[i] >= '0' && output[i] <= '9') || (output[i] >= 'A' && output[i] <= 'F') || (output[i] >= 'a' && output[i] <= 'f')))
-					return "The wrote string must be only hexadecimal [0->F]";
-				break;
-			case CHECK_NOSPECIAL:
-				if (!((output[i] >= '0' && output[i] <= '9') || (output[i] >= 'A' && output[i] <= 'Z') || (output[i] >= 'a' && output[i] <= 'z') || output[i] == ' '))
-					return "The wrote string must not have special characters [A->Z->9->Space]";
-				break;
-		}
+	if (globalMaxlength != -1 && globalLimit && strlen(output) != (uint32_t)globalMaxlength)
+	{
+		char ret[1024];
+		sprintf(ret, "Invalid input size (%d/%d)", strlen(output), globalMaxlength);
+		free(output);
+		return ret;
 	}
-	WHBLogPrintf("Input string: %s", outputStr.c_str());
+	
+	WHBLogPrintf("Input string: %s", output);
+	SWKBD_CleanupText() ;
+	outputStr = output;
 	return NULL;
 }
-std::string SWKBD_GetText() {
+char* SWKBD_GetText() {
 	return outputStr;
 }
+
+void SWKBD_CleanupText() {
+	if(outputStr != NULL)
+	{
+		free(outputStr);
+		outputStr = NULL;
+	}
+}
+
 void SWKBD_Shutdown() {
-	nn::swkbd::Destroy();
+	SWKBD_CleanupText();
+	Swkbd_Destroy();
 	MEMFreeToDefaultHeap(createArg.workMemory);
 	
 	if (showed) { //Shutdown libraries properly
@@ -161,7 +156,7 @@ void SWKBD_Shutdown() {
 	}
 }
 
-bool showKeyboard(std::string* output, KeyboardChecks check, int maxlength, bool limit) {
+bool showKeyboard(char** output, KeyboardChecks check, int maxlength, bool limit) {
 	WHBLogPrintf("Initialising SWKBD");
 	bool kError = SWKBD_Show(maxlength, limit);
 	if (!kError) {

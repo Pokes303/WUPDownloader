@@ -1,10 +1,13 @@
-#include "menu.hpp"
-#include "utils.hpp"
+#include "main.h"
+#include "menu.h"
+#include "utils.h"
 
 void writeMainMenu() {
 	startRefresh();
 	write(0, 0, "==============================================================");
-	write(0, 1, "=              WUPDownloader by Pokes303               [1.1] =");
+	write(0, 1, "=        WUPDownloader by Pokes303 and V10lator        [");
+	write(56, 1, VERSION);
+	write(59, 1, "] =");
 	write(0, 2, "==============================================================");
 	
 	write(0, 4, "Press (A) to download a content from the NUS with the title ID");

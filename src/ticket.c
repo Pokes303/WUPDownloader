@@ -1,14 +1,14 @@
-#include "ticket.hpp"
+#include "ticket.h"
 
-#include "utils.hpp"
-#include "file.hpp"
-#include "menu.hpp"
-#include "input.hpp"
-#include "status.hpp"
+#include "utils.h"
+#include "file.h"
+#include "menu.h"
+#include "input.h"
+#include "status.h"
 
 #include <whb/proc.h>
 
-void generateTik(FILE* tik, std::string titleID, std::string encKey) { //Based on NUSPacker tik creation function
+void generateTik(FILE* tik, char* titleID, char* encKey) { //Based on NUSPacker tik creation function
 	WHBLogPrintf("Generate tik function");
 	
 	writeCustomBytes(tik, "00010004");
@@ -30,25 +30,24 @@ void generateTik(FILE* tik, std::string titleID, std::string encKey) { //Based o
 
 bool generateFakeTicket() {
 	FSDirectoryHandle dh;
-	FSStatus fsr = FSOpenDir(fsCli, fsCmd, installDir.c_str(), &dh, 0);
+	FSStatus fsr = FSOpenDir(fsCli, fsCmd, INSTALL_DIR, &dh, 0);
 	WHBLogPrintf("fsr: %u", fsr);
 	
-	std::vector<std::string> tikFolders;
-		
-	if (fsr == FS_STATUS_OK) {
-
-		tikFolders.push_back("<CURRENT DIRECTORY>");
-		FSDirectoryEntry de;
-		while (FSReadDir(fsCli, fsCmd, dh, &de, 0) == FS_STATUS_OK) {
+	int tikFoldersSize = 1;
+	char* tikFolders[1024];
+	tikFolders[0] = "<CURRENT DIRECTORY>";
+	FSDirectoryEntry de;
+	if (fsr == FS_STATUS_OK)
+	{
+		while (FSReadDir(fsCli, fsCmd, dh, &de, 0) == FS_STATUS_OK && tikFoldersSize < 1024)
 			if (de.info.flags == 0x8C000000) //Check if it's a directory
-				tikFolders.push_back(de.name);
-		}
+				tikFolders[tikFoldersSize++] = de.name;
 		FSCloseDir(fsCli, fsCmd, dh, 0);
 	}
 	
 	uint32_t tikCursor = 0;
 	uint32_t tikPos = 0;
-	bool mov = tikFolders.size() >= 12;
+	bool mov = tikFoldersSize >= 12;
 	
 	while(AppRunning()) {
 		if (app == 2)
@@ -60,16 +59,20 @@ bool generateFakeTicket() {
 		writeFolderMenu();
 		
 		if (fsr == FS_STATUS_OK) {
-			for (uint32_t i = 0; i < 13 && i < tikFolders.size(); i++) {
-				swrite(1, i + 2, tikFolders[i + tikPos] + ((i == 0) ? "" : "/"));
+			char* toWrite;
+			for (uint32_t i = 0; i < 13 && i < tikFoldersSize; i++) {
+				toWrite = tikFolders[i + tikPos];
+				strcat(toWrite, i == 0 ? "" : "/");
+				write(1, i + 2, toWrite);
 				if (tikCursor == i)
 					write(0, tikCursor + 2, ">");
 			}
 		}
 		else {
-			write(0, 2, "ERROR OPENING THE FOLDER:");
-			swrite(32, 2, std::to_string(fsr));
-			write(0, 2, "Try to relaunch the application");
+			char toWrite[64];
+			sprintf(toWrite, "ERROR OPENING THE FOLDER: %d", fsr);
+			write(0, 2, toWrite);
+			write(1, 2, "Try to relaunch the application");
 		}
 		
 		switch(vpad.trigger) {
@@ -90,11 +93,11 @@ bool generateFakeTicket() {
 						}
 						else {
 							tikCursor = 12;
-							tikPos = tikFolders.size() % 12 - 1;
+							tikPos = tikFoldersSize % 12 - 1;
 						}
 					}
 					else {
-						tikCursor = tikFolders.size() - 1;
+						tikCursor = tikFoldersSize - 1;
 					}
 				}
 				else {
@@ -102,8 +105,8 @@ bool generateFakeTicket() {
 				}
 				break;
 			case VPAD_BUTTON_DOWN:
-				if (tikCursor >= 12 || tikCursor >= tikFolders.size() - 1) {
-					if (mov && tikPos < tikFolders.size() % 12 - 1)
+				if (tikCursor >= 12 || tikCursor >= tikFoldersSize - 1) {
+					if (mov && tikPos < tikFoldersSize % 12 - 1)
 						tikPos++;
 					else {
 						tikCursor = 0;
@@ -119,9 +122,9 @@ bool generateFakeTicket() {
 	}
 	return false;
 	
-inputTikValues:
-	std::string titleID;
-	std::string encKey;
+inputTikValues: ;
+	char* titleID;
+	char* encKey;
 
 	while (AppRunning()) {
 		if (app == 2)
@@ -131,15 +134,15 @@ inputTikValues:
 
 		startRefresh();
 		write(0, 0, "Title ID:");
-		swrite(1, 1, (titleID == "") ? "NOT SET" : titleID);
+		write(1, 1, sizeof(titleID) == 9 ? "NOT SET" : titleID);
 		write(0, 2, "Encrypted title key");
-		swrite(1, 3, (encKey == "") ? "NOT SET" : encKey);
+		write(1, 3, sizeof(encKey) == 0 ? "NOT SET" : encKey);
 		
 		write(0, 5, "You need to set the title ID and the Encrypted title key");
 		write(0, 6, " to generate a fake ticket");
 		
 		write(0, 8, "Press (A) to continue");
-		if (titleID == "" || encKey == "")
+		if (sizeof(titleID) == 9 || sizeof(encKey) == 9)
 			write(0, 8, "=====================");
 		write(0, 9, "Press (B) to return");
 		write(0, 10, "-------------------------------------------------------");
@@ -149,14 +152,25 @@ inputTikValues:
 		
 		switch (vpad.trigger) {
 			case VPAD_BUTTON_A:
-				if (titleID != "" && encKey != "") {
+				if (sizeof(titleID) > 9 && sizeof(encKey) > 9) {
 					startRefresh();
 					write(0, 0, "Generating fake ticket...");
 					endRefresh();
 					
 					FILE* fakeTik;
-					std::string tikPath = ((tikCursor == 0) ? ("ticket_" + titleID + "_" + encKey + ".tik") : tikFolders[tikCursor + tikPos + 1]);
-					fakeTik = fopen((installDir + tikPath).c_str(), "wb");
+					char* tikPath;
+					if(tikCursor == 0) {
+						tikPath = "ticket_";
+						strcpy(tikPath, titleID);
+						strcpy(tikPath, "_");
+						strcpy(tikPath, encKey);
+						strcpy(tikPath, ".tik");
+					} else
+						tikPath = tikFolders[tikCursor + tikPos + 1];
+					char* tmpPath[256];
+					strcpy(tmpPath, INSTALL_DIR);
+					strcat(tmpPath, tikPath);
+					fakeTik = fopen(tmpPath, "wb");
 					generateTik(fakeTik, titleID, encKey);
 					fclose(fakeTik);
 					
@@ -168,7 +182,8 @@ inputTikValues:
 						
 						colorStartRefresh(0x00800000);
 						write(0, 0, "Fake ticket generated on:");
-						swrite(0, 1, " SD:/install/" + tikPath);
+						write(0, 1, " SD:/install/");
+						write(13, 1, tikPath);
 						write(0, 3, "Press (A) to return");
 						endRefresh();
 						
