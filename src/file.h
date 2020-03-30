@@ -1,3 +1,6 @@
+#ifndef WUPD_FILE_H
+#define WUPD_FILE_H
+
 #include <stdbool.h>
 
 #include "main.h"
@@ -15,3 +18,5 @@ void writeRandomBytes(FILE* fp, uint32_t length);
 
 bool fileExists(const char *path);
 bool dirExists(const char *path);
+
+#endif // ifndef WUPD_FILE_H

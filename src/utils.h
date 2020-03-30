@@ -1,3 +1,6 @@
+#ifndef WUPD_UTILS_H
+#define WUPD_UTILS_H
+
 #include <stdbool.h>
 
 #include "main.h"
@@ -32,3 +35,5 @@ void disableShutdown();
 char* b_tostring(bool b);
 
 char* hex(uint64_t i, uint8_t digits); //ex: 000050D1
+
+#endif // ifndef WUPD_UTILS_H

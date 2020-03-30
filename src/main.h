@@ -1,3 +1,6 @@
+#ifndef WUPD_MAIN_H
+#define WUPD_MAIN_H
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h> //rand()
@@ -28,3 +31,5 @@ extern VPADReadError vError;
 #define INSTALL_DIR "/vol/external01/install/"
 
 void readInput();
+
+#endif // ifndef WUPD_MAIN_H

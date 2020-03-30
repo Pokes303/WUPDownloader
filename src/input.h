@@ -1,3 +1,6 @@
+#ifndef WUPD_INPUT_H
+#define WUPD_INPUT_H
+
 #include "main.h"
 
 typedef enum {
@@ -19,3 +22,5 @@ void SWKBD_CleanupText();
 void SWKBD_Shutdown();
 
 bool showKeyboard(char** output, KeyboardChecks check, int maxlength, bool limit);
+
+#endif //ifndef WUPD_INPUT_H
