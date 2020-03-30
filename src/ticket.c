@@ -167,7 +167,7 @@ inputTikValues: ;
 						strcpy(tikPath, ".tik");
 					} else
 						tikPath = tikFolders[tikCursor + tikPos + 1];
-					char* tmpPath[256];
+					char tmpPath[256];
 					strcpy(tmpPath, INSTALL_DIR);
 					strcat(tmpPath, tikPath);
 					fakeTik = fopen(tmpPath, "wb");
