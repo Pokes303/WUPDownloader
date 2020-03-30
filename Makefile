@@ -1,8 +1,3 @@
-# Exports for Linux, delete them if you are compiling in another platform
-DEVKITPRO=/opt/devkitpro
-DEVKITPPC=/opt/devkitpro/devkitPPC
-WUT_ROOT=/opt/devkitpro/wut
-
 #-------------------------------------------------------------------------------
 .SUFFIXES:
 #-------------------------------------------------------------------------------
