@@ -174,14 +174,16 @@ uint8_t downloadFile(char* url, char* file, uint8_t type) {
 		write(6, 2, file);
 		errorScreen(3, B_RETURN);
 		
-		curl_easy_cleanup(curl);
 		return 1;
 	}
 	
 	multiplier = 0;
 	multiplierName = malloc(sizeof(char) * 4);
 	if(multiplierName == NULL)
+	{
+		curl_easy_cleanup(curl);
 		return 1;
+	}
 	strcpy(multiplierName, "Unk");
 	
 	second = 0xFF;
@@ -259,14 +261,16 @@ uint8_t downloadFile(char* url, char* file, uint8_t type) {
 					return downloadFile(url, file, type);
 			}
 		}
-		free(multiplierName);
-		return 1;
 	}
 	free(multiplierName);
 	WHBLogPrintf("curl_easy_perform executed successfully");
 
 	long resp = 404;
 	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &resp);
+	curl_easy_cleanup(curl);
+	fflush(fp);
+	fclose(fp);
+	
 	WHBLogPrintf("The download returned: %u", resp);
 	if (resp != 200) {
 		if (type == 2 && resp == 404) { //Title.tmd not found
@@ -282,20 +286,14 @@ uint8_t downloadFile(char* url, char* file, uint8_t type) {
 
 				switch (vpad.trigger) {
 					case VPAD_BUTTON_B:
-						curl_easy_cleanup(curl);
-						fclose(fp);
 						return 1;
 					case VPAD_BUTTON_Y:
 						writeRetry();
-						curl_easy_cleanup(curl);
-						fclose(fp);
 						return downloadFile(url, file, type);
 				}
 			}
-			return 1;
 		}
 		else if (type == 3 && resp == 404) { //Fake ticket needed
-			fclose(fp);
 			return 2;
 		}
 		else {
@@ -320,16 +318,11 @@ uint8_t downloadFile(char* url, char* file, uint8_t type) {
 
 				switch (vpad.trigger) {
 					case VPAD_BUTTON_B:
-						curl_easy_cleanup(curl);
-						fclose(fp);
 						return 1;
 					case VPAD_BUTTON_Y:
-						curl_easy_cleanup(curl);
-						fclose(fp);
 						return downloadFile(url, file, type);
 				}
 			}
-			return 1;
 		}
 	}
 	else {
@@ -340,8 +333,6 @@ uint8_t downloadFile(char* url, char* file, uint8_t type) {
 		addToDownloadLog(toAdd);
 	}
 	
-	curl_easy_cleanup(curl);
-	fclose(fp);
 	return 0;
 }
 
