@@ -196,6 +196,8 @@ int downloadFile(char* url, char* file, int type) {
 	
 	fp = fopen(file, "wb");
 	curl_easy_setopt(curl, CURLOPT_URL, url);
+	curl_easy_setopt(curl, CURLOPT_USERAGENT, "WUPDownloader"); //TODO: Spoof eShop here?
+	
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
