@@ -651,7 +651,6 @@ int main() {
 		goto exit;
 	
 	while(AppRunning()) {
-		WHBLogPrintf("Refresh");
 		if (app == 2)
 			continue;
 		
