@@ -69,42 +69,71 @@ void write(uint32_t row, uint32_t column, const char* str) { //Write to the two 
 	OSScreenPutFontEx(SCREEN_DRC, 0, column, str);
 }*/
 
-char* downloadLog[MAX_DOWNLOADLOG_DRC + 1];
-size_t downloadLogSize = 0;
+struct DownloadLogList;
+typedef struct DownloadLogList DownloadLogList;
+struct DownloadLogList
+{
+	char *line;
+	DownloadLogList *nextEntry;
+};
+DownloadLogList *downloadLogList = NULL;
 void addToDownloadLog(char* str) {
-	//TODO: We copy the string here for fast porting purposes
-	char *toAdd = malloc(sizeof(char) * (strlen(str) + 1));
-	if(toAdd == NULL)
+	WHBLogPrintf(str);
+	
+	DownloadLogList *newEntry = malloc(sizeof(DownloadLogList));
+	if(newEntry ==  NULL)
 		return;
-	strcpy(toAdd, str);
 	
-	bool needsIncrement;
-	if(downloadLogSize == MAX_DOWNLOADLOG_DRC)
+	//TODO: We copy the string here for fast porting purposes
+	newEntry->line = malloc(sizeof(char) * (strlen(str) + 1));
+	if(newEntry->line == NULL)
 	{
-		free(downloadLog[0]);
-		for(int i = 0; i < MAX_DOWNLOADLOG_DRC - 1; i++)
-			downloadLog[i] = downloadLog[i + 1];
-		needsIncrement = false;
+		free(newEntry);
+		return;
 	}
-	else
-		needsIncrement = true;
+	strcpy(newEntry->line, str);
+	newEntry->nextEntry = NULL;
 	
-	WHBLogPrintf("Adding %s at %d", toAdd, downloadLogSize);
-	downloadLog[downloadLogSize] = toAdd;
-	WHBLogPrintf(toAdd);
+	if(downloadLogList == NULL)
+	{
+		downloadLogList = newEntry;
+		return;
+	}
 	
-	if(needsIncrement)
-		downloadLogSize++;
+	DownloadLogList *last;
+	int i = 0;
+	for(DownloadLogList *c = downloadLogList; c != NULL; c = c->nextEntry)
+	{
+		
+		i++;
+		last = c;
+	}
+	
+	if(i == MAX_DOWNLOADLOG_DRC)
+	{
+		DownloadLogList *tmpList = downloadLogList;
+		downloadLogList = tmpList->nextEntry;
+		free(tmpList->line);
+		free(tmpList);
+	}
+	
+	last->nextEntry = newEntry;
 }
 void clearDownloadLog() {
-	for(int i = 0; i < downloadLogSize; i++)
-		free(downloadLog[i]);
-	downloadLogSize = 0;
+	DownloadLogList *tmpList;
+	while(downloadLogList != NULL)
+	{
+		tmpList = downloadLogList;
+		downloadLogList = tmpList->nextEntry;
+		free(tmpList->line);
+		free(tmpList);
+	}
 }
 void writeDownloadLog() {
 	write(0, 2, "------------------------------------------------------------");
-	for (uint8_t i = 0; i < downloadLogSize; i++)
-		write(0, i + 3, downloadLog[i]);
+	int i = 3;
+	for(DownloadLogList *entry = downloadLogList; entry != NULL; entry = entry->nextEntry)
+		write(0, i++, entry->line);
 }
 
 void colorStartRefresh(uint32_t color) {
