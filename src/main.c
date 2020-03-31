@@ -333,6 +333,7 @@ int downloadFile(char* url, char* file, int type) {
 		char toAdd[512];
 		strcpy(toAdd, "Download ");
 		strcat(toAdd, downloading);
+		strcat(toAdd, " finished!");
 		addToDownloadLog(toAdd);
 	}
 	
@@ -583,7 +584,7 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 	
 	fclose(cert);
 	
-	addToDownloadLog("Download finished successfully");
+	addToDownloadLog("Cert created!");
 	
 	for (int i = 0; i < 0x10; i++)
 		VPADControlMotor(VPAD_CHAN_0, vibrationPattern, 0xF);
