@@ -121,11 +121,11 @@ static int progressCallback(void *clientp, double dltotal, double dlnow, double 
 	if (contents < 0xFFFF)
 	{
 		char tmpString[16];
-		sprintf(tmpString, "(%d/%d)", dcontent, contents);
-		write(25, 0, tmpString);
+		sprintf(tmpString, "(%d/%d)", dcontent + 1, contents);
+		write(65, 0, tmpString);
 	}
 	
-	write(60 - strlen(downloadSpeed), 1, downloadSpeed);
+	write(65, 1, downloadSpeed);
 	
 	OSCalendarTime osc;
 	OSTicksToCalendarTime(OSGetTime(), &osc);
@@ -716,11 +716,11 @@ dnext:
 					
 					write(0, 7, "Press (A) to download");
 					write(0, 8, "Press (B) to return");
-					write(0, 9, "-------------------------------------------------------");
+					paintLine(9, SCREEN_COLOR_WHITE);
 					write(0, 10, "Press (UP) to set the title ID");
 					write(0, 11, "Press (RIGHT) to set the title version");
 					write(0, 12, "Press (DOWN) to set a custom name to the download folder");
-					write(0, 13, "-------------------------------------------------------");
+					paintLine(13, SCREEN_COLOR_WHITE);
 					char toScreen[59];
 					
 					strcpy(toScreen, "Press (Y) to ");

@@ -142,11 +142,10 @@ inputTikValues: ;
 		write(0, 5, "You need to set the title ID and the Encrypted title key");
 		write(0, 6, " to generate a fake ticket");
 		
-		write(0, 8, "Press (A) to continue");
-		if (titleID[0] == '\0' || encKey[0] == '\0')
-			write(0, 8, "=====================");
+		if (titleID[0] != '\0' && encKey[0] != '\0')
+			write(0, 8, "Press (A) to continue");
 		write(0, 9, "Press (B) to return");
-		write(0, 10, "-------------------------------------------------------");
+		paintLine(10, SCREEN_COLOR_WHITE);
 		write(0, 11, "Press (UP) to set the title ID");
 		write(0, 12, "Press (DOWN) to set the Encrypted title key");
 		endRefresh();

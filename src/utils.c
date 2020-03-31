@@ -1,16 +1,15 @@
+#include "main.h"
 #include "utils.h"
 #include "screen.h"
 
-#ifdef DEBUG_BUILD
 #include <stdio.h>
-#endif
+#include <stdlib.h>
+#include <string.h>
 
 #include <coreinit/screen.h>
 #include <coreinit/cache.h>
 #include <coreinit/systeminfo.h>
 #include <coreinit/energysaver.h>
-
-#define MAX_DOWNLOADLOG_DRC 14
 
 size_t tvBufferSize;
 size_t drcBufferSize;
@@ -59,9 +58,38 @@ void endRefresh() {
 	OSScreenFlipBuffersEx(SCREEN_DRC);
 }
 
+void paintLine(uint32_t column, uint32_t colour)
+{
+	column *= 24;
+	column += 45;
+	uint32_t c2;
+	for(uint32_t x = 53; x < MAX_X_DRC; x++)
+	{
+		OSScreenPutPixelEx(SCREEN_DRC, x, column, colour);
+		OSScreenPutPixelEx(SCREEN_TV, x, column, colour);
+		c2 = column + 1;
+		OSScreenPutPixelEx(SCREEN_DRC, x, c2, colour);
+		OSScreenPutPixelEx(SCREEN_TV, x, c2, colour);
+	}
+	for(uint32_t x = MAX_X_DRC; x < MAX_X_TV; x++)
+	{
+		OSScreenPutPixelEx(SCREEN_TV, x, column, colour);
+		OSScreenPutPixelEx(SCREEN_TV, x, c2, colour);
+	}
+}
+
 void write(uint32_t row, uint32_t column, const char* str) { //Write to the two screens
+	uint32_t dRow;
+	if(row > 64)
+	{
+		uint32_t len = strlen(str);
+		row = 98 - len;
+		dRow = 62 - len;
+	}
+	else
+		dRow = row;
 	OSScreenPutFontEx(SCREEN_TV, row, column, str);
-	OSScreenPutFontEx(SCREEN_DRC, row, column, str);
+	OSScreenPutFontEx(SCREEN_DRC, dRow, column, str);
 }
 
 struct DownloadLogList;
@@ -104,7 +132,7 @@ void addToDownloadLog(char* str) {
 		last = c;
 	}
 	
-	if(i == MAX_DOWNLOADLOG_DRC)
+	if(i == MAX_LINE_DRC)
 	{
 		DownloadLogList *tmpList = downloadLogList;
 		downloadLogList = tmpList->nextEntry;
@@ -125,7 +153,7 @@ void clearDownloadLog() {
 	}
 }
 void writeDownloadLog() {
-	write(0, 2, "------------------------------------------------------------");
+	paintLine(2, SCREEN_COLOR_WHITE);
 	int i = 3;
 	for(DownloadLogList *entry = downloadLogList; entry != NULL; entry = entry->nextEntry)
 		write(0, i++, entry->line);
@@ -137,7 +165,7 @@ void colorStartRefresh(uint32_t color) {
 }
 
 void errorScreen(int line, ErrorOptions option) {
-	write(0, line++, "------------------------------------------------------------");
+	paintLine(line++, SCREEN_COLOR_WHITE);
 	switch (option) {
 		case B_RETURN:
 			write(0, line, "Press (B) to return");

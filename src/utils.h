@@ -2,8 +2,12 @@
 #define WUPD_UTILS_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
-#include "main.h"
+#define MAX_LINE_DRC 14
+#define MAX_LINE_TV 22
+#define MAX_X_DRC 802
+#define MAX_X_TV 1236
 
 bool initScreen();
 void shutdownScreen();
@@ -12,6 +16,7 @@ void startRefresh();
 void endRefresh();
 
 void write(uint32_t row, uint32_t column, const char* str);
+void paintLine(uint32_t row, uint32_t colour);
 
 void addToDownloadLog(char* str);
 void clearDownloadLog();
