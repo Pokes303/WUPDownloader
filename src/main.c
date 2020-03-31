@@ -158,14 +158,25 @@ static int progressCallback(void *clientp, double dltotal, double dlnow, double 
 int downloadFile(char* url, char* file, int type) {
 	//Results: 0 = OK | 1 = Error | 2 = No ticket aviable | 3 = Exit
 	//Types: 0 = .app | 1 = .h3 | 2 = title.tmd | 3 = tilte.tik
+	WHBLogPrintf("Download URL: %s", url);
+	WHBLogPrintf("Download PATH: %s", file);
+	
 	int haystack;
 	for(haystack = strlen(file); file[haystack] != '/'; haystack--)
 	{
 	}
 	downloading = &file[++haystack];
 	
-	WHBLogPrintf("Download URL: %s", url);
-	WHBLogPrintf("Download PATH: %s", file);
+	struct stat fileStat;
+	if(stat(file, &fileStat) == 0)
+	{
+		char toAdd[512];
+		strcpy(toAdd, "Download ");
+		strcat(toAdd, downloading);
+		strcat(toAdd, " skipped!");
+		addToDownloadLog(toAdd);
+		return 0;
+	}
 	
 	CURL* curl = NULL;
     FILE* fp;
@@ -255,6 +266,7 @@ int downloadFile(char* url, char* file, int type) {
 			endRefresh();
 			curl_easy_cleanup(curl);
 			fclose(fp);
+			remove(file);
 			MEMFreeToDefaultHeap(multiplierName);
 			
 			switch (vpad.trigger) {
@@ -287,6 +299,7 @@ int downloadFile(char* url, char* file, int type) {
 				write(0, 3, "title ID doesn't exists or the TMD was deleted");
 				errorScreen(4, B_RETURN__Y_RETRY);
 				endRefresh();
+				remove(file);
 
 				switch (vpad.trigger) {
 					case VPAD_BUTTON_B:
@@ -319,6 +332,7 @@ int downloadFile(char* url, char* file, int type) {
 				write(6, errLn, file);
 				errorScreen(errLn + 1, B_RETURN__Y_RETRY);
 				endRefresh();
+				remove(file);
 
 				switch (vpad.trigger) {
 					case VPAD_BUTTON_B:
