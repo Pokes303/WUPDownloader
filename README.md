@@ -54,6 +54,6 @@ make
 
 # Info
 Feel free to fork or use this project, and don't forget to give credits!
-Contact: pokes303dev@gmail.com
+Contact: v10lator@myway.de
 
--> Pokes303
+-> Pokes303 & V10lator
