@@ -9,8 +9,8 @@
 #include <whb/proc.h>
 #include <whb/gfx.h>
 
-uint8_t app = 1;
-uint8_t AppRunning() {
+int app = 1;
+int AppRunning() {
 	if (!hbl) {
 		if(!OSIsMainCore())
 			ProcUISubProcessMessages(true);

@@ -45,8 +45,8 @@ bool generateFakeTicket() {
 		FSCloseDir(fsCli, fsCmd, dh, 0);
 	}
 	
-	uint32_t tikCursor = 0;
-	uint32_t tikPos = 0;
+	int tikCursor = 0;
+	int tikPos = 0;
 	bool mov = tikFoldersSize >= 12;
 	
 	while(AppRunning()) {
@@ -60,7 +60,7 @@ bool generateFakeTicket() {
 		
 		if (fsr == FS_STATUS_OK) {
 			char* toWrite;
-			for (uint32_t i = 0; i < 13 && i < tikFoldersSize; i++) {
+			for (int i = 0; i < 13 && i < tikFoldersSize; i++) {
 				toWrite = tikFolders[i + tikPos];
 				strcat(toWrite, i == 0 ? "" : "/");
 				write(1, i + 2, toWrite);
@@ -134,15 +134,15 @@ inputTikValues: ;
 
 		startRefresh();
 		write(0, 0, "Title ID:");
-		write(1, 1, sizeof(titleID) == 9 ? "NOT SET" : titleID);
+		write(1, 1, titleID[0] == '\0' ? "NOT SET" : titleID);
 		write(0, 2, "Encrypted title key");
-		write(1, 3, sizeof(encKey) == 0 ? "NOT SET" : encKey);
+		write(1, 3, encKey[0] == '\0' ? "NOT SET" : encKey);
 		
 		write(0, 5, "You need to set the title ID and the Encrypted title key");
 		write(0, 6, " to generate a fake ticket");
 		
 		write(0, 8, "Press (A) to continue");
-		if (sizeof(titleID) == 9 || sizeof(encKey) == 9)
+		if (titleID[0] == '\0' || encKey[0] == '\0')
 			write(0, 8, "=====================");
 		write(0, 9, "Press (B) to return");
 		write(0, 10, "-------------------------------------------------------");
@@ -152,7 +152,7 @@ inputTikValues: ;
 		
 		switch (vpad.trigger) {
 			case VPAD_BUTTON_A:
-				if (sizeof(titleID) > 9 && sizeof(encKey) > 9) {
+				if (titleID[0] != '\0' && titleID[0] != '\0') {
 					startRefresh();
 					write(0, 0, "Generating fake ticket...");
 					endRefresh();

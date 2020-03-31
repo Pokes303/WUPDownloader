@@ -42,7 +42,7 @@ typedef struct {
 } File_to_download;
 
 const char* downloading = "UNKNOWN";
-uint32_t downloaded = 0;
+double downloaded = 0;
 uint8_t second = 0xFF;
 bool showSpeed = true;
 char* downloadSpeed = NULL;
@@ -85,11 +85,10 @@ void readInput() {
 }
 
 size_t writeCallback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
-	size_t written = fwrite(ptr, size, nmemb, stream);
-	return written;
+	return fwrite(ptr, size, nmemb, stream);
 }
 
-uint32_t multiplier;
+int multiplier;
 char* multiplierName;
 static int progressCallback(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow) {
 	// WHBLogPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", downloading, dcontent, contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
@@ -98,11 +97,11 @@ static int progressCallback(void *clientp, double dltotal, double dlnow, double 
 		write(0, 0, "Preparing");
 	else {
 		write(0, 0, "Downloading");
-		if ((uint32_t)dltotal > 0) {
+		if (dltotal > 0.0D) {
 			if (multiplier == 0) {
-				if (dltotal < 1024)
+				if (dltotal < 1024.0D)
 					strcpy(multiplierName, "B");
-				else if (dltotal < 1024 * 1024) {
+				else if (dltotal < 1024.0D * 1024.0D) {
 					multiplier = 1024;
 					strcpy(multiplierName, "Kb");
 				}
@@ -112,7 +111,7 @@ static int progressCallback(void *clientp, double dltotal, double dlnow, double 
 				}
 			}
 			char tmpString[64];
-			sprintf(tmpString, "[%d%%] %.2f / %.2f %s", (uint32_t)(dlnow / dltotal * 100), dlnow / multiplier, dltotal / multiplier, multiplierName);
+			sprintf(tmpString, "[%d%%] %.2f / %.2f %s", (int)(dlnow / dltotal * 100), dlnow / multiplier, dltotal / multiplier, multiplierName);
 			write(0, 1, tmpString);
 		}
 	}
@@ -133,14 +132,14 @@ static int progressCallback(void *clientp, double dltotal, double dlnow, double 
 		second = osc.tm_sec;
 		
 		if (dlnow != 0) {
-			uint32_t dl = dlnow - downloaded;
+			double dl = dlnow - downloaded;
 			char buf[32];
-			if (dl < 1024)
-				sprintf(buf, "%u B/s", dl);
+			if (dl < 1024.0D)
+				sprintf(buf, "%.2f B/s", dl);
 			else if (dl < 1024 * 1024)
-				sprintf(buf, "%.2f Kb/s", (float)dl / 1024.0F);
+				sprintf(buf, "%.2f Kb/s", dl / 1024.0D);
 			else
-				sprintf(buf, "%.2f Mb/s", (float)dl / 1024.0F / 1024.0F);
+				sprintf(buf, "%.2f Mb/s", dl / 1024.0D / 1024.0D);
 			
 			downloaded = dlnow;
 			strcpy(downloadSpeed, buf);
@@ -154,7 +153,7 @@ static int progressCallback(void *clientp, double dltotal, double dlnow, double 
 	return 0;
 }
 
-uint8_t downloadFile(char* url, char* file, uint8_t type) {
+int downloadFile(char* url, char* file, int type) {
 	//Results: 0 = OK | 1 = Error | 2 = No ticket aviable | 3 = Exit
 	//Types: 0 = .app | 1 = .h3 | 2 = title.tmd | 3 = tilte.tik
 	int haystack;
@@ -244,7 +243,7 @@ uint8_t downloadFile(char* url, char* file, uint8_t type) {
 			char toScreen[1024];
 			sprintf(toScreen, "curl_easy_perform returned a non-valid value: %d", ret);
 			write(0, 0, toScreen);
-			for (uint32_t i = 0; i < errSize; i++)
+			for (int i = 0; i < errSize; i++)
 				write(0, i + 2, err[i]);
 			sprintf(toScreen, "File: %s", file);
 			write(0, errSize + 3, toScreen);
@@ -301,7 +300,7 @@ uint8_t downloadFile(char* url, char* file, uint8_t type) {
 			return 2;
 		}
 		else {
-			uint8_t errLn;
+			int errLn;
 			while(true) {
 				readInput();
 				
@@ -460,7 +459,7 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 	strcat(tDownloadUrl, "cetk");
 	strcpy(tInstallDir, installDir);
 	strcat(tInstallDir, "title.tik");
-	uint8_t tikRes = downloadFile(tDownloadUrl, tInstallDir, 3);
+	int tikRes = downloadFile(tDownloadUrl, tInstallDir, 3);
 	if (tikRes == 1)
 		return true;
 	else if (tikRes == 2) {
@@ -510,7 +509,7 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 	File_to_download ftd[contents]; //Files to download
 
 	//Get .app and .h3 files
-	for (uint16_t i = 0; i < contents; i++) {
+	for (int i = 0; i < contents; i++) {
 		ftd[i].app = readUInt32(tInstallDir, 0xB04 + i * 0x30); //.app file
 		ftd[i].h3 = readUInt16(tInstallDir, 0xB0A + i * 0x30) == 0x2003 ? true : false; //.h3?
 		ftd[i].size = readUInt64(tInstallDir, 0xB0C + i * 0x30); //size

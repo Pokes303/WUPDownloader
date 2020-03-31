@@ -98,7 +98,7 @@ void SWKBD_Render(VPADStatus* vpad) {
 	WHBGfxFinishRender();
 }
 void SWKBD_Hide(VPADStatus* vpad) {
-	for (uint8_t i = 0; i < 14; i++) {
+	for (int i = 0; i < 14; i++) {
 		SWKBD_Render(vpad);
 	}
 	WHBGfxShutdown();

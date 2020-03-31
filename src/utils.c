@@ -59,7 +59,7 @@ void endRefresh() {
 	OSScreenFlipBuffersEx(SCREEN_DRC);
 }
 
-void write(uint32_t row, uint32_t column, const char* str) { //Write to the two screens
+void write(int row, int column, const char* str) { //Write to the two screens
 	OSScreenPutFontEx(SCREEN_TV, row, column, str);
 	OSScreenPutFontEx(SCREEN_DRC, row, column, str);
 }
@@ -141,7 +141,7 @@ void colorStartRefresh(uint32_t color) {
 	OSScreenClearBufferEx(SCREEN_DRC, color);
 }
 
-void errorScreen(uint32_t line, ErrorOptions option) {
+void errorScreen(int line, ErrorOptions option) {
 	write(0, line++, "------------------------------------------------------------");
 	switch (option) {
 		case B_RETURN:
@@ -176,7 +176,7 @@ void disableShutdown() {
 	IMDisableAPD();
 }
 
-char* hex(uint64_t i, uint8_t digits) {
+char* hex(uint64_t i, int digits) {
 	unsigned long l1 = (unsigned long)((i & 0xFFFF0000) >> 16 );
 	unsigned long l2 = (unsigned long)((i & 0x0000FFFF));
 	char h[32];

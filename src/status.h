@@ -3,7 +3,7 @@
 
 #include "main.h"
 
-extern uint8_t app;
-uint8_t AppRunning();
+extern int app;
+int AppRunning();
 
 #endif // ifndef WUPD_STATUS_H
