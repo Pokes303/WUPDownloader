@@ -59,15 +59,10 @@ void endRefresh() {
 	OSScreenFlipBuffersEx(SCREEN_DRC);
 }
 
-void write(int row, int column, const char* str) { //Write to the two screens
+void write(uint32_t row, uint32_t column, const char* str) { //Write to the two screens
 	OSScreenPutFontEx(SCREEN_TV, row, column, str);
 	OSScreenPutFontEx(SCREEN_DRC, row, column, str);
 }
-
-/*void dwrite(uint32_t column, const char* str, ...) { //const char* write
-	OSScreenPutFontEx(SCREEN_TV, 0, column, str);
-	OSScreenPutFontEx(SCREEN_DRC, 0, column, str);
-}*/
 
 struct DownloadLogList;
 typedef struct DownloadLogList DownloadLogList;

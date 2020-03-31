@@ -11,8 +11,7 @@ void shutdownScreen();
 void startRefresh();
 void endRefresh();
 
-void write(int row, int column, const char* str);
-void writeParsed(int row, int column, const char* str);
+void write(uint32_t row, uint32_t column, const char* str);
 
 void addToDownloadLog(char* str);
 void clearDownloadLog();
