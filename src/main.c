@@ -210,11 +210,6 @@ int downloadFile(char* url, char* file, int type) {
 		char* err[4];
 		int errSize;
 		switch(ret) {
-			default:
-				err[0] = "---> Unknown error";
-				err[1] = "See: https://curl.haxx.se/libcurl/c/libcurl-errors.html";
-				errSize = 2;
-				break;
 			case 6:
 				err[0] = "---> Network error";
 				err[1] = "Your WiiU is not connected to the internet, check the";
@@ -233,6 +228,11 @@ int downloadFile(char* url, char* file, int type) {
 				err[2] = "router was turned off, check the internet connecition";
 				err[3] = "and try again";
 				errSize = 4;
+				break;
+			default:
+				err[0] = "---> Unknown error";
+				err[1] = "See: https://curl.haxx.se/libcurl/c/libcurl-errors.html";
+				errSize = 2;
 				break;
 		}
 		
