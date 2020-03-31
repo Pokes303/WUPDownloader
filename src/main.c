@@ -253,18 +253,15 @@ int downloadFile(char* url, char* file, int type) {
 			write(0, errSize + 3, toScreen);
 			errorScreen(errSize + 4, B_RETURN__Y_RETRY); //CHANGE TO RETURN
 			endRefresh();
+			curl_easy_cleanup(curl);
+			fclose(fp);
+			MEMFreeToDefaultHeap(multiplierName);
 			
 			switch (vpad.trigger) {
 				case VPAD_BUTTON_B:
-					curl_easy_cleanup(curl);
-					fclose(fp);
-					MEMFreeToDefaultHeap(multiplierName);
 					return 1;
 				case VPAD_BUTTON_Y:
 					writeRetry();
-					curl_easy_cleanup(curl);
-					fclose(fp);
-					MEMFreeToDefaultHeap(multiplierName);
 					return downloadFile(url, file, type);
 			}
 		}
