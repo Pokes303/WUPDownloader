@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string>
 
+#include <coreinit/memdefaultheap.h>
 #include <whb/log.h>
 
 #include "swkbd_wrapper.h"
@@ -35,7 +36,7 @@ char *Swkbd_GetInputFormString()
 		size++;
 	while(cppRet[size] != u'\0');
 	
-	char *outputStr = (char*)malloc(sizeof(char) * size);
+	char *outputStr = (char*)MEMAllocFromDefaultHeap(sizeof(char) * size);
 	if(outputStr == NULL)
 		return NULL;
 	

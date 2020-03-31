@@ -3,6 +3,8 @@
 #include "screen.h"
 #include "swkbd_wrapper.h"
 
+#include <coreinit/memdefaultheap.h>
+
 //WIP. This need a better implementation
 
 FSClient* swkbdCli;
@@ -61,7 +63,7 @@ void SWKBD_Render(VPADStatus* vpad) {
 		if(inputFormString != NULL)
 		{
 			uint32_t len = strlen(inputFormString);
-			free(inputFormString);
+			MEMFreeToDefaultHeap(inputFormString);
 			Swkbd_SetEnableOkButton((globalLimit) ? (len == (uint32_t)globalMaxlength) : (len <= (uint32_t)globalMaxlength));
 		}
 	}
@@ -125,7 +127,7 @@ const char* SWKBD_GetError(KeyboardChecks check) {
 	{
 		char ret[1024];
 		sprintf(ret, "Invalid input size (%d/%d)", strlen(output), globalMaxlength);
-		free(output);
+		MEMFreeToDefaultHeap(output);
 		return ret;
 	}
 	
@@ -141,7 +143,7 @@ char* SWKBD_GetText() {
 void SWKBD_CleanupText() {
 	if(outputStr != NULL)
 	{
-		free(outputStr);
+		MEMFreeToDefaultHeap(outputStr);
 		outputStr = NULL;
 	}
 }

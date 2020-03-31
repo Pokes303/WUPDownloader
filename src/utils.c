@@ -6,10 +6,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <coreinit/screen.h>
 #include <coreinit/cache.h>
-#include <coreinit/systeminfo.h>
 #include <coreinit/energysaver.h>
+#include <coreinit/foreground.h>
+#include <coreinit/memdefaultheap.h>
+#include <coreinit/screen.h>
+#include <coreinit/systeminfo.h>
 
 size_t tvBufferSize;
 size_t drcBufferSize;
@@ -23,8 +25,8 @@ bool initScreen() {
 	tvBufferSize = OSScreenGetBufferSizeEx(SCREEN_TV);
 	drcBufferSize = OSScreenGetBufferSizeEx(SCREEN_DRC);
 
-	tvBuffer = memalign(0x100, tvBufferSize);
-	drcBuffer = memalign(0x100, drcBufferSize);
+	tvBuffer = MEMAllocFromDefaultHeapEx(tvBufferSize, 0x100);
+	drcBuffer = MEMAllocFromDefaultHeapEx(drcBufferSize, 0x100);
 
 	if (!tvBuffer || !drcBuffer) {
 		WHBLogPrintf("Error initialising screen library");
@@ -41,8 +43,8 @@ bool initScreen() {
 	return true;
 }
 void shutdownScreen() {
-	if (tvBuffer) free(tvBuffer);
-	if (drcBuffer) free(drcBuffer);
+	if (tvBuffer) MEMFreeToDefaultHeap(tvBuffer);
+	if (drcBuffer) MEMFreeToDefaultHeap(drcBuffer);
 	
 	OSScreenShutdown();
 }
@@ -103,15 +105,15 @@ DownloadLogList *downloadLogList = NULL;
 void addToDownloadLog(char* str) {
 	WHBLogPrintf(str);
 	
-	DownloadLogList *newEntry = malloc(sizeof(DownloadLogList));
+	DownloadLogList *newEntry = MEMAllocFromDefaultHeap(sizeof(DownloadLogList));
 	if(newEntry ==  NULL)
 		return;
 	
 	//TODO: We copy the string here for fast porting purposes
-	newEntry->line = malloc(sizeof(char) * (strlen(str) + 1));
+	newEntry->line = MEMAllocFromDefaultHeap(sizeof(char) * (strlen(str) + 1));
 	if(newEntry->line == NULL)
 	{
-		free(newEntry);
+		MEMFreeToDefaultHeap(newEntry);
 		return;
 	}
 	strcpy(newEntry->line, str);
@@ -136,8 +138,8 @@ void addToDownloadLog(char* str) {
 	{
 		DownloadLogList *tmpList = downloadLogList;
 		downloadLogList = tmpList->nextEntry;
-		free(tmpList->line);
-		free(tmpList);
+		MEMFreeToDefaultHeap(tmpList->line);
+		MEMFreeToDefaultHeap(tmpList);
 	}
 	
 	last->nextEntry = newEntry;
@@ -148,8 +150,8 @@ void clearDownloadLog() {
 	{
 		tmpList = downloadLogList;
 		downloadLogList = tmpList->nextEntry;
-		free(tmpList->line);
-		free(tmpList);
+		MEMFreeToDefaultHeap(tmpList->line);
+		MEMFreeToDefaultHeap(tmpList);
 	}
 }
 void writeDownloadLog() {
@@ -208,7 +210,7 @@ char* hex(uint64_t i, int digits) {
 	if (hexDigits > digits)
 		return "too few digits error";
 	
-	char *result = malloc(sizeof(char) * (digits + 1));
+	char *result = MEMAllocFromDefaultHeap(sizeof(char) * (digits + 1));
 	if(result == NULL)
 		return NULL;
 	

@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h> //rand()
-#include <malloc.h>
 #include <string.h>
 #include <sys/stat.h> //mkdir
 

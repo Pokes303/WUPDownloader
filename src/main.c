@@ -2,10 +2,11 @@
 
 #include <errno.h>
 
+#include <coreinit/foreground.h>
+#include <coreinit/memdefaultheap.h>
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
 #include <coreinit/title.h>
-#include <coreinit/foreground.h>
 
 #include <proc_ui/procui.h>
 
@@ -79,7 +80,7 @@ void readInput() {
 				break;
 		}
 		if(err != NULL)
-			free(err);
+			MEMFreeToDefaultHeap(err);
 		endRefresh();
 	}
     VPADGetTPCalibratedPoint(VPAD_CHAN_0, &vpad.tpNormal, &vpad.tpNormal);
@@ -182,7 +183,7 @@ int downloadFile(char* url, char* file, int type) {
 	}
 	
 	multiplier = 0;
-	multiplierName = malloc(sizeof(char) * 4);
+	multiplierName = MEMAllocFromDefaultHeap(sizeof(char) * 4);
 	if(multiplierName == NULL)
 	{
 		curl_easy_cleanup(curl);
@@ -257,18 +258,18 @@ int downloadFile(char* url, char* file, int type) {
 				case VPAD_BUTTON_B:
 					curl_easy_cleanup(curl);
 					fclose(fp);
-					free(multiplierName);
+					MEMFreeToDefaultHeap(multiplierName);
 					return 1;
 				case VPAD_BUTTON_Y:
 					writeRetry();
 					curl_easy_cleanup(curl);
 					fclose(fp);
-					free(multiplierName);
+					MEMFreeToDefaultHeap(multiplierName);
 					return downloadFile(url, file, type);
 			}
 		}
 	}
-	free(multiplierName);
+	MEMFreeToDefaultHeap(multiplierName);
 	WHBLogPrintf("curl_easy_perform executed successfully");
 
 	long resp = 404;
@@ -454,7 +455,7 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 			strcat(toScreen, "Unknown (");
 			char *h = hex(readUInt32(tInstallDir, 0x18C), 8);
 			strcat(toScreen, h);
-			free(h);
+			MEMFreeToDefaultHeap(h);
 			strcat(toScreen, ")");
 			break;
 	}
@@ -531,7 +532,7 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 		strcat(tInstallDir, ".app");
 		if (downloadFile(tDownloadUrl, tInstallDir, 0) == 1)
 		{
-			free(tmpHex);
+			MEMFreeToDefaultHeap(tmpHex);
 			return true;
 		}
 		strcpy(tInstallDir, tmpFileName);
@@ -541,11 +542,11 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 			strcat(tDownloadUrl, ".h3");
 			if (downloadFile(tDownloadUrl, tInstallDir, 1) == 1)
 			{
-				free(tmpHex);
+				MEMFreeToDefaultHeap(tmpHex);
 				return true;
 			}
 		}
-		free(tmpHex);
+		MEMFreeToDefaultHeap(tmpHex);
 	}
 	
 	WHBLogPrintf("Creating CERT...");
@@ -652,7 +653,7 @@ int main() {
 	
 	mkdir(INSTALL_DIR, 777);
 	
-	downloadSpeed = malloc(sizeof(char) * 32);
+	downloadSpeed = MEMAllocFromDefaultHeap(sizeof(char) * 32);
 	if(downloadSpeed == NULL)
 		goto exit;
 	
@@ -773,7 +774,7 @@ mainLoop:;
 	}
 exit:
 	if(downloadSpeed != NULL)
-		free(downloadSpeed);
+		MEMFreeToDefaultHeap(downloadSpeed);
 	SWKBD_Shutdown();
 	if (hbl)
 		shutdownScreen();
