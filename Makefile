@@ -26,7 +26,9 @@ INCLUDES	:=	include
 #-------------------------------------------------------------------------------
 # options for code generation
 #-------------------------------------------------------------------------------
-CFLAGS	:=	-g -Wall -Ofast -ffunction-sections -flto -pipe \
+CFLAGS	:=	-g -Wall -Ofast -ffunction-sections -flto=auto \
+			-fno-fat-lto-objects -fuse-linker-plugin \
+			-fwhole-program -pipe \
 			$(MACHDEP)
 
 CFLAGS	+=	$(INCLUDE) -D__WIIU__ -D__WUT__
