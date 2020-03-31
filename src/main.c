@@ -157,7 +157,11 @@ static int progressCallback(void *clientp, double dltotal, double dlnow, double 
 uint8_t downloadFile(char* url, char* file, uint8_t type) {
 	//Results: 0 = OK | 1 = Error | 2 = No ticket aviable | 3 = Exit
 	//Types: 0 = .app | 1 = .h3 | 2 = title.tmd | 3 = tilte.tik
-	downloading = file;
+	int haystack;
+	for(haystack = strlen(file); file[haystack] != '/'; haystack--)
+	{
+	}
+	downloading = &file[++haystack];
 	
 	WHBLogPrintf("Download URL: %s", url);
 	WHBLogPrintf("Download PATH: %s", file);
@@ -329,7 +333,7 @@ uint8_t downloadFile(char* url, char* file, uint8_t type) {
 		WHBLogPrintf("The file was downloaded successfully");
 		char toAdd[512];
 		strcpy(toAdd, "Download ");
-		strcat(toAdd, file);
+		strcat(toAdd, downloading);
 		addToDownloadLog(toAdd);
 	}
 	
@@ -580,7 +584,6 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 	
 	fclose(cert);
 	
-	addToDownloadLog("Created CERT");
 	addToDownloadLog("Download finished successfully");
 	
 	for (int i = 0; i < 0x10; i++)
