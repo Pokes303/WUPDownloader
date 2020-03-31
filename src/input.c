@@ -87,7 +87,7 @@ void SWKBD_Render(VPADStatus* vpad) {
 	WHBGfxBeginRender();
 
 	WHBGfxBeginRenderTV();
-	WHBGfxClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	WHBGfxClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	Swkbd_DrawTV();
 	WHBGfxFinishRenderTV();
 	
