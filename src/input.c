@@ -1,5 +1,6 @@
 #include "input.h"
 #include "utils.h"
+#include "screen.h"
 #include "swkbd_wrapper.h"
 
 //WIP. This need a better implementation
@@ -164,7 +165,7 @@ bool showKeyboard(char** output, KeyboardChecks check, int maxlength, bool limit
 			readInput();
 
 			startRefresh();
-			colorStartRefresh(0xFF800000);
+			colorStartRefresh(SCREEN_COLOR_RED);
 			write(0, 0, "Error showing SWKBD:");
 			write(0, 1, "nn::swkbd::AppearInputForm failed");
 			errorScreen(2, B_RETURN);
@@ -189,7 +190,7 @@ bool showKeyboard(char** output, KeyboardChecks check, int maxlength, bool limit
 				while(true) {
 					readInput();
 
-					colorStartRefresh(0xFF800000);
+					colorStartRefresh(SCREEN_COLOR_RED);
 					write(0, 0, "Error on the resulted string:");
 					write(0, 1, kError);
 					errorScreen(2, B_RETURN__Y_RETRY);

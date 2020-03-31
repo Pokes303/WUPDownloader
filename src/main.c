@@ -23,6 +23,7 @@
 #include "input.h"
 #include "ticket.h"
 #include "status.h"
+#include "screen.h"
 
 bool hbl = true;
 
@@ -56,7 +57,7 @@ void readInput() {
 	while (vError != VPAD_READ_SUCCESS) {
 		err = NULL;
 		VPADRead(VPAD_CHAN_0, &vpad, 1, &vError);
-		colorStartRefresh(0xFF00FF00);
+		colorStartRefresh(SCREEN_COLOR_LILA);
 		write(0, 0, "Error reading the WiiU Gamepad:");
 		switch(vError) {
 			case VPAD_READ_SUCCESS: //Prevent 'default' detection
@@ -171,7 +172,7 @@ int downloadFile(char* url, char* file, int type) {
 	
 	curl = curl_easy_init();
 	if (!curl) {
-		colorStartRefresh(0xFF000000);
+		colorStartRefresh(SCREEN_COLOR_RED);
 		write(0, 0, "ERROR: curl_easy_init failed");
 		write(0, 2, "File: ");
 		write(6, 2, file);
@@ -239,7 +240,7 @@ int downloadFile(char* url, char* file, int type) {
 		while (true) {
 			readInput();
 
-			colorStartRefresh(0xFF000000);
+			colorStartRefresh(SCREEN_COLOR_RED);
 			char toScreen[1024];
 			sprintf(toScreen, "curl_easy_perform returned a non-valid value: %d", ret);
 			write(0, 0, toScreen);
@@ -280,7 +281,7 @@ int downloadFile(char* url, char* file, int type) {
 			while(true) {
 				readInput();
 				
-				colorStartRefresh(0xFF000000);
+				colorStartRefresh(SCREEN_COLOR_RED);
 				write(0, 0, "The download of title.tmd failed with error: 404");
 				write(0, 2, "The title cannot be found on the NUS, maybe the provided");
 				write(0, 3, "title ID doesn't exists or the TMD was deleted");
@@ -304,7 +305,7 @@ int downloadFile(char* url, char* file, int type) {
 			while(true) {
 				readInput();
 				
-				colorStartRefresh(0xFF000000);
+				colorStartRefresh(SCREEN_COLOR_RED);
 				char toScreen[128];
 				sprintf(toScreen, "The download returned a result different to 200 (OK): %ld", resp);
 				write(0, 0, toScreen);
@@ -469,7 +470,7 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 		while (true) {
 			readInput();
 
-			colorStartRefresh(0x00404000);
+			colorStartRefresh(SCREEN_COLOR_LILA);
 			strcpy(toScreen, "Input the Encrypted title key of ");
 			strcat(toScreen, titleID);
 			strcat(toScreen, " to create a");
@@ -597,7 +598,7 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 		
 		readInput();
 	
-		colorStartRefresh(0x00800000);
+		colorStartRefresh(SCREEN_COLOR_GREEN);
 		strcpy(toScreen, "Title ");
 		strcat(toScreen, titleID);
 		strcat(toScreen, " downloaded successfully");

@@ -5,6 +5,7 @@
 #include "menu.h"
 #include "input.h"
 #include "status.h"
+#include "screen.h"
 
 #include <whb/proc.h>
 
@@ -180,7 +181,7 @@ inputTikValues: ;
 		
 						readInput();
 						
-						colorStartRefresh(0x00800000);
+						colorStartRefresh(SCREEN_COLOR_GREEN);
 						write(0, 0, "Fake ticket generated on:");
 						write(0, 1, " SD:/install/");
 						write(13, 1, tikPath);

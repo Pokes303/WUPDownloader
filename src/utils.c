@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "screen.h"
 
 #ifdef DEBUG_BUILD
 #include <stdio.h>
@@ -48,8 +49,7 @@ void shutdownScreen() {
 }
 
 void startRefresh() {
-	OSScreenClearBufferEx(SCREEN_TV, 0x00000000);
-	OSScreenClearBufferEx(SCREEN_DRC, 0x00000000);
+	colorStartRefresh(SCREEN_COLOR_BLACK);
 }
 void endRefresh() {
 	DCFlushRange(tvBuffer, tvBufferSize);
