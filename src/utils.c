@@ -1,4 +1,5 @@
 #include "main.h"
+#include "mem.h"
 #include "utils.h"
 #include "screen.h"
 
@@ -9,7 +10,6 @@
 #include <coreinit/cache.h>
 #include <coreinit/energysaver.h>
 #include <coreinit/foreground.h>
-#include <coreinit/memdefaultheap.h>
 #include <coreinit/screen.h>
 #include <coreinit/systeminfo.h>
 #include <whb/log.h>
@@ -26,8 +26,8 @@ bool initScreen() {
 	tvBufferSize = OSScreenGetBufferSizeEx(SCREEN_TV);
 	drcBufferSize = OSScreenGetBufferSizeEx(SCREEN_DRC);
 
-	tvBuffer = MEMAllocFromDefaultHeapEx(tvBufferSize, 0x100);
-	drcBuffer = MEMAllocFromDefaultHeapEx(drcBufferSize, 0x100);
+	tvBuffer = aallocateMemory(tvBufferSize, 0x100);
+	drcBuffer = aallocateMemory(drcBufferSize, 0x100);
 
 	if (!tvBuffer || !drcBuffer) {
 		WHBLogPrintf("Error initialising screen library");
@@ -44,8 +44,8 @@ bool initScreen() {
 	return true;
 }
 void shutdownScreen() {
-	if (tvBuffer) MEMFreeToDefaultHeap(tvBuffer);
-	if (drcBuffer) MEMFreeToDefaultHeap(drcBuffer);
+	if (tvBuffer) freeMemory(tvBuffer);
+	if (drcBuffer) freeMemory(drcBuffer);
 	
 	OSScreenShutdown();
 }
@@ -116,22 +116,22 @@ DownloadLogList *downloadLogList[2] = { NULL, NULL };
 void addToDownloadLog(char* str) {
 	WHBLogPrintf(str);
 	
-	DownloadLogList *newTVEntry = MEMAllocFromDefaultHeap(sizeof(DownloadLogList));
+	DownloadLogList *newTVEntry = allocateMemory(sizeof(DownloadLogList));
 	if(newTVEntry ==  NULL)
 		return;
-	DownloadLogList *newDRCEntry = MEMAllocFromDefaultHeap(sizeof(DownloadLogList));
+	DownloadLogList *newDRCEntry = allocateMemory(sizeof(DownloadLogList));
 	if(newDRCEntry ==  NULL)
 	{
-		MEMFreeToDefaultHeap(newTVEntry);
+		freeMemory(newTVEntry);
 		return;
 	}
 	
 	//TODO: We copy the string here for fast porting purposes
-	newTVEntry->line = newDRCEntry->line = MEMAllocFromDefaultHeap(sizeof(char) * (strlen(str) + 1));
+	newTVEntry->line = newDRCEntry->line = allocateMemory(sizeof(char) * (strlen(str) + 1));
 	if(newTVEntry->line == NULL)
 	{
-		MEMFreeToDefaultHeap(newTVEntry);
-		MEMFreeToDefaultHeap(newDRCEntry);
+		freeMemory(newTVEntry);
+		freeMemory(newDRCEntry);
 		return;
 	}
 	strcpy(newTVEntry->line, str);
@@ -157,8 +157,8 @@ void addToDownloadLog(char* str) {
 	{
 		DownloadLogList *tmpList = downloadLogList[0];
 		downloadLogList[0] = tmpList->nextEntry;
-		MEMFreeToDefaultHeap(tmpList->line);
-		MEMFreeToDefaultHeap(tmpList);
+		freeMemory(tmpList->line);
+		freeMemory(tmpList);
 	}
 	
 	DownloadLogList *lastDRC;
@@ -173,7 +173,7 @@ void addToDownloadLog(char* str) {
 	{
 		DownloadLogList *tmpList = downloadLogList[1];
 		downloadLogList[1] = tmpList->nextEntry;
-		MEMFreeToDefaultHeap(tmpList);
+		freeMemory(tmpList);
 	}
 	
 	lastTV->nextEntry = newTVEntry;
@@ -185,14 +185,14 @@ void clearDownloadLog() {
 	{
 		tmpList = downloadLogList[0];
 		downloadLogList[0] = tmpList->nextEntry;
-		MEMFreeToDefaultHeap(tmpList->line);
-		MEMFreeToDefaultHeap(tmpList);
+		freeMemory(tmpList->line);
+		freeMemory(tmpList);
 	}
 	while(downloadLogList[1] != NULL)
 	{
 		tmpList = downloadLogList[1];
 		downloadLogList[1] = tmpList->nextEntry;
-		MEMFreeToDefaultHeap(tmpList);
+		freeMemory(tmpList);
 	}
 }
 void writeDownloadLog() {
@@ -254,7 +254,7 @@ char* hex(uint64_t i, int digits) {
 	if (hexDigits > digits)
 		return "too few digits error";
 	
-	char *result = MEMAllocFromDefaultHeap(sizeof(char) * (digits + 1));
+	char *result = allocateMemory(sizeof(char) * (digits + 1));
 	if(result == NULL)
 		return NULL;
 	

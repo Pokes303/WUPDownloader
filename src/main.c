@@ -1,6 +1,7 @@
 #include "file.h"
 #include "input.h"
 #include "main.h"
+#include "mem.h"
 #include "menu.h"
 #include "screen.h"
 #include "status.h"
@@ -12,7 +13,6 @@
 #include <string.h>
 
 #include <coreinit/foreground.h>
-#include <coreinit/memdefaultheap.h>
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
 #include <coreinit/title.h>
@@ -82,7 +82,7 @@ void readInput() {
 				break;
 		}
 		if(err != NULL)
-			MEMFreeToDefaultHeap(err);
+			freeMemory(err);
 		endRefresh();
 	}
     VPADGetTPCalibratedPoint(VPAD_CHAN_0, &vpad.tpNormal, &vpad.tpNormal);
@@ -204,7 +204,7 @@ int downloadFile(char* url, char* file, int type) {
 		return 0;
 	}
 	
-	multiplierName = MEMAllocFromDefaultHeap(sizeof(char) * 4);
+	multiplierName = allocateMemory(sizeof(char) * 4);
 	if(multiplierName == NULL)
 		return 1;
 	strcpy(multiplierName, "Unk");
@@ -217,7 +217,7 @@ int downloadFile(char* url, char* file, int type) {
 	FILE *fp = fopen(file, "wb");
 	CURL *curl = curl_easy_init();
 	if (!curl) {
-		MEMFreeToDefaultHeap(multiplierName);
+		freeMemory(multiplierName);
 		colorStartRefresh(SCREEN_COLOR_RED);
 		write(0, 0, "ERROR: curl_easy_init failed");
 		write(0, 2, "File: ");
@@ -240,7 +240,7 @@ int downloadFile(char* url, char* file, int type) {
 	
 	if(ret != CURLE_OK)
 	{
-		MEMFreeToDefaultHeap(multiplierName);
+		freeMemory(multiplierName);
 		curl_easy_cleanup(curl);
 		WHBLogPrintf("curl_easy_setopt error!");
 		return 1;
@@ -248,7 +248,7 @@ int downloadFile(char* url, char* file, int type) {
 	
 	ret = curl_easy_perform(curl);
 	WHBLogPrintf("curl_easy_perform returned");
-	MEMFreeToDefaultHeap(multiplierName);
+	freeMemory(multiplierName);
 	fflush(fp);
 	fclose(fp);
 	if(ret != CURLE_OK) {
@@ -498,7 +498,7 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 			strcat(toScreen, "Unknown (");
 			char *h = hex(readUInt32(tInstallDir, 0x18C), 8);
 			strcat(toScreen, h);
-			MEMFreeToDefaultHeap(h);
+			freeMemory(h);
 			strcat(toScreen, ")");
 			break;
 	}
@@ -573,7 +573,7 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 		strcat(tInstallDir, ".app");
 		if (downloadFile(tDownloadUrl, tInstallDir, 0) == 1)
 		{
-			MEMFreeToDefaultHeap(tmpHex);
+			freeMemory(tmpHex);
 			return true;
 		}
 		strcpy(tInstallDir, tmpFileName);
@@ -583,11 +583,11 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 			strcat(tDownloadUrl, ".h3");
 			if (downloadFile(tDownloadUrl, tInstallDir, 1) == 1)
 			{
-				MEMFreeToDefaultHeap(tmpHex);
+				freeMemory(tmpHex);
 				return true;
 			}
 		}
-		MEMFreeToDefaultHeap(tmpHex);
+		freeMemory(tmpHex);
 	}
 	
 	WHBLogPrintf("Creating CERT...");
@@ -677,9 +677,9 @@ int main() {
 	WHBLogPrintf("Init");
 	
 	FSInit();
-	fsCli = (FSClient*)MEMAllocFromDefaultHeap(sizeof(FSClient));
+	fsCli = (FSClient*)allocateMemory(sizeof(FSClient));
 	FSAddClient(fsCli, 0);
-	fsCmd = (FSCmdBlock*)MEMAllocFromDefaultHeap(sizeof(FSCmdBlock));
+	fsCmd = (FSCmdBlock*)allocateMemory(sizeof(FSCmdBlock));
 	FSInitCmdBlock(fsCmd);
 	WHBLogPrintf("FS started successfully");
 	
@@ -694,7 +694,7 @@ int main() {
 	
 	mkdir(INSTALL_DIR, 777);
 	
-	downloadSpeed = MEMAllocFromDefaultHeap(sizeof(char) * 32);
+	downloadSpeed = allocateMemory(sizeof(char) * 32);
 	if(downloadSpeed == NULL)
 		goto exit;
 	
@@ -730,7 +730,7 @@ int main() {
 					endRefresh();
 
 					if (vpad.trigger == VPAD_BUTTON_A) {
-						if (showKeyboard(&titleID, CHECK_HEXADECIMAL, 16, true))
+						if (showKeyboard(titleID, CHECK_HEXADECIMAL, 16, true))
 							goto dnext;
 					}
 					else if (vpad.trigger == VPAD_BUTTON_B)
@@ -816,14 +816,14 @@ mainLoop:;
 	}
 exit:
 	if(downloadSpeed != NULL)
-		MEMFreeToDefaultHeap(downloadSpeed);
+		freeMemory(downloadSpeed);
 	SWKBD_Shutdown();
 	if (hbl)
 		shutdownScreen();
 	
 	FSDelClient(fsCli, 0);
-	MEMFreeToDefaultHeap(fsCli);
-	MEMFreeToDefaultHeap(fsCmd);
+	freeMemory(fsCli);
+	freeMemory(fsCmd);
    
 	FSShutdown();
 	if (hbl)

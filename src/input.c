@@ -1,15 +1,15 @@
 #include "input.h"
 #include "main.h"
+#include "mem.h"
 #include "screen.h"
 #include "swkbd_wrapper.h"
 #include "utils.h"
 
 #include <stdio.h>
- 
+
 #include <vpad/input.h>
 #include <whb/gfx.h>
 #include <whb/log.h>
-#include <coreinit/memdefaultheap.h>
 
 //WIP. This need a better implementation
 
@@ -24,12 +24,12 @@ char* outputStr = NULL;
 bool showed;
 
 bool SWKBD_Init() {
-	swkbdCli = (FSClient*)MEMAllocFromDefaultHeap(sizeof(FSClient));
+	swkbdCli = (FSClient*)allocateMemory(sizeof(FSClient));
 	FSAddClient(swkbdCli, 0);
 	
 	WHBGfxInit();
 	createArg.regionType = Swkbd_RegionType__Europe;
-	createArg.workMemory = MEMAllocFromDefaultHeap(Swkbd_GetWorkMemorySize(0));
+	createArg.workMemory = allocateMemory(Swkbd_GetWorkMemorySize(0));
 	createArg.unk_0x08 = 0;
 	createArg.fsClient = swkbdCli;
 	if (!Swkbd_Create(createArg)) {
@@ -69,7 +69,7 @@ void SWKBD_Render(VPADStatus* vpad) {
 		if(inputFormString != NULL)
 		{
 			uint32_t len = strlen(inputFormString);
-			MEMFreeToDefaultHeap(inputFormString);
+			freeMemory(inputFormString);
 			Swkbd_SetEnableOkButton((globalLimit) ? (len == (uint32_t)globalMaxlength) : (len <= (uint32_t)globalMaxlength));
 		}
 	}
@@ -133,7 +133,7 @@ const char* SWKBD_GetError(KeyboardChecks check) {
 	{
 		char ret[1024];
 		sprintf(ret, "Invalid input size (%d/%d)", strlen(output), globalMaxlength);
-		MEMFreeToDefaultHeap(output);
+		freeMemory(output);
 		return ret;
 	}
 	
@@ -149,7 +149,7 @@ char* SWKBD_GetText() {
 void SWKBD_CleanupText() {
 	if(outputStr != NULL)
 	{
-		MEMFreeToDefaultHeap(outputStr);
+		freeMemory(outputStr);
 		outputStr = NULL;
 	}
 }
@@ -157,7 +157,7 @@ void SWKBD_CleanupText() {
 void SWKBD_Shutdown() {
 	SWKBD_CleanupText();
 	Swkbd_Destroy();
-	MEMFreeToDefaultHeap(createArg.workMemory);
+	freeMemory(createArg.workMemory);
 	
 	if (showed) { //Shutdown libraries properly
 		WHBGfxInit();

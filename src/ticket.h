@@ -4,8 +4,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "main.h"
-
 #ifdef __cplusplus
 	extern "C" {
 #endif
