@@ -21,6 +21,6 @@ char* SWKBD_GetText();
 void SWKBD_CleanupText();
 void SWKBD_Shutdown();
 
-bool showKeyboard(char** output, KeyboardChecks check, int maxlength, bool limit);
+bool showKeyboard(char *output, KeyboardChecks check, int maxlength, bool limit);
 
 #endif //ifndef WUPD_INPUT_H

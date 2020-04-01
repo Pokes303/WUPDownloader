@@ -36,7 +36,7 @@ bool SWKBD_Init() {
 	return true;
 }
 bool SWKBD_Show(int maxlength, bool limit) {
-	outputStr = NULL;
+	SWKBD_CleanupText();
 	showed = true;
 	
 	WHBLogPrintf("WHBGfxInit(): %d", WHBGfxInit());
@@ -159,7 +159,7 @@ void SWKBD_Shutdown() {
 	}
 }
 
-bool showKeyboard(char** output, KeyboardChecks check, int maxlength, bool limit) {
+bool showKeyboard(char *output, KeyboardChecks check, int maxlength, bool limit) {
 	WHBLogPrintf("Initialising SWKBD");
 	bool kError = SWKBD_Show(maxlength, limit);
 	if (!kError) {
@@ -204,7 +204,7 @@ bool showKeyboard(char** output, KeyboardChecks check, int maxlength, bool limit
 						return showKeyboard(output, check, maxlength, limit);
 				}
 			}
-			*output = SWKBD_GetText();
+			strcpy(output, SWKBD_GetText());
 			return true;
 		}
 

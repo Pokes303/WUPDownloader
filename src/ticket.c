@@ -196,10 +196,10 @@ inputTikValues: ;
 			case VPAD_BUTTON_B:
 				return true;
 			case VPAD_BUTTON_UP:
-				showKeyboard(&titleID, CHECK_HEXADECIMAL, 16, true);
+				showKeyboard(titleID, CHECK_HEXADECIMAL, 16, true);
 				break;
 			case VPAD_BUTTON_DOWN:
-				showKeyboard(&encKey, CHECK_HEXADECIMAL, 32, true);
+				showKeyboard(encKey, CHECK_HEXADECIMAL, 32, true);
 				break;
 		}
 	}

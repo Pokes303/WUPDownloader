@@ -706,9 +706,9 @@ int main() {
 		
 		switch (vpad.trigger) {
 			case VPAD_BUTTON_A: { //Download title
-				char* titleID = "";
-				char* titleVer = "";
-				char* folderName = "";
+				char titleID[17];
+				char titleVer[33];
+				char folderName[FILENAME_MAX + 1];
 				
 				while (AppRunning()) {
 					if (app == 2)
@@ -774,17 +774,18 @@ dnext:
 					else if (vpad.trigger == VPAD_BUTTON_B)
 						goto mainLoop;
 					else if (vpad.trigger == VPAD_BUTTON_UP) {
-						char* tmpTitleID = titleID;
-						if (!showKeyboard(&titleID, CHECK_HEXADECIMAL, 16, true))
-							titleID = tmpTitleID;
+						char tmpTitleID[17];
+						strcpy(tmpTitleID, titleID);
+						if (!showKeyboard(titleID, CHECK_HEXADECIMAL, 16, true))
+							strcpy(titleID, tmpTitleID);
 					}
 					else if (vpad.trigger == VPAD_BUTTON_RIGHT) {
-						if (!showKeyboard(&titleVer, CHECK_NUMERICAL, 5, false))
-							titleVer = "";
+						if (!showKeyboard(titleVer, CHECK_NUMERICAL, 5, false))
+							titleVer[0] = '\0';
 					}
 					else if (vpad.trigger == VPAD_BUTTON_DOWN) {
-						if (!showKeyboard(&folderName, CHECK_NOSPECIAL, FILENAME_MAX, false))
-							folderName = "";
+						if (!showKeyboard(folderName, CHECK_NOSPECIAL, FILENAME_MAX, false))
+							folderName[0] = '\0';
 					}
 					else if (vpad.trigger == VPAD_BUTTON_Y)
 						vibrateWhenFinished = !vibrateWhenFinished;
