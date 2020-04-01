@@ -134,14 +134,14 @@ static int progressCallback(void *clientp, double dltotal, double dlnow, double 
 		second = osc.tm_sec;
 		
 		if (dlnow != 0) {
-			double dl = dlnow - downloaded;
+			unsigned int dl = dlnow - downloaded;
 			char buf[32];
 			if (dl < 1024.0D)
-				sprintf(buf, "%.2f B/s", dl);
+				sprintf(buf, "%d B/s", dl);
 			else if (dl < 1024 * 1024)
-				sprintf(buf, "%.2f Kb/s", dl / 1024.0D);
+				sprintf(buf, "%d Kb/s", dl >> 10);
 			else
-				sprintf(buf, "%.2f Mb/s", dl / 1024.0D / 1024.0D);
+				sprintf(buf, "%d Mb/s", dl >> 20);
 			
 			downloaded = dlnow;
 			strcpy(downloadSpeed, buf);
@@ -178,7 +178,7 @@ int downloadFile(char* url, char* file, int type) {
 		return 0;
 	}
 	
-	CURL *curl_easy_init();
+	CURL *curl = curl_easy_init();
 	if (!curl) {
 		colorStartRefresh(SCREEN_COLOR_RED);
 		write(0, 0, "ERROR: curl_easy_init failed");
