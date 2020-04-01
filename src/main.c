@@ -215,16 +215,8 @@ int downloadFile(char* url, char* file, int type) {
 	downloadSpeed[0] = '\0';
 	
 	FILE *fp = fopen(file, "wb");
-	void *writeBuffer = allocateFastMemory(BUFSIZ);
-	if(writeBuffer == NULL)
-		WHBLogPrintf("WARNING: Couldn't claim fast memory area!");
-	else
-		setbuf(fp, writeBuffer);
-	
 	CURL *curl = curl_easy_init();
 	if (!curl) {
-		if(writeBuffer != NULL)
-			freeMemory(writeBuffer);
 		freeMemory(multiplierName);
 		colorStartRefresh(SCREEN_COLOR_RED);
 		write(0, 0, "ERROR: curl_easy_init failed");
@@ -248,8 +240,6 @@ int downloadFile(char* url, char* file, int type) {
 	
 	if(ret != CURLE_OK)
 	{
-		if(writeBuffer != NULL)
-			freeMemory(writeBuffer);
 		freeMemory(multiplierName);
 		curl_easy_cleanup(curl);
 		WHBLogPrintf("curl_easy_setopt error!");
@@ -258,8 +248,6 @@ int downloadFile(char* url, char* file, int type) {
 	
 	ret = curl_easy_perform(curl);
 	WHBLogPrintf("curl_easy_perform returned");
-	if(writeBuffer != NULL)
-		freeMemory(writeBuffer);
 	freeMemory(multiplierName);
 	fflush(fp);
 	fclose(fp);
@@ -688,7 +676,6 @@ int main() {
 	
 	WHBLogPrintf("Init");
 	
-	initMemoryAllocator();
 	FSInit();
 	fsCli = (FSClient*)allocateMemory(sizeof(FSClient));
 	FSAddClient(fsCli, 0);
@@ -843,7 +830,6 @@ exit:
 	if (hbl)
 		WHBProcShutdown();
 	WHBLogUdpDeinit();
-	deinitMemoryAllocator();
 
 	return 1;
 }
