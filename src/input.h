@@ -1,6 +1,7 @@
 #ifndef WUPD_INPUT_H
 #define WUPD_INPUT_H
 
+#include "main.h"
 #include <stdbool.h>
 
 #include <vpad/input.h>

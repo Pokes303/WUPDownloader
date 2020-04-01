@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <string>
 
+#include <coreinit/memdefaultheap.h>
 #include <whb/log.h>
 
-#include "mem.h"
 #include "swkbd_wrapper.h"
 
 uint32_t Swkbd_GetWorkMemorySize(uint32_t unk)
@@ -36,7 +36,7 @@ char *Swkbd_GetInputFormString()
 		size++;
 	while(cppRet[size] != u'\0');
 	
-	char *outputStr = (char *)allocateMemory(sizeof(char) * size);
+	char *outputStr = (char*)MEMAllocFromDefaultHeap(sizeof(char) * size);
 	if(outputStr == NULL)
 		return NULL;
 	
