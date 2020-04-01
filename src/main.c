@@ -249,6 +249,8 @@ int downloadFile(char* url, char* file, int type) {
 	fclose(fp);
 	if(ret != CURLE_OK) {
 		WHBLogPrintf("curl_easy_perform returned an error: %d", ret);
+		curl_easy_cleanup(curl);
+		remove(file);
 		
 		char* err[4];
 		int errSize;
@@ -277,8 +279,6 @@ int downloadFile(char* url, char* file, int type) {
 				errSize = 4;
 				break;
 			case CURLE_ABORTED_BY_CALLBACK:
-				curl_easy_cleanup(curl);
-				remove(file);
 				return 0;
 			default:
 				err[0] = "---> Unknown error";
@@ -300,8 +300,6 @@ int downloadFile(char* url, char* file, int type) {
 			write(0, errSize + 3, toScreen);
 			errorScreen(errSize + 4, B_RETURN__Y_RETRY); //CHANGE TO RETURN
 			endRefresh();
-			curl_easy_cleanup(curl);
-			remove(file);
 			
 			switch (vpad.trigger) {
 				case VPAD_BUTTON_B:
@@ -320,6 +318,7 @@ int downloadFile(char* url, char* file, int type) {
 	
 	WHBLogPrintf("The download returned: %u", resp);
 	if (resp != 200) {
+		remove(file);
 		if (type == 2 && resp == 404) { //Title.tmd not found
 			while(true) {
 				readInput();
@@ -330,7 +329,6 @@ int downloadFile(char* url, char* file, int type) {
 				write(0, 3, "title ID doesn't exists or the TMD was deleted");
 				errorScreen(4, B_RETURN__Y_RETRY);
 				endRefresh();
-				remove(file);
 
 				switch (vpad.trigger) {
 					case VPAD_BUTTON_B:
@@ -363,7 +361,6 @@ int downloadFile(char* url, char* file, int type) {
 				write(6, errLn, file);
 				errorScreen(errLn + 1, B_RETURN__Y_RETRY);
 				endRefresh();
-				remove(file);
 
 				switch (vpad.trigger) {
 					case VPAD_BUTTON_B:
@@ -532,11 +529,9 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 					write(0, 0, "Creating fake title.tik");
 					writeDownloadLog();
 					endRefresh();
-					FILE* tik;
-					strcpy(toScreen, installDir);
-					strcat(toScreen, "title.tik");
-					tik = fopen(toScreen, "wb");
+					FILE *tik = fopen(tInstallDir, "wb");
 					generateTik(tik, titleID, encKey);
+					fflush(tik);
 					fclose(tik);
 					addToDownloadLog("Fake ticket created successfully");
 					break;
