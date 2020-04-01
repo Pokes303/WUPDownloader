@@ -178,11 +178,7 @@ int downloadFile(char* url, char* file, int type) {
 		return 0;
 	}
 	
-	CURL* curl = NULL;
-    FILE* fp;
-	int ret = 0;
-	
-	curl = curl_easy_init();
+	CURL *curl_easy_init();
 	if (!curl) {
 		colorStartRefresh(SCREEN_COLOR_RED);
 		write(0, 0, "ERROR: curl_easy_init failed");
@@ -206,7 +202,7 @@ int downloadFile(char* url, char* file, int type) {
 	downloaded = 0;
 	downloadSpeed[0] = '\0';
 	
-	fp = fopen(file, "wb");
+	FILE *fp = fopen(file, "wb");
 	curl_easy_setopt(curl, CURLOPT_URL, url);
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, "WUPDownloader"); //TODO: Spoof eShop here?
 	
@@ -218,7 +214,7 @@ int downloadFile(char* url, char* file, int type) {
 	curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, NULL);
 	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
 	
-	ret = curl_easy_perform(curl);
+	int ret = curl_easy_perform(curl);
 	if (ret) {
 		WHBLogPrintf("curl_easy_perform returned an error: %d", ret);
 		
