@@ -228,6 +228,11 @@ int downloadFile(char* url, char* file, int type) {
 	}
 	
 	CURLcode ret = curl_easy_setopt(curl, CURLOPT_URL, url);
+	
+	char curlError[CURL_ERROR_SIZE];
+	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curlError);
+	curlError[0] = '\0';
+	
 	ret |= curl_easy_setopt(curl, CURLOPT_USERAGENT, "WUPDownloader"); //TODO: Spoof eShop here?
 	
     ret |= curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
@@ -238,11 +243,13 @@ int downloadFile(char* url, char* file, int type) {
 	ret |= curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, curl);
 	ret |= curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
 	
+	ret |= curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+	
 	if(ret != CURLE_OK)
 	{
 		MEMFreeToDefaultHeap(multiplierName);
 		curl_easy_cleanup(curl);
-		WHBLogPrintf("curl_easy_setopt error!");
+		WHBLogPrintf("curl_easy_setopt error: %s", curlError);
 		return 1;
 	}
 	
@@ -252,7 +259,7 @@ int downloadFile(char* url, char* file, int type) {
 	fflush(fp);
 	fclose(fp);
 	if(ret != CURLE_OK) {
-		WHBLogPrintf("curl_easy_perform returned an error: %d", ret);
+		WHBLogPrintf("curl_easy_perform returned an error: &s (%d)", curlError, ret);
 		curl_easy_cleanup(curl);
 		remove(file);
 		
@@ -276,6 +283,7 @@ int downloadFile(char* url, char* file, int type) {
 			case CURLE_GOT_NOTHING:
 			case CURLE_SEND_ERROR:
 			case CURLE_RECV_ERROR:
+			case CURLE_PARTIAL_FILE:
 				err[0] = "---> Network error";
 				err[1] = "Failed while trying to download data, probably your";
 				err[2] = "router was turned off, check the internet connecition";
@@ -286,7 +294,7 @@ int downloadFile(char* url, char* file, int type) {
 				return 0;
 			default:
 				err[0] = "---> Unknown error";
-				err[1] = "See: https://curl.haxx.se/libcurl/c/libcurl-errors.html";
+				err[1] = curlError;
 				errSize = 2;
 				break;
 		}
