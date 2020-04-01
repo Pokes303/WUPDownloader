@@ -246,19 +246,23 @@ int downloadFile(char* url, char* file, int type) {
 		char* err[4];
 		int errSize;
 		switch(ret) {
-			case 6:
+			case CURLE_FAILED_INIT:
+			case CURLE_COULDNT_RESOLVE_HOST:
 				err[0] = "---> Network error";
 				err[1] = "Your WiiU is not connected to the internet, check the";
 				err[2] = "network settings and try again";
 				errSize = 3;
 				break;
-			case 23:
+			case CURLE_WRITE_ERROR:
 				err[0] = "---> Error from SD Card";
 				err[1] = "The SD Card was extracted or invalid to write data,";
 				err[2] = "re-insert it or use another one and restart the app";
 				errSize = 3;
 				break;
-			case 56:
+			case CURLE_OPERATION_TIMEDOUT:
+			case CURLE_GOT_NOTHING:
+			case CURLE_SEND_ERROR:
+			case CURLE_RECV_ERROR:
 				err[0] = "---> Network error";
 				err[1] = "Failed while trying to download data, probably your";
 				err[2] = "router was turned off, check the internet connecition";
