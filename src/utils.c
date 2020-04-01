@@ -64,13 +64,12 @@ void paintLine(uint32_t column, uint32_t colour)
 {
 	column *= 24;
 	column += 45;
-	uint32_t c2;
+	uint32_t c2 = column + 1;
 	for(uint32_t x = 53; x < MAX_X_DRC; x++)
 	{
 		OSScreenPutPixelEx(SCREEN_DRC, x, column, colour);
-		OSScreenPutPixelEx(SCREEN_TV, x, column, colour);
-		c2 = column + 1;
 		OSScreenPutPixelEx(SCREEN_DRC, x, c2, colour);
+		OSScreenPutPixelEx(SCREEN_TV, x, column, colour);
 		OSScreenPutPixelEx(SCREEN_TV, x, c2, colour);
 	}
 	for(uint32_t x = MAX_X_DRC; x < MAX_X_TV; x++)
