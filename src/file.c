@@ -2,8 +2,12 @@
 #include "utils.h"
 
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <coreinit/time.h>
+#include <whb/log.h>
 
 uint8_t readUInt8(char* file, uint32_t pos) {
 	FILE* fp = fopen(file, "rb");

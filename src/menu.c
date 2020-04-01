@@ -3,6 +3,8 @@
 #include "utils.h"
 #include "screen.h"
 
+#include <string.h>
+
 void writeMainMenu() {
 	startRefresh();
 	paintLine(0, SCREEN_COLOR_WHITE);

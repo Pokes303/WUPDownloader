@@ -2,6 +2,7 @@
 #define WUPD_SWKBD_MAPPER_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include <nn/swkbd.h>
 

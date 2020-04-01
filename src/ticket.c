@@ -7,6 +7,10 @@
 #include "status.h"
 #include "screen.h"
 
+#include <stdio.h>
+#include <string.h>
+
+#include <whb/log.h>
 #include <whb/proc.h>
 
 void generateTik(FILE* tik, char* titleID, char* encKey) { //Based on NUSPacker tik creation function

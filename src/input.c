@@ -1,8 +1,14 @@
 #include "input.h"
-#include "utils.h"
+#include "main.h"
 #include "screen.h"
 #include "swkbd_wrapper.h"
+#include "utils.h"
 
+#include <stdio.h>
+ 
+#include <vpad/input.h>
+#include <whb/gfx.h>
+#include <whb/log.h>
 #include <coreinit/memdefaultheap.h>
 
 //WIP. This need a better implementation

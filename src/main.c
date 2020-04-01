@@ -1,6 +1,15 @@
+#include "file.h"
+#include "input.h"
 #include "main.h"
+#include "menu.h"
+#include "screen.h"
+#include "status.h"
+#include "ticket.h"
+#include "utils.h"
 
 #include <errno.h>
+#include <sys/stat.h>
+#include <string.h>
 
 #include <coreinit/foreground.h>
 #include <coreinit/memdefaultheap.h>
@@ -16,15 +25,8 @@
 #include <nsysnet/socket.h>
 
 #include <whb/proc.h>
-
-#include "main.h"
-#include "utils.h"
-#include "file.h"
-#include "menu.h"
-#include "input.h"
-#include "ticket.h"
-#include "status.h"
-#include "screen.h"
+#include <whb/log.h>
+#include <whb/log_udp.h>
 
 bool hbl = true;
 
@@ -510,7 +512,7 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 		return true;
 	else if (tikRes == 2) {
 		addToDownloadLog("Title.tik not found on the NUS. A fake ticket can be created");
-		char* encKey = "";
+		char encKey[33];
 		while (true) {
 			readInput();
 
@@ -526,7 +528,7 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 			endRefresh();
 
 			if (vpad.trigger == VPAD_BUTTON_A) {
-				if (showKeyboard(&encKey, CHECK_HEXADECIMAL, 32, true)) {
+				if (showKeyboard(encKey, CHECK_HEXADECIMAL, 32, true)) {
 					startRefresh();
 					write(0, 0, "Creating fake title.tik");
 					writeDownloadLog();

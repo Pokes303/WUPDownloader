@@ -9,6 +9,10 @@
 #define MAX_X_DRC 802
 #define MAX_X_TV 1236
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 bool initScreen();
 void shutdownScreen();
 
@@ -39,5 +43,9 @@ void disableShutdown();
 char* b_tostring(bool b);
 
 char* hex(uint64_t i, int digits); //ex: 000050D1
+
+#ifdef __cplusplus
+	}
+#endif
 
 #endif // ifndef WUPD_UTILS_H

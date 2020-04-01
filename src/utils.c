@@ -12,6 +12,7 @@
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/screen.h>
 #include <coreinit/systeminfo.h>
+#include <whb/log.h>
 
 size_t tvBufferSize;
 size_t drcBufferSize;

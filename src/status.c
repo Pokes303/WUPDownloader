@@ -1,11 +1,12 @@
-#include "status.h"
-
-#include "utils.h"
 #include "input.h"
+#include "main.h"
+#include "status.h"
+#include "utils.h"
 
 #include <coreinit/core.h>
 #include <coreinit/screen.h>
 #include <proc_ui/procui.h>
+#include <vpad/input.h>
 #include <whb/proc.h>
 #include <whb/gfx.h>
 
