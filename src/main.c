@@ -238,6 +238,8 @@ int downloadFile(char* url, char* file, int type) {
 	
 	if(ret != CURLE_OK)
 	{
+		MEMFreeToDefaultHeap(multiplierName);
+		curl_easy_cleanup(curl);
 		WHBLogPrintf("curl_easy_setopt error!");
 		return 1;
 	}
