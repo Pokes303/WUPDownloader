@@ -202,8 +202,20 @@ int downloadFile(char* url, char* file, int type) {
 		return 0;
 	}
 	
+	multiplierName = MEMAllocFromDefaultHeap(sizeof(char) * 4);
+	if(multiplierName == NULL)
+		return 1;
+	strcpy(multiplierName, "Unk");
+	multiplier = 0;
+	
+	second = 0xFF;
+	downloaded = 0;
+	downloadSpeed[0] = '\0';
+	
+	FILE *fp = fopen(file, "wb");
 	CURL *curl = curl_easy_init();
 	if (!curl) {
+		MEMFreeToDefaultHeap(multiplierName);
 		colorStartRefresh(SCREEN_COLOR_RED);
 		write(0, 0, "ERROR: curl_easy_init failed");
 		write(0, 2, "File: ");
@@ -213,34 +225,29 @@ int downloadFile(char* url, char* file, int type) {
 		return 1;
 	}
 	
-	multiplier = 0;
-	multiplierName = MEMAllocFromDefaultHeap(sizeof(char) * 4);
-	if(multiplierName == NULL)
+	CURLcode ret = curl_easy_setopt(curl, CURLOPT_URL, url);
+	ret |= curl_easy_setopt(curl, CURLOPT_USERAGENT, "WUPDownloader"); //TODO: Spoof eShop here?
+	
+    ret |= curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
+    ret |= curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+	ret |= curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+	ret |= curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressCallback);
+	ret |= curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, curl);
+	ret |= curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+	
+	if(ret != CURLE_OK)
 	{
-		curl_easy_cleanup(curl);
+		WHBLogPrintf("curl_easy_setopt error!");
 		return 1;
 	}
-	strcpy(multiplierName, "Unk");
 	
-	second = 0xFF;
-	downloaded = 0;
-	downloadSpeed[0] = '\0';
-	
-	FILE *fp = fopen(file, "wb");
-	curl_easy_setopt(curl, CURLOPT_URL, url);
-	curl_easy_setopt(curl, CURLOPT_USERAGENT, "WUPDownloader"); //TODO: Spoof eShop here?
-	
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-
-	curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressCallback);
-	curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, curl);
-	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
-	
-	int ret = curl_easy_perform(curl);
+	ret = curl_easy_perform(curl);
 	WHBLogPrintf("curl_easy_perform returned");
-	if (ret) {
+	MEMFreeToDefaultHeap(multiplierName);
+	fflush(fp);
+	fclose(fp);
+	if(ret != CURLE_OK) {
 		WHBLogPrintf("curl_easy_perform returned an error: %d", ret);
 		
 		char* err[4];
@@ -271,9 +278,7 @@ int downloadFile(char* url, char* file, int type) {
 				break;
 			case CURLE_ABORTED_BY_CALLBACK:
 				curl_easy_cleanup(curl);
-				fclose(fp);
 				remove(file);
-				MEMFreeToDefaultHeap(multiplierName);
 				return 0;
 			default:
 				err[0] = "---> Unknown error";
@@ -296,9 +301,7 @@ int downloadFile(char* url, char* file, int type) {
 			errorScreen(errSize + 4, B_RETURN__Y_RETRY); //CHANGE TO RETURN
 			endRefresh();
 			curl_easy_cleanup(curl);
-			fclose(fp);
 			remove(file);
-			MEMFreeToDefaultHeap(multiplierName);
 			
 			switch (vpad.trigger) {
 				case VPAD_BUTTON_B:
@@ -310,13 +313,10 @@ int downloadFile(char* url, char* file, int type) {
 		}
 	}
 	WHBLogPrintf("curl_easy_perform executed successfully");
-	MEMFreeToDefaultHeap(multiplierName);
 
-	long resp = 404;
-	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &resp);
+	long resp;
+	ret = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &resp);
 	curl_easy_cleanup(curl);
-	fflush(fp);
-	fclose(fp);
 	
 	WHBLogPrintf("The download returned: %u", resp);
 	if (resp != 200) {
