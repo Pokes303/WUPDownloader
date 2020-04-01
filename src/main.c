@@ -310,7 +310,7 @@ int downloadFile(char* url, char* file, int type) {
 				write(0, i + 2, err[i]);
 			sprintf(toScreen, "File: %s", file);
 			write(0, errSize + 3, toScreen);
-			errorScreen(errSize + 4, B_RETURN__Y_RETRY); //CHANGE TO RETURN
+			errorScreen(errSize + 4, B_RETURN__Y_RETRY);
 			endRefresh();
 			
 			switch (vpad.trigger) {
