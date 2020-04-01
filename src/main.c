@@ -92,7 +92,31 @@ size_t writeCallback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 
 int multiplier;
 char* multiplierName;
-static int progressCallback(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow) {
+bool downloadPaused = false;
+static int progressCallback(void *curl, double dltotal, double dlnow, double ultotal, double ulnow) {
+	if(AppRunning())
+	{
+		if(app == 2)
+		{
+			if(!downloadPaused && curl_easy_pause(curl, CURLPAUSE_ALL) == CURLE_OK)
+			{
+				downloadPaused = true;
+				WHBLogPrintf("Download paused!");
+			}
+			return 0;
+		}
+		else if(downloadPaused && curl_easy_pause(curl, CURLPAUSE_CONT) == CURLE_OK)
+		{
+			downloadPaused = false;
+			WHBLogPrintf("Download resumed");
+		}
+	}
+	else
+	{
+		WHBLogPrintf("Download cancelled!");
+		return 1;
+	}
+	
 	// WHBLogPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", downloading, dcontent, contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
 	startRefresh();
 	if (dltotal == 0)
@@ -211,10 +235,11 @@ int downloadFile(char* url, char* file, int type) {
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
 	curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressCallback);
-	curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, NULL);
+	curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, curl);
 	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
 	
 	int ret = curl_easy_perform(curl);
+	WHBLogPrintf("curl_easy_perform returned");
 	if (ret) {
 		WHBLogPrintf("curl_easy_perform returned an error: %d", ret);
 		
@@ -240,6 +265,12 @@ int downloadFile(char* url, char* file, int type) {
 				err[3] = "and try again";
 				errSize = 4;
 				break;
+			case CURLE_ABORTED_BY_CALLBACK:
+				curl_easy_cleanup(curl);
+				fclose(fp);
+				remove(file);
+				MEMFreeToDefaultHeap(multiplierName);
+				return 0;
 			default:
 				err[0] = "---> Unknown error";
 				err[1] = "See: https://curl.haxx.se/libcurl/c/libcurl-errors.html";
@@ -274,8 +305,8 @@ int downloadFile(char* url, char* file, int type) {
 			}
 		}
 	}
-	MEMFreeToDefaultHeap(multiplierName);
 	WHBLogPrintf("curl_easy_perform executed successfully");
+	MEMFreeToDefaultHeap(multiplierName);
 
 	long resp = 404;
 	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &resp);
@@ -599,8 +630,8 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 	
 	for (int i = 0; i < 0x10; i++)
 		VPADControlMotor(VPAD_CHAN_0, vibrationPattern, 0xF);
-		
-	enableShutdown();
+	
+	enableShutdown(); //TODO
 	
 	while (AppRunning()) {
 		if (app == 2)
@@ -760,7 +791,7 @@ dnext:
 				}
 				break;
 ddnext:
-				disableShutdown();
+				disableShutdown(); //TODO
 
 				if (!downloadTitle(titleID, titleVer, folderName))
 					goto exit;
