@@ -51,12 +51,19 @@ inline void *allocateFastMemory(size_t size)
 
 void *aallocateFastMemory(size_t size, size_t align)
 {
-	if(allocatorInitialized)
+	WHBLogPrintf("Trying to claim fast memory...");
+	if(!allocatorInitialized)
+	{
+		WHBLogPrintf("Allocator not ready!");
 		return NULL;
+	}
 	
 	size += sizeof(MemoryDescription);
 	if(MEMGetAllocatableSizeForExpHeapEx(mem1_handle, align) < size)
+	{
+		WHBLogPrintf("%d < %d", MEMGetAllocatableSizeForExpHeapEx(mem1_handle, align), size);
 		return NULL;
+	}
 	
 	void *ptr = MEMAllocFromExpHeapEx(mem1_handle, size, align);
 	if(ptr != NULL)
@@ -64,13 +71,15 @@ void *aallocateFastMemory(size_t size, size_t align)
 		((MemoryDescription *)ptr)->type = MEM_BASE_HEAP_MEM2;
 		ptr += sizeof(MemoryDescription);
 	}
+	else
+		WHBLogPrintf("Got NULL from Caffee!");
 	
 	return ptr; //TODO
 }
 
 void freeMemory(void *ptr)
 {
-	if(allocatorInitialized)
+	if(!allocatorInitialized)
 		return;
 	
 	ptr -= sizeof(MemoryDescription);

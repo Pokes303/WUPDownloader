@@ -724,6 +724,7 @@ int main() {
 				char titleID[17];
 				char titleVer[33];
 				char folderName[FILENAME_MAX + 1];
+				titleID[0] = titleVer[0] = folderName[0] = '\0';
 				
 				while (AppRunning()) {
 					if (app == 2)
@@ -763,11 +764,11 @@ dnext:
 					write(3, 1, titleID);
 					
 					write(0, 2, "Provided title version [Only numbers]:");
-					write(3, 3, strlen(titleVer) > 0 ? titleVer : "<LATEST>");
+					write(3, 3, titleVer[0] == '\0' ? "<LATEST>" : titleVer);
 					
 					write(0, 4, "Custom folder name [Only text and numbers]:");
 					write(3, 5, "sd:/install/");
-					write(15, 5, strlen(folderName) > 0 ? folderName : "<Title ID>");
+					write(15, 5, folderName[0] == '\0' ?  titleID :  folderName);
 					
 					write(0, 7, "Press (A) to download");
 					write(0, 8, "Press (B) to return");
