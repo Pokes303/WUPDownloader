@@ -247,29 +247,25 @@ void disableShutdown() {
 }
 
 char* hex(uint64_t i, int digits) {
-	unsigned long l1 = (unsigned long)((i & 0xFFFF0000) >> 16 );
-	unsigned long l2 = (unsigned long)((i & 0x0000FFFF));
-	char h[32];
-	sprintf(h, "%lx%lx", l1, l2); //TODO: We removed 0x as it's not shown in the headers example and to reuse this in function hex0
+	char h[33];
+	sprintf(h, "%lx%lx", (long unsigned int)((i & 0xFFFF0000) >> 16), (long unsigned int)(i & 0x0000FFFF));
 	size_t hexDigits = strlen(h);
 	if (hexDigits > digits)
 		return "too few digits error";
 	
 	char *result = MEMAllocFromDefaultHeap(sizeof(char) * (digits + 1));
-	if(result == NULL)
-		return NULL;
-	
-	int n = digits - hexDigits;
-	if(n > 0)
+	if(result != NULL)
 	{
-		int i = 0;
-		for( ; i < n; i++)
-			result[i] = '0';
-		result[i] = '\0';
-		strcat(result, h);
+		int n = digits - hexDigits;
+		if(n > 0)
+		{
+			OSBlockSet(result, '0', n);
+			result[n] = '\0';
+			strcat(result, h);
+		}
+		else
+			strcpy(result, h);
 	}
-	else
-		strcat(result, h);
 	
 	return result;
 }
