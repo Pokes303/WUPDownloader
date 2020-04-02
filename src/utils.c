@@ -11,6 +11,7 @@
 #include <coreinit/energysaver.h>
 #include <coreinit/foreground.h>
 #include <coreinit/memdefaultheap.h>
+#include <coreinit/memory.h>
 #include <coreinit/screen.h>
 #include <coreinit/systeminfo.h>
 #include <whb/log.h>
