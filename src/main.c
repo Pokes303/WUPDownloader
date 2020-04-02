@@ -100,7 +100,7 @@ static int progressCallback(void *curl, double dltotal, double dlnow, double ult
 	OSTime now = OSGetSystemTime();
 	if(lastDraw > 0)
 	{
-		if(OSTicksToMilliseconds(now - lastDraw) < 500)
+		if(OSTicksToMilliseconds(now - lastDraw) < 1000)
 			return 0;
 	}
 	lastDraw = now;
