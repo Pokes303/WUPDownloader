@@ -36,14 +36,8 @@ FSCmdBlock *fsCmd;
 VPADStatus vpad;
 VPADReadError vError;
 
-uint16_t contents = 0xFFFF; //Contents count
-uint16_t dcontent = 0xFFFF; //Actual content number
-
-typedef struct {
-	uint32_t app;
-	bool h3;
-	uint64_t size;
-} File_to_download;
+uint16_t contents; //Contents count
+uint16_t dcontent; //Actual content number
 
 const char* downloading = "UNKNOWN";
 double downloaded = 0;
@@ -406,7 +400,7 @@ int downloadFile(char* url, char* file, int type) {
 bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 	WHBLogPrintf("Downloading title... tID: %s, tVer: %s, fName: %s", titleID, titleVer, folderName);
 	
-	char downloadUrl[256];
+	char downloadUrl[128];
 	strcpy(downloadUrl, DOWNLOAD_URL);
 	strcat(downloadUrl, titleID);
 	strcat(downloadUrl, "/");
@@ -424,7 +418,7 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 		strcat(folderName, "]");
 	}
 	
-	char installDir[256];
+	char installDir[FILENAME_MAX + 37];
 	strcpy(installDir, "/vol/external01/install/");
 	strcat(installDir, folderName);
 	strcat(installDir, "/");
@@ -467,10 +461,11 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 		strcat(tDownloadUrl, ".");
 		strcat(tDownloadUrl, titleVer);
 	}
-	char tInstallDir[256];
-	strcpy(tInstallDir, installDir);
-	strcat(tInstallDir, "title.tmd");
-	if (downloadFile(tDownloadUrl, tInstallDir, 2))
+	char tmd[FILENAME_MAX + 37];
+	strcpy(tmd, installDir);
+	strcat(tmd, "title.tmd");
+	contents = 0xFFFF;
+	if (downloadFile(tDownloadUrl, tmd, 2))
 	{
 		WHBLogPrintf("Error downloading TMD");
 		return true;
@@ -478,7 +473,7 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 	addToDownloadLog("TMD Downloaded");
 	
 	strcpy(toScreen, "=>Title type: ");
-	switch (readUInt32(tInstallDir, 0x18C)) { //Title type
+	switch (readUInt32(tmd, 0x18C)) { //Title type
 		case 0x00050000:
 			strcat(toScreen, "eShop or Packed");
 			break;
@@ -512,7 +507,7 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 			break;
 		default:
 			strcat(toScreen, "Unknown (");
-			char *h = hex(readUInt32(tInstallDir, 0x18C), 8);
+			char *h = hex(readUInt32(tmd, 0x18C), 8);
 			strcat(toScreen, h);
 			MEMFreeToDefaultHeap(h);
 			strcat(toScreen, ")");
@@ -521,6 +516,8 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 	addToDownloadLog(toScreen);
 	strcpy(tDownloadUrl, downloadUrl);
 	strcat(tDownloadUrl, "cetk");
+	
+	char tInstallDir[FILENAME_MAX + 37];
 	strcpy(tInstallDir, installDir);
 	strcat(tInstallDir, "title.tik");
 	int tikRes = downloadFile(tDownloadUrl, tInstallDir, 3);
@@ -565,45 +562,41 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 		}
 	}
 
-	strcpy(tInstallDir, installDir);
-	strcat(tInstallDir, "title.tmd");
-	contents = readUInt16(tInstallDir, 0x1DE);
-	File_to_download ftd[contents]; //Files to download
-
+	uint16_t conts = readUInt16(tmd, 0x1DE);
+	bool h3[conts];
+	contents = conts;
+	
 	//Get .app and .h3 files
-	for (int i = 0; i < contents; i++) {
-		ftd[i].app = readUInt32(tInstallDir, 0xB04 + i * 0x30); //.app file
-		ftd[i].h3 = readUInt16(tInstallDir, 0xB0A + i * 0x30) == 0x2003 ? true : false; //.h3?
-		ftd[i].size = readUInt64(tInstallDir, 0xB0C + i * 0x30); //size
+	for(int i = 0; i < conts; i++) {
+		h3[i] = readUInt16(tmd, 0xB0A + i * 0x30) == 0x2003;
+		if(h3[i])
+			contents++;
 	}
 	
 	char *tmpHex;
-	char tmpFileName[256];
-	for (dcontent = 0; dcontent < contents; dcontent++) {
-		tmpHex = hex(ftd[dcontent].app, 8);
+	char tmpFileName[FILENAME_MAX + 37];
+	for(int i = 0; i < conts; i++) {
+		tmpHex = hex(readUInt32(tmd, 0xB04 + i * 0x30), 8);
 		strcpy(tDownloadUrl, downloadUrl);
 		strcat(tDownloadUrl, tmpHex);
 		strcpy(tmpFileName, installDir);
 		strcat(tmpFileName, tmpHex);
+		MEMFreeToDefaultHeap(tmpHex);
+		
 		strcpy(tInstallDir, tmpFileName);
 		strcat(tInstallDir, ".app");
 		if (downloadFile(tDownloadUrl, tInstallDir, 0) == 1)
-		{
-			MEMFreeToDefaultHeap(tmpHex);
 			return true;
-		}
-		strcpy(tInstallDir, tmpFileName);
-		strcat(tInstallDir, ".h3");
-		if (ftd[dcontent].h3) { //.h3 download
-			strcat(tmpHex, ".h3");
+		dcontent++;
+		
+		if(h3[i])
+		{
 			strcat(tDownloadUrl, ".h3");
-			if (downloadFile(tDownloadUrl, tInstallDir, 1) == 1)
-			{
-				MEMFreeToDefaultHeap(tmpHex);
+			strcat(tmpFileName, ".h3");
+			if(downloadFile(tDownloadUrl, tmpFileName, 1) == 1)
 				return true;
-			}
+			dcontent++;
 		}
-		MEMFreeToDefaultHeap(tmpHex);
 	}
 	
 	WHBLogPrintf("Creating CERT...");
@@ -726,7 +719,7 @@ int main() {
 			case VPAD_BUTTON_A: { //Download title
 				char titleID[17];
 				char titleVer[33];
-				char folderName[FILENAME_MAX + 1];
+				char folderName[FILENAME_MAX - 11];
 				titleID[0] = titleVer[0] = folderName[0] = '\0';
 				
 				while (AppRunning()) {
@@ -803,7 +796,7 @@ dnext:
 							titleVer[0] = '\0';
 					}
 					else if (vpad.trigger == VPAD_BUTTON_DOWN) {
-						if (!showKeyboard(folderName, CHECK_NOSPECIAL, FILENAME_MAX, false))
+						if (!showKeyboard(folderName, CHECK_NOSPECIAL, FILENAME_MAX - 11, false))
 							folderName[0] = '\0';
 					}
 					else if (vpad.trigger == VPAD_BUTTON_Y)
