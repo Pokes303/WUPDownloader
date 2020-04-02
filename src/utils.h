@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #define MAX_LINE_DRC 14
-#define MAX_LINE_TV 22
+#define MAX_LINE_TV 24
 #define MAX_X_DRC 802
 #define MAX_X_TV 1236
 
