@@ -739,7 +739,7 @@ int main() {
 					endRefresh();
 
 					if (vpad.trigger == VPAD_BUTTON_A) {
-						if (showKeyboard(&titleID, CHECK_HEXADECIMAL, 16, true))
+						if (showKeyboard(titleID, CHECK_HEXADECIMAL, 16, true))
 							goto dnext;
 					}
 					else if (vpad.trigger == VPAD_BUTTON_B)
