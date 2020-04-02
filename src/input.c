@@ -128,13 +128,44 @@ const char* SWKBD_GetError(KeyboardChecks check) {
 	char* output = Swkbd_GetInputFormString();
 	if (!output)
 		return "nn::swkbd::GetInputFormString returned NULL";
-
-	if (globalMaxlength != -1 && globalLimit && strlen(output) != (uint32_t)globalMaxlength)
+	
+	size_t len = strlen(output);
+	
+	if (globalMaxlength != -1 && globalLimit && len != globalMaxlength)
 	{
-		char ret[1024];
-		sprintf(ret, "Invalid input size (%d/%d)", strlen(output), globalMaxlength);
 		MEMFreeToDefaultHeap(output);
-		return ret;
+		return "Input size > globalMaxlength";
+	}
+	
+	if(check != CHECK_NONE)
+	{
+		for(int i = 0; i < len; i++)
+		{
+			switch(check)
+			{
+				case CHECK_NUMERICAL:
+					if(!(output[i] >= '0' && output[i] <= '9'))
+					{
+						MEMFreeToDefaultHeap(output);
+						return "The wrote string must be only numerical [0->9]";
+					}
+					break;
+				case CHECK_HEXADECIMAL:
+					if(!((output[i] >= '0' && output[i] <= '9') || (output[i] >= 'A' && output[i] <= 'F') || (output[i] >= 'a' && output[i] <= 'f')))
+					{
+						MEMFreeToDefaultHeap(output);
+						return "The wrote string must be only hexadecimal [0->F]";
+					}
+					break;
+				case CHECK_NOSPECIAL:
+					if(!((output[i] >= '0' && output[i] <= '9') || (output[i] >= 'A' && output[i] <= 'Z') || (output[i] >= 'a' && output[i] <= 'z') || output[i] == ' '))
+					{
+						MEMFreeToDefaultHeap(output);
+						return "The wrote string must not have special characters [A->Z->9->Space]";
+					}
+					break;
+			}
+		}
 	}
 	
 	WHBLogPrintf("Input string: %s", output);
