@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include <coreinit/cache.h>
 #include <coreinit/energysaver.h>
@@ -271,4 +272,10 @@ char* hex(uint64_t i, int digits) {
 		strcat(result, h);
 	
 	return result;
+}
+
+bool pathExists(char *path)
+{
+	struct stat fileStat;
+	return stat(path, &fileStat) == 0;
 }

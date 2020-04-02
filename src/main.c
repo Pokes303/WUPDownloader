@@ -8,8 +8,8 @@
 #include "utils.h"
 
 #include <errno.h>
-#include <sys/stat.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include <coreinit/foreground.h>
 #include <coreinit/memdefaultheap.h>
@@ -95,7 +95,16 @@ size_t writeCallback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 int multiplier;
 char* multiplierName;
 bool downloadPaused = false;
+OSTime lastDraw = 0;
 static int progressCallback(void *curl, double dltotal, double dlnow, double ultotal, double ulnow) {
+	OSTime now = OSGetSystemTime();
+	if(lastDraw > 0)
+	{
+		if(OSTicksToMilliseconds(now - lastDraw) < 500)
+			return 0;
+	}
+	lastDraw = now;
+	
 	if(AppRunning())
 	{
 		if(app == 2)
@@ -193,8 +202,7 @@ int downloadFile(char* url, char* file, int type) {
 	}
 	downloading = &file[++haystack];
 	
-	struct stat fileStat;
-	if(stat(file, &fileStat) == 0)
+	if(pathExists(file))
 	{
 		char toAdd[512];
 		strcpy(toAdd, "Download ");

@@ -44,6 +44,8 @@ char* b_tostring(bool b);
 
 char* hex(uint64_t i, int digits); //ex: 000050D1
 
+bool pathExists(char *path);
+
 #ifdef __cplusplus
 	}
 #endif
