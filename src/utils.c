@@ -1,5 +1,4 @@
 #include "main.h"
-#include "mem1.h"
 #include "utils.h"
 #include "screen.h"
 
@@ -29,8 +28,8 @@ bool initScreen() {
 	tvBufferSize = OSScreenGetBufferSizeEx(SCREEN_TV);
 	drcBufferSize = OSScreenGetBufferSizeEx(SCREEN_DRC);
 
-	tvBuffer = allocateMem1aligned(tvBufferSize, 0x100);
-	drcBuffer = allocateMem1aligned(drcBufferSize, 0x100);
+	tvBuffer = MEMAllocFromDefaultHeapEx(tvBufferSize, 0x100);
+	drcBuffer = MEMAllocFromDefaultHeapEx(drcBufferSize, 0x100);
 
 	if (!tvBuffer || !drcBuffer) {
 		WHBLogPrintf("Error initialising screen library");

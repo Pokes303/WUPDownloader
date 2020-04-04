@@ -1,7 +1,6 @@
 #include "file.h"
 #include "input.h"
 #include "main.h"
-#include "mem1.h"
 #include "menu.h"
 #include "screen.h"
 #include "status.h"
@@ -185,7 +184,6 @@ static int progressCallback(void *curl, double dltotal, double dlnow, double ult
 	return 0;
 }
 
-void *writeBuffer;
 int downloadFile(char* url, char* file, int type) {
 	//Results: 0 = OK | 1 = Error | 2 = No ticket aviable | 3 = Exit
 	//Types: 0 = .app | 1 = .h3 | 2 = title.tmd | 3 = tilte.tik
@@ -219,9 +217,6 @@ int downloadFile(char* url, char* file, int type) {
 	downloadSpeed[0] = '\0';
 	
 	FILE *fp = fopen(file, "wb");
-	if(writeBuffer ==  NULL)
-		writeBuffer = allocateMem1(BUFSIZ);
-	setbuf(fp, writeBuffer);
 	CURL *curl = curl_easy_init();
 	if (!curl) {
 		MEMFreeToDefaultHeap(multiplierName);
@@ -470,7 +465,6 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 	strcpy(tmd, installDir);
 	strcat(tmd, "title.tmd");
 	contents = 0xFFFF;
-	
 	if (downloadFile(tDownloadUrl, tmd, 2))
 	{
 		WHBLogPrintf("Error downloading TMD");
@@ -676,7 +670,6 @@ bool downloadTitle(char* titleID, char* titleVer, char* folderName) {
 
 int main() {
 	WHBLogUdpInit();
-	initMem1();
 	WHBLogPrintf("Initialising libraries...");
 	
 	if (OSGetTitleID() != 0 &&
@@ -845,9 +838,6 @@ exit:
 	FSShutdown();
 	if (hbl)
 		WHBProcShutdown();
-	
-	deinitMem1();
-	
 	WHBLogUdpDeinit();
 
 	return 1;
