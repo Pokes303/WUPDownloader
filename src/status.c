@@ -1,5 +1,6 @@
 #include "input.h"
 #include "main.h"
+#include "screen.h"
 #include "status.h"
 #include "utils.h"
 
