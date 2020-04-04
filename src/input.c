@@ -14,7 +14,9 @@
 //WIP. This need a better implementation
 
 FSClient* swkbdCli;
-Swkbd_CreateArg createArg;
+Swkbd_CreateArg *createArg = NULL;
+Swkbd_AppearArg *appearArg = NULL;
+Swkbd_ControllerInfo *controllerInfo = NULL;
 
 int globalMaxlength;
 bool globalLimit;
@@ -27,12 +29,60 @@ bool SWKBD_Init() {
 	swkbdCli = (FSClient*)MEMAllocFromDefaultHeap(sizeof(FSClient));
 	FSAddClient(swkbdCli, 0);
 	
+	createArg = MEMAllocFromDefaultHeap(sizeof(Swkbd_CreateArg));
+	if(createArg == NULL)
+		return false;
+	
+	createArg->workMemory = MEMAllocFromDefaultHeap(Swkbd_GetWorkMemorySize(0));
+	if(createArg->workMemory == NULL)
+		return false;
+	
+	appearArg = MEMAllocFromDefaultHeap(sizeof(Swkbd_CreateArg));
+	if(appearArg == NULL)
+		return false;
+	
+	controllerInfo = MEMAllocFromDefaultHeap(sizeof(Swkbd_ControllerInfo));
+	if(controllerInfo == NULL)
+		return false;
+	
+	createArg->regionType = Swkbd_RegionType__Europe;
+	createArg->unk_0x08 = 0;
+	createArg->fsClient = swkbdCli;
+	
+	appearArg->keyboardArg.configArg.languageType = Swkbd_LanguageType__English;
+	appearArg->keyboardArg.configArg.unk_0x04 = 4;
+	appearArg->keyboardArg.configArg.unk_0x08 = 0;
+	appearArg->keyboardArg.configArg.unk_0x0C = 0x7FFFF;
+	appearArg->keyboardArg.configArg.unk_0x10 = 19;
+	appearArg->keyboardArg.configArg.unk_0x14 = -1;
+	appearArg->keyboardArg.configArg.unk_0x9C = 1;
+	appearArg->keyboardArg.configArg.unk_0xA4 = 1;
+	
+	appearArg->keyboardArg.receiverArg.unk_0x00 = 0;
+	appearArg->keyboardArg.receiverArg.unk_0x04 = 0;
+	appearArg->keyboardArg.receiverArg.unk_0x08 = 0;
+	appearArg->keyboardArg.receiverArg.unk_0x0C = -1;
+	appearArg->keyboardArg.receiverArg.unk_0x10 = 0;
+	appearArg->keyboardArg.receiverArg.unk_0x14 = -1;
+	
+	appearArg->inputFormArg.unk_0x00 = -1;
+	appearArg->inputFormArg.unk_0x04 = -1;
+	appearArg->inputFormArg.unk_0x08 = 0;
+	appearArg->inputFormArg.unk_0x0C = 0;
+	appearArg->inputFormArg.unk_0x14 = 0;
+	appearArg->inputFormArg.unk_0x18 = 0;
+	appearArg->inputFormArg.unk_0x1C = false;
+	appearArg->inputFormArg.unk_0x1D = false;
+	appearArg->inputFormArg.unk_0x1E = false;
+	
+	controllerInfo->kpad[0] =
+		controllerInfo->kpad[1] = 
+		controllerInfo->kpad[2] = 
+		controllerInfo->kpad[3] = NULL; //TODO: Real kPad support?
+	
 	WHBGfxInit();
-	createArg.regionType = Swkbd_RegionType__Europe;
-	createArg.workMemory = MEMAllocFromDefaultHeap(Swkbd_GetWorkMemorySize(0));
-	createArg.unk_0x08 = 0;
-	createArg.fsClient = swkbdCli;
-	if (!Swkbd_Create(createArg)) {
+
+	if (!Swkbd_Create(*createArg)) {
 		WHBLogPrintf("nn::swkbd::Create failed");
 		WHBGfxShutdown();
 		return false;
@@ -47,12 +97,8 @@ bool SWKBD_Show(int maxlength, bool limit) {
 	
 	WHBLogPrintf("WHBGfxInit(): %d", WHBGfxInit());
 	// Show the keyboard
-	Swkbd_AppearArg appearArg;
-	appearArg.keyboardArg.configArg = (Swkbd_ConfigArg){ Swkbd_LanguageType__English, 4, 0, 0x7FFFF, 19, -1,  1, 1 };
-	appearArg.keyboardArg.receiverArg = (Swkbd_ReceiverArg){ 0, 0, 0, -1, 0, -1 };
-	appearArg.inputFormArg = (Swkbd_InputFormArg){ -1, -1, 0, 0, maxlength, 0, 0, false, false, false };
-	globalMaxlength = maxlength;
-	if (!Swkbd_AppearInputForm(appearArg)) {
+	globalMaxlength = appearArg->inputFormArg.maxTextLength = maxlength;
+	if (!Swkbd_AppearInputForm(*appearArg)) {
 		WHBLogPrintf("nn::swkbd::AppearInputForm failed");
 		WHBGfxShutdown();
 		return false;
@@ -74,22 +120,13 @@ void SWKBD_Render(VPADStatus* vpad) {
 		}
 	}
 	
-	Swkbd_ControllerInfo controllerInfo;
-	controllerInfo.vpad = vpad;
-	controllerInfo.kpad[0] =
-		controllerInfo.kpad[1] =
-		controllerInfo.kpad[2] =
-		controllerInfo.kpad[3] = NULL;
-	Swkbd_Calc(controllerInfo);
+	controllerInfo->vpad = vpad;
+	Swkbd_Calc(*controllerInfo); //TODO: Do this in a new thread?
 
-	if (Swkbd_IsNeedCalcSubThreadFont()) {
-		Swkbd_CalcSubThreadFont();
+	if (Swkbd_IsNeedCalcSubThreadFont())
+	{
+		Swkbd_CalcSubThreadFont(); //TODO: Do this in a new thread?
 		WHBLogPrintf("SWKBD nn::swkbd::IsNeedCalcSubThreadFont()");
-	}
-
-	if (Swkbd_IsNeedCalcSubThreadPredict()) {
-		Swkbd_CalcSubThreadPredict();
-		WHBLogPrintf("SWKBD nn::swkbd::CalcSubThreadPredict()");
 	}
 
 	WHBGfxBeginRender();
@@ -188,11 +225,31 @@ void SWKBD_CleanupText() {
 void SWKBD_Shutdown() {
 	SWKBD_CleanupText();
 	Swkbd_Destroy();
-	MEMFreeToDefaultHeap(createArg.workMemory);
 	
-	if (showed) { //Shutdown libraries properly
+	if(showed)
+	{
 		WHBGfxInit();
 		WHBGfxShutdown();
+	}
+	
+	if(createArg != NULL)
+	{
+		if(createArg->workMemory != NULL)
+			MEMFreeToDefaultHeap(createArg->workMemory);
+		MEMFreeToDefaultHeap(createArg);
+		createArg = NULL;
+	}
+	
+	if(appearArg != NULL)
+	{
+		MEMFreeToDefaultHeap(appearArg);
+		appearArg = NULL;
+	}
+	
+	if(controllerInfo != NULL)
+	{
+		MEMFreeToDefaultHeap(controllerInfo);
+		controllerInfo = NULL;
 	}
 }
 
