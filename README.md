@@ -41,6 +41,13 @@ Run it from the HOME Menu (With a CFW)
 - Updated download size to be showed as "B", "Kb" or "Mb"
 - Some other fixes
 
+### 1.2 [24 Apr. 2020]
+This app was made some months ago so I had to write new (and better) code on top of old code. I updated it only for fun. Feel free to make it better if you want, because i dont have so much desire to continue with this
+- Fixed issue #1 by moving graphic processes to another thread. This made:
+  - Download speeds now are much faster than before
+- Fixed issue #2 by changing how the new ticket filename is calculated
+- Now log functions don't send debug data unless you compile it with DEBUG tag defined in "debug.hpp"
+
 # Building
 1. On Linux/WSL, download and install WUT from devkitPRO's github [https://github.com/devkitPro/wut]
 2. Follow the instructions to install it
@@ -55,5 +62,3 @@ make
 # Info
 Feel free to fork or use this project, and don't forget to give credits!
 Contact: pokes303dev@gmail.com
-
--> Pokes303
