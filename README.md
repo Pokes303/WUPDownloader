@@ -42,9 +42,10 @@ Run it from the HOME Menu (With a CFW)
 - Some other fixes
 
 ### 1.2 [24 Apr. 2020]
-This app was made some months ago so I had to write new (and better) code on top of old code. I updated it only for fun. Feel free to make it better if you want, because i dont have so much desire to continue with this
+This app was made some months ago so I had to write new (and better) code on top of old code. I updated it only for fun, and i would like to rewrite the code or making a GX2 version with my actual knowledge, but i dont have so much time and desire to continue with this. Feel free to make it better if you want.
 - Fixed issue #1 by moving graphic processes to another thread. This made:
-  - Download speeds now are much faster than before
+  - Download speeds now are much faster than before (More than a 500% for me)
+  - GUI processes now are limited when downloading to de-stress the cpu slightly
 - Fixed issue #2 by changing how the new ticket filename is calculated
 - Now log functions don't send debug data unless you compile it with DEBUG tag defined in "debug.hpp"
 
