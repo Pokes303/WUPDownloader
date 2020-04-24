@@ -1,5 +1,6 @@
 #include "file.hpp"
 #include "utils.hpp"
+#include "log.hpp"
 
 #include <coreinit/time.h>
 
@@ -74,7 +75,7 @@ int makeDir(const char *path) {
 		return -1;
 	
 	int res = mkdir(path, 777);
-	WHBLogPrintf("mkdir res: %d", res);
+	wlogf("mkdir res: %d", res);
 	return res;
 }
 bool fileExists(const char *path) {
@@ -86,11 +87,11 @@ bool fileExists(const char *path) {
 	return true;
 }
 bool dirExists(const char *path) {
-	WHBLogPrintf("f");
+	wlogf("f");
 	FSDirectoryHandle dh;
 	
 	FSStatus fss = FSOpenDir(fsCli, fsCmd, path, &dh, 0);
-	WHBLogPrintf("fss: %u", fss);
+	wlogf("fss: %u", fss);
 	if (fss == FS_STATUS_OK) {
 		FSCloseDir(fsCli, fsCmd, dh, 0);
 		return true;

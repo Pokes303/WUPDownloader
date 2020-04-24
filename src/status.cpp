@@ -2,6 +2,7 @@
 
 #include "utils.hpp"
 #include "input.hpp"
+#include "log.hpp"
 
 #include <coreinit/core.h>
 #include <coreinit/screen.h>
@@ -11,7 +12,10 @@
 
 uint8_t app = 1;
 uint8_t AppRunning() {
-	if (!hbl) {
+	if (hbl) {
+		if (app == 0)
+			return 0;
+	
 		if(!OSIsMainCore())
 			ProcUISubProcessMessages(true);
 		else {

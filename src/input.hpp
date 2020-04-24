@@ -16,5 +16,6 @@ bool SWKBD_IsCancelButton();
 const char* SWKBD_GetError(KeyboardChecks check);
 std::string SWKBD_GetText();
 void SWKBD_Shutdown();
+bool SWKBD_IsShowing();
 
 bool showKeyboard(std::string* output, KeyboardChecks check, int maxlength, bool limit);

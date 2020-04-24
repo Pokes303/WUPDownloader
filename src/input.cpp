@@ -1,5 +1,6 @@
 #include "input.hpp"
 #include "utils.hpp"
+#include "log.hpp"
 
 #include <nn/swkbd.h>
 
@@ -15,6 +16,8 @@ std::string outputStr;
 
 bool showed;
 
+bool isShowing;
+
 bool SWKBD_Init() {
 	swkbdCli = (FSClient*)MEMAllocFromDefaultHeap(sizeof(FSClient));
 	FSAddClient(swkbdCli, 0);
@@ -25,11 +28,11 @@ bool SWKBD_Init() {
 	createArg.workMemory = MEMAllocFromDefaultHeap(nn::swkbd::GetWorkMemorySize(0));
 	createArg.fsClient = swkbdCli;
 	if (!nn::swkbd::Create(createArg)) {
-		WHBLogPrintf("nn::swkbd::Create failed");
+		wlogf("nn::swkbd::Create failed");
 		WHBGfxShutdown();
 		return false;
 	}
-	WHBLogPrintf("nn::swkbd::Create success");
+	wlogf("nn::swkbd::Create success");
 	WHBGfxShutdown();
 	return true;
 }
@@ -37,21 +40,21 @@ bool SWKBD_Show(int maxlength, bool limit) {
 	outputStr = "none";
 	showed = true;
 	
-	WHBLogPrintf("WHBGfxInit(): %d", WHBGfxInit());
+	wlogf("WHBGfxInit(): %d", WHBGfxInit());
 	// Show the keyboard
 	nn::swkbd::AppearArg appearArg;
 	appearArg.keyboardArg.configArg.languageType = nn::swkbd::LanguageType::English;
 	appearArg.inputFormArg.maxTextLength = maxlength; //-1 For unlimited size
 	globalMaxlength = maxlength;
 	if (!nn::swkbd::AppearInputForm(appearArg)) {
-		WHBLogPrintf("nn::swkbd::AppearInputForm failed");
+		wlogf("nn::swkbd::AppearInputForm failed");
 		WHBGfxShutdown();
 		return false;
 	}
 	globalLimit = limit;
 	if (!limit && maxlength != -1)
 		nn::swkbd::SetEnableOkButton(false);
-	WHBLogPrintf("nn::swkbd::AppearInputForm success");
+	wlogf("nn::swkbd::AppearInputForm success");
 	return true;
 }
 void SWKBD_Render(VPADStatus* vpad) {
@@ -70,12 +73,12 @@ void SWKBD_Render(VPADStatus* vpad) {
 
 	if (nn::swkbd::IsNeedCalcSubThreadFont()) {
 		nn::swkbd::CalcSubThreadFont();
-		WHBLogPrintf("SWKBD nn::swkbd::IsNeedCalcSubThreadFont()");
+		wlogf("SWKBD nn::swkbd::IsNeedCalcSubThreadFont()");
 	}
 
 	if (nn::swkbd::IsNeedCalcSubThreadPredict()) {
 		nn::swkbd::CalcSubThreadPredict();
-		WHBLogPrintf("SWKBD nn::swkbd::CalcSubThreadPredict()");
+		wlogf("SWKBD nn::swkbd::CalcSubThreadPredict()");
 	}
 
 	WHBGfxBeginRender();
@@ -145,7 +148,7 @@ const char* SWKBD_GetError(KeyboardChecks check) {
 				break;
 		}
 	}
-	WHBLogPrintf("Input string: %s", outputStr.c_str());
+	wlogf("Input string: %s", outputStr.c_str());
 	return NULL;
 }
 std::string SWKBD_GetText() {
@@ -161,8 +164,13 @@ void SWKBD_Shutdown() {
 	}
 }
 
+bool SWKBD_IsShowing() {
+	return isShowing;
+}
+
 bool showKeyboard(std::string* output, KeyboardChecks check, int maxlength, bool limit) {
-	WHBLogPrintf("Initialising SWKBD");
+	isShowing = true;
+	wlogf("Initialising SWKBD");
 	bool kError = SWKBD_Show(maxlength, limit);
 	if (!kError) {
 		while(true) {
@@ -179,18 +187,18 @@ bool showKeyboard(std::string* output, KeyboardChecks check, int maxlength, bool
 					return false;
 		}
 	}
-	WHBLogPrintf("SWKBD initialised successfully");
+	wlogf("SWKBD initialised successfully");
 	
 	while (true) {
 		readInput();
 		SWKBD_Render(&vpad);
 
 		if (SWKBD_IsOkButton()) {
-			WHBLogPrintf("SWKBD Ok button pressed");
+			wlogf("SWKBD Ok button pressed");
 			SWKBD_Hide(&vpad);
 			const char* kError = SWKBD_GetError(check);
 			if (kError) {
-				WHBLogPrintf("SWKBD Result string error: %s", kError);
+				wlogf("SWKBD Result string error: %s", kError);
 				while(true) {
 					readInput();
 
@@ -207,14 +215,16 @@ bool showKeyboard(std::string* output, KeyboardChecks check, int maxlength, bool
 				}
 			}
 			*output = SWKBD_GetText();
+			isShowing = false;
 			return true;
 		}
 
 		if (SWKBD_IsCancelButton()) {
-			WHBLogPrintf("SWKBD Cancel button pressed");
+			wlogf("SWKBD Cancel button pressed");
 			SWKBD_Hide(&vpad);
 			startRefresh();
 			endRefresh();
+			isShowing = false;
 			return false;
 		}
 	}

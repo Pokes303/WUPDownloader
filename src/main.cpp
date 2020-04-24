@@ -1,5 +1,7 @@
 #include "main.hpp"
 
+#include <thread>
+
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
 #include <coreinit/title.h>
@@ -20,8 +22,9 @@
 #include "input.hpp"
 #include "ticket.hpp"
 #include "status.hpp"
+#include "log.hpp"
 
-#define VERSION 1.0
+#define VERSION 1.2
 
 bool hbl = true;
 
@@ -44,10 +47,12 @@ typedef struct {
 } File_to_download;
 
 const char* downloading = "UNKNOWN";
+double downloadedNow = 0;
+double downloadedTotal = 0;
 uint32_t downloaded = 0;
-uint8_t second = 0xFF;
 bool showSpeed = true;
 std::string downloadSpeed;
+std::string titleIdForEncKeyWarn = "";
 
 bool vibrateWhenFinished = true;
 uint8_t vibrationPattern[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
@@ -64,15 +69,15 @@ void readInput() {
 				return;
 			case VPAD_READ_NO_SAMPLES:
 				write(2, 1, "Waiting for samples...");
-				WHBLogPrintf("VPAD Error: Waiting for samples...");
+				wlogf("VPAD Error: Waiting for samples...");
 				break;
 			case VPAD_READ_INVALID_CONTROLLER:
 				write(2, 1, "Invalid controller");
-				WHBLogPrintf("VPAD Error: Invalid controller");
+				wlogf("VPAD Error: Invalid controller");
 				break;
 			default:
 				swrite(2, 1, std::string("Unknown error: 0x") + hex0(vError, 8));
-				WHBLogPrintf("VPAD Error: Unknown error: 0x%s", hex0(vError, 8).c_str());
+				wlogf("VPAD Error: Unknown error: 0x%s", hex0(vError, 8).c_str());
 				break;
 		}
 		endRefresh();
@@ -88,59 +93,96 @@ size_t writeCallback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 uint32_t multiplier;
 std::string multiplierName;
 static int progressCallback(void *clientp, double dltotal, double dlnow) {
-	//WHBLogPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", downloading, dcontent, contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
-	startRefresh();
-	if (dltotal == 0)
-		write(0, 0, "Preparing");
-	else {
-		write(0, 0, "Downloading");
-		if ((uint32_t)dltotal > 0) {
-			if (multiplier == 0) {
-				if (dltotal < 1024)
-					multiplierName = "B";
-				else if (dltotal < 1024 * 1024) {
-					multiplier = 1024;
-					multiplierName = "Kb";
-				}
-				else {
-					multiplier = 1024 * 1024;
-					multiplierName = "Mb";
-				}
-			}
-			swrite(0, 1, "[" + std::to_string((uint32_t)(dlnow / dltotal * 100)) + "%] " + std::to_string((uint32_t)dlnow / multiplier) + " / " + std::to_string((uint32_t)dltotal / multiplier) + " " + multiplierName);
-		}
-	}
-	write(12, 0, downloading);
-	if (contents < 0xFFFF)
-		swrite(25, 0, "(" + std::to_string(dcontent) + "/" + std::to_string(contents) + ")");
-	
-	swrite(60 - downloadSpeed.size(), 1, downloadSpeed);
-	
-	OSCalendarTime osc;
-	OSTicksToCalendarTime(OSGetTime(), &osc);
-	if (second != osc.tm_sec) {
-		second = osc.tm_sec;
-		
-		if (dlnow != 0) {
-			uint32_t dl = dlnow - downloaded;
-			char buf[16];
-			if (dl < 1024)
-				sprintf(buf, "%u B/s", dl);
-			else if (dl < 1024 * 1024)
-				sprintf(buf, "%.2f Kb/s", (float)dl / 1024);
-			else
-				sprintf(buf, "%.2f Mb/s", (float)dl / 1024 / 1024);
-			
-			downloaded = dlnow;
-			downloadSpeed = buf;
-		}
-		else
-			downloadSpeed = "-- B/s";
-	}
-	
-	writeDownloadLog();
-	endRefresh();
+	//wlogf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", downloading, dcontent, contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
+	downloadedNow = dlnow;
+	downloadedTotal = dltotal;
 	return 0;
+}
+
+void showProgress() {
+	wlogf("###### Starting thread (c: 0x%X)", contents);
+	
+	while(contents == 0xFFFF) {
+		if (SWKBD_IsShowing())
+			continue;
+		
+		if (titleIdForEncKeyWarn == "") {
+			startRefresh();
+			write(0, 0, (downloadedTotal == 0) ? "Preparing" : "Downloading");
+			write(12, 0, downloading);
+			writeDownloadLog();
+			endRefresh();
+		}
+		else {
+			readInput();
+
+			colorStartRefresh(0x00404000);
+			swrite(0, 0, "Input the Encrypted title key of " + titleIdForEncKeyWarn + " to create a");
+			write(0, 1, " fake ticket (Without it, the download cannot be installed)");
+			write(0, 3, "You can get it from any 'WiiU title key site'");
+			write(0, 5, "Press (A) to show the keyboard [32 hexadecimal numbers]");
+			write(0, 6, "Press (B) to continue the download without the fake ticket");
+			endRefresh();
+		}
+		
+		OSSleepTicks(OSMillisecondsToTicks(200));
+	}
+	
+	int8_t check = 0;
+	while(contents < 0xFFFF) {
+		startRefresh();
+		if (downloadedTotal == 0)
+			write(0, 0, "Preparing");
+		else {
+			write(0, 0, "Downloading");
+			if ((uint32_t)downloadedTotal > 0) {
+				if (multiplier == 0) {
+					if (downloadedTotal < 1024)
+						multiplierName = "B";
+					else if (downloadedTotal < 1024 * 1024) {
+						multiplier = 1024;
+						multiplierName = "Kb";
+					}
+					else {
+						multiplier = 1024 * 1024;
+						multiplierName = "Mb";
+					}
+				}
+				swrite(0, 1, "[" + std::to_string((uint32_t)(downloadedNow / downloadedTotal * 100)) + "%] " + std::to_string((uint32_t)downloadedNow / multiplier) + " / " + std::to_string((uint32_t)downloadedTotal / multiplier) + " " + multiplierName);
+			}
+		}
+		write(12, 0, downloading);
+		swrite(25, 0, "(" + std::to_string(dcontent) + "/" + std::to_string(contents) + ")");
+		
+		swrite(60 - downloadSpeed.size(), 1, downloadSpeed);
+		
+		if (check >= 5) {
+			if (downloadedNow != 0) {
+				uint32_t dl = downloadedNow - downloaded;
+				char buf[16];
+				if (dl < 1024)
+					sprintf(buf, "%u B/s", dl);
+				else if (dl < 1024 * 1024)
+					sprintf(buf, "%.2f Kb/s", (float)dl / 1024);
+				else
+					sprintf(buf, "%.2f Mb/s", (float)dl / 1024 / 1024);
+				
+				downloaded = downloadedNow;
+				downloadSpeed = buf;
+			}
+			else
+				downloadSpeed = "-- B/s";
+			
+			check = 0;
+		}
+		
+		writeDownloadLog();
+		endRefresh();
+		
+		OSSleepTicks(OSMillisecondsToTicks(200));
+		check++;
+	}
+	wlogf("###### Finish thread");
 }
 
 uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
@@ -148,12 +190,15 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 	//Types: 0 = .app | 1 = .h3 | 2 = title.tmd | 3 = tilte.tik
 	downloading = file.c_str();
 	
-	//WHBLogPrintf("Download URL: %s", url.c_str());
-	//WHBLogPrintf("Download NAME: %s", file.c_str());
+	//wlogf("Download URL: %s", url.c_str());
+	//wlogf("Download NAME: %s", file.c_str());
 	
 	CURL* curl = NULL;
     FILE* fp;
 	int ret = 0;
+	
+	downloadedNow = 0;
+	downloadedTotal = 0;
 	
 	curl = curl_easy_init();
 	if (!curl) {
@@ -173,7 +218,6 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 	multiplier = 0;
 	multiplierName = "Unk";
 	
-	second = 0xFF;
 	downloaded = 0;
 	downloadSpeed = "";
 	
@@ -189,7 +233,7 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 	
 	ret = curl_easy_perform(curl);
 	if (ret) {
-		WHBLogPrintf("curl_easy_perform returned an error: %d", ret);
+		wlogf("curl_easy_perform returned an error: %d", ret);
 		
 		std::vector<std::string> err;
 		switch(ret) {
@@ -205,7 +249,7 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 			case 23:
 				err.push_back("---> Error from SD Card");
 				err.push_back("The SD Card was extracted or invalid to write data,");
-				err.push_back("re-insert it or use another one and restart the app");
+				err.push_back("restart the app and re-insert it or use another one");
 				break;
 			case 56:
 				err.push_back("---> Network error");
@@ -240,11 +284,11 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 		}
 		return 1;
 	}
-	WHBLogPrintf("curl_easy_perform executed successfully");
+	wlogf("curl_easy_perform executed successfully");
 
 	int resp = 404;
 	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &resp);
-	WHBLogPrintf("The download returned: %u", resp);
+	wlogf("The download returned: %u", resp);
 	if (resp != 200) {
 		if (type == 2 && resp == 404) { //Title.tmd not found
 			while(true) {
@@ -308,7 +352,7 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 		}
 	}
 	else {
-		WHBLogPrintf("The file was downloaded successfully");
+		wlogf("The file was downloaded successfully");
 		addToDownloadLog("Download " + std::string(downloading));
 	}
 	
@@ -318,7 +362,7 @@ uint8_t downloadFile(std::string url, std::string file, uint8_t type) {
 }
 
 bool downloadTitle(std::string titleID, std::string titleVer, std::string folderName) {
-	//WHBLogPrintf("Downloading title... tID: %s, tVer: %s, fName: %s", titleID.c_str(), titleVer.c_str(), folderName.c_str());
+	//wlogf("Downloading title... tID: %s, tVer: %s, fName: %s", titleID.c_str(), titleVer.c_str(), folderName.c_str());
 	
 	downloadUrl = "http://ccs.cdn.wup.shop.nintendo.net/ccs/download/" + titleID + "/";
 	
@@ -342,8 +386,10 @@ bool downloadTitle(std::string titleID, std::string titleVer, std::string folder
 	write(0, 0, "Preparing the download...");
 	writeDownloadLog();
 	endRefresh();
+
+	std::thread progressThread(showProgress);
 	
-	WHBLogPrintf("Downloading TMD...");
+	wlog("Downloading TMD...");
 	if (downloadFile((titleVer == "") ? "tmd" : ("tmd." + titleVer), "title.tmd", 2))
 		return true;
 	addToDownloadLog("TMD Downloaded");
@@ -393,19 +439,12 @@ bool downloadTitle(std::string titleID, std::string titleVer, std::string folder
 	else if (tikRes == 2) {
 		addToDownloadLog("Title.tik not found on the NUS. A fake ticket can be created");
 		std::string encKey = "";
-		while (true) {
-			readInput();
-
-			colorStartRefresh(0x00404000);
-			swrite(0, 0, "Input the Encrypted title key of " + titleID + " to create a");
-			write(0, 1, " fake ticket (Without it, the download cannot be installed)");
-			write(0, 3, "You can get it from any 'WiiU title key site'");
-			write(0, 5, "Press (A) to show the keyboard [32 hexadecimal numbers]");
-			write(0, 6, "Press (B) to continue the download without the fake ticket");
-			endRefresh();
-
+		titleIdForEncKeyWarn = titleID;
+		vpad.trigger = 0;
+		while (titleIdForEncKeyWarn != "") { 
 			if (vpad.trigger == VPAD_BUTTON_A) {
 				if (showKeyboard(&encKey, CHECK_HEXADECIMAL, 32, true)) {
+					titleIdForEncKeyWarn = "";
 					startRefresh();
 					write(0, 0, "Creating fake title.tik");
 					writeDownloadLog();
@@ -415,17 +454,16 @@ bool downloadTitle(std::string titleID, std::string titleVer, std::string folder
 					generateTik(tik, titleID, encKey);
 					fclose(tik);
 					addToDownloadLog("Fake ticket created successfully");
-					break;
+					encKey = "";
 				}
 			}
 			else if (vpad.trigger == VPAD_BUTTON_B) {
 				addToDownloadLog("Encrypted key wasn't wrote. Continuing without fake ticket");
-				addToDownloadLog("(The download needs a fake ticket to be installed)");
-					break;
+				addToDownloadLog("(The download needs a fake ticket for being installable)");
+				titleIdForEncKeyWarn = "";
 			}
 		}
 	}
-
 	contents = readUInt16("title.tmd", 0x1DE);
 	File_to_download ftd[contents]; //Files to download
 
@@ -445,7 +483,10 @@ bool downloadTitle(std::string titleID, std::string titleVer, std::string folder
 		}
 	}
 	
-	WHBLogPrintf("Creating CERT...");
+	contents = 0xFFFF;
+	progressThread.join();
+	
+	wlogf("Creating CERT...");
 	startRefresh();
 	write(0, 0, "Creating CERT");
 	writeDownloadLog();
@@ -512,7 +553,7 @@ bool downloadTitle(std::string titleID, std::string titleVer, std::string folder
 
 int main() {
 	WHBLogUdpInit();
-	WHBLogPrintf("Initialising libraries...");
+	wlogf("Initialising libraries...");
 	
 	if (OSGetTitleID() != 0 &&
         OSGetTitleID() != 0x000500101004A200 && // Mii Maker EUR
@@ -525,28 +566,25 @@ int main() {
 		else //HBL = true
 			WHBProcInit();
 	
-	WHBLogPrintf("Init");
+	wlogf("Init");
 	
 	FSInit();
 	fsCli = (FSClient*)MEMAllocFromDefaultHeap(sizeof(FSClient));
 	FSAddClient(fsCli, 0);
 	fsCmd = (FSCmdBlock*)MEMAllocFromDefaultHeap(sizeof(FSCmdBlock));
 	FSInitCmdBlock(fsCmd);
-	WHBLogPrintf("FS started successfully");
+	wlogf("FS started successfully");
 	
 	SWKBD_Init();
-	WHBLogPrintf("SWKBD started successfully");
+	wlogf("SWKBD started successfully");
 	
 	initScreen();
-	WHBLogPrintf("OSScreen started successfully");
+	wlogf("OSScreen started successfully");
 	
 	initRandom();
-	WHBLogPrintf("Random started successfully");
-	
 	makeDir(installDir.c_str());
 	
 	while(AppRunning()) {
-		WHBLogPrintf("Refresh");
 		if (app == 2)
 			continue;
 		

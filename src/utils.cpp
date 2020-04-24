@@ -1,4 +1,5 @@
 #include "utils.hpp"
+#include "log.hpp"
 
 #include <coreinit/screen.h>
 #include <coreinit/cache.h>
@@ -23,7 +24,7 @@ bool initScreen() {
 	drcBuffer = memalign(0x100, drcBufferSize);
 
 	if (!tvBuffer || !drcBuffer) {
-		WHBLogPrintf("Error initialising screen library");
+		wlogf("Error initialising screen library");
 		shutdownScreen();
 		return false;
 	}
@@ -33,7 +34,7 @@ bool initScreen() {
 
 	OSScreenEnableEx(SCREEN_TV, true);
 	OSScreenEnableEx(SCREEN_DRC, true);
-		WHBLogPrintf("Screen library initialised successfully");
+		wlogf("Screen library initialised successfully");
 	return true;
 }
 void shutdownScreen() {
@@ -55,26 +56,21 @@ void endRefresh() {
 	OSScreenFlipBuffersEx(SCREEN_DRC);
 }
 
-void write(uint32_t row, uint32_t column, const char* str) { //Write to the two screens
+void write(uint32_t row, uint32_t column, const char* str) {
 	OSScreenPutFontEx(SCREEN_TV, row, column, str);
 	OSScreenPutFontEx(SCREEN_DRC, row, column, str);
 }
-void swrite(uint32_t row, uint32_t column, std::string str) { //string write()
+void swrite(uint32_t row, uint32_t column, std::string str) {
 	OSScreenPutFontEx(SCREEN_TV, row, column, str.c_str());
 	OSScreenPutFontEx(SCREEN_DRC, row, column, str.c_str());
 }
-
-/*void dwrite(uint32_t column, const char* str, ...) { //const char* write
-	OSScreenPutFontEx(SCREEN_TV, 0, column, str);
-	OSScreenPutFontEx(SCREEN_DRC, 0, column, str);
-}*/
 
 std::vector<std::string> downloadLog;
 void addToDownloadLog(std::string str) {
 	if (downloadLog.size() >= MAX_DOWNLOADLOG_DRC)
 		downloadLog.erase(downloadLog.begin());
 	downloadLog.push_back(str);
-	WHBLogPrintf(str.c_str());
+	wlogf(str.c_str());
 }
 void clearDownloadLog() {
 	downloadLog.clear();

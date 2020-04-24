@@ -5,11 +5,12 @@
 #include "menu.hpp"
 #include "input.hpp"
 #include "status.hpp"
+#include "log.hpp"
 
 #include <whb/proc.h>
 
 void generateTik(FILE* tik, std::string titleID, std::string encKey) { //Based on NUSPacker tik creation function
-	WHBLogPrintf("Generate tik function");
+	wlogf("Generate tik function");
 	
 	writeCustomBytes(tik, "00010004");
 	writeRandomBytes(tik, 0x100);
@@ -17,6 +18,7 @@ void generateTik(FILE* tik, std::string titleID, std::string encKey) { //Based o
 	writeCustomBytes(tik, "526F6F742D434130303030303030332D58533030303030303063000000000000");
 	writeVoidBytes(tik, 0x5C);
 	writeCustomBytes(tik, "010000");
+    wlogf("Enc key: %s", encKey.c_str());
 	writeCustomBytes(tik, encKey);
 	writeCustomBytes(tik, "000005");
 	writeRandomBytes(tik, 0x06);
@@ -31,7 +33,7 @@ void generateTik(FILE* tik, std::string titleID, std::string encKey) { //Based o
 bool generateFakeTicket() {
 	FSDirectoryHandle dh;
 	FSStatus fsr = FSOpenDir(fsCli, fsCmd, installDir.c_str(), &dh, 0);
-	WHBLogPrintf("fsr: %u", fsr);
+	wlogf("fsr: %u", fsr);
 	
 	std::vector<std::string> tikFolders;
 		
@@ -155,10 +157,36 @@ inputTikValues:
 					endRefresh();
 					
 					FILE* fakeTik;
-					std::string tikPath = ((tikCursor == 0) ? ("ticket_" + titleID + "_" + encKey + ".tik") : tikFolders[tikCursor + tikPos + 1]);
+					std::string tikPath = "";
+                    if (tikCursor > 0)
+                        tikPath = tikFolders[tikCursor + tikPos + 1] + "/title.tik";
+                    else
+                        tikPath += "ticket_" + titleID + "_" + encKey + ".tik";
 					fakeTik = fopen((installDir + tikPath).c_str(), "wb");
+                    if (!fakeTik) {
+                        while(AppRunning()) {
+                            if (app == 2)
+                                continue;
+                            
+                            readInput();
+
+                            startRefresh();
+                            write(0, 0, "Generating fake ticket...");
+                            write(0, 1, "Error generating fake ticket. Is SD card in readonly mode?");
+                            write(0, 3, "Press (A) to return");
+                            endRefresh();
+                            
+                            if (vpad.trigger == VPAD_BUTTON_A)
+                                return true;
+                        }
+                    }
 					generateTik(fakeTik, titleID, encKey);
 					fclose(fakeTik);
+                    
+					/*startRefresh();
+					write(0, 0, "Generating fake ticket...");
+					write(0, 0, "Fake ticket generated successfully!");
+					endRefresh();*/
 					
 					while(AppRunning()) {
 						if (app == 2)
@@ -167,7 +195,7 @@ inputTikValues:
 						readInput();
 						
 						colorStartRefresh(0x00800000);
-						write(0, 0, "Fake ticket generated on:");
+						write(0, 0, "Fake ticket generated in:");
 						swrite(0, 1, " SD:/install/" + tikPath);
 						write(0, 3, "Press (A) to return");
 						endRefresh();
