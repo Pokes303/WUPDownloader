@@ -1,12 +1,33 @@
+/***************************************************************************
+ * This file is part of NUSspli.                                           *
+ * Copyright (c) 2020 V10lator <v10lator@myway.de>                         *
+ *                                                                         *
+ * This program is free software; you can redistribute it and/or modify    *
+ * it under the terms of the GNU General Public License as published by    *
+ * the Free Software Foundation; either version 2 of the License, or       *
+ * (at your option) any later version.                                     *
+ *                                                                         *
+ * This program is distributed in the hope that it will be useful,         *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of          *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ * GNU General Public License for more details.                            *
+ *                                                                         *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
+ ***************************************************************************/
+
+#include <wut-fixups.h>
+
 #include <wchar.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
 
 #include <coreinit/memdefaultheap.h>
-#include <whb/log.h>
 
-#include "swkbd_wrapper.h"
+#include <utils.h>
+#include <swkbd_wrapper.h>
 
 uint32_t Swkbd_GetWorkMemorySize(uint32_t unk)
 {
@@ -28,24 +49,47 @@ void Swkbd_SetEnableOkButton(bool enable)
 	nn::swkbd::SetEnableOkButton(enable);
 }
 
+void Swkbd_DeleteCppChar(const char *str)
+{
+	delete str;
+}
+
 char *Swkbd_GetInputFormString()
 {
 	const char16_t *cppRet = nn::swkbd::GetInputFormString();
-	size_t size = 0;
-	do
-		size++;
-	while(cppRet[size] != u'\0');
-	
-	char *outputStr = (char*)MEMAllocFromDefaultHeap(sizeof(char) * size);
-	if(outputStr == NULL)
+	if(cppRet == NULL)
 		return NULL;
 	
 	size_t i = 0;
+	while(cppRet[i] != u'\0')
+		i++;
+	
+	char *outputStr = (char*)MEMAllocFromDefaultHeap(sizeof(char) * ++i);
+	if(outputStr == NULL)
+		return NULL;
+	
+	i = 0;
 	do
 		outputStr[i] = cppRet[i] > 0x7F ? '?' : (char)cppRet[i];
 	while(outputStr[i++] != '\0');
 	
 	return outputStr;
+}
+
+void Swkbd_SetInputFormString(const char *str)
+{
+	size_t len = strlen(str);
+	if(str == NULL || len == 0)
+	{
+		nn::swkbd::SetInputFormString(u"");
+		return;
+	}
+	
+	char16_t cppStr[++len];
+	for(size_t i = 0; i < len; i++)
+		cppStr[i] = str[i];
+		
+	nn::swkbd::SetInputFormString(cppStr);
 }
 
 void Swkbd_Calc(const Swkbd_ControllerInfo controllerInfo)
@@ -101,4 +145,9 @@ bool Swkbd_DisappearInputForm()
 void Swkbd_Destroy()
 {
 	nn::swkbd::Destroy();
+}
+
+bool Swkbd_IsHidden()
+{
+	return nn::swkbd::GetStateInputForm() == nn::swkbd::State::Unknown0;
 }

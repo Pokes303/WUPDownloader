@@ -1,0 +1,61 @@
+diff --git a/include/gui/GuiText.h b/include/gui/GuiText.h
+index f958c61..b244ea4 100644
+--- a/include/gui/GuiText.h
++++ b/include/gui/GuiText.h
+@@ -120,7 +120,7 @@ protected:
+     static int32_t presetMaxWidth;
+     static float presetInternalRenderingScale;
+     static int32_t presetAlignment;
+-    static GX2ColorF32 presetColor;
++    static glm::vec4 presetColor;
+ 
+     //!Clear the dynamic text
+     void clearDynamicText();
+diff --git a/source/gui/GuiText.cpp b/source/gui/GuiText.cpp
+index 8cf27b0..24b9195 100644
+--- a/source/gui/GuiText.cpp
++++ b/source/gui/GuiText.cpp
+@@ -23,9 +23,7 @@ int32_t GuiText::presetSize = 28;
+ float GuiText::presetInternalRenderingScale = 2.0f; //Lets render the font at the doubled size. This make it even smoother!
+ int32_t GuiText::presetMaxWidth = 0xFFFF;
+ int32_t GuiText::presetAlignment = ALIGN_CENTER | ALIGN_MIDDLE;
+-GX2ColorF32 GuiText::presetColor = (GX2ColorF32) {
+-    1.0f, 1.0f, 1.0f, 1.0f
+-};
++glm::vec4 GuiText::presetColor = glm::vec4(1.0f);
+ 
+ #define TEXT_SCROLL_DELAY			6
+ #define	TEXT_SCROLL_INITIAL_DELAY	10
+@@ -39,8 +37,8 @@ GuiText::GuiText() {
+     text = NULL;
+     size = presetSize;
+     currentSize = size;
+-    color = glm::vec4(presetColor.r, presetColor.g, presetColor.b, presetColor.a);
+-    alpha = presetColor.a;
++    color = presetColor;
++    alpha = presetColor[3];
+     alignment = presetAlignment;
+     maxWidth = presetMaxWidth;
+     wrapMode = 0;
+@@ -126,8 +124,8 @@ GuiText::GuiText(const char * t) {
+     text = NULL;
+     size = presetSize;
+     currentSize = size;
+-    color = glm::vec4(presetColor.r, presetColor.g, presetColor.b, presetColor.a);
+-    alpha = presetColor.a;
++    color = presetColor;
++    alpha = presetColor[3];
+     alignment = presetAlignment;
+     maxWidth = presetMaxWidth;
+     wrapMode = 0;
+@@ -235,9 +233,7 @@ void GuiText::clearDynamicText() {
+ 
+ void GuiText::setPresets(int32_t sz, const glm::vec4 & c, int32_t w, int32_t a) {
+     presetSize = sz;
+-    presetColor = (GX2ColorF32) {
+-        (float)c.r / 255.0f, (float)c.g / 255.0f, (float)c.b / 255.0f, (float)c.a / 255.0f
+-    };
++    presetColor = c;
+     presetMaxWidth = w;
+     presetAlignment = a;
+ }

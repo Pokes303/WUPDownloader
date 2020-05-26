@@ -1,312 +1,338 @@
-#include "input.h"
-#include "main.h"
-#include "screen.h"
-#include "swkbd_wrapper.h"
-#include "utils.h"
+/***************************************************************************
+ * This file is part of NUSspli.                                           *
+ * Copyright (c) 2019-2020 Pokes303                                        *
+ * Copyright (c) 2020 V10lator <v10lator@myway.de>                         *
+ *                                                                         *
+ * This program is free software; you can redistribute it and/or modify    *
+ * it under the terms of the GNU General Public License as published by    *
+ * the Free Software Foundation; either version 2 of the License, or       *
+ * (at your option) any later version.                                     *
+ *                                                                         *
+ * This program is distributed in the hope that it will be useful,         *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of          *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ * GNU General Public License for more details.                            *
+ *                                                                         *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
+ ***************************************************************************/
+
+#include <wut-fixups.h>
+
+#include <input.h>
+#include <main.h>
+#include <renderer.h>
+#include <status.h>
+#include <swkbd_wrapper.h>
+#include <utils.h>
+#include <menu/utils.h>
 
 #include <stdio.h>
- 
+#include <uchar.h>
+
 #include <vpad/input.h>
-#include <whb/gfx.h>
-#include <whb/log.h>
 #include <coreinit/memdefaultheap.h>
+#include <coreinit/memfrmheap.h>
+#include <coreinit/memory.h>
+#include <coreinit/thread.h>
 
 //WIP. This need a better implementation
 
-FSClient* swkbdCli;
-Swkbd_CreateArg *createArg = NULL;
-Swkbd_AppearArg *appearArg = NULL;
-Swkbd_ControllerInfo *controllerInfo = NULL;
+VPADStatus vpad;
+
+Swkbd_CreateArg createArg;
 
 int globalMaxlength;
 bool globalLimit;
 
-char* outputStr = NULL;
+bool okButtonEnabled;
 
-bool showed;
-
-bool SWKBD_Init() {
-	swkbdCli = (FSClient*)MEMAllocFromDefaultHeap(sizeof(FSClient));
-	FSAddClient(swkbdCli, 0);
-	
-	createArg = MEMAllocFromDefaultHeap(sizeof(Swkbd_CreateArg));
-	if(createArg == NULL)
-		return false;
-	
-	createArg->workMemory = MEMAllocFromDefaultHeap(Swkbd_GetWorkMemorySize(0));
-	if(createArg->workMemory == NULL)
-		return false;
-	
-	appearArg = MEMAllocFromDefaultHeap(sizeof(Swkbd_CreateArg));
-	if(appearArg == NULL)
-		return false;
-	
-	controllerInfo = MEMAllocFromDefaultHeap(sizeof(Swkbd_ControllerInfo));
-	if(controllerInfo == NULL)
-		return false;
-	
-	createArg->regionType = Swkbd_RegionType__Europe;
-	createArg->unk_0x08 = 0;
-	createArg->fsClient = swkbdCli;
-	
-	appearArg->keyboardArg.configArg.languageType = Swkbd_LanguageType__English;
-	appearArg->keyboardArg.configArg.unk_0x04 = 4;
-	appearArg->keyboardArg.configArg.unk_0x08 = 0;
-	appearArg->keyboardArg.configArg.unk_0x0C = 0x7FFFF;
-	appearArg->keyboardArg.configArg.unk_0x10 = 19;
-	appearArg->keyboardArg.configArg.unk_0x14 = -1;
-	appearArg->keyboardArg.configArg.unk_0x9C = 1;
-	appearArg->keyboardArg.configArg.unk_0xA4 = 1;
-	
-	appearArg->keyboardArg.receiverArg.unk_0x00 = 0;
-	appearArg->keyboardArg.receiverArg.unk_0x04 = 0;
-	appearArg->keyboardArg.receiverArg.unk_0x08 = 0;
-	appearArg->keyboardArg.receiverArg.unk_0x0C = -1;
-	appearArg->keyboardArg.receiverArg.unk_0x10 = 0;
-	appearArg->keyboardArg.receiverArg.unk_0x14 = -1;
-	
-	appearArg->inputFormArg.unk_0x00 = -1;
-	appearArg->inputFormArg.unk_0x04 = -1;
-	appearArg->inputFormArg.unk_0x08 = 0;
-	appearArg->inputFormArg.unk_0x0C = 0;
-	appearArg->inputFormArg.unk_0x14 = 0;
-	appearArg->inputFormArg.unk_0x18 = 0;
-	appearArg->inputFormArg.unk_0x1C = false;
-	appearArg->inputFormArg.unk_0x1D = false;
-	appearArg->inputFormArg.unk_0x1E = false;
-	
-	controllerInfo->kpad[0] =
-		controllerInfo->kpad[1] = 
-		controllerInfo->kpad[2] = 
-		controllerInfo->kpad[3] = NULL; //TODO: Real kPad support?
-	
-	WHBGfxInit();
-
-	if (!Swkbd_Create(*createArg)) {
-		WHBLogPrintf("nn::swkbd::Create failed");
-		WHBGfxShutdown();
-		return false;
-	}
-	WHBLogPrintf("nn::swkbd::Create success");
-	WHBGfxShutdown();
-	return true;
+bool isSpecial(char c)
+{
+	return isNumber(c) || isLowercase(c) || isUppercase(c) || c == ' ';
 }
-bool SWKBD_Show(int maxlength, bool limit) {
-	SWKBD_CleanupText();
-	showed = true;
-	
-	WHBLogPrintf("WHBGfxInit(): %d", WHBGfxInit());
-	// Show the keyboard
-	globalMaxlength = appearArg->inputFormArg.maxTextLength = maxlength;
-	if (!Swkbd_AppearInputForm(*appearArg)) {
-		WHBLogPrintf("nn::swkbd::AppearInputForm failed");
-		WHBGfxShutdown();
-		return false;
-	}
-	globalLimit = limit;
-	if (!limit && maxlength != -1)
-		Swkbd_SetEnableOkButton(false);
-	WHBLogPrintf("nn::swkbd::AppearInputForm success");
-	return true;
+
+bool isUrl(char c)
+{
+	return isNumber(c) || isLowercase(c) || isUppercase(c) || c == '.' || c == '/' || c == ':' || c == '%' || c == '-' || c == '_'; //TODO
 }
-void SWKBD_Render(VPADStatus* vpad) {
+
+typedef bool (*checkingFunction)(char);
+
+void SWKBD_Render(KeyboardChecks check)
+{
 	if (globalMaxlength != -1) {
 		char *inputFormString = Swkbd_GetInputFormString();
 		if(inputFormString != NULL)
 		{
-			uint32_t len = strlen(inputFormString);
+			size_t len = strlen(inputFormString);
+			if(len != 0 && check != CHECK_NONE && check != CHECK_NUMERICAL)
+			{
+				checkingFunction cf;
+				switch(check)
+				{
+					case CHECK_HEXADECIMAL:
+						cf = &isHexa;
+						break;
+					case CHECK_NOSPECIAL:
+						cf = &isSpecial;
+						break;
+					case CHECK_URL:
+						cf = &isUrl;
+						break;
+					default:
+						// DEAD CODE
+						debugPrintf("0xDEADC0DE: %d", check);
+						MEMFreeToDefaultHeap(inputFormString);
+						return;
+				}
+				
+				len = 0;
+				while(true)
+				{
+					if(!cf(inputFormString[len]))
+					{
+						if(inputFormString[len] != '\0')
+						{
+							inputFormString[len] = '\0';
+							Swkbd_SetInputFormString(inputFormString);
+						}
+						break;
+					}
+					len++;
+				}
+			}
+			
 			MEMFreeToDefaultHeap(inputFormString);
-			Swkbd_SetEnableOkButton((globalLimit) ? (len == (uint32_t)globalMaxlength) : (len <= (uint32_t)globalMaxlength));
+			okButtonEnabled = globalLimit ? len == globalMaxlength : len <= globalMaxlength;
 		}
+		else
+			okButtonEnabled = false;
+		Swkbd_SetEnableOkButton(okButtonEnabled);
 	}
 	
-	controllerInfo->vpad = vpad;
-	Swkbd_Calc(*controllerInfo); //TODO: Do this in a new thread?
+	Swkbd_ControllerInfo controllerInfo;
+	controllerInfo.vpad = &vpad;
+	controllerInfo.kpad[0] = NULL;
+	controllerInfo.kpad[1] = NULL;
+	controllerInfo.kpad[2] = NULL;
+	controllerInfo.kpad[3] = NULL;
+	Swkbd_Calc(controllerInfo); //TODO: Do this in a new thread?
 
 	if (Swkbd_IsNeedCalcSubThreadFont())
 	{
 		Swkbd_CalcSubThreadFont(); //TODO: Do this in a new thread?
-		WHBLogPrintf("SWKBD nn::swkbd::IsNeedCalcSubThreadFont()");
+		debugPrintf("SWKBD nn::swkbd::IsNeedCalcSubThreadFont()");
 	}
 
-	WHBGfxBeginRender();
+	drawKeyboard();
+}
 
-	WHBGfxBeginRenderTV();
-	WHBGfxClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	Swkbd_DrawTV();
-	WHBGfxFinishRenderTV();
-	
-	WHBGfxBeginRenderDRC();
-	WHBGfxClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	Swkbd_DrawDRC();
-	WHBGfxFinishRenderDRC();
-	
-	WHBGfxFinishRender();
-}
-void SWKBD_Hide(VPADStatus* vpad) {
-	for (int i = 0; i < 14; i++) {
-		SWKBD_Render(vpad);
-	}
-	WHBGfxShutdown();
-}
-bool SWKBD_IsOkButton() {
-	bool ret = Swkbd_IsDecideOkButton(NULL);
-	if(ret)
-		Swkbd_DisappearInputForm();
-	return ret;
-}
-bool SWKBD_IsCancelButton() {
-	bool ret = Swkbd_IsDecideCancelButton(NULL);
-	if(ret)
-		Swkbd_DisappearInputForm();
-	return ret;
-}
-const char* SWKBD_GetError(KeyboardChecks check) {
-	char* output = Swkbd_GetInputFormString();
-	if (!output)
-		return "nn::swkbd::GetInputFormString returned NULL";
-	
-	size_t len = strlen(output);
-	
-	if (globalMaxlength != -1 && globalLimit && len != globalMaxlength)
+bool SWKBD_Show(KeyboardType type, int maxlength, bool limit, const char *okStr) {
+	debugPrintf("SWKBD_Show()");
+	if(!Swkbd_IsHidden())
 	{
-		MEMFreeToDefaultHeap(output);
-		return "Input size > globalMaxlength";
+		debugPrintf("...while visible!!!");
+		return false;
 	}
 	
-	if(check != CHECK_NONE)
+	char16_t *okStrL;
+	if(okStr == NULL)
+		okStrL = NULL;
+	else
 	{
-		for(int i = 0; i < len; i++)
+		size_t strLen = strlen(okStr) + 1;
+		okStrL = MEMAllocFromDefaultHeap(strLen);
+		if(okStrL != NULL)
+			for(size_t i = 0; i < strLen; i++)
+				okStrL[i] = okStr[i];
+	}
+	
+	// Show the keyboard
+	Swkbd_AppearArg appearArg;
+	
+	OSBlockSet(&appearArg.keyboardArg.configArg, 0, sizeof(Swkbd_ConfigArg));
+	OSBlockSet(&appearArg.keyboardArg.receiverArg, 0, sizeof(Swkbd_ReceiverArg));
+	
+	appearArg.keyboardArg.configArg.languageType = Swkbd_LanguageType__English;
+	appearArg.keyboardArg.configArg.unk_0x04 = 4;
+	appearArg.keyboardArg.configArg.unk_0x08 = 2;
+	appearArg.keyboardArg.configArg.unk_0x0C = 2;
+	appearArg.keyboardArg.configArg.unk_0x10 = 2;
+	appearArg.keyboardArg.configArg.unk_0x14 = -1;
+	appearArg.keyboardArg.configArg.str = okStrL;
+	appearArg.keyboardArg.configArg.framerate = FRAMERATE_30FPS;
+	appearArg.keyboardArg.configArg.unk_0xA4 = -1;
+	
+	appearArg.keyboardArg.receiverArg.unk_0x14 = 2;
+	
+	appearArg.inputFormArg.unk_0x00 = type;
+	appearArg.inputFormArg.unk_0x04 = -1;
+	appearArg.inputFormArg.unk_0x08 = 0;
+	appearArg.inputFormArg.unk_0x0C = 0;
+	appearArg.inputFormArg.unk_0x14 = 0;
+	appearArg.inputFormArg.unk_0x18 = 0x00008000; // Monospace seperator after 16 chars (for 32 char keys)
+	appearArg.inputFormArg.unk_0x1C = true;
+	appearArg.inputFormArg.unk_0x1D = true;
+	appearArg.inputFormArg.unk_0x1E = true;
+	globalMaxlength = appearArg.inputFormArg.maxTextLength = maxlength;
+	
+	bool kbdVisible = Swkbd_AppearInputForm(appearArg);
+	debugPrintf("Swkbd_AppearInputForm(): %s", kbdVisible ? "true" : "false");
+	
+	if(okStrL != NULL)
+		MEMFreeToDefaultHeap(okStrL);
+	
+	if(!kbdVisible)
+		return false;
+	
+	globalLimit = limit;
+	okButtonEnabled = limit || maxlength == -1;
+	Swkbd_SetEnableOkButton(okButtonEnabled);
+	
+	debugPrintf("nn::swkbd::AppearInputForm success");
+	return true;
+}
+
+void SWKBD_Hide()
+{
+	debugPrintf("SWKBD_Hide()");
+	if(Swkbd_IsHidden())
+	{
+		debugPrintf("...while invisible!!!");
+		return;
+	}
+	
+	Swkbd_DisappearInputForm();
+	
+	// DisappearInputForm() wants to render a fade out animation
+	while(!Swkbd_IsHidden())
+		SWKBD_Render(CHECK_NONE);
+}
+
+bool SWKBD_Init()
+{
+	debugPrintf("SWKBD_Init()");
+	createArg.fsClient = MEMAllocFromDefaultHeap(sizeof(FSClient));
+	createArg.workMemory = MEMAllocFromDefaultHeap(Swkbd_GetWorkMemorySize(0));
+	if(createArg.fsClient == NULL || createArg.workMemory == NULL)
+	{
+		debugPrintf("SWKBD: Can't allocate memory!");
+		return false;
+	}
+	
+	FSAddClient(createArg.fsClient, 0);
+	
+	createArg.regionType = Swkbd_RegionType__Europe;
+	createArg.unk_0x08 = 0;
+	
+	return Swkbd_Create(createArg);
+}
+
+void SWKBD_Shutdown()
+{
+	if(createArg.workMemory != NULL)
+	{
+		Swkbd_Destroy();
+		MEMFreeToDefaultHeap(createArg.workMemory);
+		createArg.workMemory = NULL;
+	}
+	
+	if(createArg.fsClient != NULL)
+	{
+		FSDelClient(createArg.fsClient, 0);
+		MEMFreeToDefaultHeap(createArg.fsClient);
+		createArg.fsClient = NULL;
+	}
+}
+
+void readInput()
+{
+	VPADReadError vError;
+	bool run = true;
+	while(run)
+	{
+		VPADRead(VPAD_CHAN_0, &vpad, 1, &vError);
+		
+		if(!run)
+			break;
+		if(app == 2)
+			continue;
+		
+		switch(vError)
 		{
-			switch(check)
-			{
-				case CHECK_NUMERICAL:
-					if(!(output[i] >= '0' && output[i] <= '9'))
-					{
-						MEMFreeToDefaultHeap(output);
-						return "The wrote string must be only numerical [0->9]";
-					}
-					break;
-				case CHECK_HEXADECIMAL:
-					if(!((output[i] >= '0' && output[i] <= '9') || (output[i] >= 'A' && output[i] <= 'F') || (output[i] >= 'a' && output[i] <= 'f')))
-					{
-						MEMFreeToDefaultHeap(output);
-						return "The wrote string must be only hexadecimal [0->F]";
-					}
-					break;
-				case CHECK_NOSPECIAL:
-					if(!((output[i] >= '0' && output[i] <= '9') || (output[i] >= 'A' && output[i] <= 'Z') || (output[i] >= 'a' && output[i] <= 'z') || output[i] == ' '))
-					{
-						MEMFreeToDefaultHeap(output);
-						return "The wrote string must not have special characters [A->Z->9->Space]";
-					}
-					break;
-			}
+			case VPAD_READ_NO_SAMPLES:
+				OSSleepTicks(10);
+				break;
+			case VPAD_READ_INVALID_CONTROLLER:
+				OSBlockSet(&vpad, 0, sizeof(VPADStatus));
+/*				colorStartNewFrame(SCREEN_COLOR_RED);
+				textToFrame(0, 0, "Error reading the WiiU Gamepad!");
+				drawFrame();
+				showFrame();
+*/			default:
+				run = false;
 		}
 	}
-	
-	WHBLogPrintf("Input string: %s", output);
-	SWKBD_CleanupText() ;
-	outputStr = output;
-	return NULL;
-}
-char* SWKBD_GetText() {
-	return outputStr;
 }
 
-void SWKBD_CleanupText() {
-	if(outputStr != NULL)
+bool showKeyboard(KeyboardType type, char *output, KeyboardChecks check, int maxlength, bool limit, const char *input, const char *okStr) {
+	debugPrintf("Initialising SWKBD");
+	if(!SWKBD_Show(type, maxlength, limit, okStr))
 	{
-		MEMFreeToDefaultHeap(outputStr);
-		outputStr = NULL;
-	}
-}
-
-void SWKBD_Shutdown() {
-	SWKBD_CleanupText();
-	Swkbd_Destroy();
-	
-	if(showed)
-	{
-		WHBGfxInit();
-		WHBGfxShutdown();
-	}
-	
-	if(createArg != NULL)
-	{
-		if(createArg->workMemory != NULL)
-			MEMFreeToDefaultHeap(createArg->workMemory);
-		MEMFreeToDefaultHeap(createArg);
-		createArg = NULL;
-	}
-	
-	if(appearArg != NULL)
-	{
-		MEMFreeToDefaultHeap(appearArg);
-		appearArg = NULL;
-	}
-	
-	if(controllerInfo != NULL)
-	{
-		MEMFreeToDefaultHeap(controllerInfo);
-		controllerInfo = NULL;
-	}
-}
-
-bool showKeyboard(char *output, KeyboardChecks check, int maxlength, bool limit) {
-	WHBLogPrintf("Initialising SWKBD");
-	bool kError = SWKBD_Show(maxlength, limit);
-	if (!kError) {
-		while(true) {
-			readInput();
-
-			startRefresh();
-			colorStartRefresh(SCREEN_COLOR_RED);
-			write(0, 0, "Error showing SWKBD:");
-			write(0, 1, "nn::swkbd::AppearInputForm failed");
-			errorScreen(2, B_RETURN);
-			endRefresh();
-							
-			if (vpad.trigger == VPAD_BUTTON_B)
-					return false;
+		drawErrorFrame("Error showing SWKBD:\nnn::swkbd::AppearInputForm failed", B_RETURN);
+		
+		while(true)
+		{
+			showFrame();							
+			if(vpad.trigger == VPAD_BUTTON_B)
+				return false;
 		}
 	}
-	WHBLogPrintf("SWKBD initialised successfully");
+	debugPrintf("SWKBD initialised successfully");
 	
-	while (true) {
-		readInput();
-		SWKBD_Render(&vpad);
-
-		if (SWKBD_IsOkButton()) {
-			WHBLogPrintf("SWKBD Ok button pressed");
-			SWKBD_Hide(&vpad);
-			const char* kError = SWKBD_GetError(check);
-			if (kError) {
-				WHBLogPrintf("SWKBD Result string error: %s", kError);
-				while(true) {
-					readInput();
-
-					colorStartRefresh(SCREEN_COLOR_RED);
-					write(0, 0, "Error on the resulted string:");
-					write(0, 1, kError);
-					errorScreen(2, B_RETURN__Y_RETRY);
-					endRefresh();
-
-					if (vpad.trigger == VPAD_BUTTON_B)
-						return false;
-					else if (vpad.trigger == VPAD_BUTTON_Y)
-						return showKeyboard(output, check, maxlength, limit);
-				}
-			}
-			strcpy(output, SWKBD_GetText());
+	if(input != NULL)
+		Swkbd_SetInputFormString(input);
+	
+	bool dummy;
+	while(true)
+	{
+		VPADGetTPCalibratedPoint(VPAD_CHAN_0, &vpad.tpFiltered1, &vpad.tpNormal);
+		vpad.tpFiltered2 = vpad.tpNormal = vpad.tpFiltered1;
+		SWKBD_Render(check);
+//		sleepTillFrameEnd();
+		
+		if(okButtonEnabled && (Swkbd_IsDecideOkButton(&dummy) || vpad.trigger == VPAD_BUTTON_A))
+		{
+			debugPrintf("SWKBD Ok button pressed");
+			char *outputStr = Swkbd_GetInputFormString();
+			strcpy(output, outputStr);
+			MEMFreeToDefaultHeap(outputStr);
+			SWKBD_Hide();
 			return true;
 		}
-
-		if (SWKBD_IsCancelButton()) {
-			WHBLogPrintf("SWKBD Cancel button pressed");
-			SWKBD_Hide(&vpad);
-			startRefresh();
-			endRefresh();
+		
+		bool close = vpad.trigger == VPAD_BUTTON_B;
+		if(close)
+		{
+			char *inputFormString = Swkbd_GetInputFormString();
+			if(inputFormString != NULL)
+			{
+				size_t ifslen = strlen(inputFormString);
+				close = ifslen == 0;
+				if(!close)
+				{
+					inputFormString[ifslen] = '\0';
+					Swkbd_SetInputFormString(inputFormString);
+				}
+				MEMFreeToDefaultHeap(inputFormString);
+			}
+		}
+		
+		if(close || Swkbd_IsDecideCancelButton(&dummy)) {
+			debugPrintf("SWKBD Cancel button pressed");
+			SWKBD_Hide();
 			return false;
 		}
 	}

@@ -1,6 +1,5 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
- * Copyright (c) 2019-2020 Pokes303                                        *
  * Copyright (c) 2020 V10lator <v10lator@myway.de>                         *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
@@ -18,57 +17,39 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
+#ifndef NUSSPLI_OSDEFS_H
+#define NUSSPLI_OSDEFS_H
+
 #include <wut-fixups.h>
-
-#include <main.h>
-#include <status.h>
-
-#include <coreinit/core.h>
-#include <proc_ui/procui.h>
-#include <whb/proc.h>
 
 #include <stdbool.h>
 
-int app = 1;
-bool appRunning = true;
+#include <ft2build.h>
+#include FT_TYPES_H
 
-bool AppRunning()
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
+typedef struct
 {
-	if(appRunning)
-	{
-		if(hbl)
-			appRunning = WHBProcIsRunning();
-		else
-		{
-			switch(ProcUIProcessMessages(true))
-			{
-				case PROCUI_STATUS_EXITING:
-					// Being closed, deinit, free, and prepare to exit
-					app = 0;
-					appRunning = false;
-					break;
-				case PROCUI_STATUS_RELEASE_FOREGROUND:
-					// Free up MEM1 to next foreground app, deinit screen, etc.
-					ProcUIDrawDoneRelease();
-					
-					//TODO
-				
-					app = 2;
-					break;
-				case PROCUI_STATUS_IN_FOREGROUND:
-					// Executed while app is in foreground
-					if (app == 2) {
-						//TODO
-					}
-					
-					app = 1;
-					break;
-				case PROCUI_STATUS_IN_BACKGROUND:
-					app = 2;
-					break;
-			}
-		}
+	char *name;
+	void *codeStart;
+	uint32_t unk01;
+	uint32_t codeSize;
+	void *dataStart;
+	uint32_t unk02;
+	uint32_t dataSize;
+	uint32_t unk03;
+	uint32_t unk04;
+	uint32_t unk05;
+} RPX_Info;
+
+extern int OSDynLoad_GetRPLInfo(uint32_t unk01, uint32_t size, RPX_Info *out);
+extern bool OSGetSharedData(uint32_t a, uint32_t b, FT_Bytes *font, size_t *size);
+
+#ifdef __cplusplus
 	}
-	
-	return appRunning;
-}
+#endif
+
+#endif // ifndef NUSSPLI_OSDEFS_H

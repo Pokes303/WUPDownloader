@@ -1,6 +1,5 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
- * Copyright (c) 2019-2020 Pokes303                                        *
  * Copyright (c) 2020 V10lator <v10lator@myway.de>                         *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
@@ -20,55 +19,49 @@
 
 #include <wut-fixups.h>
 
-#include <main.h>
+#include <config.h>
+#include <input.h>
+#include <renderer.h>
 #include <status.h>
+#include <main.h>
+#include <menu/download.h>
+#include <menu/main.h>
 
-#include <coreinit/core.h>
-#include <proc_ui/procui.h>
-#include <whb/proc.h>
+#include <string.h>
 
-#include <stdbool.h>
-
-int app = 1;
-bool appRunning = true;
-
-bool AppRunning()
+void drawConfigMenu()
 {
-	if(appRunning)
+	startNewFrame();
+	textToFrame(0, 0, "That Title Key Site:");
+	textToFrame(0, 1, getTitleKeySite());
+	textToFrame(0, 4, "Press \uE000 to change");
+	textToFrame(0, 5, "Press \uE001 to go back");
+	drawFrame();
+}
+
+void configMenu()
+{
+	drawConfigMenu();
+	
+	while(AppRunning())
 	{
-		if(hbl)
-			appRunning = WHBProcIsRunning();
-		else
+		if(app == 2)
+			continue;
+		
+		showFrame();
+		
+		switch(vpad.trigger)
 		{
-			switch(ProcUIProcessMessages(true))
-			{
-				case PROCUI_STATUS_EXITING:
-					// Being closed, deinit, free, and prepare to exit
-					app = 0;
-					appRunning = false;
-					break;
-				case PROCUI_STATUS_RELEASE_FOREGROUND:
-					// Free up MEM1 to next foreground app, deinit screen, etc.
-					ProcUIDrawDoneRelease();
-					
-					//TODO
-				
-					app = 2;
-					break;
-				case PROCUI_STATUS_IN_FOREGROUND:
-					// Executed while app is in foreground
-					if (app == 2) {
-						//TODO
-					}
-					
-					app = 1;
-					break;
-				case PROCUI_STATUS_IN_BACKGROUND:
-					app = 2;
-					break;
-			}
+			case VPAD_BUTTON_A:
+				;
+				char newUrl[1024];
+				if(showKeyboard(KEYBOARD_TYPE_NORMAL, newUrl, CHECK_URL, 1024, false, getTitleKeySite(), "SAVE"))
+					setTitleKeySite(newUrl);
+				drawConfigMenu();
+				break;
+			case VPAD_BUTTON_B:
+				saveConfig();
+				return;
 		}
 	}
-	
-	return appRunning;
 }

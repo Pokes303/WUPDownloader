@@ -1,0 +1,145 @@
+diff --git a/include/gui/GuiText.h b/include/gui/GuiText.h
+index f958c61..8b3f17f 100644
+--- a/include/gui/GuiText.h
++++ b/include/gui/GuiText.h
+@@ -29,12 +29,12 @@ public:
+     //!\param t Text
+     //!\param s Font size
+     //!\param c Font color
+-    GuiText(const char * t, int32_t s, const glm::vec4 & c);
++    GuiText(const char * t, int32_t s, const glm::vec4 & c, int32_t SSAA);
+     //!\overload
+     //!\param t Text
+     //!\param s Font size
+     //!\param c Font color
+-    GuiText(const wchar_t * t, int32_t s, const glm::vec4 & c);
++    GuiText(const wchar_t * t, int32_t s, const glm::vec4 & c, int32_t SSAA);
+     //!\overload
+     //!\Assumes SetPresets() has been called to setup preferred text attributes
+     //!\param t Text
+@@ -53,8 +53,11 @@ public:
+     //!\param w Maximum width of texture image (for text wrapping)
+     //!\param wrap Wrapmode when w>0
+     //!\param a Text alignment
+-    static void setPresets(int32_t sz, const glm::vec4 & c, int32_t w, int32_t a);
++    static void setPresets(int32_t sz, const glm::vec4 & c, int32_t w, int32_t a, int32_t SSAA);
+     static void setPresetFont(FreeTypeGX *font);
++    //!Sets Supersampling Anti-Aliasing
++    //!\param SSAA Valid values are: 1, 2, 4, 8, 16, 32
++    void setSSAA(int32_t SSAA);
+     //!Sets the font size
+     //!\param s Font size
+     void setFontSize(int32_t s);
+@@ -118,7 +121,7 @@ protected:
+     static FreeTypeGX * presentFont;
+     static int32_t presetSize;
+     static int32_t presetMaxWidth;
+-    static float presetInternalRenderingScale;
++    static int32_t presetInternalRenderingScale;
+     static int32_t presetAlignment;
+     static glm::vec4 presetColor;
+ 
+@@ -149,7 +152,7 @@ protected:
+     float blurGlowIntensity;
+     float blurAlpha;
+     glm::vec4 blurGlowColor;
+-    float internalRenderingScale;
++    int32_t internalRenderingScale;
+ };
+ 
+ #endif
+diff --git a/source/gui/GuiSelectBox.cpp b/source/gui/GuiSelectBox.cpp
+index 0757a74..ce76410 100644
+--- a/source/gui/GuiSelectBox.cpp
++++ b/source/gui/GuiSelectBox.cpp
+@@ -160,7 +160,7 @@ void GuiSelectBox::Init(std::map<std::string,std::string> values, int32_t valueI
+         valueButtons[i].valueButtonHighlightedImg = new GuiImage(valueHighlightedImageData);
+ 
+         valueButtons[i].valueButton = new GuiButton(valueButtons[i].valueButtonImg->getWidth() * imgScale, valueButtons[i].valueButtonImg->getHeight() * imgScale);
+-        valueButtons[i].valueButtonText = new GuiText(itr->first.c_str(),32,glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
++        valueButtons[i].valueButtonText = new GuiText(itr->first.c_str(),32,glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), 1);
+ 
+         valueButtons[i].valueButtonText->setMaxWidth(valueButtons[i].valueButtonImg->getWidth() * imgScale - 20.0f, GuiText::WRAP);
+         valueButtons[i].valueButtonText->setPosition(0, 0);
+diff --git a/source/gui/GuiText.cpp b/source/gui/GuiText.cpp
+index 7af44b4..1453bb9 100644
+--- a/source/gui/GuiText.cpp
++++ b/source/gui/GuiText.cpp
+@@ -20,7 +20,7 @@
+ 
+ FreeTypeGX * GuiText::presentFont = NULL;
+ int32_t GuiText::presetSize = 28;
+-float GuiText::presetInternalRenderingScale = 2.0f; //Lets render the font at the doubled size. This make it even smoother!
++int32_t GuiText::presetInternalRenderingScale = 1;
+ int32_t GuiText::presetMaxWidth = 0xFFFF;
+ int32_t GuiText::presetAlignment = ALIGN_CENTER | ALIGN_MIDDLE;
+ glm::vec4 GuiText::presetColor = glm::vec4(1.0f);
+@@ -57,7 +57,7 @@ GuiText::GuiText() {
+     internalRenderingScale = presetInternalRenderingScale;
+ }
+ 
+-GuiText::GuiText(const char * t, int32_t s, const glm::vec4 & c) {
++GuiText::GuiText(const char * t, int32_t s, const glm::vec4 & c, int32_t SSAA) {
+     text = NULL;
+     size = s;
+     currentSize = size;
+@@ -76,7 +76,7 @@ GuiText::GuiText(const char * t, int32_t s, const glm::vec4 & c) {
+     blurGlowIntensity = 0.0f;
+     blurAlpha = 0.0f;
+     blurGlowColor = glm::vec4(0.0f);
+-    internalRenderingScale = presetInternalRenderingScale;
++    internalRenderingScale = SSAA;
+ 
+     if(t) {
+         text = FreeTypeGX::charToWideChar(t);
+@@ -87,7 +87,7 @@ GuiText::GuiText(const char * t, int32_t s, const glm::vec4 & c) {
+     }
+ }
+ 
+-GuiText::GuiText(const wchar_t * t, int32_t s, const glm::vec4 & c) {
++GuiText::GuiText(const wchar_t * t, int32_t s, const glm::vec4 & c, int32_t SSAA) {
+     text = NULL;
+     size = s;
+     currentSize = size;
+@@ -106,7 +106,7 @@ GuiText::GuiText(const wchar_t * t, int32_t s, const glm::vec4 & c) {
+     blurGlowIntensity = 0.0f;
+     blurAlpha = 0.0f;
+     blurGlowColor = glm::vec4(0.0f);
+-    internalRenderingScale = presetInternalRenderingScale;
++    internalRenderingScale = SSAA;
+ 
+     if(t) {
+         text = new (std::nothrow) wchar_t[wcslen(t)+1];
+@@ -233,17 +233,22 @@ void GuiText::clearDynamicText() {
+     textDynWidth.clear();
+ }
+ 
+-void GuiText::setPresets(int32_t sz, const glm::vec4 & c, int32_t w, int32_t a) {
++void GuiText::setPresets(int32_t sz, const glm::vec4 & c, int32_t w, int32_t a, int32_t SSAA) {
+     presetSize = sz;
+     presetColor = c;
+     presetMaxWidth = w;
+     presetAlignment = a;
++	presetInternalRenderingScale = SSAA;
+ }
+ 
+ void GuiText::setPresetFont(FreeTypeGX *f) {
+     presentFont = f;
+ }
+ 
++void GuiText::setSSAA(int32_t SSAA) {
++    internalRenderingScale = SSAA;
++}
++
+ void GuiText::setFontSize(int32_t s) {
+     size = s;
+ }
+@@ -491,7 +496,7 @@ void GuiText::draw(CVideo *pVideo) {
+     color[3] = getAlpha();
+     blurGlowColor[3] = blurAlpha * getAlpha();
+ 
+-    float finalRenderingScale = 2.0f * internalRenderingScale;
++    float finalRenderingScale = internalRenderingScale << 1;
+ 
+     int32_t newSize = size * getScale() * finalRenderingScale;
+     int32_t normal_size = size * getScale();

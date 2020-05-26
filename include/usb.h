@@ -1,6 +1,5 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
- * Copyright (c) 2019-2020 Pokes303                                        *
  * Copyright (c) 2020 V10lator <v10lator@myway.de>                         *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
@@ -18,57 +17,22 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
+#ifndef NUSSPLI_USB_H
+#define NUSSPLI_USB_H
+
 #include <wut-fixups.h>
-
-#include <main.h>
-#include <status.h>
-
-#include <coreinit/core.h>
-#include <proc_ui/procui.h>
-#include <whb/proc.h>
 
 #include <stdbool.h>
 
-int app = 1;
-bool appRunning = true;
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
-bool AppRunning()
-{
-	if(appRunning)
-	{
-		if(hbl)
-			appRunning = WHBProcIsRunning();
-		else
-		{
-			switch(ProcUIProcessMessages(true))
-			{
-				case PROCUI_STATUS_EXITING:
-					// Being closed, deinit, free, and prepare to exit
-					app = 0;
-					appRunning = false;
-					break;
-				case PROCUI_STATUS_RELEASE_FOREGROUND:
-					// Free up MEM1 to next foreground app, deinit screen, etc.
-					ProcUIDrawDoneRelease();
-					
-					//TODO
-				
-					app = 2;
-					break;
-				case PROCUI_STATUS_IN_FOREGROUND:
-					// Executed while app is in foreground
-					if (app == 2) {
-						//TODO
-					}
-					
-					app = 1;
-					break;
-				case PROCUI_STATUS_IN_BACKGROUND:
-					app = 2;
-					break;
-			}
-		}
+bool mountUSB();
+void unmountUSB();
+
+#ifdef __cplusplus
 	}
-	
-	return appRunning;
-}
+#endif
+
+#endif // ifndef NUSSPLI_USB_H

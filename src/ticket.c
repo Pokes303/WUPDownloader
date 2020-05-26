@@ -1,211 +1,209 @@
-#include "ticket.h"
+/***************************************************************************
+ * This file is part of NUSspli.                                           *
+ * Copyright (c) 2019-2020 Pokes303                                        *
+ * Copyright (c) 2020 V10lator <v10lator@myway.de>                         *
+ *                                                                         *
+ * This program is free software; you can redistribute it and/or modify    *
+ * it under the terms of the GNU General Public License as published by    *
+ * the Free Software Foundation; either version 2 of the License, or       *
+ * (at your option) any later version.                                     *
+ *                                                                         *
+ * This program is distributed in the hope that it will be useful,         *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of          *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ * GNU General Public License for more details.                            *
+ *                                                                         *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
+ ***************************************************************************/
 
-#include "utils.h"
-#include "file.h"
-#include "menu.h"
-#include "input.h"
-#include "status.h"
-#include "screen.h"
+#include <wut-fixups.h>
 
+#include <ticket.h>
+
+#include <utils.h>
+#include <file.h>
+#include <input.h>
+#include <renderer.h>
+#include <status.h>
+#include <usb.h>
+#include <utils.h>
+#include <menu/filebrowser.h>
+#include <menu/utils.h>
+
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
-#include <whb/log.h>
+#include <coreinit/memdefaultheap.h>
 #include <whb/proc.h>
 
-void generateTik(FILE* tik, char* titleID, char* encKey) { //Based on NUSPacker tik creation function
-	WHBLogPrintf("Generate tik function");
+/* This generates a ticket and writes it to a file.
+ * The ticket algorithm is ported from FunkiiU combined
+ * with the randomness of NUSPackager to create unique
+ * NUSspli tickets.
+ */
+void generateTik(FILE *tik, char *titleID, char *encKey)
+{
+	debugPrintf("Generate tik function");
 	
-	writeCustomBytes(tik, "00010004");
-	writeRandomBytes(tik, 0x100);
-	writeVoidBytes(tik, 0x3C);
-	writeCustomBytes(tik, "526F6F742D434130303030303030332D58533030303030303063000000000000");
-	writeVoidBytes(tik, 0x5C);
-	writeCustomBytes(tik, "010000");
+	// NUSspli adds its own header.
+	writeHeader(tik, FILE_TYPE_TIK);
+	
+	// SSH certificate
+	writeCustomBytes(tik, "0x526F6F742D434130303030303030332D58533030303030303063"); // "Root-CA00000003-XS0000000c"writeVoidBytes(tik, 0x26);
+	writeVoidBytes(tik, 0x26);
+	writeRandomBytes(tik, 0x3B);
+	
+	// The title data
+	writeCustomBytes(tik, "0x00010000");
 	writeCustomBytes(tik, encKey);
-	writeCustomBytes(tik, "000005");
-	writeRandomBytes(tik, 0x06);
-	writeVoidBytes(tik, 0x04);
+	writeVoidBytes(tik, 0xD); // 0x00000000, so one of the magic things again
 	writeCustomBytes(tik, titleID);
-	writeCustomBytes(tik, "00000011000000000000000000000005");
-	writeVoidBytes(tik, 0xB0);
-	writeCustomBytes(tik, "00010014000000AC000000140001001400000000000000280000000100000084000000840003000000000000FFFFFF01");
-	writeVoidBytes(tik, 0x7C);
+	
+	writeVoidBytes(tik, 0x3D);
+	writeCustomBytes(tik, "01"); // Not sure what shis is for
+	writeVoidBytes(tik, 0x82);
+	
+	//And some footer. Also not sure what it means
+	//Let's write it out in parts so we might be able to find patterns
+	writeCustomBytes(tik, "0x00010014"); // Magic thing A
+	writeCustomBytes(tik, "0x000000ac");
+	writeCustomBytes(tik, "0x00000014"); // Might be connected to magic thing A
+	writeCustomBytes(tik, "0x00010014"); // Magic thing A
+	writeCustomBytes(tik, "0x0000000000000028");
+	writeCustomBytes(tik, "0x00000001"); // Magic thing B ?
+	writeCustomBytes(tik, "0x0000008400000084"); // Pattern
+	writeCustomBytes(tik, "0x0003000000000000");
+	writeCustomBytes(tik, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+	writeVoidBytes(tik, 0x60);
 }
 
-bool generateFakeTicket() {
-	FSDirectoryHandle dh;
-	FSStatus fsr = FSOpenDir(fsCli, fsCmd, INSTALL_DIR, &dh, 0);
-	WHBLogPrintf("fsr: %u", fsr);
+void drawTicketFrame(const char *titleID, const char* encKey)
+{
+	startNewFrame();
+	textToFrame(0, 0, "Title ID:");
+	textToFrame(3, 1, titleID[0] == '\0' ? "NOT SET" : titleID);
+	textToFrame(0, 2, "Encrypted title key:");
+	textToFrame(3, 3, encKey[0] == '\0' ? "NOT SET" : encKey);
 	
-	int tikFoldersSize = 1;
-	char* tikFolders[1024];
-	tikFolders[0] = "<CURRENT DIRECTORY>";
-	FSDirectoryEntry de;
-	if (fsr == FS_STATUS_OK)
+	textToFrame(0, 5, "You need to set the title ID and the Encrypted title key to generate a fake ticket");
+	
+	int line = MAX_LINES - 4;
+	textToFrame(0, line--, "Press \uE001 to return");
+	if (titleID[0] != '\0' && encKey[0] != '\0')
+		textToFrame(0, line--, "Press \uE000 to continue");
+	lineToFrame(line, SCREEN_COLOR_BROWN);
+	
+	lineToFrame(MAX_LINES - 3, SCREEN_COLOR_BROWN);
+	textToFrame(0, MAX_LINES - 2, "Press \uE041 UP to set the title ID");
+	textToFrame(0, MAX_LINES - 1, "Press \uE041 DOWN to set the Encrypted title key");
+	drawFrame();
+}
+
+bool generateFakeTicket()
+{
+	char *dir = fileBrowserMenu();
+	if(dir == NULL)
+		return true;
+	
+	char titleID[17];
+	char encKey[33];
+	titleID[0] = encKey[0] = '\0';
+	
+	drawTicketFrame(titleID, encKey);
+	
+	while(AppRunning())
 	{
-		while (FSReadDir(fsCli, fsCmd, dh, &de, 0) == FS_STATUS_OK && tikFoldersSize < 1024)
-			if (de.info.flags == 0x8C000000) //Check if it's a directory
-				tikFolders[tikFoldersSize++] = de.name;
-		FSCloseDir(fsCli, fsCmd, dh, 0);
-	}
-	
-	int tikCursor = 0;
-	int tikPos = 0;
-	bool mov = tikFoldersSize >= 12;
-	
-	while(AppRunning()) {
-		if (app == 2)
+		showFrame();
+		
+		if(app == 2)
 			continue;
 		
-		readInput();
-		
-		startRefresh();
-		writeFolderMenu();
-		
-		if (fsr == FS_STATUS_OK) {
-			char* toWrite;
-			for (int i = 0; i < 13 && i < tikFoldersSize; i++) {
-				toWrite = tikFolders[i + tikPos];
-				strcat(toWrite, i == 0 ? "" : "/");
-				write(1, i + 2, toWrite);
-				if (tikCursor == i)
-					write(0, tikCursor + 2, ">");
-			}
-		}
-		else {
-			char toWrite[64];
-			sprintf(toWrite, "ERROR OPENING THE FOLDER: %d", fsr);
-			write(0, 2, toWrite);
-			write(1, 2, "Try to relaunch the application");
-		}
-		
-		switch(vpad.trigger) {
+		switch(vpad.trigger)
+		{
 			case VPAD_BUTTON_A:
-				if (fsr == FS_STATUS_OK)
-					goto inputTikValues;
-				else
-					break;
-			case VPAD_BUTTON_B:
-				return true;
-			case VPAD_BUTTON_Y:
-				return generateFakeTicket();
-			case VPAD_BUTTON_UP:
-				if (tikCursor <= 0) {
-					if (mov) {
-						if (tikPos > 0) {
-							tikPos--;
-						}
-						else {
-							tikCursor = 12;
-							tikPos = tikFoldersSize % 12 - 1;
-						}
-					}
-					else {
-						tikCursor = tikFoldersSize - 1;
-					}
-				}
-				else {
-					tikCursor--;
-				}
-				break;
-			case VPAD_BUTTON_DOWN:
-				if (tikCursor >= 12 || tikCursor >= tikFoldersSize - 1) {
-					if (mov && tikPos < tikFoldersSize % 12 - 1)
-						tikPos++;
-					else {
-						tikCursor = 0;
-						tikPos = 0;
-					}
-				}
-				else {
-					tikCursor++;
-				}
-				break;
-		}
-		endRefresh();
-	}
-	return false;
-	
-inputTikValues: ;
-	char* titleID;
-	char* encKey;
-
-	while (AppRunning()) {
-		if (app == 2)
-			continue;
-		
-		readInput();
-
-		startRefresh();
-		write(0, 0, "Title ID:");
-		write(1, 1, titleID[0] == '\0' ? "NOT SET" : titleID);
-		write(0, 2, "Encrypted title key");
-		write(1, 3, encKey[0] == '\0' ? "NOT SET" : encKey);
-		
-		write(0, 5, "You need to set the title ID and the Encrypted title key");
-		write(0, 6, " to generate a fake ticket");
-		
-		if (titleID[0] != '\0' && encKey[0] != '\0')
-			write(0, 8, "Press (A) to continue");
-		write(0, 9, "Press (B) to return");
-		paintLine(10, SCREEN_COLOR_WHITE);
-		write(0, 11, "Press (UP) to set the title ID");
-		write(0, 12, "Press (DOWN) to set the Encrypted title key");
-		endRefresh();
-		
-		switch (vpad.trigger) {
-			case VPAD_BUTTON_A:
-				if (titleID[0] != '\0' && titleID[0] != '\0') {
-					startRefresh();
-					write(0, 0, "Generating fake ticket...");
-					endRefresh();
+				if(titleID[0] != '\0' && encKey[0] != '\0')
+				{
+					startNewFrame();
+					textToFrame(0, 0, "Generating fake ticket...");
+					drawFrame();
+					showFrame();
 					
-					FILE* fakeTik;
-					char* tikPath;
-					if(tikCursor == 0) {
-						tikPath = "ticket_";
-						strcpy(tikPath, titleID);
-						strcpy(tikPath, "_");
-						strcpy(tikPath, encKey);
-						strcpy(tikPath, ".tik");
-					} else
-						tikPath = tikFolders[tikCursor + tikPos + 1];
-					char tmpPath[256];
-					strcpy(tmpPath, INSTALL_DIR);
-					strcat(tmpPath, tikPath);
-					fakeTik = fopen(tmpPath, "wb");
+					char tikPath[1024];
+					strcpy(tikPath, dir);
+					if(dir[0] == '.')
+					{
+						strcat(tikPath, "ticket_");
+						strcat(tikPath, titleID);
+						strcat(tikPath, "_");
+						strcat(tikPath, encKey);
+					}
+					else
+						strcat(tikPath, "title");
+					
+					MEMFreeToDefaultHeap(dir);
+					strcat(tikPath, ".tik");
+					
+					FILE *fakeTik = fopen(tikPath, "wb");
+					if(fakeTik == NULL)
+					{
+						char err[1044];
+						sprintf(err, "Could not open path\n%s", tikPath);
+						drawErrorFrame(err, B_RETURN);
+						
+						while(AppRunning())
+						{
+							showFrame();
+							
+							if(app == 2)
+								continue;
+							
+							if(vpad.trigger == VPAD_BUTTON_B)
+								return true;
+						}
+						return false;
+					}
+					debugPrintf("Generating fake ticket at %s", tikPath);
 					generateTik(fakeTik, titleID, encKey);
+					fflush(fakeTik);
 					fclose(fakeTik);
 					
-					while(AppRunning()) {
-						if (app == 2)
+					colorStartNewFrame(SCREEN_COLOR_GREEN);
+					textToFrame(0, 0, "Fake ticket generated on:");
+					textToFrame(0, 1, tikPath);
+					textToFrame(0, 3, "Press \uE000 to return");
+					drawFrame();
+					
+					while(AppRunning())
+					{
+						showFrame();
+						
+						if(app == 2)
 							continue;
-		
-						readInput();
 						
-						colorStartRefresh(SCREEN_COLOR_GREEN);
-						write(0, 0, "Fake ticket generated on:");
-						write(0, 1, " SD:/install/");
-						write(13, 1, tikPath);
-						write(0, 3, "Press (A) to return");
-						endRefresh();
-						
-						if (vpad.trigger == VPAD_BUTTON_A)
+						if(vpad.trigger == VPAD_BUTTON_A)
 							return true;
 					}
 					return false;
 				}
 				break;
 			case VPAD_BUTTON_B:
+				MEMFreeToDefaultHeap(dir);
 				return true;
 			case VPAD_BUTTON_UP:
-				showKeyboard(titleID, CHECK_HEXADECIMAL, 16, true);
+				showKeyboard(KEYBOARD_TYPE_RESTRICTED, titleID, CHECK_HEXADECIMAL, 16, true, titleID, NULL);
+				toLowercase(titleID);
+				drawTicketFrame(titleID, encKey);
 				break;
 			case VPAD_BUTTON_DOWN:
-				showKeyboard(encKey, CHECK_HEXADECIMAL, 32, true);
+				showKeyboard(KEYBOARD_TYPE_RESTRICTED, encKey, CHECK_HEXADECIMAL, 32, true, encKey, NULL);
+				toLowercase(encKey);
+				drawTicketFrame(titleID, encKey);
 				break;
 		}
 	}
+	MEMFreeToDefaultHeap(dir);
 	return false;
 }

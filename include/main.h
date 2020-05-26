@@ -18,57 +18,35 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
+//TODO: Get rid of this file
+
+#ifndef NUSSPLI_MAIN_H
+#define NUSSPLI_MAIN_H
+
 #include <wut-fixups.h>
-
-#include <main.h>
-#include <status.h>
-
-#include <coreinit/core.h>
-#include <proc_ui/procui.h>
-#include <whb/proc.h>
 
 #include <stdbool.h>
 
-int app = 1;
-bool appRunning = true;
+#include <file.h>
+#include <menu/download.h>
 
-bool AppRunning()
-{
-	if(appRunning)
-	{
-		if(hbl)
-			appRunning = WHBProcIsRunning();
-		else
-		{
-			switch(ProcUIProcessMessages(true))
-			{
-				case PROCUI_STATUS_EXITING:
-					// Being closed, deinit, free, and prepare to exit
-					app = 0;
-					appRunning = false;
-					break;
-				case PROCUI_STATUS_RELEASE_FOREGROUND:
-					// Free up MEM1 to next foreground app, deinit screen, etc.
-					ProcUIDrawDoneRelease();
-					
-					//TODO
-				
-					app = 2;
-					break;
-				case PROCUI_STATUS_IN_FOREGROUND:
-					// Executed while app is in foreground
-					if (app == 2) {
-						//TODO
-					}
-					
-					app = 1;
-					break;
-				case PROCUI_STATUS_IN_BACKGROUND:
-					app = 2;
-					break;
-			}
-		}
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
+extern bool hbl;
+
+extern uint16_t contents;
+extern char *ramBuf;
+extern size_t ramBufSize;
+
+#define DOWNLOAD_URL "http://ccs.cdn.wup.shop.nintendo.net/ccs/download/"
+
+int downloadFile(char* url, char* file, FileType type);
+bool downloadTitle(GameInfo game, char* titleVer, char* folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles);
+
+#ifdef __cplusplus
 	}
-	
-	return appRunning;
-}
+#endif
+
+#endif // ifndef NUSSPLI_MAIN_H

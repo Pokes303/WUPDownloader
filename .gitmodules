@@ -1,0 +1,6 @@
+[submodule "src/cJSON"]
+	path = src/cJSON
+	url = https://github.com/DaveGamble/cJSON.git
+[submodule "libgui"]
+	path = libgui
+	url = https://github.com/wiiu-env/libgui.git

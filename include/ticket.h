@@ -18,57 +18,25 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
+#ifndef NUSSPLI_TICKET_H
+#define NUSSPLI_TICKET_H
+
 #include <wut-fixups.h>
 
-#include <main.h>
-#include <status.h>
-
-#include <coreinit/core.h>
-#include <proc_ui/procui.h>
-#include <whb/proc.h>
-
 #include <stdbool.h>
+#include <stdio.h>
 
-int app = 1;
-bool appRunning = true;
+#include <main.h>
 
-bool AppRunning()
-{
-	if(appRunning)
-	{
-		if(hbl)
-			appRunning = WHBProcIsRunning();
-		else
-		{
-			switch(ProcUIProcessMessages(true))
-			{
-				case PROCUI_STATUS_EXITING:
-					// Being closed, deinit, free, and prepare to exit
-					app = 0;
-					appRunning = false;
-					break;
-				case PROCUI_STATUS_RELEASE_FOREGROUND:
-					// Free up MEM1 to next foreground app, deinit screen, etc.
-					ProcUIDrawDoneRelease();
-					
-					//TODO
-				
-					app = 2;
-					break;
-				case PROCUI_STATUS_IN_FOREGROUND:
-					// Executed while app is in foreground
-					if (app == 2) {
-						//TODO
-					}
-					
-					app = 1;
-					break;
-				case PROCUI_STATUS_IN_BACKGROUND:
-					app = 2;
-					break;
-			}
-		}
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
+void generateTik(FILE* tik, char* titleID, char* encKey);
+bool generateFakeTicket();
+
+#ifdef __cplusplus
 	}
-	
-	return appRunning;
-}
+#endif
+
+#endif // ifndef NUSSPLI_TICKET_H

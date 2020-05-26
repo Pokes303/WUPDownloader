@@ -18,57 +18,53 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
+#ifndef NUSSPLI_FILE_H
+#define NUSSPLI_FILE_H
+
 #include <wut-fixups.h>
 
-#include <main.h>
-#include <status.h>
-
-#include <coreinit/core.h>
-#include <proc_ui/procui.h>
-#include <whb/proc.h>
-
 #include <stdbool.h>
+#include <stdio.h>
 
-int app = 1;
-bool appRunning = true;
+#define INSTALL_DIR_SD "/vol/external01/install/"
+#define INSTALL_DIR_USB "usb:/install/"
 
-bool AppRunning()
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
+typedef enum
 {
-	if(appRunning)
-	{
-		if(hbl)
-			appRunning = WHBProcIsRunning();
-		else
-		{
-			switch(ProcUIProcessMessages(true))
-			{
-				case PROCUI_STATUS_EXITING:
-					// Being closed, deinit, free, and prepare to exit
-					app = 0;
-					appRunning = false;
-					break;
-				case PROCUI_STATUS_RELEASE_FOREGROUND:
-					// Free up MEM1 to next foreground app, deinit screen, etc.
-					ProcUIDrawDoneRelease();
-					
-					//TODO
-				
-					app = 2;
-					break;
-				case PROCUI_STATUS_IN_FOREGROUND:
-					// Executed while app is in foreground
-					if (app == 2) {
-						//TODO
-					}
-					
-					app = 1;
-					break;
-				case PROCUI_STATUS_IN_BACKGROUND:
-					app = 2;
-					break;
-			}
-		}
-	}
+	// Real file types, specify exactly one!
+	FILE_TYPE_TMD = 1,		// 00000001
+	FILE_TYPE_TIK = 2,		// 00000010
+	FILE_TYPE_CERT = 4,		// 00000100
+	FILE_TYPE_APP = 8,		// 00001000
+	FILE_TYPE_H3 = 16,		// 00010000
+	FILE_TYPE_JSON = 32,	// 00100000
 	
-	return appRunning;
-}
+	// Extra flags, OR them to the real file type (except FILE_TYPE_TODISC which exists for beauty reasons only / is the default)
+	FILE_TYPE_TODISC = 0,	// 00000000
+	FILE_TYPE_TORAM = 64,	// 01000000
+} FileType;
+
+uint8_t readUInt8(char* file, uint32_t pos);
+uint16_t readUInt16(char* file, uint32_t pos);
+uint32_t readUInt32(char* file, uint32_t pos);
+uint64_t readUInt64(char* file, uint32_t pos);
+
+void writeVoidBytes(FILE* fp, uint32_t length);
+uint8_t charToByte(char c);
+void writeCustomBytes(FILE* fp, char* str);
+void writeRandomBytes(FILE* fp, uint32_t length);
+void writeHeader(FILE *fp, FileType type);
+
+bool fileExists(const char *path);
+bool dirExists(const char *path);
+void removeDirectory(const char *path);
+
+#ifdef __cplusplus
+	}
+#endif
+
+#endif // ifndef NUSSPLI_FILE_H

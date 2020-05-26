@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <app version="1">
-  <name>WUP Downloader</name>
-  <coder>Pokes303 & V10lator</coder>
-  <version>1.3</version>
-  <release_date>20192209000000</release_date>
-  <short_description>Download content from the NUS on the WiiU</short_description> 
-  <long_description>This app is made for downloading installable content from the NUS directly onto the WiiU SD Card.
-  If a ticket isn't found on the NUS, you can create fake ones (title.tik) at the start of a download, or in the main menu
-  Please, don't do piracy with this app (Only download games that you had bought)
-  
-  Releases: https://github.com/V10lator/WUPDownloader/releases
-  Source code: https://github.com/V10lator/WUPDownloader
-  </long_description> 
+  <name>NUSspli</name>
+  <coder>V10lator</coder>
+  <version>1.0</version>
+  <release_date>20202605000000</release_date>
+  <short_description>NUS simple package loader / installer</short_description> 
+  <long_description>Install content directly from the Nintendo Update Servers to your Wii U.
 
+
+
+
+
+
+Releases: https://github.com/V10lator/NUSspli/releases
+Source code: https://github.com/V10lator/NUSspli</long_description> 
 </app>

@@ -1,0 +1,54 @@
+diff --git a/source/video/CVideo.cpp b/source/video/CVideo.cpp
+index e639698..4eb8ad2 100644
+--- a/source/video/CVideo.cpp
++++ b/source/video/CVideo.cpp
+@@ -77,7 +77,6 @@ CVideo::CVideo(int32_t forceTvScanMode, int32_t forceDrcScanMode) {
+     }
+ 
+     int32_t tvAAMode = GX2_AA_MODE1X;
+-    int32_t drcAAMode = GX2_AA_MODE4X;
+ 
+     //! calculate the scale factor for later texture resize
+     widthScaleFactor = 1.0f / (float)tvWidth;
+@@ -117,22 +116,10 @@ CVideo::CVideo(int32_t forceTvScanMode, int32_t forceDrcScanMode) {
+     GX2InitDepthBufferHiZEnable(&tvDepthBuffer, GX2_ENABLE);
+ 
+     //! Setup color buffer for DRC rendering
+-    GX2InitColorBuffer(&drcColorBuffer, GX2_SURFACE_DIM_TEXTURE_2D, 854, 480, 1, GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8, (GX2AAMode)drcAAMode);
++    GX2InitColorBuffer(&drcColorBuffer, GX2_SURFACE_DIM_TEXTURE_2D, 854, 480, 1, GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8, (GX2AAMode)tvAAMode);
+     drcColorBuffer.surface.image = MEM1_alloc(drcColorBuffer.surface.imageSize, drcColorBuffer.surface.alignment);
+     GX2Invalidate(GX2_INVALIDATE_MODE_CPU, drcColorBuffer.surface.image, drcColorBuffer.surface.imageSize);
+ 
+-    //! Setup DRC depth buffer (can be the same for both if rendered one after another)
+-    GX2InitDepthBuffer(&drcDepthBuffer, GX2_SURFACE_DIM_TEXTURE_2D, drcColorBuffer.surface.width, drcColorBuffer.surface.height, 1, GX2_SURFACE_FORMAT_FLOAT_R32, (GX2AAMode)drcAAMode);
+-    drcDepthBuffer.surface.image = MEM1_alloc(drcDepthBuffer.surface.imageSize, drcDepthBuffer.surface.alignment);
+-    GX2Invalidate(GX2_INVALIDATE_MODE_CPU, drcDepthBuffer.surface.image, drcDepthBuffer.surface.imageSize);
+-
+-    //! Setup DRC HiZ buffer
+-    GX2CalcDepthBufferHiZInfo(&drcDepthBuffer, &size, &align);
+-    drcDepthBuffer.hiZPtr = MEM1_alloc(size, align);
+-    GX2Invalidate(GX2_INVALIDATE_MODE_CPU, drcDepthBuffer.hiZPtr, size);
+-    GX2InitDepthBufferHiZEnable(&drcDepthBuffer, GX2_ENABLE);
+-
+-
+     //! allocate auxilary buffer last as there might not be enough MEM1 left for other stuff after that
+     if (tvColorBuffer.surface.aa) {
+         uint32_t auxSize, auxAlign;
+@@ -172,7 +159,7 @@ CVideo::CVideo(int32_t forceTvScanMode, int32_t forceDrcScanMode) {
+ 
+     GX2SetContextState(drcContextState);
+     GX2SetColorBuffer(&drcColorBuffer, GX2_RENDER_TARGET_0);
+-    GX2SetDepthBuffer(&drcDepthBuffer);
++    GX2SetDepthBuffer(&tvDepthBuffer);
+ 
+     //! set initial viewport
+     GX2SetViewport(0.0f, 0.0f, tvColorBuffer.surface.width, tvColorBuffer.surface.height, 0.0f, 1.0f);
+@@ -217,8 +204,6 @@ CVideo::~CVideo() {
+     //! free depth buffers
+     MEM1_free(tvDepthBuffer.surface.image);
+     MEM1_free(tvDepthBuffer.hiZPtr);
+-    MEM1_free(drcDepthBuffer.surface.image);
+-    MEM1_free(drcDepthBuffer.hiZPtr);
+     //! free context buffers
+     MEM2_free(tvContextState);
+     MEM2_free(drcContextState);

@@ -1,3 +1,5 @@
-build
-WUPDownloader.elf
-WUPDownloader.rpx
+debug
+release
+NUSspli.elf
+NUSSpli.rpx
+TODO.txt

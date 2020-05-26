@@ -1,6 +1,5 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
- * Copyright (c) 2019-2020 Pokes303                                        *
  * Copyright (c) 2020 V10lator <v10lator@myway.de>                         *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
@@ -18,57 +17,52 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#include <wut-fixups.h>
+// This is a uchar.h implementation as required by C11.
+// It's missing in newlib as newlib is ANSI C only.
 
-#include <main.h>
-#include <status.h>
+#ifndef UCHAR_H
+#define UCHAR_H
 
-#include <coreinit/core.h>
-#include <proc_ui/procui.h>
-#include <whb/proc.h>
-
-#include <stdbool.h>
-
-int app = 1;
-bool appRunning = true;
-
-bool AppRunning()
-{
-	if(appRunning)
-	{
-		if(hbl)
-			appRunning = WHBProcIsRunning();
-		else
-		{
-			switch(ProcUIProcessMessages(true))
-			{
-				case PROCUI_STATUS_EXITING:
-					// Being closed, deinit, free, and prepare to exit
-					app = 0;
-					appRunning = false;
-					break;
-				case PROCUI_STATUS_RELEASE_FOREGROUND:
-					// Free up MEM1 to next foreground app, deinit screen, etc.
-					ProcUIDrawDoneRelease();
-					
-					//TODO
-				
-					app = 2;
-					break;
-				case PROCUI_STATUS_IN_FOREGROUND:
-					// Executed while app is in foreground
-					if (app == 2) {
-						//TODO
-					}
-					
-					app = 1;
-					break;
-				case PROCUI_STATUS_IN_BACKGROUND:
-					app = 2;
-					break;
-			}
-		}
-	}
+#ifndef __cplusplus
+	#include <wut-fixups.h>
+	#include <stddef.h>
+	#include <stdint.h>
+	#include <wchar.h>
 	
-	return appRunning;
-}
+	typedef __uint_least16_t char16_t;
+	typedef __uint_least32_t char32_t;
+	
+	// These function are a WIP. Don't use them yet.
+	size_t mbrtoc16(char16_t *out, const char *in, size_t size, mbstate_t *mbs)
+	{
+		//TODO
+		if(out == NULL || in == NULL)
+			return 0;
+		
+		for(size_t i = 0; i < size; i++)
+			out[i] = in[i];
+		
+		return size;
+	}
+	size_t c16rtomb(char *out, char16_t in, mbstate_t *mbs)
+	{
+		//TODO
+		if(out == NULL)
+			return 0;
+		
+		out[0] = in > 0x7F ? '?' : (char)in;
+		return 1;
+	}
+	size_t mbrtoc32(char32_t *out, const char *in, size_t size, mbstate_t *mbs)
+	{
+		//TODO
+		return 0;
+	}
+	size_t c32rtomb(char *out, char32_t in, mbstate_t *mbs)
+	{
+		//TODO
+		return 0;
+	}
+#endif // ifndef __cplusplus
+
+#endif // ifndef UCHAR_H

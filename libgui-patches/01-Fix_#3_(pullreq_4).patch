@@ -1,0 +1,38 @@
+diff --git a/source/gui/FreeTypeGX.cpp b/source/gui/FreeTypeGX.cpp
+index bab0836..613a2b6 100644
+--- a/source/gui/FreeTypeGX.cpp
++++ b/source/gui/FreeTypeGX.cpp
+@@ -70,18 +70,16 @@ FreeTypeGX::~FreeTypeGX() {
+ wchar_t* FreeTypeGX::charToWideChar(const char* strChar) {
+     if (!strChar) return NULL;
+ 
+-    wchar_t *strWChar = new (std::nothrow) wchar_t[strlen(strChar) + 1];
++    size_t len = strlen(strChar) + 1;
++    wchar_t *strWChar = new (std::nothrow) wchar_t[len];
+     if (!strWChar) return NULL;
+ 
+-    int32_t bt = mbstowcs(strWChar, strChar, strlen(strChar));
+-    if (bt > 0) {
+-        strWChar[bt] = 0;
+-        return strWChar;
+-    }
++    size_t bt = mbstowcs(strWChar, strChar, len);
++    if (bt == (size_t)-1)
++        return NULL;
+ 
+-    wchar_t *tempDest = strWChar;
+-    while ((*tempDest++ = *strChar++))
+-        ;
++    if (bt < --len)
++        strWChar[bt] = 0;
+ 
+     return strWChar;
+ }
+@@ -130,6 +128,7 @@ char *FreeTypeGX::wideCharToUTF8(const wchar_t* strChar) {
+             pOut[n++] = (char)((wc & 0x3F) | 0x80);
+         }
+     }
++    pOut[n] = '\0';
+     return pOut;
+ }
+ 
