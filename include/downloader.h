@@ -18,10 +18,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-//TODO: Get rid of this file
-
-#ifndef NUSSPLI_MAIN_H
-#define NUSSPLI_MAIN_H
+#ifndef NUSSPLI_DOWNLOADER_H
+#define NUSSPLI_DOWNLOADER_H
 
 #include <wut-fixups.h>
 
@@ -34,10 +32,17 @@
 	extern "C" {
 #endif
 
-extern bool hbl;
+extern uint16_t contents;
+extern char *ramBuf;
+extern size_t ramBufSize;
+
+#define DOWNLOAD_URL "http://ccs.cdn.wup.shop.nintendo.net/ccs/download/"
+
+int downloadFile(char* url, char* file, FileType type);
+bool downloadTitle(GameInfo game, char* titleVer, char* folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles);
 
 #ifdef __cplusplus
 	}
 #endif
 
-#endif // ifndef NUSSPLI_MAIN_H
+#endif // ifndef NUSSPLI_DOWNLOADER_H

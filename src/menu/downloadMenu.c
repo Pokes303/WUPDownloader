@@ -21,9 +21,9 @@
 #include <wut-fixups.h>
 
 #include <config.h>
+#include <downloader.h>
 #include <input.h>
 #include <ioThread.h>
-#include <main.h>
 #include <renderer.h>
 #include <status.h>
 #include <usb.h>
