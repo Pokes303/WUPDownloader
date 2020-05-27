@@ -201,6 +201,7 @@ int main()
 					else
 						lerr = "Couldn't load I/O thread!";
 					
+					unmountUSB();
 					MCP_Close(mcpHandle);
 					debugPrintf("MCP closed");
 				}
@@ -213,7 +214,6 @@ int main()
 			else
 				lerr = "Couldn't initialize SWKBD!";
 			
-			unmountUSB();
 			FSShutdown();
 			freeJSON();
 		}

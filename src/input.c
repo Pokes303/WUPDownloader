@@ -267,11 +267,15 @@ void readInput()
 				break;
 			case VPAD_READ_INVALID_CONTROLLER:
 				OSBlockSet(&vpad, 0, sizeof(VPADStatus));
+				addErrorOverlay("Error reading the WiiU Gamepad!");
+				run = false;
+				break;
 /*				colorStartNewFrame(SCREEN_COLOR_RED);
 				textToFrame(0, 0, "Error reading the WiiU Gamepad!");
 				drawFrame();
 				showFrame();
 */			default:
+				removeErrorOverlay();
 				run = false;
 		}
 	}

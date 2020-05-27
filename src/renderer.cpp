@@ -57,10 +57,9 @@ uint32_t bgColor = SCREEN_COLOR_BLUE;
 uint32_t width, height;
 GuiSound *backgroundMusic;
 
-#define MAX_ELEMENTS MAX_LINES << 1
-GuiElement *onScreen[MAX_ELEMENTS];
-size_t onScreenIndex = 0;
 int32_t spaceWidth;
+
+GuiFrame *errorOverlay = NULL;
 
 #define SSAA 8
 
@@ -77,6 +76,148 @@ static inline GX2Color screenColorToGX2color(uint32_t color)
 	gx2color.r = color & 0xFF;
 	
 	return gx2color;
+}
+
+void textToFrame(int row, int column, const char *str)
+{
+	column += 2;
+	column *= -FONT_SIZE;
+	
+	GuiText *text = new GuiText(str);
+	
+	if(row == ALIGNED_CENTER)
+	{
+		text->setAlignment(ALIGN_TOP_CENTER);
+		text->setPosition(0.0f, column);
+	}
+	else if(row ==  ALIGNED_RIGHT)
+	{
+		text->setAlignment(ALIGN_TOP_RIGHT);
+		text->setPosition(-FONT_SIZE, column);
+	}
+	else
+	{
+		int w = FONT_SIZE + (row * spaceWidth);
+		text->setPosition(w, column);
+		text->setMaxWidth(width - w - FONT_SIZE, GuiText::DOTTED);
+	}
+	
+	window->append(text);
+}
+
+
+void lineToFrame(int column, uint32_t color)
+{
+	GuiImage *line = new GuiImage(width - (FONT_SIZE << 1), 3, screenColorToGX2color(color), GuiImage::IMAGE_COLOR);
+	line->setAlignment(ALIGN_TOP_CENTER);
+	line->setPosition(0.0f, ((column + 2) * -FONT_SIZE) + ((FONT_SIZE >> 1) + 1));
+	
+	window->append(line);
+}
+
+void boxToFrame(int lineStart, int lineEnd, uint32_t color)
+{
+	int size = (lineEnd - lineStart) * FONT_SIZE;
+	
+	int bw = width - (FONT_SIZE << 1);
+	
+	GuiImage *box = new GuiImage(bw, size, screenColorToGX2color(color), GuiImage::IMAGE_COLOR);
+	box->setAlignment(ALIGN_TOP_CENTER);
+	box->setPosition(0.0f, ((lineStart + 2) * -FONT_SIZE) + (FONT_SIZE >> 1));
+	
+	window->append(box);
+	
+	box = new GuiImage(bw - 6, size - 6, screenColorToGX2color(bgColor), GuiImage::IMAGE_COLOR);
+	box->setAlignment(ALIGN_TOP_CENTER);
+	box->setPosition(0.0f, ((lineStart + 2) * -FONT_SIZE) + ((FONT_SIZE >> 1) - 3));
+	
+	window->append(box);
+}
+
+void barToFrame(int line, int column, uint32_t width, float progress)
+{
+	int x = FONT_SIZE + (column * spaceWidth);
+	int y = ((line + 1) * -FONT_SIZE) + 2;
+	int height = FONT_SIZE;
+	uint32_t tc = column + (width >> 1);
+	width *= spaceWidth;
+	
+	GuiImage *bar = new GuiImage(width, height, screenColorToGX2color(SCREEN_COLOR_WHITE), GuiImage::IMAGE_COLOR);
+	bar->setAlignment(ALIGN_TOP_LEFT);
+	bar->setPosition(x, y);
+	window->append(bar);
+	
+	x += 2;
+	y -= 2;
+	height -= 4;
+	width -= 4;
+	uint32_t barWidth = ((float)width) / 100.0f * progress; //TODO
+	
+	bar = new GuiImage(barWidth, height, screenColorToGX2color(SCREEN_COLOR_D_GREEN), GuiImage::IMAGE_COLOR);
+	GX2Color lg = screenColorToGX2color(SCREEN_COLOR_GREEN);
+	for(int i = 1; i < 3; i++)
+		bar->setImageColor(lg, i);
+	bar->setAlignment(ALIGN_TOP_LEFT);
+	bar->setPosition(x, y);
+	window->append(bar);
+	
+	width -= barWidth;
+	x += barWidth;
+	
+	bar = new GuiImage(width, height, screenColorToGX2color(SCREEN_COLOR_GRAY), GuiImage::IMAGE_COLOR);
+	bar->setAlignment(ALIGN_TOP_LEFT);
+	bar->setPosition(x, y);
+	window->append(bar);
+	
+	char text[5];
+	sprintf(text, "%d%%", (int)progress);
+	tc -= strlen(text) >> 1;
+	textToFrame(tc, line, text);
+}
+
+void addErrorOverlay(const char *err)
+{
+	if(errorOverlay != NULL)
+		return;
+	
+	errorOverlay = new GuiFrame(width, height);
+	
+	GX2Color bgColor = screenColorToGX2color(SCREEN_COLOR_BLACK);
+	bgColor.a = 64;
+	GuiImage *img = new GuiImage(width, height, bgColor, GuiImage::IMAGE_COLOR);
+	errorOverlay->append(img);
+	
+	const wchar_t *werr = FreeTypeGX::charToWideChar(err);
+	GuiText *text = new GuiText(werr, FONT_SIZE, glm::vec4(1.0f), SSAA);
+	text->setAlignment(ALIGN_CENTERED);
+	
+	uint16_t ow = font->getWidth(werr, FONT_SIZE) + (FONT_SIZE << 1);
+	uint16_t oh = font->getHeight(werr, FONT_SIZE) + (FONT_SIZE << 1);
+	
+	img = new GuiImage(ow, oh, screenColorToGX2color(SCREEN_COLOR_RED), GuiImage::IMAGE_COLOR);
+	img->setAlignment(ALIGN_CENTERED);
+	errorOverlay->append(img);
+	
+	ow -= 2;
+	oh -= 2;
+	
+	img = new GuiImage(ow, oh, screenColorToGX2color(SCREEN_COLOR_D_RED), GuiImage::IMAGE_COLOR);
+	img->setAlignment(ALIGN_CENTERED);
+	errorOverlay->append(img);
+	
+	errorOverlay->append(text);
+}
+
+void removeErrorOverlay()
+{
+	if(errorOverlay == NULL)
+		return;
+	
+	for(int i = 0; i < 3; i++)
+		delete errorOverlay->getGuiElementAt(i);
+	
+	delete errorOverlay;
+	errorOverlay = NULL;
 }
 
 void initRenderer()
@@ -141,8 +282,18 @@ void shutdownRenderer()
 	libgui_memoryRelease();
 }
 
+static inline void clearFrame()
+{
+	for(uint32_t i = 1; i < window->getSize(); i++)
+		delete window->getGuiElementAt(i);
+	
+	window->removeAll();
+}
+
 void colorStartNewFrame(uint32_t color)
 {
+	clearFrame();
+	
 //	if((color & 0xFFFFFF00) == 0xFFFFFF00 || (color & 0xFF) == 0x00)
 //		color = SCREEN_COLOR_BLACK
 	
@@ -155,8 +306,7 @@ void colorStartNewFrame(uint32_t color)
 		bgColor = color;
 	}
 	
-	if(color != SCREEN_COLOR_BLACK)
-		window->append(background);
+	window->append(background);
 }
 
 void showFrame()
@@ -165,151 +315,37 @@ void showFrame()
 	readInput();
 }
 
-static inline void clearFrame()
-{
-	window->removeAll();
-	while(onScreenIndex != 0)
-		delete onScreen[--onScreenIndex];
-}
-
 // We need to draw the DRC before the TV, else the DRC is always one frame behind
 void drawFrame()
 {
 	renderer->prepareDrcRendering();
 	window->draw(renderer);
+	if(errorOverlay != NULL)
+		errorOverlay->draw(renderer);
 	renderer->drcDrawDone();
 	
 	renderer->prepareTvRendering();
 	window->draw(renderer);
+	if(errorOverlay != NULL)
+		errorOverlay->draw(renderer);
 	renderer->tvDrawDone();
-	
-	clearFrame();
 }
 
 void drawKeyboard()
 {
-	colorStartNewFrame(bgColor);
-	
 	renderer->prepareDrcRendering();
 	window->draw(renderer);
 	Swkbd_DrawDRC();
+	if(errorOverlay != NULL)
+		errorOverlay->draw(renderer);
 	renderer->drcDrawDone();
 	
 	renderer->prepareTvRendering();
 	window->draw(renderer);
 	Swkbd_DrawTV();
+	if(errorOverlay != NULL)
+		errorOverlay->draw(renderer);
 	renderer->tvDrawDone();
 	
-	clearFrame();
 	showFrame();
-}
-
-static inline void addToFrame(GuiElement *elm)
-{
-	if(onScreenIndex == MAX_ELEMENTS)
-	{
-		debugPrintf("MAX_ELEMENTS reached!");
-		delete elm;
-		return;
-	}
-	
-	onScreen[onScreenIndex++] = elm;
-	window->append(elm);
-}
-
-void textToFrame(int row, int column, const char *str)
-{
-	column += 2;
-	column *= -FONT_SIZE;
-	
-	GuiText *text = new GuiText(str);
-	
-	if(row == ALIGNED_CENTER)
-	{
-		text->setAlignment(ALIGN_TOP_CENTER);
-		text->setPosition(0.0f, column);
-	}
-	else if(row ==  ALIGNED_RIGHT)
-	{
-		text->setAlignment(ALIGN_TOP_RIGHT);
-		text->setPosition(-FONT_SIZE, column);
-	}
-	else
-	{
-		int w = FONT_SIZE + (row * spaceWidth);
-		text->setPosition(w, column);
-		text->setMaxWidth(width - w - FONT_SIZE, GuiText::DOTTED);
-	}
-	
-	addToFrame(text);
-}
-
-
-void lineToFrame(int column, uint32_t color)
-{
-	GuiImage *line = new GuiImage(width - (FONT_SIZE << 1), 3, screenColorToGX2color(color), GuiImage::IMAGE_COLOR);
-	line->setAlignment(ALIGN_TOP_CENTER);
-	line->setPosition(0.0f, ((column + 2) * -FONT_SIZE) + ((FONT_SIZE >> 1) + 1));
-	
-	addToFrame(line);
-}
-
-void boxToFrame(int lineStart, int lineEnd, uint32_t color)
-{
-	int size = (lineEnd - lineStart) * FONT_SIZE;
-	
-	int bw = width - (FONT_SIZE << 1);
-	
-	GuiImage *box = new GuiImage(bw, size, screenColorToGX2color(color), GuiImage::IMAGE_COLOR);
-	box->setAlignment(ALIGN_TOP_CENTER);
-	box->setPosition(0.0f, ((lineStart + 2) * -FONT_SIZE) + (FONT_SIZE >> 1));
-	
-	addToFrame(box);
-	
-	box = new GuiImage(bw - 6, size - 6, screenColorToGX2color(bgColor), GuiImage::IMAGE_COLOR);
-	box->setAlignment(ALIGN_TOP_CENTER);
-	box->setPosition(0.0f, ((lineStart + 2) * -FONT_SIZE) + ((FONT_SIZE >> 1) - 3));
-	
-	addToFrame(box);
-}
-
-void barToFrame(int line, int column, uint32_t width, float progress)
-{
-	int x = FONT_SIZE + (column * spaceWidth);
-	int y = ((line + 1) * -FONT_SIZE) + 2;
-	int height = FONT_SIZE;
-	uint32_t tc = column + (width >> 1);
-	width *= spaceWidth;
-	
-	GuiImage *bar = new GuiImage(width, height, screenColorToGX2color(SCREEN_COLOR_WHITE), GuiImage::IMAGE_COLOR);
-	bar->setAlignment(ALIGN_TOP_LEFT);
-	bar->setPosition(x, y);
-	addToFrame(bar);
-	
-	x += 2;
-	y -= 2;
-	height -= 4;
-	width -= 4;
-	uint32_t barWidth = ((float)width) / 100.0f * progress; //TODO
-	
-	bar = new GuiImage(barWidth, height, screenColorToGX2color(SCREEN_COLOR_D_GREEN), GuiImage::IMAGE_COLOR);
-	GX2Color lg = screenColorToGX2color(SCREEN_COLOR_GREEN);
-	for(int i = 1; i < 3; i++)
-		bar->setImageColor(lg, i);
-	bar->setAlignment(ALIGN_TOP_LEFT);
-	bar->setPosition(x, y);
-	addToFrame(bar);
-	
-	width -= barWidth;
-	x += barWidth;
-	
-	bar = new GuiImage(width, height, screenColorToGX2color(SCREEN_COLOR_GRAY), GuiImage::IMAGE_COLOR);
-	bar->setAlignment(ALIGN_TOP_LEFT);
-	bar->setPosition(x, y);
-	addToFrame(bar);
-	
-	char text[5];
-	sprintf(text, "%d%%", (int)progress);
-	tc -= strlen(text) >> 1;
-	textToFrame(tc, line, text);
 }
