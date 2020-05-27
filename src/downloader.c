@@ -602,54 +602,8 @@ bool downloadTitle(GameInfo game, char* titleVer, char* folderName, bool inst, b
 			addToScreenLog("Fake ticket created successfully");
 		}
 	}
-
-	uint16_t conts = readUInt16(tmd, 0x1DE);
-	char *apps[conts];
-	bool h3[conts];
-	contents = conts;
-	
-	//Get .app and .h3 files
-	for(int i = 0; i < conts; i++)
-	{
-		apps[i] = hex(readUInt32(tmd, 0xB04 + i * 0x30), 8);
-		h3[i] = readUInt16(tmd, 0xB0A + i * 0x30) == 0x2003;
-		if(h3[i])
-			contents++;
-	}
 	
 	char tmpFileName[FILENAME_MAX + 37];
-	dcontent = 0;
-	for(int i = 0; i < conts; i++) {
-		strcpy(tDownloadUrl, downloadUrl);
-		strcat(tDownloadUrl, apps[i]);
-		strcpy(tmpFileName, installDir);
-		strcat(tmpFileName, apps[i]);
-		MEMFreeToDefaultHeap(apps[i]);
-		
-		strcpy(tInstallDir, tmpFileName);
-		strcat(tInstallDir, ".app");
-		if(downloadFile(tDownloadUrl, tInstallDir, FILE_TYPE_APP) == 1)
-		{
-			for(int j = ++i; j < conts; j++)
-				MEMFreeToDefaultHeap(apps[j]);
-			return true;
-		}
-		dcontent++;
-		
-		if(h3[i])
-		{
-			strcat(tDownloadUrl, ".h3");
-			strcat(tmpFileName, ".h3");
-			if(downloadFile(tDownloadUrl, tmpFileName, FILE_TYPE_H3) == 1)
-			{
-				for(int j = ++i; j < conts; j++)
-					MEMFreeToDefaultHeap(apps[j]);
-				return true;
-			}
-			dcontent++;
-		}
-	}
-	
 	strcpy(tmpFileName, installDir);
 	strcat(tmpFileName, "title.cert");
 	
@@ -706,6 +660,52 @@ bool downloadTitle(GameInfo game, char* titleVer, char* folderName, bool inst, b
 	}
 	else
 		addToScreenLog("Cert skipped!");
+
+	uint16_t conts = readUInt16(tmd, 0x1DE);
+	char *apps[conts];
+	bool h3[conts];
+	contents = conts;
+	
+	//Get .app and .h3 files
+	for(int i = 0; i < conts; i++)
+	{
+		apps[i] = hex(readUInt32(tmd, 0xB04 + i * 0x30), 8);
+		h3[i] = readUInt16(tmd, 0xB0A + i * 0x30) == 0x2003;
+		if(h3[i])
+			contents++;
+	}
+	
+	dcontent = 0;
+	for(int i = 0; i < conts; i++) {
+		strcpy(tDownloadUrl, downloadUrl);
+		strcat(tDownloadUrl, apps[i]);
+		strcpy(tmpFileName, installDir);
+		strcat(tmpFileName, apps[i]);
+		MEMFreeToDefaultHeap(apps[i]);
+		
+		strcpy(tInstallDir, tmpFileName);
+		strcat(tInstallDir, ".app");
+		if(downloadFile(tDownloadUrl, tInstallDir, FILE_TYPE_APP) == 1)
+		{
+			for(int j = ++i; j < conts; j++)
+				MEMFreeToDefaultHeap(apps[j]);
+			return true;
+		}
+		dcontent++;
+		
+		if(h3[i])
+		{
+			strcat(tDownloadUrl, ".h3");
+			strcat(tmpFileName, ".h3");
+			if(downloadFile(tDownloadUrl, tmpFileName, FILE_TYPE_H3) == 1)
+			{
+				for(int j = ++i; j < conts; j++)
+					MEMFreeToDefaultHeap(apps[j]);
+				return true;
+			}
+			dcontent++;
+		}
+	}
 	
 	flushIOQueue();
 	if(inst)
