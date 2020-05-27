@@ -60,9 +60,6 @@
 
 bool hbl;
 
-FSClient fsCli;
-FSCmdBlock fsCmd;
-
 int main()
 {
 	// Init
@@ -113,7 +110,7 @@ int main()
 	
 	addToScreenLog("RNG seeded!");
 	startNewFrame();
-	textToFrame(0, 0, "Initializing filesystem...");
+	textToFrame(0, 0, "Initializing network...");
 	writeScreenLog();
 	drawFrame();
 	showFrame();
@@ -121,127 +118,113 @@ int main()
 	char *lerr = NULL;
 	
 	FSInit(); // We need to start this before the SWKBD.
-	if(FSAddClient(&fsCli, 0) == FS_STATUS_OK)
+	if(NNResult_IsSuccess(ACInitialize()))
 	{
-		addToScreenLog("Filesystem initialized!");
-		startNewFrame();
-		textToFrame(0, 0, "Loading network...");
-		writeScreenLog();
-		drawFrame();
-		showFrame();
-		
-		if(NNResult_IsSuccess(ACInitialize()))
+		ACConfigId networkID;
+		if(NNResult_IsSuccess(ACGetStartupId(&networkID)))
 		{
-			ACConfigId networkID;
-			if(NNResult_IsSuccess(ACGetStartupId(&networkID)))
+			ACConnectWithConfigId(networkID);
+			addToScreenLog("Network initialized!");
+			
+			startNewFrame();
+			textToFrame(0, 0, "Loading cJSON...");
+			writeScreenLog();
+			drawFrame();
+			showFrame();
+			
+			cJSON_Hooks ch;
+			ch.malloc_fn = MEMAllocFromDefaultHeap;
+			ch.free_fn = MEMFreeToDefaultHeap;
+			cJSON_InitHooks(&ch);
+			
+			addToScreenLog("cJSON initialized!");
+			startNewFrame();
+			textToFrame(0, 0, "Loading SWKBD...");
+			writeScreenLog();
+			drawFrame();
+			showFrame();
+			
+			FSInit();
+			if(SWKBD_Init())
 			{
-				ACConnectWithConfigId(networkID);
-				addToScreenLog("Network initialized!");
-				
+				addToScreenLog("SWKBD initialized!");
 				startNewFrame();
-				textToFrame(0, 0, "Loading cJSON...");
+				textToFrame(0, 0, "Loading MCP...");
 				writeScreenLog();
 				drawFrame();
 				showFrame();
 				
-				cJSON_Hooks ch;
-				ch.malloc_fn = MEMAllocFromDefaultHeap;
-				ch.free_fn = MEMFreeToDefaultHeap;
-				cJSON_InitHooks(&ch);
-				
-				addToScreenLog("cJSON initialized!");
-				startNewFrame();
-				textToFrame(0, 0, "Loading SWKBD...");
-				writeScreenLog();
-				drawFrame();
-				showFrame();
-				
-				if(SWKBD_Init())
+				mcpHandle = MCP_Open();
+				if(mcpHandle != 0)
 				{
-					addToScreenLog("SWKBD initialized!");
+					addToScreenLog("MCP initialized!");
 					startNewFrame();
-					textToFrame(0, 0, "Loading MCP...");
+					textToFrame(0, 0, "Loading I/O thread...");
 					writeScreenLog();
 					drawFrame();
 					showFrame();
 					
-					mcpHandle = MCP_Open();
-					if(mcpHandle != 0)
+					if(initIOThread())
 					{
-						addToScreenLog("MCP initialized!");
+						addToScreenLog("I/O thread initialized!");
 						startNewFrame();
-						textToFrame(0, 0, "Loading I/O thread...");
+						textToFrame(0, 0, "Loading config file...");
 						writeScreenLog();
-						drawFrame();
+							drawFrame();
 						showFrame();
 						
-						if(initIOThread())
+						#ifdef NUSSPLI_DEBUG
+						debugPrintf("Checking thread stacks...");
+						OSCheckActiveThreads();
+						#endif
+					
+						if(initConfig())
 						{
-							addToScreenLog("I/O thread initialized!");
-							startNewFrame();
-							textToFrame(0, 0, "Loading config file...");
-							writeScreenLog();
-							drawFrame();
-							showFrame();
+							if(downloadJSON())
+								// Main loop
+								mainMenu();
+							
+							debugPrintf("Deinitializing libraries...");
+							saveConfig();
 							
 							#ifdef NUSSPLI_DEBUG
 							debugPrintf("Checking thread stacks...");
 							OSCheckActiveThreads();
 							#endif
-						
-							if(initConfig())
-							{
-								if(downloadJSON())
-									// Main loop
-									mainMenu();
-								
-								debugPrintf("Deinitializing libraries...");
-								saveConfig();
-								
-								#ifdef NUSSPLI_DEBUG
-								debugPrintf("Checking thread stacks...");
-								OSCheckActiveThreads();
-								#endif
-							}
-							else
-								lerr = "Couldn't load config file!";
-							
-							shutdownIOThread();
-							debugPrintf("I/O thread closed");
 						}
 						else
-							lerr = "Couldn't load I/O thread!";
+							lerr = "Couldn't load config file!";
 						
-						MCP_Close(mcpHandle);
-						debugPrintf("MCP closed");
+						shutdownIOThread();
+						debugPrintf("I/O thread closed");
 					}
 					else
-						lerr = "Couldn't initialize MCP!";
+						lerr = "Couldn't load I/O thread!";
 					
-					SWKBD_Shutdown();
-					debugPrintf("SWKBD closed");
+					MCP_Close(mcpHandle);
+					debugPrintf("MCP closed");
 				}
 				else
-					lerr = "Couldn't initialize SWKBD!";
+					lerr = "Couldn't initialize MCP!";
 				
-				freeJSON();
+				SWKBD_Shutdown();
+				debugPrintf("SWKBD closed");
 			}
 			else
-				lerr = "Couldn't get default network connection!";
+				lerr = "Couldn't initialize SWKBD!";
 			
-			ACFinalize();
-			debugPrintf("Network closed");
+			unmountUSB();
+			FSShutdown();
+			freeJSON();
 		}
 		else
-			lerr = "Couldn't inititalize network!";
+			lerr = "Couldn't get default network connection!";
 		
-		unmountUSB();
-		FSDelClient(&fsCli, 0);
-		FSShutdown();
-		debugPrintf("FS closed");
+		ACFinalize();
+		debugPrintf("Network closed");
 	}
 	else
-		lerr = "Couldn't initialize filesystem!";
+		lerr = "Couldn't inititalize network!";
 	
 	if(lerr != NULL)
 	{
