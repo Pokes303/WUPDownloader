@@ -183,7 +183,7 @@ void addErrorOverlay(const char *err)
 	errorOverlay = new GuiFrame(width, height);
 	
 	GX2Color bgColor = screenColorToGX2color(SCREEN_COLOR_BLACK);
-	bgColor.a = 64;
+	bgColor.a = 128;
 	GuiImage *img = new GuiImage(width, height, bgColor, GuiImage::IMAGE_COLOR);
 	errorOverlay->append(img);
 	
@@ -206,6 +206,7 @@ void addErrorOverlay(const char *err)
 	errorOverlay->append(img);
 	
 	errorOverlay->append(text);
+	drawFrame();
 }
 
 void removeErrorOverlay()
@@ -218,6 +219,7 @@ void removeErrorOverlay()
 	
 	delete errorOverlay;
 	errorOverlay = NULL;
+	drawFrame();
 }
 
 void initRenderer()
