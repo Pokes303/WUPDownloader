@@ -57,9 +57,6 @@ OSTime lastDraw = 0;
 static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData)
 {
 	size *= multi;
-	if(rawData == NULL)
-		return size;
-	
 	((char *)buf)[size - 1] = '\0'; //TODO: This should transform the newline at the end to a string terminator - but are we allowed to modify the buffer?
 	
 	toLowercase(buf);
@@ -68,10 +65,8 @@ static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData
 		return size;
 	
 	if(*(long *)rawData == contentLength)
-	{
 		*(long *)rawData = -1;
-		return 0;
-	}
+		
 	return size;
 }
 
