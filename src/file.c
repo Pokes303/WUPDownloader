@@ -21,6 +21,7 @@
 #include <wut-fixups.h>
 
 #include <file.h>
+#include <ioThread.h>
 #include <main.h>
 #include <utils.h>
 
@@ -70,7 +71,7 @@ void writeVoidBytes(FILE* fp, uint32_t len)
 {
 	uint8_t bytes[len];
 	OSBlockSet(bytes, 0, len);
-	fwrite(bytes, len, 1, fp);
+	addToIOQueue(bytes, len, 1, fp);
 }
 
 uint8_t charToByte(char c)
@@ -96,7 +97,7 @@ void writeCustomBytes(FILE *fp, char *str)
 		bytes[i] = charToByte(*str++) << 4;
 		bytes[i++] |= charToByte(*str++);
 	}
-	fwrite(bytes, i, 1, fp);
+	addToIOQueue(bytes, i, 1, fp);
 }
 
 void writeRandomBytes(FILE* fp, uint32_t len)
@@ -105,7 +106,7 @@ void writeRandomBytes(FILE* fp, uint32_t len)
 	uint32_t bytes[len32];
 	for(int i = 0; i < len32; i++)
 		bytes[i] = getRandom();
-	fwrite(bytes, len, 1, fp);
+	addToIOQueue(bytes, len, 1, fp);
 }
 
 /*
@@ -130,7 +131,7 @@ void writeHeader(FILE *fp, FileType type)
 	writeCustomBytes(fp, "0x4E555373706C69"); // "NUSspli"
 	writeVoidBytes(fp, 0x9);
 	int vl = strlen(NUSSPLI_VERSION);
-	fwrite(NUSSPLI_VERSION, vl, 1, fp);
+	addToIOQueue(NUSSPLI_VERSION, vl, 1, fp);
 	
 	writeVoidBytes(fp, 0x10 - vl);
 	char *cb;

@@ -25,6 +25,7 @@
 #include <utils.h>
 #include <file.h>
 #include <input.h>
+#include <ioThread.h>
 #include <renderer.h>
 #include <status.h>
 #include <usb.h>
@@ -78,6 +79,7 @@ void generateTik(FILE *tik, char *titleID, char *encKey)
 	writeCustomBytes(tik, "0x0003000000000000");
 	writeCustomBytes(tik, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 	writeVoidBytes(tik, 0x60);
+	addToIOQueue(NULL, 0, 0, tik);
 }
 
 void drawTicketFrame(const char *titleID, const char* encKey)
@@ -167,8 +169,6 @@ bool generateFakeTicket()
 					}
 					debugPrintf("Generating fake ticket at %s", tikPath);
 					generateTik(fakeTik, titleID, encKey);
-					fflush(fakeTik);
-					fclose(fakeTik);
 					
 					colorStartNewFrame(SCREEN_COLOR_GREEN);
 					textToFrame(0, 0, "Fake ticket generated on:");

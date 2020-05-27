@@ -599,8 +599,6 @@ bool downloadTitle(GameInfo game, char* titleVer, char* folderName, bool inst, b
 			
 			FILE *tik = fopen(tInstallDir, "wb"); //TODO: Error checking
 			generateTik(tik, game.tid, game.key);
-			fflush(tik);
-			fclose(tik);
 			addToScreenLog("Fake ticket created successfully");
 		}
 	}
@@ -702,8 +700,7 @@ bool downloadTitle(GameInfo game, char* titleVer, char* folderName, bool inst, b
 		writeCustomBytes(cert, "0x00010001");
 		writeVoidBytes(cert, 0x34);
 		
-		fflush(cert);
-		fclose(cert);
+		addToIOQueue(NULL, 0, 0, cert);
 		
 		addToScreenLog("Cert created!");
 	}
