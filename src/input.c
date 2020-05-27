@@ -270,11 +270,7 @@ void readInput()
 				addErrorOverlay("Error reading the WiiU Gamepad!");
 				run = false;
 				break;
-/*				colorStartNewFrame(SCREEN_COLOR_RED);
-				textToFrame(0, 0, "Error reading the WiiU Gamepad!");
-				drawFrame();
-				showFrame();
-*/			default:
+			default:
 				removeErrorOverlay();
 				run = false;
 		}
