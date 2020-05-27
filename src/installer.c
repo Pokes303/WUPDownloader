@@ -89,9 +89,23 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	data.err = MCP_InstallGetInfo(mcpHandle, newPath, (MCPInstallInfo *)info);
 	if(data.err != 0)
 	{
-		debugPrintf("Error getting info for \"%s\" from MCP: %#010x", newPath, data.err);
+		char toScreen[2048];
+		sprintf(toScreen, "Error getting info for \"%s\" from MCP: %#010x", newPath, data.err);
+		debugPrintf(toScreen);
 		enableShutdown(); //TODO
-		return false;
+		addToScreenLog("Installation failed!");
+		drawErrorFrame(toScreen, B_RETURN);
+		
+		while(AppRunning())
+		{
+			showFrame();
+			
+			if(app == 2)
+				continue;
+			
+			if(vpad.trigger == VPAD_BUTTON_B)
+				return false;
+		}
 	}
 	
 	// Allright, let's set if we want to install to USB or NAND
@@ -100,6 +114,19 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	{
 		debugPrintf(toUsb ? "Error opening USB device" : "Error opening internal memory");
 		enableShutdown(); //TODO
+		addToScreenLog("Installation failed!");
+		drawErrorFrame(toUsb ? "Error opening USB device" : "Error opening internal memory", B_RETURN);
+		
+		while(AppRunning())
+		{
+			showFrame();
+			
+			if(app == 2)
+				continue;
+			
+			if(vpad.trigger == VPAD_BUTTON_B)
+				return false;
+		}
 		return false;
 	}
 	
@@ -117,7 +144,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	MCPInstallProgress *progress = MEMAllocFromDefaultHeapEx(sizeof(MCPInstallProgress), 0x40);
 	if(progress == NULL)
 	{
-		debugPrintf("Error allocating MEM1");
+		debugPrintf("Error allocating memory!");
 		enableShutdown(); //TODO
 		return false;
 	}
@@ -141,8 +168,24 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	
 	if(err != 0)
 	{
-		debugPrintf("Error starting async installation of \"%s\": %#010x", newPath, data.err);
+		char toScreen[2048];
+		sprintf(toScreen, "Error starting async installation of \"%s\": %#010x", newPath, data.err);
+		debugPrintf(toScreen);
 		enableShutdown(); //TODO
+		addToScreenLog("Installation failed!");
+		drawErrorFrame(toScreen, B_RETURN);
+		
+		while(AppRunning())
+		{
+			showFrame();
+			
+			if(app == 2)
+				continue;
+			
+			if(vpad.trigger == VPAD_BUTTON_B)
+				return false;
+		}
+		return false;
 		return false;
 	}
 	
