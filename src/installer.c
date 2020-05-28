@@ -84,8 +84,8 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	
 	// WUT doesn't define MCPInstallInfo, so we define it like WUP Installer does. Also the alignment is important.
 	// We also use the same memory area for MCPInstallProgress and MCPInstallInfo for performance reasons and as both have to be aligned equaly.
-	// Note that MCPInstallInfo is bigger than MCPInstallProgress.
-	MCPInstallProgress *progress = MEMAllocFromDefaultHeapEx(sizeof(MCPInstallInfo), 0x40);
+	// SIze and alignment are from WUP Installer as nothing other seems to work here.
+	MCPInstallProgress *progress = MEMAllocFromDefaultHeapEx(0x24, 0x40);
 	if(progress == NULL)
 	{
 		debugPrintf("Error allocating memory!");
