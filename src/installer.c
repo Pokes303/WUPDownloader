@@ -99,9 +99,21 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	if(data.err != 0)
 	{
 		char toScreen[2048];
-		sprintf(toScreen, "Error getting info for \"%s\" from MCP: %#010x", newPath, data.err);
-		debugPrintf(toScreen);
 		enableShutdown(); //TODO
+		
+		switch(data.err)
+		{
+			case 0xfffbf3e2:
+				sprintf(toScreen, "No title.tmd found at \"%s\"", newPath);
+				break;
+			case 0xfffbfc17:
+				sprintf(toScreen, "Internal error installing \"%s\"\nPlease report this!", newPath);
+				break;
+			default:
+				sprintf(toScreen, "Error getting info for \"%s\" from MCP: %#010x", newPath, data.err);
+		}
+		
+		debugPrintf(toScreen);
 		addToScreenLog("Installation failed!");
 		drawErrorFrame(toScreen, B_RETURN);
 		
