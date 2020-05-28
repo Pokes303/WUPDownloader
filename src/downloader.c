@@ -65,7 +65,10 @@ static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData
 		return size;
 	
 	if(*(long *)rawData == contentLength)
+	{
 		*(long *)rawData = -1;
+		return 0;
+	}
 		
 	return size;
 }
@@ -273,7 +276,7 @@ int downloadFile(char* url, char* file, FileType type) {
 	
 	addToIOQueue(NULL, 0, 0, fp);
 	
-	if(ret != CURLE_OK)
+	if(ret != CURLE_OK && !(fileExists && ret == CURLE_WRITE_ERROR && fileSize == -1))
 	{
 		debugPrintf("curl_easy_perform returned an error: %s (%d)\nFile: %s\n\n", curlError, ret, file);
 		curl_easy_cleanup(curl);
