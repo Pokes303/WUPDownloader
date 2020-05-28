@@ -82,11 +82,20 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		strcat(newPath, path + 15);
 	}
 	
-	uint32_t info[80]; // WUT doesn't define MCPInstallInfo, so we define it like WUP Installer does, just without the malloc() nonsense. TDOD: Does it really have to be that big?
-	McpInstallationData data;
+	// WUT doesn't define MCPInstallInfo, so we define it like WUP Installer does. Also the alignment is important.
+	// We also use the same memory area for MCPInstallProgress and MCPInstallInfo for performance reasons and as both have to be aligned equaly.
+	// Note that MCPInstallInfo is bigger than MCPInstallProgress.
+	MCPInstallProgress *progress = MEMAllocFromDefaultHeapEx(sizeof(MCPInstallInfo), 0x40);
+	if(progress == NULL)
+	{
+		debugPrintf("Error allocating memory!");
+		enableShutdown(); //TODO
+		return false;
+	}
 	
 	// Let's see if MCP is able to parse the TMD...
-	data.err = MCP_InstallGetInfo(mcpHandle, newPath, (MCPInstallInfo *)info);
+	McpInstallationData data;
+	data.err = MCP_InstallGetInfo(mcpHandle, newPath, (MCPInstallInfo *)progress);
 	if(data.err != 0)
 	{
 		char toScreen[2048];
@@ -141,14 +150,6 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	debugPrintf("MCP Path:      %s (%d)", newPath, strlen(newPath));
 	
 	// Last prepairing step...
-	MCPInstallProgress *progress = MEMAllocFromDefaultHeapEx(sizeof(MCPInstallProgress), 0x40);
-	if(progress == NULL)
-	{
-		debugPrintf("Error allocating memory!");
-		enableShutdown(); //TODO
-		return false;
-	}
-	
 	progress->inProgress = 0;
 	data.processing = true;
 	char multiplierName[3];
