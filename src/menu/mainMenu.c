@@ -55,7 +55,7 @@ void drawMainMenuFrame()
 	textToFrame(0, 13, "Press \uE000 to download content");
 	textToFrame(0, 14, "Press \uE002 to install content");
 	textToFrame(0, 15, "Press \uE003 to generate a fake <title.tik> file");
-	textToFrame(0, 16, "Press \uE041 DOWN for options");
+	textToFrame(0, 16, "Press \uE041 LEFT for options");
 	textToFrame(0, 17, "Press \uE044 or \uE001 to exit");
 	
 	textToFrame(MAX_CHARS - 24, 9, "Thanks to:      ");
