@@ -249,6 +249,31 @@ void drawDownloadJSONFrame()
 	drawFrame();
 }
 
+bool enterKeySite()
+{
+	drawDownloadJSONFrame();
+	
+	while(true)
+	{
+		showFrame();
+		
+		switch(vpad.trigger)
+		{
+			case VPAD_BUTTON_A:
+				;
+				char newUrl[1024];
+				if(showKeyboard(KEYBOARD_TYPE_NORMAL, newUrl, CHECK_URL, 1024, false, getTitleKeySite(), "SAVE"))
+					setTitleKeySite(newUrl);
+				
+				return downloadJSON();
+			case VPAD_BUTTON_B:
+				return false;
+			case VPAD_BUTTON_Y:
+				return true;
+		}
+	}
+}
+
 bool downloadJSON()
 {
 	char jsonUrl[2048];
@@ -265,30 +290,7 @@ bool downloadJSON()
 			ramBufSize = 0;
 		}
 		
-		drawDownloadJSONFrame();
-		
-		while(true)
-		{
-			showFrame();
-			
-			switch(vpad.trigger)
-			{
-				case VPAD_BUTTON_A:
-					;
-					char newUrl[1024];
-					if(showKeyboard(KEYBOARD_TYPE_NORMAL, newUrl, CHECK_URL, 1024, false, getTitleKeySite(), "SAVE"))
-					{
-						setTitleKeySite(newUrl);
-						return downloadJSON();
-					}
-					drawDownloadJSONFrame();
-					break;
-				case VPAD_BUTTON_B:
-					return false;
-				case VPAD_BUTTON_Y:
-					return true;
-			}
-		}
+		return enterKeySite();
 	}
 	
 	startNewFrame();
@@ -302,7 +304,7 @@ bool downloadJSON()
 	if(json == NULL)
 	{
 		debugPrintf("json == NULL");
-		return false;
+		return enterKeySite();
 	}
 	
 	gameInfoSize = cJSON_GetArraySize(json);
