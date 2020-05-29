@@ -62,12 +62,9 @@ void drawDownloadFrame2(const char *titleID, const char *titleVer, const char *f
 	textToFrame(3, 3, titleVer[0] == '\0' ? "<LATEST>" : titleVer);
 	
 	textToFrame(0, 4, "Custom folder name [Only text and numbers]:");
-	const char *tfn = folderName[0] == '\0' ? titleID : folderName;
-	char toFrame[13 + strlen(tfn) > 59 ? strlen(tfn) : 59];
-	strcpy(toFrame, "sd:/install/");
-	strcat(toFrame, tfn);
-	textToFrame(3, 5, toFrame);
+	textToFrame(3, 5, folderName);
 	
+	char toFrame[128];
 	strcpy(toFrame, "Press \uE045 to ");
 	strcat(toFrame, vibrateWhenFinished ? "deactivate" : "activate");
 	strcat(toFrame, " the vibration after installing");

@@ -32,7 +32,7 @@
 	extern "C" {
 #endif
 
-void generateTik(FILE* tik, char* titleID, char* encKey);
+void generateTik(const char *path, char *titleID, char *encKey);
 bool generateFakeTicket();
 
 #ifdef __cplusplus

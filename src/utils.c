@@ -110,6 +110,11 @@ bool isUppercase(char c)
 	return c >= 'A' && c <= 'Z';
 }
 
+bool isSpecial(char c)
+{
+	return isNumber(c) || isLowercase(c) || isUppercase(c) || c == ' ';
+}
+
 bool isLowercaseHexa(char c)
 {
 	return isNumber(c) || (c >= 'a' && c <= 'f');

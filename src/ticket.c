@@ -45,9 +45,29 @@
  * with the randomness of NUSPackager to create unique
  * NUSspli tickets.
  */
-void generateTik(FILE *tik, char *titleID, char *encKey)
+void generateTik(const char *path, char *titleID, char *encKey)
 {
-	debugPrintf("Generate tik function");
+	FILE *tik = fopen(path, "wb");
+	if(tik == NULL)
+	{
+		char err[1044];
+		sprintf(err, "Could not open path\n%s", path);
+		drawErrorFrame(err, B_RETURN);
+		
+		while(AppRunning())
+		{
+			showFrame();
+			
+			if(app == 2)
+				continue;
+			
+			if(vpad.trigger == VPAD_BUTTON_B)
+				return;
+		}
+		return;
+	}
+	
+	debugPrintf("Generating fake ticket at %s", path);
 	
 	// NUSspli adds its own header.
 	writeHeader(tik, FILE_TYPE_TIK);
@@ -79,6 +99,7 @@ void generateTik(FILE *tik, char *titleID, char *encKey)
 	writeCustomBytes(tik, "0x0003000000000000");
 	writeCustomBytes(tik, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 	writeVoidBytes(tik, 0x60);
+	
 	addToIOQueue(NULL, 0, 0, tik);
 }
 
@@ -148,27 +169,7 @@ bool generateFakeTicket()
 					MEMFreeToDefaultHeap(dir);
 					strcat(tikPath, ".tik");
 					
-					FILE *fakeTik = fopen(tikPath, "wb");
-					if(fakeTik == NULL)
-					{
-						char err[1044];
-						sprintf(err, "Could not open path\n%s", tikPath);
-						drawErrorFrame(err, B_RETURN);
-						
-						while(AppRunning())
-						{
-							showFrame();
-							
-							if(app == 2)
-								continue;
-							
-							if(vpad.trigger == VPAD_BUTTON_B)
-								return true;
-						}
-						return false;
-					}
-					debugPrintf("Generating fake ticket at %s", tikPath);
-					generateTik(fakeTik, titleID, encKey);
+					generateTik(tikPath, titleID, encKey);
 					
 					colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 					textToFrame(0, 0, "Fake ticket generated on:");

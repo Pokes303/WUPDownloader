@@ -22,107 +22,80 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include <coreinit/fastmutex.h>
+#include <coreinit/atomic.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
-#include <gui/memory.h>
 
 #include <ioThread.h>
 #include <memdebug.h>
 #include <utils.h>
 
-#define IOT_STACK_SIZE		0x2000
-#define MAX_IO_QUEUE_SIZE	64 * 1024 * 1024
+#define IOT_STACK_SIZE			0x2000
+#define SLICE_SIZE				512 * 1024 // 512 KB
+#define MAX_IO_QUEUE_ENTRIES	(128 * 1024 * 1024) / (SLICE_SIZE) // 128 MB
 
 struct WriteQueueEntry;
 typedef struct WriteQueueEntry WriteQueueEntry;
 struct WriteQueueEntry
 {
 	FILE *file;
-	void *buf;
+	uint8_t *buf;
 	size_t size;
-	bool fast;
-	WriteQueueEntry *next;
+	bool close;
+	volatile uint32_t inUse;
 };
 
 static OSThread ioThread;
 static uint8_t ioThreadStack[IOT_STACK_SIZE];
 static bool ioRunning = false;
-static OSFastMutex *writeQueueMutex;
-static WriteQueueEntry *writeQueue = NULL;
-static WriteQueueEntry *lastWriteQueueEntry;
-static size_t writeQueueSize = 0;
+static volatile uint32_t flushing = false;
 
-static inline void lockIOQueueAgressive()
-{
-	while(!OSFastMutex_TryLock(writeQueueMutex))
-		;
-}
+static WriteQueueEntry sliceEntries[MAX_IO_QUEUE_ENTRIES];
+static uint8_t sliceBuffer[MAX_IO_QUEUE_ENTRIES][SLICE_SIZE];
+static uint8_t *sliceBufferPointer = &sliceBuffer[0][0];
+static uint8_t *sliceBufferEnd = &sliceBuffer[0][0] + SLICE_SIZE;
+static int activeSliceBuffer[2] = { 0 };
 
-void executeIOQueue(bool unlock)
+void executeIOQueue()
 {
-	if(writeQueue != NULL)
-	{
-		WriteQueueEntry *entry = writeQueue;
-		writeQueue = entry->next;
-		writeQueueSize -= entry->size;
-		if(unlock)
-			OSFastMutex_Unlock(writeQueueMutex);
-		
-		if(entry->buf != NULL)
-		{
-			fwrite(entry->buf, entry->size, 1, entry->file);
-			if(entry->fast)
-				MEM1_free(entry->buf);
-			else
-				MEMFreeToDefaultHeap(entry->buf);
-		}
-		else
-		{
-			fflush(entry->file);
-			fclose(entry->file);
-		}
-		
-		if(entry->fast)
-			MEM1_free(entry);
-		else
-			MEMFreeToDefaultHeap(entry);
-		
+	if(!sliceEntries[activeSliceBuffer[1]].inUse)
 		return;
+	
+	if(sliceEntries[activeSliceBuffer[1]].buf != NULL)
+		fwrite(sliceEntries[activeSliceBuffer[1]].buf, sliceEntries[activeSliceBuffer[1]].size, 1, sliceEntries[activeSliceBuffer[1]].file);
+	
+	if(sliceEntries[activeSliceBuffer[1]].close)
+	{
+		fflush(sliceEntries[activeSliceBuffer[1]].file);
+		fclose(sliceEntries[activeSliceBuffer[1]].file);
 	}
-	if(unlock)
-		OSFastMutex_Unlock(writeQueueMutex);
+	
+	OSSwapAtomic(&sliceEntries[activeSliceBuffer[1]].inUse, false);
+	
+	if(++activeSliceBuffer[1] == MAX_IO_QUEUE_ENTRIES)
+		activeSliceBuffer[1] = 0;
 }
 
 int ioThreadMain(int argc, const char **argv)
 {
 	debugPrintf("I/O queue running!");
 	while(ioRunning)
-	{
-		lockIOQueueAgressive();
-		executeIOQueue(true);
-	}
+		executeIOQueue();
+	
 	return 0;
 }
 
 bool initIOThread()
 {
-	writeQueueMutex = MEM1_alloc(sizeof(OSFastMutex), 4);
-	if(writeQueueMutex == NULL)
+	if(!OSCreateThread(&ioThread, ioThreadMain, 0, NULL, ioThreadStack + IOT_STACK_SIZE, IOT_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_CPU0)) // We move this to core 0 for maximum performance. Later on move it back to core 1 as we want download threads on core 0 and 2.
 		return false;
 	
-	if(!OSCreateThread(&ioThread, ioThreadMain, 0, NULL, ioThreadStack + IOT_STACK_SIZE, IOT_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_CPU0)) // We move this to core 0 for maximum performance. Later on move it back to core 1 as we want download threads on core 0 and 2.
-	{
-		MEMFreeToDefaultHeap(&ioThread);
-		MEM1_free(writeQueueMutex);
-		return false;
-	}
 	OSSetThreadName(&ioThread, "NUSspli I/O");
 	
-	OSFastMutex_Init(writeQueueMutex, "NUSspli I/O Queue");
-	OSFastMutex_Unlock(writeQueueMutex);
+	for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; i++)
+		OSSwapAtomic(&sliceEntries[i].inUse, false);
 	
 	ioRunning = true;
 	OSResumeThread(&ioThread);
@@ -140,106 +113,64 @@ void shutdownIOThread()
 	debugPrintf("I/O thread returned: %d", ret);
 	
 	flushIOQueue();
-	
-	MEM1_free(writeQueueMutex);
 }
-
-#ifdef NUSSPLI_DEBUG
-size_t maxWriteQueueSize = 0;
-#endif
 
 size_t addToIOQueue(const void *buf, size_t size, size_t n, FILE *file)
 {
-	WriteQueueEntry *toAdd;
-	void *newBuf;
-	bool fast;
+	while(flushing)
+		continue;
 	
+	size_t written, rest;
 	if(buf != NULL)
 	{
 		size *= n;
-		newBuf = MEM1_alloc(size, 4);
-		fast = newBuf != NULL;
-		if(fast)
+		uint8_t *end = sliceBufferPointer + size;
+		if(end < sliceBufferEnd)
 		{
-			toAdd = MEM1_alloc(sizeof(WriteQueueEntry), 4);
-			if(toAdd == NULL)
-			{
-				MEM1_free(newBuf);
-				fast = false;
-			}
-		}
-		if(!fast)
-		{
-			newBuf = MEMAllocFromDefaultHeap(size);
-			if(newBuf == NULL)
-				return 0;
-			
-			toAdd = MEMAllocFromDefaultHeap(sizeof(WriteQueueEntry));
-			if(toAdd == NULL)
-			{
-				MEMFreeToDefaultHeap(newBuf);
-				return 0;
-			}
-#ifdef NUSSPLI_DEBUG
-			if((writeQueueSize + size) >> 20 > maxWriteQueueSize)
-			{
-				maxWriteQueueSize = (writeQueueSize + size) >> 20;
-				debugPrintf("I/O queue size: %d MB", maxWriteQueueSize);
-			}
-#endif
+			OSBlockMove(sliceBufferPointer, buf, size, false);
+			sliceBufferPointer = end;
+			return size;
 		}
 		
-		OSBlockMove(newBuf, buf, size, false);
+		written = sliceBufferEnd - sliceBufferPointer;
+		OSBlockMove(sliceBufferPointer, buf, written, false);
+		sliceBufferPointer = sliceBufferEnd;
+		rest = size - written;
+		
+		sliceEntries[activeSliceBuffer[0]].close = false;
 	}
 	else
+		sliceEntries[activeSliceBuffer[0]].close = true;
+	
+	sliceEntries[activeSliceBuffer[0]].buf = &sliceBuffer[activeSliceBuffer[0]][0];
+	sliceEntries[activeSliceBuffer[0]].size = sliceBufferPointer - sliceEntries[activeSliceBuffer[0]].buf;
+	sliceEntries[activeSliceBuffer[0]].file = file;
+	OSSwapAtomic(&sliceEntries[activeSliceBuffer[0]].inUse, true);
+	
+	if(++activeSliceBuffer[0] == MAX_IO_QUEUE_ENTRIES)
+		activeSliceBuffer[0] = 0;
+	
+	while(sliceEntries[activeSliceBuffer[0]].inUse)
 	{
-		toAdd = MEM1_alloc(sizeof(WriteQueueEntry), 4);
-		fast = toAdd != NULL;
-		if(!fast)
-		{
-			toAdd = MEMAllocFromDefaultHeap(sizeof(WriteQueueEntry));
-			if(toAdd == NULL)
-				return 0;
-		}
-		
-		newBuf = NULL;
+		debugPrintf("Waiting for free slot...");
+		OSSleepTicks(256);
 	}
 	
-	toAdd->buf = newBuf;
-	toAdd->file = file;
-	toAdd->size = size;
-	toAdd->fast = fast;
-	toAdd->next = NULL;
+	sliceBufferPointer = &sliceBuffer[activeSliceBuffer[0]][0];
+	sliceBufferEnd = sliceBufferPointer + SLICE_SIZE;
 	
-	lockIOQueueAgressive();
-	if(newBuf != NULL)
-	{
-		while(writeQueueSize > MAX_IO_QUEUE_SIZE)
-		{
-			OSFastMutex_Unlock(writeQueueMutex);
-			debugPrintf("Waiting for free slot...");
-			OSSleepTicks(256);
-			lockIOQueueAgressive();
-		}
-		
-		writeQueueSize += size;
-	}
+	if(buf != NULL && rest > 0)
+		addToIOQueue(((const uint8_t *)buf) + written, rest, 1, file);
 	
-	if(writeQueue == NULL)
-		writeQueue = lastWriteQueueEntry = toAdd;
-	else
-		lastWriteQueueEntry = lastWriteQueueEntry->next = toAdd;
-	
-	OSFastMutex_Unlock(writeQueueMutex);
 	return size;
 }
 
 void flushIOQueue()
 {
 	debugPrintf("Flushing...");
-	lockIOQueueAgressive();
-	while(writeQueue != NULL)
-		executeIOQueue(false);
+	OSSwapAtomic(&flushing, true);
+	while(sliceEntries[activeSliceBuffer[1]].inUse)
+		OSSleepTicks(256);
 	
-	OSFastMutex_Unlock(writeQueueMutex);
+	OSSwapAtomic(&flushing, false);
 }

@@ -38,8 +38,8 @@ extern size_t ramBufSize;
 
 #define DOWNLOAD_URL "http://ccs.cdn.wup.shop.nintendo.net/ccs/download/"
 
-int downloadFile(char* url, char* file, FileType type);
-bool downloadTitle(GameInfo game, char* titleVer, char* folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles);
+int downloadFile(const char *url, char *file, FileType type);
+bool downloadTitle(GameInfo game, const char *titleVer, char *folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles);
 
 #ifdef __cplusplus
 	}

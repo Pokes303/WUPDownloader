@@ -48,11 +48,6 @@ bool globalLimit;
 
 bool okButtonEnabled;
 
-bool isSpecial(char c)
-{
-	return isNumber(c) || isLowercase(c) || isUppercase(c) || c == ' ';
-}
-
 bool isUrl(char c)
 {
 	return isNumber(c) || isLowercase(c) || isUppercase(c) || c == '.' || c == '/' || c == ':' || c == '%' || c == '-' || c == '_'; //TODO

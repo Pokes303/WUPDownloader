@@ -55,6 +55,7 @@ long getFilesize(FILE *fp);
 bool isNumber(char c);
 bool isLowercase(char c);
 bool isUppercase(char c);
+bool isSpecial(char c);
 bool isLowercaseHexa(char c);
 bool isUppercaseHexa(char c);
 bool isHexa(char c);

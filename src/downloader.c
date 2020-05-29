@@ -168,7 +168,8 @@ static int progressCallback(void *curl, double dltotal, double dlnow, double ult
 	return 0;
 }
 
-int downloadFile(char* url, char* file, FileType type) {
+int downloadFile(const char *url, char *file, FileType type)
+{
 	//Results: 0 = OK | 1 = Error | 2 = No ticket aviable | 3 = Exit
 	//Types: 0 = .app | 1 = .h3 | 2 = title.tmd | 3 = tilte.tik
 	bool toRam = (type & FILE_TYPE_TORAM) == FILE_TYPE_TORAM;
@@ -281,6 +282,7 @@ int downloadFile(char* url, char* file, FileType type) {
 	{
 		debugPrintf("curl_easy_perform returned an error: %s (%d)\nFile: %s\n\n", curlError, ret, file);
 		curl_easy_cleanup(curl);
+		flushIOQueue();
 		remove(file);
 		
 		char toScreen[1024];
@@ -337,7 +339,9 @@ int downloadFile(char* url, char* file, FileType type) {
 	curl_easy_cleanup(curl);
 	
 	debugPrintf("The download returned: %u", resp);
-	if (resp != 200) {
+	if(resp != 200)
+	{
+		flushIOQueue();
 		remove(file);
 		if(resp == 404 && (type & FILE_TYPE_TMD) == FILE_TYPE_TMD) //Title.tmd not found
 		{
@@ -387,7 +391,7 @@ int downloadFile(char* url, char* file, FileType type) {
 	return 0;
 }
 
-bool downloadTitle(GameInfo game, char* titleVer, char* folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles)
+bool downloadTitle(GameInfo game, const char *titleVer, char *folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles)
 {
 	debugPrintf("Downloading title... tID: %s, tVer: %s, name: %s, folder: %s", game.tid, titleVer, game.name == NULL ? "NULL" : game.name, folderName);
 	disableShutdown(); //TODO
@@ -397,9 +401,22 @@ bool downloadTitle(GameInfo game, char* titleVer, char* folderName, bool inst, b
 	strcat(downloadUrl, game.tid);
 	strcat(downloadUrl, "/");
 	
-	if(strlen(folderName) == 0)
-		folderName = game.tid;
-	else {
+	if(folderName[0] == '\0')
+	{
+		if(game.name != NULL)
+		{
+			for(int i = 0; i < strlen(game.name); i++)
+				folderName[i] = isSpecial(game.name[i]) ? game.name[i] : '_';
+			
+			strcpy(folderName + strlen(game.name), " [");
+			strcat(folderName, game.tid);
+			strcat(folderName, "]");
+		}
+		else
+			strcpy(folderName, game.tid);
+	}
+	else
+	{
 		strcat(folderName, " [");
 		strcat(folderName, game.tid);
 		strcat(folderName, "]");
@@ -540,8 +557,7 @@ bool downloadTitle(GameInfo game, char* titleVer, char* folderName, bool inst, b
 		if(key == NULL)
 			return false;
 		
-		FILE *tik = fopen(tInstallDir, "wb"); //TODO: Error checking
-		generateTik(tik, game.tid, key);
+		generateTik(tInstallDir, game.tid, key);
 		MEMFreeToDefaultHeap(key);
 		addToScreenLog("Fake ticket created successfully");
 	}
@@ -649,6 +665,12 @@ bool downloadTitle(GameInfo game, char* titleVer, char* folderName, bool inst, b
 			dcontent++;
 		}
 	}
+	
+	startNewFrame();
+	textToFrame(0, 0, "Flushing I/O queue");
+	writeScreenLog();
+	drawFrame();
+	showFrame();
 	
 	flushIOQueue();
 	if(inst)
