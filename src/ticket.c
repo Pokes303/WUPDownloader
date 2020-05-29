@@ -96,9 +96,9 @@ void drawTicketFrame(const char *titleID, const char* encKey)
 	textToFrame(0, line--, "Press \uE001 to return");
 	if (titleID[0] != '\0' && encKey[0] != '\0')
 		textToFrame(0, line--, "Press \uE000 to continue");
-	lineToFrame(line, SCREEN_COLOR_BROWN);
+	lineToFrame(line, SCREEN_COLOR_WHITE);
 	
-	lineToFrame(MAX_LINES - 3, SCREEN_COLOR_BROWN);
+	lineToFrame(MAX_LINES - 3, SCREEN_COLOR_WHITE);
 	textToFrame(0, MAX_LINES - 2, "Press \uE041 UP to set the title ID");
 	textToFrame(0, MAX_LINES - 1, "Press \uE041 DOWN to set the Encrypted title key");
 	drawFrame();
@@ -170,7 +170,7 @@ bool generateFakeTicket()
 					debugPrintf("Generating fake ticket at %s", tikPath);
 					generateTik(fakeTik, titleID, encKey);
 					
-					colorStartNewFrame(SCREEN_COLOR_GREEN);
+					colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 					textToFrame(0, 0, "Fake ticket generated on:");
 					textToFrame(0, 1, tikPath);
 					textToFrame(0, 3, "Press \uE000 to return");

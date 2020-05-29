@@ -102,7 +102,7 @@ void clearScreenLog()
 
 void writeScreenLog()
 {
-	lineToFrame(2, SCREEN_COLOR_BROWN);
+	lineToFrame(2, SCREEN_COLOR_WHITE);
 	int i = 3;
 	for(DownloadLogList *entry = downloadLogList; entry != NULL; entry = entry->nextEntry)
 		textToFrame(0, i++, entry->line);
@@ -137,7 +137,7 @@ void drawErrorFrame(const char *text, ErrorOptions option)
 		textToFrame(0, line--, "Press \uE003 to retry");
 	if((option & A_CONTINUE) == A_CONTINUE)
 		textToFrame(0, line--, "Press \uE000 to continue");
-	lineToFrame(line, SCREEN_COLOR_BROWN);
+	lineToFrame(line, SCREEN_COLOR_WHITE);
 	
 	drawFrame();
 }

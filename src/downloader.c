@@ -716,7 +716,7 @@ bool downloadTitle(GameInfo game, char* titleVer, char* folderName, bool inst, b
 	
 	enableShutdown(); //TODO
 	
-	colorStartNewFrame(SCREEN_COLOR_GREEN);
+	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 	textToFrame(0, 0, game.name);
 	textToFrame(0, 1, "Downloaded successfully!");
 	writeScreenLog();

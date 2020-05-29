@@ -50,7 +50,7 @@ void drawDownloadFrame1()
 	textToFrame(1, 3, "site')");
 	textToFrame(0, 5, "[USE A VALID ENCRYPTED TITLE KEY FOR EACH TITLE, OTHERWISE, IT WILL THROW A TITLE.TIK");
 	textToFrame(1, 6, "ERROR WHILE INSTALLING IT]");
-	lineToFrame(MAX_LINES - 3, SCREEN_COLOR_BROWN);
+	lineToFrame(MAX_LINES - 3, SCREEN_COLOR_WHITE);
 	textToFrame(0, MAX_LINES - 2, "Press \uE000 to show the keyboard [Only input hexadecimal numbers]");
 	textToFrame(0, MAX_LINES - 1, "Press \uE001 to return");
 	drawFrame();
@@ -94,12 +94,12 @@ void drawDownloadFrame2(const char *titleID, const char *titleVer, const char *f
 		textToFrame(0, line--, toFrame);
 	}
 	
-	lineToFrame(line--, SCREEN_COLOR_BROWN);
+	lineToFrame(line--, SCREEN_COLOR_WHITE);
 	
 	textToFrame(0, line--, "Press \uE041 DOWN to set a custom name to the download folder");
 	textToFrame(0, line--, "Press \uE041 RIGHT to set the title version");
 	textToFrame(0, line--, "Press \uE041 UP to set the title ID");
-	lineToFrame(line--, SCREEN_COLOR_BROWN);
+	lineToFrame(line--, SCREEN_COLOR_WHITE);
 	
 	textToFrame(0, line--, "Press \uE001 to return");
 	
@@ -110,7 +110,7 @@ void drawDownloadFrame2(const char *titleID, const char *titleVer, const char *f
 	
 	textToFrame(0, line--, "Press \uE002 to install to NAND");
 	textToFrame(0, line--, "Press \uE000 to install to USB");
-	lineToFrame(line--, SCREEN_COLOR_BROWN);
+	lineToFrame(line--, SCREEN_COLOR_WHITE);
 	
 	drawFrame();
 }
@@ -246,7 +246,7 @@ void drawDownloadJSONFrame()
 	colorStartNewFrame(SCREEN_COLOR_RED);
 	textToFrame(0, 0, "Could not download from");
 	textToFrame(0, 1, getTitleKeySite());
-	lineToFrame(MAX_LINES - 4, SCREEN_COLOR_BROWN);
+	lineToFrame(MAX_LINES - 4, SCREEN_COLOR_WHITE);
 	textToFrame(0, MAX_LINES - 3, "Press \uE000 to enter a new URL");
 	textToFrame(0, MAX_LINES - 2, "Press \uE003 to continue");
 	textToFrame(0, MAX_LINES - 1, "Press \uE001 to exit");

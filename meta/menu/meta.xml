@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu type="complex" access="777">
   <version type="unsignedInt" length="4">1</version>
-  <product_code type="string" length="32">WUP-P-RETA</product_code>
+  <product_code type="string" length="32">WUP-P-NUSS</product_code>
   <content_platform type="string" length="32">WUP</content_platform>
   <company_code type="string" length="8">0001</company_code>
   <mastering_date type="string" length="32"></mastering_date>
@@ -15,7 +15,7 @@
   <install_flag type="hexBinary" length="4">00000000</install_flag>
   <closing_msg type="unsignedInt" length="4">1</closing_msg>
   <title_version type="unsignedInt" length="4">0</title_version>
-  <title_id type="hexBinary" length="8">0005000010108247</title_id>
+  <title_id type="hexBinary" length="8">000500004E555373</title_id>
   <group_id type="hexBinary" length="4">00005678</group_id>
   <boss_id type="hexBinary" length="8">0000000000000000</boss_id>
   <os_version type="hexBinary" length="8">000500101000400A</os_version>
@@ -49,11 +49,11 @@
   <pc_reserved1 type="unsignedInt" length="4">192</pc_reserved1>
   <pc_reserved2 type="unsignedInt" length="4">192</pc_reserved2>
   <pc_reserved3 type="unsignedInt" length="4">192</pc_reserved3>
-  <ext_dev_nunchaku type="unsignedInt" length="4">1</ext_dev_nunchaku>
+  <ext_dev_nunchaku type="unsignedInt" length="4">0</ext_dev_nunchaku>
   <ext_dev_classic type="unsignedInt" length="4">0</ext_dev_classic>
-  <ext_dev_urcc type="unsignedInt" length="4">1</ext_dev_urcc>
+  <ext_dev_urcc type="unsignedInt" length="4">0</ext_dev_urcc>
   <ext_dev_board type="unsignedInt" length="4">0</ext_dev_board>
-  <ext_dev_usb_keyboard type="unsignedInt" length="4">1</ext_dev_usb_keyboard>
+  <ext_dev_usb_keyboard type="unsignedInt" length="4">0</ext_dev_usb_keyboard>
   <ext_dev_etc type="unsignedInt" length="4">0</ext_dev_etc>
   <ext_dev_etc_name type="string" length="512"></ext_dev_etc_name>
   <eula_version type="unsignedInt" length="4">0</eula_version>

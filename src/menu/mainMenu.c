@@ -43,7 +43,7 @@
 void drawMainMenuFrame()
 {
 	startNewFrame();
-	boxToFrame(0, 5, SCREEN_COLOR_BROWN);
+	boxToFrame(0, 5);
 	textToFrame(ALIGNED_CENTER, 1, "NUSspli");
 	char toScreen[256];
 	strcpy(toScreen, "NUS simple packet loader/installer [");
@@ -61,16 +61,17 @@ void drawMainMenuFrame()
 	
 	textToFrame(MAX_CHARS - 24, 9, "Thanks to:      ");
 	textToFrame(MAX_CHARS - 23, 10, "• cJSON        ");
-	textToFrame(MAX_CHARS - 23, 11, "• libgui       ");
-	textToFrame(MAX_CHARS - 23, 12, "• Pokes303     ");
-	textToFrame(MAX_CHARS - 23, 13, "• Quarky       ");
-	textToFrame(MAX_CHARS - 23, 14, "• Simone Z.    ");
-	textToFrame(MAX_CHARS - 23, 15, "• WUP installer");
+	textToFrame(MAX_CHARS - 23, 11, "• Elite007     ");
+	textToFrame(MAX_CHARS - 23, 12, "• libgui       ");
+	textToFrame(MAX_CHARS - 23, 13, "• Pokes303     ");
+	textToFrame(MAX_CHARS - 23, 14, "• Quarky       ");
+	textToFrame(MAX_CHARS - 23, 15, "• Simone Z.    ");
+	textToFrame(MAX_CHARS - 23, 16, "• WUP installer");
 	
-	textToFrame(MAX_CHARS - 24, 17, "Beta testers:   ");
-	textToFrame(MAX_CHARS - 23, 18, "• Anonym       ");
-	textToFrame(MAX_CHARS - 23, 19, "• huma_dawii   ");
-	textToFrame(MAX_CHARS - 23, 20, "• jacobsson    ");
+	textToFrame(MAX_CHARS - 24, 18, "Beta testers:   ");
+	textToFrame(MAX_CHARS - 23, 19, "• Anonym       ");
+	textToFrame(MAX_CHARS - 23, 20, "• huma_dawii   ");
+	textToFrame(MAX_CHARS - 23, 21, "• jacobsson    ");
 	
 	textToFrame(0, MAX_LINES - 3, "WARNING:");
 	textToFrame(1, MAX_LINES - 2, "• Don't eject the SD Card or the application will crash!");

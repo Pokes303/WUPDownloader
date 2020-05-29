@@ -28,6 +28,11 @@
 
 #define FONT_SIZE 24
 
+#define SCREEN_COLOR_BG1		0x911EFFFF
+#define SCREEN_COLOR_BG2		0x8318FFFF
+#define SCREEN_COLOR_BG3		0x610AFFFF
+#define SCREEN_COLOR_BG4		0x5205FFFF
+
 #define SCREEN_COLOR_BLACK		0x000000FF
 #define SCREEN_COLOR_WHITE		0xFFFFFFFF
 #define SCREEN_COLOR_D_RED		0x800000FF
@@ -67,7 +72,7 @@ void drawFrame();
 void drawKeyboard();
 void textToFrame(int row, int column, const char* str);
 void lineToFrame(int column, uint32_t color);
-void boxToFrame(int lineStart, int lineEnd, uint32_t color);
+void boxToFrame(int lineStart, int lineEnd);
 void barToFrame(int line, int column, uint32_t width, float progress);
 void addErrorOverlay(const char *err);
 void removeErrorOverlay();

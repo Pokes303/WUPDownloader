@@ -21,6 +21,7 @@
 #include <wut-fixups.h>
 
 #include <main.h>
+#include <renderer.h>
 #include <status.h>
 #include <utils.h>
 

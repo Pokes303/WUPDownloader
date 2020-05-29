@@ -340,7 +340,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	
 	enableShutdown(); //TODO
 	
-	colorStartNewFrame(SCREEN_COLOR_GREEN);
+	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 	textToFrame(0, 0, game);
 	textToFrame(0, 1, "Installed successfully!");
 	writeScreenLog();

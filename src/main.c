@@ -63,11 +63,7 @@ bool hbl;
 int main()
 {
 	// Init
-	hbl = OSGetTitleID() == 0x0005000013374842 || // HBL Channel
-			OSGetTitleID() == 0x000500101004A200 ||  // Mii Maker EUR
-			OSGetTitleID() == 0x000500101004A100 || // Mii Maker USA
-			OSGetTitleID() == 0x000500101004A000 || // Mii Maker JPN
-			OSGetTitleID() == 0;
+	hbl = OSGetTitleID() != 0x000500004E555373;
 	
 	if(hbl)
 		WHBProcInit();

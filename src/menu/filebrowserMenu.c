@@ -38,7 +38,7 @@ void drawFBMenuFrame(char **folders, const int foldersSize, const int pos, const
 	startNewFrame();
 	textToFrame(6, 0, "Select a folder:");
 	
-	boxToFrame(1, MAX_LINES - 3, SCREEN_COLOR_BROWN);
+	boxToFrame(1, MAX_LINES - 3);
 	
 	char toWrite[257];
 	strcpy(toWrite, "Press \uE000 to select || \uE001 to return || \uE002 to switch to ");

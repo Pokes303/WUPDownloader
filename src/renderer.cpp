@@ -55,7 +55,7 @@ CVideo *renderer;
 GuiFrame *window;
 FreeTypeGX *font;
 GuiImage *background;
-uint32_t bgColor = SCREEN_COLOR_BLUE;
+uint32_t bgColor = SCREEN_COLOR_BLACK;
 uint32_t width, height;
 GuiSound *backgroundMusic;
 
@@ -117,22 +117,33 @@ void lineToFrame(int column, uint32_t color)
 	window->append(line);
 }
 
-void boxToFrame(int lineStart, int lineEnd, uint32_t color)
+void boxToFrame(int lineStart, int lineEnd)
 {
 	int size = (lineEnd - lineStart) * FONT_SIZE;
 	
-	int bw = width - (FONT_SIZE << 1);
+	// Horizontal lines
+	lineToFrame(lineStart, SCREEN_COLOR_GRAY);
+	lineToFrame(lineEnd, SCREEN_COLOR_GRAY);
 	
-	GuiImage *box = new GuiImage(bw, size, screenColorToGX2color(color), GuiImage::IMAGE_COLOR);
-	box->setAlignment(ALIGN_TOP_CENTER);
-	box->setPosition(0.0f, ((lineStart + 2) * -FONT_SIZE) + (FONT_SIZE >> 1));
+	// Vertical lines
+	GX2Color co = screenColorToGX2color(SCREEN_COLOR_GRAY);
 	
+	GuiImage *box = new GuiImage(3, size, co, GuiImage::IMAGE_COLOR);
+	box->setAlignment(ALIGN_TOP_LEFT);
+	box->setPosition(FONT_SIZE, ((lineStart + 2) * -FONT_SIZE) + (FONT_SIZE >> 1));
 	window->append(box);
 	
-	box = new GuiImage(bw - 6, size - 6, screenColorToGX2color(bgColor), GuiImage::IMAGE_COLOR);
-	box->setAlignment(ALIGN_TOP_CENTER);
-	box->setPosition(0.0f, ((lineStart + 2) * -FONT_SIZE) + ((FONT_SIZE >> 1) - 3));
+	box = new GuiImage(3, size, co, GuiImage::IMAGE_COLOR);
+	box->setAlignment(ALIGN_TOP_RIGHT);
+	box->setPosition(-FONT_SIZE, ((lineStart + 2) * -FONT_SIZE) + (FONT_SIZE >> 1));
+	window->append(box);
 	
+	// Backgtound - we paint it on top of the gray lines as they look better that way
+	co = screenColorToGX2color(SCREEN_COLOR_BLACK);
+	co.a = 64;
+	box = new GuiImage(width - (FONT_SIZE << 1), size, co, GuiImage::IMAGE_COLOR);
+	box->setAlignment(ALIGN_TOP_CENTER);
+	box->setPosition(0.0f, ((lineStart + 2) * -FONT_SIZE) + (FONT_SIZE >> 1));
 	window->append(box);
 }
 
@@ -144,7 +155,7 @@ void barToFrame(int line, int column, uint32_t width, float progress)
 	uint32_t tc = column + (width >> 1);
 	width *= spaceWidth;
 	
-	GuiImage *bar = new GuiImage(width, height, screenColorToGX2color(SCREEN_COLOR_WHITE), GuiImage::IMAGE_COLOR);
+	GuiImage *bar = new GuiImage(width, height, screenColorToGX2color(SCREEN_COLOR_BLACK), GuiImage::IMAGE_COLOR);
 	bar->setAlignment(ALIGN_TOP_LEFT);
 	bar->setPosition(x, y);
 	window->append(bar);
@@ -254,7 +265,7 @@ void initRenderer()
 	font = new FreeTypeGX(ttf, ttfSize);
 	spaceWidth = font->getCharWidth(L' ', FONT_SIZE);
 	
-	GuiText::setPresets(FONT_SIZE, glm::vec4({0.212f, 0.11f, 0.039f, 1.0f}), width - (FONT_SIZE << 1), ALIGN_TOP_LEFT, SSAA);
+	GuiText::setPresets(FONT_SIZE, glm::vec4({1.0f}), width - (FONT_SIZE << 1), ALIGN_TOP_LEFT, SSAA);
 	GuiText::setPresetFont(font);
 	
 	background = new GuiImage(width, height, screenColorToGX2color(bgColor), GuiImage::IMAGE_COLOR);
@@ -302,10 +313,19 @@ void colorStartNewFrame(uint32_t color)
 	
 	if(color != bgColor)
 	{
-		GX2Color gx2c = screenColorToGX2color(color);
-		for(int i = 0; i < 4; i++)
-			background->setImageColor(gx2c, i);
-		
+		if(color == SCREEN_COLOR_BLUE)
+		{
+			background->setImageColor(screenColorToGX2color(SCREEN_COLOR_BG2), 0);
+			background->setImageColor(screenColorToGX2color(SCREEN_COLOR_BG3), 1);
+			background->setImageColor(screenColorToGX2color(SCREEN_COLOR_BG4), 2);
+			background->setImageColor(screenColorToGX2color(SCREEN_COLOR_BG1), 3);
+		}
+		else
+		{
+			GX2Color gx2c = screenColorToGX2color(color);
+			for(int i = 0; i < 4; i++)
+				background->setImageColor(gx2c, i);
+		}
 		bgColor = color;
 	}
 	
