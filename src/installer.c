@@ -110,10 +110,12 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		
 		while(AppRunning())
 		{
-			showFrame();
-			
 			if(app == 2)
 				continue;
+			else if(app == 9)
+				drawErrorFrame(toScreen, B_RETURN);
+			
+			showFrame();
 			
 			if(vpad.trigger == VPAD_BUTTON_B)
 				return false;
@@ -131,10 +133,12 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		
 		while(AppRunning())
 		{
-			showFrame();
-			
 			if(app == 2)
 				continue;
+			else if(app == 9)
+				drawErrorFrame(toUsb ? "Error opening USB device" : "Error opening internal memory", B_RETURN);
+			
+			showFrame();
 			
 			if(vpad.trigger == VPAD_BUTTON_B)
 				return false;
@@ -189,10 +193,12 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		
 		while(AppRunning())
 		{
-			showFrame();
-			
 			if(app == 2)
 				continue;
+			else if(app == 9)
+				drawErrorFrame(toScreen, B_RETURN);
+			
+			showFrame();
 			
 			if(vpad.trigger == VPAD_BUTTON_B)
 				return false;
@@ -312,10 +318,12 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		
 		while(AppRunning())
 		{
-			showFrame();
-			
 			if(app == 2)
-			continue;
+				continue;
+			else if(app == 9)
+				drawErrorFrame(toScreen, B_RETURN);
+			
+			showFrame();
 			
 			if(vpad.trigger == VPAD_BUTTON_B)
 				return false;
@@ -340,10 +348,18 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	
 	while(AppRunning())
 	{
-		showFrame();
-		
 		if(app == 2)
 			continue;
+		else if(app == 9)
+		{
+			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
+			textToFrame(0, 0, game);
+			textToFrame(0, 1, "Installed successfully!");
+			writeScreenLog();
+			drawFrame();
+		}
+		
+		showFrame();
 		
 		if(vpad.trigger == VPAD_BUTTON_A || vpad.trigger == VPAD_BUTTON_B)
 			break;
