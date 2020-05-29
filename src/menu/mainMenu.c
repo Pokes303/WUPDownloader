@@ -61,7 +61,7 @@ void drawMainMenuFrame()
 	
 	textToFrame(MAX_CHARS - 24, 9, "Thanks to:      ");
 	textToFrame(MAX_CHARS - 23, 10, "• cJSON        ");
-	textToFrame(MAX_CHARS - 23, 11, "• Elite007     ");
+	textToFrame(MAX_CHARS - 23, 11, "• E1ite007     ");
 	textToFrame(MAX_CHARS - 23, 12, "• libgui       ");
 	textToFrame(MAX_CHARS - 23, 13, "• Pokes303     ");
 	textToFrame(MAX_CHARS - 23, 14, "• Quarky       ");
