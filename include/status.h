@@ -30,7 +30,6 @@
 #endif
 
 extern int app;
-void exitApp();
 bool AppRunning();
 
 #ifdef __cplusplus

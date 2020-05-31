@@ -93,15 +93,10 @@ static int progressCallback(void *curl, double dltotal, double dlnow, double ult
 			}
 			return 0;
 		}
-		else
+		else if(downloadPaused && curl_easy_pause(curl, CURLPAUSE_CONT) == CURLE_OK)
 		{
-			if(downloadPaused && curl_easy_pause(curl, CURLPAUSE_CONT) == CURLE_OK)
-			{
-				downloadPaused = false;
-				debugPrintf("Download resumed");
-			}
-			else
-				return 0;
+			downloadPaused = false;
+			debugPrintf("Download resumed");
 		}
 	}
 	else
@@ -671,24 +666,8 @@ bool downloadTitle(GameInfo game, char* titleVer, char* folderName, bool inst, b
 	for(int i = 0; i < 0x10; i++)
 		VPADControlMotor(VPAD_CHAN_0, vibrationPattern, 0xF);
 	
-	while(AppRunning())
-	{
-		if(app == 2)
-			continue;
-		else if(app == 9)
-		{
-			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-			textToFrame(0, 0, game.name);
-			textToFrame(0, 1, "Downloaded successfully!");
-			writeScreenLog();
-			drawFrame();
-		}
-		
+	while(AppRunning() && (app == 2 || (vpad.trigger != VPAD_BUTTON_A && vpad.trigger != VPAD_BUTTON_B)))
 		showFrame();
-		
-		if(vpad.trigger == VPAD_BUTTON_A || vpad.trigger == VPAD_BUTTON_B)
-			break;
-	}
 	
 	return true;
 }

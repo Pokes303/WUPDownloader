@@ -111,12 +111,10 @@ refreshDirList:
 	char *ret = NULL;
 	while(AppRunning())
 	{
+		showFrame();
+		
 		if(app == 2)
 			continue;
-		else if(app == 9)
-			drawFBMenuFrame(folders, foldersSize, pos, cursor, onUSB);
-		
-		showFrame();
 		
 		switch(vpad.trigger)
 		{

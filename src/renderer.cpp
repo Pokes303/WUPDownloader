@@ -34,8 +34,6 @@
 #include <gui/video/CVideo.h>
 
 #include <coreinit/thread.h>
-#include <coreinit/memdefaultheap.h>
-#include <coreinit/memory.h>
 
 #include <cstring>
 #include <stdbool.h>
@@ -297,7 +295,6 @@ void shutdownRenderer()
 	delete font;
 	
 	libgui_memoryRelease();
-	bgColor = SCREEN_COLOR_BLACK;
 }
 
 static inline void clearFrame()

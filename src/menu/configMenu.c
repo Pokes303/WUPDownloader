@@ -47,8 +47,6 @@ void configMenu()
 	{
 		if(app == 2)
 			continue;
-		else if(app == 9)
-			drawConfigMenu();
 		
 		showFrame();
 		
