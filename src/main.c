@@ -80,7 +80,8 @@ int main()
 	WHBInitCrashHandler();
 	OSCheckActiveThreads();
 #endif
-	getOTP();
+	
+	getCommonKey(); // We do this exploit as soon as possible
 	
 	initRenderer();
 	

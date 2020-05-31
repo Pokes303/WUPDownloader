@@ -344,11 +344,11 @@ int uhs_write32(int arm_addr, int val, int uhs) {
    return IOS_Ioctl(uhs, 0x15, request_buffer, sizeof(request_buffer), output_buffer, sizeof(output_buffer));
 }
 
-uint8_t *otp_common_key = NULL;
+uint8_t otp_common_key[16] = { 0x00 };
 
 uint8_t *getCommonKey()
 {
-	if(otp_common_key == NULL)
+	if(otp_common_key[0] == 0x00)
 	{
 		int uhs = IOS_Open("/dev/uhs/0", 0);	//! Open /dev/uhs/0 IOS node
 		uhs_exploit_init();						//! Init variables for the exploit
@@ -360,14 +360,15 @@ uint8_t *getCommonKey()
 		uhs_write32(CHAIN_START, 0x1012392b, uhs); // pop {R4-R6,PC}
 		
 		DCInvalidateRange((void*)(0xF412F000 - 0x400), 0x400);
-		uint8_t cc[16];
-		OSBlockMove(&cc[0], (void *)(0xF412F000 - 0x400 + 0x0E0), 16, false);
+		OSBlockMove(&otp_common_key[0], (void *)(0xF412F000 - 0x400 + 0x0E0), 16, false);
 		
 		IOS_Close(uhs);
 		
-		otp_common_key = MEMAllocFromDefaultHeap(16);
-		if(otp_common_key != NULL)
-			OSBlockMove(otp_common_key, cc, false);
+		char ret[33];
+		char *tmp = &ret[0];
+		for(int i = 0; i < 16; i++, tmp += 2)
+			sprintf(tmp, "%02x", otp_common_key[i]);
+		debugPrintf("CC: %s", ret);
 	}
 	return otp_common_key;
 }
