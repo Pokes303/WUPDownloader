@@ -168,11 +168,11 @@ static inline void sha1_xor(SHA1_CTX *restrict out, const SHA1_CTX *restrict in)
     {                                                                         
       /* Complete inner hash with previous U */                               
       sha1_cpy(&ctx.inner, &startctx->inner);                                    
-      SHA1Transform(&ctx.inner.state, Ublock);                                       
+      SHA1Transform(ctx.inner.state, Ublock);                                       
       sha1_extract(&ctx.inner, Ublock);                                            
       /* Complete outer hash with inner output */                             
       sha1_cpy(&ctx.outer, &startctx->outer);                                    
-      SHA1Transform(&ctx.outer.state, Ublock);                                       
+      SHA1Transform(ctx.outer.state, Ublock);                                       
       sha1_extract(&ctx.outer, Ublock);                                            
       sha1_xor(&result, &ctx.outer);                                             
     }                                                                         
