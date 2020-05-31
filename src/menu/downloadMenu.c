@@ -46,10 +46,6 @@ void drawDownloadFrame1()
 {
 	startNewFrame();
 	textToFrame(0, 0, "Input a title ID to download its content [Ex: 000500001234abcd]");
-	textToFrame(0, 2, "If a fake ticket.tik is needed, you will need to write its encrypted tile key (Check it on any 'WiiU title key");
-	textToFrame(1, 3, "site')");
-	textToFrame(0, 5, "[USE A VALID ENCRYPTED TITLE KEY FOR EACH TITLE, OTHERWISE, IT WILL THROW A TITLE.TIK");
-	textToFrame(1, 6, "ERROR WHILE INSTALLING IT]");
 	lineToFrame(MAX_LINES - 3, SCREEN_COLOR_WHITE);
 	textToFrame(0, MAX_LINES - 2, "Press \uE000 to show the keyboard [Only input hexadecimal numbers]");
 	textToFrame(0, MAX_LINES - 1, "Press \uE001 to return");
@@ -149,14 +145,13 @@ void downloadMenu()
 	GameInfo gameToInstall;
 	
 	gameToInstall.tid = titleID;
-	gameToInstall.key = gameToInstall.name = NULL;
+	gameToInstall.name = NULL;
 	
 	if(gameInfo != NULL)
 	{
 		for(int i = 0; i < gameInfoSize; i++)
 			if(gameInfo[i].tid != NULL && strcmp(gameInfo[i].tid, titleID) == 0)
 			{
-				gameToInstall.key = gameInfo[i].key;
 				gameToInstall.name = gameInfo[i].name;
 				break;
 			}
@@ -321,13 +316,12 @@ bool downloadJSON()
 	
 	char *tid;
 	char *name;
-	char *key;
 	cJSON *start = json;
 	cJSON *tmpObj;
 	for(int i = 0; i < gameInfoSize; i++)
 	{
 		json = cJSON_GetArrayItem(start, i);
-		tid = name = key = NULL;
+		tid = name = NULL;
 		tmpObj = cJSON_GetObjectItemCaseSensitive(json, "titleID");
 		if(tmpObj != NULL && cJSON_IsString(tmpObj) && tmpObj->valuestring != NULL)
 		{
@@ -342,31 +336,18 @@ bool downloadJSON()
 						name[j] = ' ';
 			}
 			
-			tmpObj = cJSON_GetObjectItemCaseSensitive(json, "titleKey");
-			if(tmpObj != NULL && cJSON_IsString(tmpObj) && tmpObj->valuestring != NULL)
-				key = tmpObj->valuestring;
-			else
-			{
-				tmpObj = cJSON_GetObjectItemCaseSensitive(json, "ticket");
-				if(tmpObj != NULL && cJSON_IsNumber(tmpObj) && tmpObj->valueint == 1)
-					key = "x";
-			}
-			
-			if(name != NULL || key != NULL)
+			if(name != NULL)
 			{
 				gameInfo[i].tid = MEMAllocFromDefaultHeap(17);
 				gameInfo[i].name = name == NULL ? NULL : MEMAllocFromDefaultHeap(sizeof(char) * strlen(name));
-				gameInfo[i].key = key == NULL ? NULL : MEMAllocFromDefaultHeap(33);
 				
 				strcpy(gameInfo[i].tid, tid);
 				if(gameInfo[i].name != NULL)
 					strcpy(gameInfo[i].name, name);
-				if(gameInfo[i].key != NULL)
-					strcpy(gameInfo[i].key, key);
 				continue;
 			}
 		}
-		gameInfo[i].tid = gameInfo[i].name = gameInfo[i].key = NULL;
+		gameInfo[i].tid = gameInfo[i].name = NULL;
 	}
 	
 	cJSON_Delete(start);
@@ -387,8 +368,6 @@ void freeJSON()
 				MEMFreeToDefaultHeap(gameInfo[i].tid);
 			if(gameInfo[i].name != NULL)
 				MEMFreeToDefaultHeap(gameInfo[i].name);
-			if(gameInfo[i].key != NULL)
-				MEMFreeToDefaultHeap(gameInfo[i].key);
 		}
 		MEMFreeToDefaultHeap(gameInfo);
 	}

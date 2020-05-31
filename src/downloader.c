@@ -31,6 +31,7 @@
 #include <input.h>
 #include <installer.h>
 #include <ioThread.h>
+#include <keygen.h>
 #include <memdebug.h>
 #include <menu/utils.h>
 #include <renderer.h>
@@ -533,77 +534,21 @@ bool downloadTitle(GameInfo game, char* titleVer, char* folderName, bool inst, b
 		return true;
 	if(tikRes == 2)
 	{
-		addToScreenLog("Title.tik not found on the NUS. Checking known keys...");
+		addToScreenLog("Title.tik not found on the NUS. Generating...");
+		startNewFrame();
+		textToFrame(0, 0, "Creating fake title.tik");
+		writeScreenLog();
+		drawFrame();
+		showFrame();
 		
-		if(game.key != NULL && game.key[0] == 'x')
-		{
-			strcpy(tInstallDir, game.tid);
-			strcat(tInstallDir, ".tik");
-			
-			strcpy(tDownloadUrl, getTitleKeySite());
-			strcat(tDownloadUrl, "/ticket/");
-			strcat(tDownloadUrl, tInstallDir);
-			if(downloadFile(tDownloadUrl, tInstallDir, FILE_TYPE_TIK | FILE_TYPE_TORAM) == 0)
-			{
-				game.key = hex(readUInt64(tmd, 0x1BF), 16);
-				debugPrintf("Extracted key: %s", game.key);
-			}
-			
-			if(ramBuf != NULL)
-			{
-				MEMFreeToDefaultHeap(ramBuf);
-				ramBuf = NULL;
-				ramBufSize = 0;
-			}
-		}
+		char *key = generateKey(game.tid);
+		if(key == NULL)
+			return false;
 		
-		if(game.key == NULL || game.key[0] == 'x')
-		{
-			colorStartNewFrame(SCREEN_COLOR_LILA);
-			strcpy(toScreen, "Input the Encrypted title key of ");
-			strcat(toScreen, game.name);
-			strcat(toScreen, " to create a");
-			textToFrame(0, 0, toScreen);
-			textToFrame(1, 1, "fake ticket (Without it, the download cannot be installed)");
-			textToFrame(0, 3, "You can get it from any 'WiiU title key site'");
-			textToFrame(0, 5, "Press \uE000 to show the keyboard [32 hexadecimal numbers]");
-			textToFrame(0, 6, "Press \uE001 to continue the download without the fake ticket");
-			drawFrame();
-			
-			char encKey[33];
-			while(true)
-			{
-				showFrame();
-				
-				if(vpad.trigger == VPAD_BUTTON_A)
-				{
-					if(showKeyboard(KEYBOARD_TYPE_RESTRICTED, encKey, CHECK_HEXADECIMAL, 32, true, NULL, "CREATE"))
-					{
-						game.key = encKey;
-						break;
-					}
-				}
-				else if(vpad.trigger == VPAD_BUTTON_B)
-				{
-					addToScreenLog("Encrypted key wasn't wrote. Continuing without fake ticket");
-					addToScreenLog("(The download needs a fake ticket to be installed)");
-					break;
-				}
-			}
-		}
-		
-		if(game.key != NULL || game.key[0] == 'x')
-		{
-			startNewFrame();
-			textToFrame(0, 0, "Creating fake title.tik");
-			writeScreenLog();
-			drawFrame();
-			showFrame();
-			
-			FILE *tik = fopen(tInstallDir, "wb"); //TODO: Error checking
-			generateTik(tik, game.tid, game.key);
-			addToScreenLog("Fake ticket created successfully");
-		}
+		FILE *tik = fopen(tInstallDir, "wb"); //TODO: Error checking
+		generateTik(tik, game.tid, key);
+		MEMFreeToDefaultHeap(key);
+		addToScreenLog("Fake ticket created successfully");
 	}
 	
 	char tmpFileName[FILENAME_MAX + 37];

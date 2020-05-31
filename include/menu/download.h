@@ -20,7 +20,6 @@ typedef struct
 {
 	char *tid;
 	char *name;
-	char *key;
 } GameInfo;
 
 void downloadMenu();
