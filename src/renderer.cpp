@@ -284,6 +284,10 @@ void initRenderer()
 
 void shutdownRenderer()
 {
+	colorStartNewFrame(SCREEN_COLOR_BLUE);
+	drawFrame();
+	showFrame();
+	
 	backgroundMusic->Stop();
 	
 	delete backgroundMusic;
