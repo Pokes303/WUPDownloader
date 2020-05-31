@@ -26,6 +26,7 @@ SOURCES		:=	src/cJSON \
 
 DATA		:=	data
 INCLUDES	:=	include \
+				payload \
 				src/cJSON
 
 #-------------------------------------------------------------------------------
@@ -65,7 +66,7 @@ NUSSPLI_VERSION	:=	$(shell grep \<version\> meta/hbl/meta.xml | sed 's/.*<versio
 #-------------------------------------------------------------------------------
 all: debug
 
-real: 
+real: $(CURDIR)/payload/arm_kernel_bin.h
 	@git submodule deinit --force libgui
 	@git submodule update --init --recursive
 	@mv $(CURDIR)/src/cJSON/test.c $(CURDIR)/src/cJSON/test.c.old 2>/dev/null || true
@@ -78,9 +79,23 @@ real:
 	@$(MAKE) -C $(BUILD) -f $(CURDIR)/Makefile BUILD=$(BUILD) NUSSPLI_VERSION=$(NUSSPLI_VERSION) $(MAKE_CMD)
 
 #-------------------------------------------------------------------------------
+$(CURDIR)/payload/arm_kernel_bin.h:  $(CURDIR)/payload/arm_user_bin.h
+	@$(MAKE) -C $(CURDIR)/arm_kernel -f  $(CURDIR)/arm_kernel/Makefile
+	@-mkdir -p $(CURDIR)/payload
+	@cp -p $(CURDIR)/arm_kernel/arm_kernel_bin.h $@
+
+#-------------------------------------------------------------------------------
+$(CURDIR)/payload/arm_user_bin.h:
+	@$(MAKE) -C $(CURDIR)/arm_user -f  $(CURDIR)/arm_user/Makefile
+	@-mkdir -p $(CURDIR)/payload
+	@cp -p $(CURDIR)/arm_user/arm_user_bin.h $@
+
+#-------------------------------------------------------------------------------
 clean:
 	@git submodule deinit --force --all
-	@rm -fr debug release $(TARGET).rpx $(TARGET).elf
+	@$(MAKE) -C $(CURDIR)/arm_user -f  $(CURDIR)/arm_user/Makefile clean
+	@$(MAKE) -C $(CURDIR)/arm_kernel -f  $(CURDIR)/arm_kernel/Makefile clean
+	@rm -fr debug release payload $(TARGET).rpx $(TARGET).elf
 
 #-------------------------------------------------------------------------------
 debug:		MAKE_CMD	:=	debug

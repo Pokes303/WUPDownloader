@@ -27,6 +27,7 @@
 #include <ioThread.h>
 #include <main.h>
 #include <memdebug.h>
+#include <otp.h>
 #include <renderer.h>
 #include <status.h>
 #include <ticket.h>
@@ -79,6 +80,7 @@ int main()
 	WHBInitCrashHandler();
 	OSCheckActiveThreads();
 #endif
+	getOTP();
 	
 	initRenderer();
 	

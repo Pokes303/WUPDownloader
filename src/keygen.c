@@ -21,6 +21,7 @@
 
 #include <aes.h>
 #include <md5.h>
+#include <otp.h>
 #include <pbkdf2.h>
 
 #include <utils.h>
@@ -34,7 +35,6 @@
 
 //const uint8_t keygen_pw[] = { 0x6e, 0x690, 0x6e, 0x74, 0x65, 0x6e, 0x64, 0x6f };
 const uint8_t keygen_pw[] = { 0x6d, 0x79, 0x70, 0x61, 0x73, 0x73 };
-const uint8_t keygen_ck[] = { 0xd7, 0xb0, 0x04, 0x02, 0x65, 0x9b, 0xa2, 0xab, 0xd2, 0xcb, 0x0d, 0xb2, 0x7f, 0xa2, 0xb6, 0x56 };
 
 
 char *generateKey(char *tid)
@@ -71,7 +71,7 @@ char *generateKey(char *tid)
 	
 	OSBlockSet(&iv[8], 0, 8);
 	struct AES_ctx aesc;
-	AES_init_ctx_iv(&aesc, keygen_ck, iv);
+	AES_init_ctx_iv(&aesc, getCommonKey(), iv);
 	AES_CBC_encrypt_buffer(&aesc, key, 16);
 	
 	tmp = ret;
