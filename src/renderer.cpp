@@ -42,6 +42,7 @@
 #include <wchar.h>
 
 #include <backgroundMusic_mp3.h>
+#include <goodbyeTex_png.h>
 #include <input.h>
 #include <renderer.h>
 #include <osdefs.h>
@@ -283,11 +284,17 @@ void initRenderer()
 void shutdownRenderer()
 {
 	colorStartNewFrame(SCREEN_COLOR_BLUE);
+	
+	GuiImageData *byeData = new GuiImageData(goodbyeTex_png, goodbyeTex_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
+	GuiImage *bye = new GuiImage(byeData);
+	window->append(bye);
+	
 	drawFrame();
-	showFrame();
 	
 	backgroundMusic->Stop();
 	
+	delete bye;
+	delete byeData;
 	delete backgroundMusic;
 	delete renderer;
 	delete window;

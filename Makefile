@@ -195,6 +195,10 @@ endef
 	@echo $(notdir $<)
 	@$(bin2o)
 
+%.png.o %_png.h	:	%.png
+	@echo $(notdir $<)
+	@$(bin2o)
+
 exports.def.o :	exports.def
 	$(SILENTMSG) $(notdir $<)
 	$(SILENTCMD)rplexportgen $< $*.s
