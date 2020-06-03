@@ -63,6 +63,7 @@ void toLowercase(char *inOut);
 uint32_t getRandom();
 void initRandom();
 void getSpeedString(float bytePerSecond, char *out);
+void hexToByte(const char *hex, uint8_t *out);
 #ifdef NUSSPLI_DEBUG
 void debugInit();
 void debugPrintf(const char *str, ...);

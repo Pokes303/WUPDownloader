@@ -34,34 +34,41 @@
 #include <coreinit/memory.h>
 #include <coreinit/time.h>
 
-uint8_t readUInt8(char* file, uint32_t pos) {
+uint8_t readUInt8(const char *file, uint32_t pos)
+{
 	FILE* fp = fopen(file, "rb");
 	fseek(fp, pos, SEEK_SET);
-	uint8_t result = 0xFF;
+	uint8_t result;
 	fread(&result, 1, 1, fp);
 	fclose(fp);
 	return result;
 }
-uint16_t readUInt16(char* file, uint32_t pos) {
+
+uint16_t readUInt16(const char *file, uint32_t pos)
+{
 	FILE* fp = fopen(file, "rb");
 	fseek(fp, pos, SEEK_SET);
-	uint16_t result = 0xFFFF;
+	uint16_t result;
 	fread(&result, 2, 1, fp);
 	fclose(fp);
 	return result;
 }
-uint32_t readUInt32(char* file, uint32_t pos) {
+
+uint32_t readUInt32(const char *file, uint32_t pos)
+{
 	FILE* fp = fopen(file, "rb");
 	fseek(fp, pos, SEEK_SET);
-	uint32_t result = 0xFFFFFFFF;
+	uint32_t result;
 	fread(&result, 4, 1, fp);
 	fclose(fp);
 	return result;
 }
-uint64_t readUInt64(char* file, uint32_t pos) {
+
+uint64_t readUInt64(const char *file, uint32_t pos)
+{
 	FILE* fp = fopen(file, "rb");
 	fseek(fp, pos, SEEK_SET);
-	uint64_t result = 0xFFFFFFFFFFFFFFFF;
+	uint64_t result;
 	fread(&result, 8, 1, fp);
 	fclose(fp);
 	return result;
@@ -85,19 +92,15 @@ uint8_t charToByte(char c)
 	return 0xFF;
 }
 
-void writeCustomBytes(FILE *fp, char *str)
+void writeCustomBytes(FILE *fp, const char *str)
 {
 	if(str[0] == '0' && str[1] == 'x')
 		str += 2;
 	
-	uint8_t bytes[strlen(str) >> 1];
-	int i = 0;
-	while(*str != '\0')
-	{
-		bytes[i] = charToByte(*str++) << 4;
-		bytes[i++] |= charToByte(*str++);
-	}
-	addToIOQueue(bytes, i, 1, fp);
+	size_t size = strlen(str) >> 1;
+	uint8_t bytes[size];
+	hexToByte(str, bytes);
+	addToIOQueue(bytes, size, 1, fp);
 }
 
 void writeRandomBytes(FILE* fp, uint32_t len)

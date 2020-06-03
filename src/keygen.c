@@ -53,8 +53,7 @@ char *generateKey(char *tid)
 	
 	size_t bhl = strlen(h) >> 1;
 	uint8_t bh[bhl];
-	for(size_t i = 0, j = 0; j < bhl; i += 2, j++)
-        bh[j] = (h[i] % 32 + 9) % 25 * 16 + (h[i + 1] % 32 + 9) % 25;
+	hexToByte(h, bh);
 	
 	MD5_CTX md5c;
 	uint8_t md5sum[16];
@@ -66,8 +65,7 @@ char *generateKey(char *tid)
 	pbkdf2_hmac_sha1(keygen_pw, sizeof(keygen_pw), md5sum, 16, 20, key, 16);
 	
 	uint8_t iv[16];
-	for(size_t i = 0, j = 0; j < 8; i += 2, j++)
-        iv[j] = (tid[i] % 32 + 9) % 25 * 16 + (tid[i + 1] % 32 + 9) % 25;
+	hexToByte(tid, iv);
 	
 	OSBlockSet(&iv[8], 0, 8);
 	struct AES_ctx aesc;

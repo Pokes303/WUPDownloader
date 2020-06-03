@@ -180,6 +180,12 @@ void getSpeedString(float bytePerSecond, char *out)
 		sprintf(out, "%.2f Mbit/s", bytePerSecond / (1024.0f * 1024.0f));
 }
 
+void hexToByte(const char *hex, uint8_t *out)
+{
+	for(int i = 0; *hex != '\0'; out[i++] |= charToByte(*hex++))
+		out[i] = charToByte(*hex++) << 4;
+}
+
 #ifdef NUSSPLI_DEBUG
 
 #include <stdarg.h>

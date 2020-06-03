@@ -48,15 +48,15 @@ typedef enum
 	FILE_TYPE_TORAM = 64,	// 01000000
 } FileType;
 
-uint8_t readUInt8(char* file, uint32_t pos);
-uint16_t readUInt16(char* file, uint32_t pos);
-uint32_t readUInt32(char* file, uint32_t pos);
-uint64_t readUInt64(char* file, uint32_t pos);
+uint8_t readUInt8(const char *file, uint32_t pos);
+uint16_t readUInt16(const char *file, uint32_t pos);
+uint32_t readUInt32(const char *file, uint32_t pos);
+uint64_t readUInt64(const char *file, uint32_t pos);
 
-void writeVoidBytes(FILE* fp, uint32_t length);
+void writeVoidBytes(FILE *fp, uint32_t length);
 uint8_t charToByte(char c);
-void writeCustomBytes(FILE* fp, char* str);
-void writeRandomBytes(FILE* fp, uint32_t length);
+void writeCustomBytes(FILE *fp, const char *str);
+void writeRandomBytes(FILE *fp, uint32_t length);
 void writeHeader(FILE *fp, FileType type);
 
 bool fileExists(const char *path);
