@@ -47,7 +47,7 @@ struct WriteQueueEntry
 
 static OSThread ioThread;
 static uint8_t ioThreadStack[IOT_STACK_SIZE];
-static bool ioRunning = false;
+static volatile uint32_t ioRunning = false;
 static volatile uint32_t ioWriteLock = true;
 
 static WriteQueueEntry sliceEntries[MAX_IO_QUEUE_ENTRIES];
@@ -110,7 +110,7 @@ void shutdownIOThread()
 	while(sliceEntries[activeSliceBuffer[1]].inUse)
 		;
 	
-	ioRunning = false;
+	OSSwapAtomic(&ioRunning, false);
 	int ret;
 	OSJoinThread(&ioThread, &ret);
 	debugPrintf("I/O thread returned: %d", ret);
@@ -118,11 +118,9 @@ void shutdownIOThread()
 
 size_t addToIOQueue(const void *buf, size_t size, size_t n, FILE *file)
 {
-	if(!ioRunning)
-		return 0;
-	
 	while(ioWriteLock)
-		;
+		if(!ioRunning)
+			return 0;
 	
 	size_t written, rest;
 	if(buf != NULL)
