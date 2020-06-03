@@ -48,7 +48,7 @@ struct WriteQueueEntry
 static OSThread ioThread;
 static uint8_t ioThreadStack[IOT_STACK_SIZE];
 static bool ioRunning = false;
-static volatile uint32_t flushing = false;
+static volatile uint32_t ioWriteLock = true;
 
 static WriteQueueEntry sliceEntries[MAX_IO_QUEUE_ENTRIES];
 static uint8_t sliceBuffer[MAX_IO_QUEUE_ENTRIES][SLICE_SIZE];
@@ -93,10 +93,11 @@ bool initIOThread()
 	OSSetThreadName(&ioThread, "NUSspli I/O");
 	
 	for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; i++)
-		OSSwapAtomic(&sliceEntries[i].inUse, false);
+		sliceEntries[i].inUse = false;
 	
 	ioRunning = true;
 	OSResumeThread(&ioThread);
+	OSSwapAtomic(&ioWriteLock, false);
 	return true;
 }
 
@@ -105,18 +106,23 @@ void shutdownIOThread()
 	if(!ioRunning)
 		return;
 	
+	OSSwapAtomic(&ioWriteLock, true);
+	while(sliceEntries[activeSliceBuffer[1]].inUse)
+		;
+	
 	ioRunning = false;
 	int ret;
 	OSJoinThread(&ioThread, &ret);
 	debugPrintf("I/O thread returned: %d", ret);
-	
-	flushIOQueue();
 }
 
 size_t addToIOQueue(const void *buf, size_t size, size_t n, FILE *file)
 {
-	while(flushing)
-		continue;
+	if(!ioRunning)
+		return 0;
+	
+	while(ioWriteLock)
+		;
 	
 	size_t written, rest;
 	if(buf != NULL)
@@ -166,9 +172,9 @@ size_t addToIOQueue(const void *buf, size_t size, size_t n, FILE *file)
 void flushIOQueue()
 {
 	debugPrintf("Flushing...");
-	OSSwapAtomic(&flushing, true);
+	OSSwapAtomic(&ioWriteLock, true);
 	while(sliceEntries[activeSliceBuffer[1]].inUse)
 		OSSleepTicks(256);
 	
-	OSSwapAtomic(&flushing, false);
+	OSSwapAtomic(&ioWriteLock, false);
 }
