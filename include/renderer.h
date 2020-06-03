@@ -43,7 +43,7 @@
 #define SCREEN_COLOR_BLUE		0x00D6FFFF
 #define SCREEN_COLOR_LILA		0xFF00FFFF
 #define SCREEN_COLOR_BROWN		0x361C0AFF
-#define SCREEN_COLOR_GRAY		0xAAAAAAFF
+#define SCREEN_COLOR_GRAY		0x6A6A6AFF
 
 // These are with Nintendo font at size 24:
 #define MAX_CHARS 152 //TODO: This is here for historical reasons and only valid for spaces now

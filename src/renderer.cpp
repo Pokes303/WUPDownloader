@@ -140,9 +140,10 @@ void boxToFrame(int lineStart, int lineEnd)
 	// Backgtound - we paint it on top of the gray lines as they look better that way
 	co = screenColorToGX2color(SCREEN_COLOR_BLACK);
 	co.a = 64;
-	box = new GuiImage(width - (FONT_SIZE << 1), size, co, GuiImage::IMAGE_COLOR);
+	size -= 6;
+	box = new GuiImage(width - (FONT_SIZE << 1) - 6, size, co, GuiImage::IMAGE_COLOR);
 	box->setAlignment(ALIGN_TOP_CENTER);
-	box->setPosition(0.0f, ((lineStart + 2) * -FONT_SIZE) + (FONT_SIZE >> 1));
+	box->setPosition(0.0f, (((lineStart + 2) * -FONT_SIZE) + (FONT_SIZE >> 1)) - 3);
 	window->append(box);
 }
 
@@ -154,7 +155,7 @@ void barToFrame(int line, int column, uint32_t width, float progress)
 	uint32_t tc = column + (width >> 1);
 	width *= spaceWidth;
 	
-	GuiImage *bar = new GuiImage(width, height, screenColorToGX2color(SCREEN_COLOR_BLACK), GuiImage::IMAGE_COLOR);
+	GuiImage *bar = new GuiImage(width, height, screenColorToGX2color(SCREEN_COLOR_GRAY), GuiImage::IMAGE_COLOR);
 	bar->setAlignment(ALIGN_TOP_LEFT);
 	bar->setPosition(x, y);
 	window->append(bar);
@@ -165,10 +166,10 @@ void barToFrame(int line, int column, uint32_t width, float progress)
 	width -= 4;
 	uint32_t barWidth = ((float)width) / 100.0f * progress; //TODO
 	
-	bar = new GuiImage(barWidth, height, screenColorToGX2color(SCREEN_COLOR_D_GREEN), GuiImage::IMAGE_COLOR);
-	GX2Color lg = screenColorToGX2color(SCREEN_COLOR_GREEN);
+	bar = new GuiImage(barWidth, height, screenColorToGX2color(SCREEN_COLOR_GREEN), GuiImage::IMAGE_COLOR);
+	GX2Color co = screenColorToGX2color(SCREEN_COLOR_D_GREEN);
 	for(int i = 1; i < 3; i++)
-		bar->setImageColor(lg, i);
+		bar->setImageColor(co, i);
 	bar->setAlignment(ALIGN_TOP_LEFT);
 	bar->setPosition(x, y);
 	window->append(bar);
@@ -176,7 +177,9 @@ void barToFrame(int line, int column, uint32_t width, float progress)
 	width -= barWidth;
 	x += barWidth;
 	
-	bar = new GuiImage(width, height, screenColorToGX2color(SCREEN_COLOR_GRAY), GuiImage::IMAGE_COLOR);
+	co = screenColorToGX2color(SCREEN_COLOR_BLACK);
+	co.a = 64;
+	bar = new GuiImage(width, height, co, GuiImage::IMAGE_COLOR);
 	bar->setAlignment(ALIGN_TOP_LEFT);
 	bar->setPosition(x, y);
 	window->append(bar);
