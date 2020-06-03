@@ -23,13 +23,11 @@
 #include <stdio.h>
 
 #include <coreinit/atomic.h>
-#include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
 
 #include <ioThread.h>
-#include <memdebug.h>
 #include <utils.h>
 
 #define IOT_STACK_SIZE			0x2000
