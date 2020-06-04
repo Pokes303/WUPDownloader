@@ -71,7 +71,7 @@ void drawMainMenuFrame()
 	textToFrame(MAX_CHARS - 23, 19, "• Anonym       ");
 	textToFrame(MAX_CHARS - 23, 20, "• huma_dawii   ");
 	textToFrame(MAX_CHARS - 23, 21, "• jacobsson    ");
-	textToFrame(MAX_CHARS - 24, 21, "• pirate       ");
+	textToFrame(MAX_CHARS - 23, 22, "• pirate       ");
 	
 	textToFrame(0, MAX_LINES - 3, "WARNING:");
 	textToFrame(1, MAX_LINES - 2, "• Don't eject the SD Card or the application will crash!");
