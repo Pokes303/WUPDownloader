@@ -61,13 +61,13 @@ static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData
 	((char *)buf)[size - 1] = '\0'; //TODO: This should transform the newline at the end to a string terminator - but are we allowed to modify the buffer?
 	
 	toLowercase(buf);
-	long contentLength = 0;
-	if(sscanf(buf, "content-length: %ld", &contentLength) != 1)
+	uint32_t contentLength = 0;
+	if(sscanf(buf, "content-length: %u", &contentLength) != 1)
 		return size;
 	
-	if(*(long *)rawData == contentLength)
+	if(*(uint32_t *)rawData == contentLength)
 	{
-		*(long *)rawData = -1;
+		*(uint32_t *)rawData = 0;
 		return 0;
 	}
 		
@@ -190,14 +190,14 @@ int downloadFile(const char *url, char *file, FileType type)
 	
 	downloaded = 0.0D;
 	
-	bool fileExists;
+	bool fileExist;
 	FILE *fp;
 	if(toRam)
 		fp = open_memstream(&ramBuf, &ramBufSize);
 	else
 	{
-		fileExists = pathExists(file);
-		fp = fopen(file, fileExists ? "rb+" : "wb");
+		fileExist = fileExists(file);
+		fp = fopen(file, fileExist ? "rb+" : "wb");
 	}
 	
 	CURL *curl = curl_easy_init();
@@ -232,8 +232,8 @@ int downloadFile(const char *url, char *file, FileType type)
 		ret |= curl_easy_setopt(curl, CURLOPT_USERAGENT, ua);
 	}
 	
-	long fileSize;
-	if(!toRam && fileExists)
+	uint32_t fileSize;
+	if(!toRam && fileExist)
 	{
 		fileSize = getFilesize(fp);
 		ret |= curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerCallback);
@@ -278,7 +278,7 @@ int downloadFile(const char *url, char *file, FileType type)
 	
 	addToIOQueue(NULL, 0, 0, fp);
 	
-	if(ret != CURLE_OK && !(fileExists && ret == CURLE_WRITE_ERROR && fileSize == -1))
+	if(ret != CURLE_OK && !(fileExist && ret == CURLE_WRITE_ERROR && fileSize == 0))
 	{
 		debugPrintf("curl_easy_perform returned an error: %s (%d)\nFile: %s\n\n", curlError, ret, file);
 		curl_easy_cleanup(curl);
@@ -327,7 +327,7 @@ int downloadFile(const char *url, char *file, FileType type)
 	}
 	debugPrintf("curl_easy_perform executed successfully");
 	
-	if(fileSize == -1)
+	if(fileExist && fileSize == 0)
 	{
 		curl_easy_cleanup(curl);
 		addToScreenLog("Download %s skipped!", downloading);
@@ -410,21 +410,25 @@ bool downloadTitle(GameInfo game, const char *titleVer, char *folderName, bool i
 			
 			strcpy(folderName + strlen(game.name), " [");
 			strcat(folderName, game.tid);
-			strcat(folderName, "]");
 		}
 		else
-			strcpy(folderName, game.tid);
+		{
+			folderName[0] = '[';
+			strcpy(folderName + 1, game.tid);
+		}
+			
 	}
 	else
 	{
 		strcat(folderName, " [");
 		strcat(folderName, game.tid);
-		strcat(folderName, "]");
 	}
-	if (strlen(titleVer) > 0) {
-		strcat(folderName, " [v");
+	strcat(folderName, "]");
+	
+	if(strlen(titleVer) > 0)
+	{
+		strcat(folderName, " v");
 		strcat(folderName, titleVer);
-		strcat(folderName, "]");
 	}
 	
 	char installDir[FILENAME_MAX + 37];

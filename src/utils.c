@@ -72,29 +72,6 @@ char* hex(uint64_t i, int digits) {
 	return result;
 }
 
-bool pathExists(char *path)
-{
-	struct stat fileStat;
-	return stat(path, &fileStat) == 0;
-}
-
-long getFilesize(FILE *fp)
-{
-	long i = ftell(fp);
-	bool ret = fseek(fp, 0, SEEK_END) == 0;
-	long fileSize;
-	if(ret)
-	{
-		fileSize = ftell(fp);
-		ret = fileSize > 0;
-		fseek(fp, i, SEEK_SET);
-	}
-	if(!ret)
-		fileSize = -1;
-	
-	return fileSize;
-}
-
 bool isNumber(char c)
 {
 	return c >= '0' && c <= '9';

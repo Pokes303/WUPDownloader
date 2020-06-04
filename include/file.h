@@ -62,6 +62,7 @@ void writeHeader(FILE *fp, FileType type);
 bool fileExists(const char *path);
 bool dirExists(const char *path);
 void removeDirectory(const char *path);
+long getFilesize(FILE *fp);
 
 #ifdef __cplusplus
 	}

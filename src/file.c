@@ -26,6 +26,7 @@
 #include <utils.h>
 
 #include <dirent.h>
+#include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -197,4 +198,18 @@ void removeDirectory(const char *path)
 		closedir(dir);
 		remove(path);
 	}
+}
+
+long getFilesize(FILE *fp)
+{
+	off_t i = ftello(fp);
+	if(fseek(fp, 0, SEEK_END) != 0)
+		return -1;
+	
+	long fileSize = ftello(fp);
+	if(fileSize == -1)
+		debugPrintf("ftello() failed: %s", strerror(errno));
+	
+	fseeko(fp, i, SEEK_SET);
+	return fileSize;
 }

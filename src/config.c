@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include <config.h>
+#include <file.h>
 #include <input.h>
 #include <renderer.h>
 #include <utils.h>
@@ -48,7 +49,7 @@ bool initConfig()
 	
 	strcpy(thatTitleKeySite, "http://enter.that.title.key/site/here");
 	
-	if(!pathExists(CONFIG_PATH))
+	if(!fileExists(CONFIG_PATH))
 	{
 		debugPrintf("\tFile not found!");
 		changed = true;
