@@ -2,8 +2,8 @@
 <app version="1">
   <name>NUSspli</name>
   <coder>V10lator</coder>
-  <version>1.6</version>
-  <release_date>20203105000000</release_date>
+  <version>1.7</version>
+  <release_date>20200406000000</release_date>
   <short_description>NUS simple package loader / installer</short_description> 
   <long_description>Install content directly from the Nintendo Update Servers to your Wii U.
 
