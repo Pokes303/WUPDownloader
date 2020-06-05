@@ -36,6 +36,7 @@
 #include <menu/utils.h>
 
 #include <coreinit/memdefaultheap.h>
+#include <whb/proc.h>
 
 #include <string.h>
 
@@ -85,10 +86,12 @@ void mainMenu()
 	
 	while(AppRunning())
 	{
-		showFrame();
-		
 		if(app == 2)
 			continue;
+		else if(app == 9)
+			drawMainMenuFrame();
+		
+		showFrame();
 		
 		switch(vpad.trigger)
 		{
@@ -112,13 +115,13 @@ void mainMenu()
 				break;
 			case VPAD_BUTTON_Y:
 				if(!generateFakeTicket())
-					return;
-				drawMainMenuFrame();
+					exitApp();
+				else
+					drawMainMenuFrame();
 				break;
 			case VPAD_BUTTON_B:
-				if(!hbl)
-					SYSLaunchMenu();
-				return;
+				exitApp();
+				break;
 		}
 	}
 }

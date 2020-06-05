@@ -240,16 +240,22 @@ int main()
 #ifdef NUSSPLI_DEBUG
 	debugPrintf("Checking thread stacks...");
 	OSCheckActiveThreads();
+	debugPrintf("Bye!");
+	shutdownDebug();
 #endif
 	
-	shutdownDebug();
+	if(AppRunning())
+	{
+		exitApp();
+		while(AppRunning())
+			;
+	}
+	
+	deinitASAN();
 	
 	if(hbl)
 		WHBProcShutdown();
-	else
-		ProcUIShutdown();
 	
-	deinitASAN();
 	return 0;
 }
 

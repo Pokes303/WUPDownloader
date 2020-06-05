@@ -23,6 +23,7 @@
 #include <main.h>
 #include <renderer.h>
 #include <status.h>
+#include <utils.h>
 
 #include <coreinit/core.h>
 #include <proc_ui/procui.h>
@@ -32,6 +33,16 @@
 
 int app = 1;
 bool appRunning = true;
+
+
+void exitApp()
+{
+	if(hbl)
+		WHBProcStopRunning();
+	else
+		ProcUIShutdown();
+}
+
 
 bool AppRunning()
 {
@@ -50,19 +61,28 @@ bool AppRunning()
 					break;
 				case PROCUI_STATUS_RELEASE_FOREGROUND:
 					// Free up MEM1 to next foreground app, deinit screen, etc.
-					ProcUIDrawDoneRelease();
+					if(app == 1 || app == 9)
+					{
+						shutdownRenderer();
+						debugPrintf("TO BACKGROUND!");
+						shutdownDebug();
+					}
 					
-					//TODO
-				
 					app = 2;
+					ProcUIDrawDoneRelease();
 					break;
 				case PROCUI_STATUS_IN_FOREGROUND:
 					// Executed while app is in foreground
-					if (app == 2) {
-						//TODO
+					if(app == 2)
+					{
+						debugInit();
+						debugPrintf("TO FOREGROUND!");
+						initRenderer();
+						app = 9;
 					}
+					else
+						app = 1;
 					
-					app = 1;
 					break;
 				case PROCUI_STATUS_IN_BACKGROUND:
 					app = 2;

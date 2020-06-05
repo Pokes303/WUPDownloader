@@ -30,12 +30,12 @@ void drawInstallerMenuFrame(bool fromUSB, bool keepFiles)
 {
 	startNewFrame();
 	
-	lineToFrame(MAX_LINES - 6, SCREEN_COLOR_BROWN);
+	lineToFrame(MAX_LINES - 6, SCREEN_COLOR_WHITE);
 	textToFrame(0, MAX_LINES - 5, "Press \uE000 to install to USB");
 	textToFrame(0, MAX_LINES - 4, "Press \uE002 to install to NAND");
 	textToFrame(0, MAX_LINES - 3, "Press \uE001 to return");
 	
-	lineToFrame(MAX_LINES - 2, SCREEN_COLOR_BROWN);
+	lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
 	if(fromUSB)
 		textToFrame(0, MAX_LINES - 1, "WARNING: Files on USB will always be deleted after installing!");
 	else
@@ -68,10 +68,12 @@ void installerMenu(const char *dir)
 	
 	while(AppRunning())
 	{
-		showFrame();
-		
 		if(app == 2)
 			continue;
+		else if(app == 9)
+			drawInstallerMenuFrame(fromUSB, keepFiles);
+		
+		showFrame();
 		
 		switch(vpad.trigger)
 		{

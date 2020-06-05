@@ -252,8 +252,6 @@ void readInput()
 		
 		if(!run)
 			break;
-		if(app == 2)
-			continue;
 		
 		switch(vError)
 		{

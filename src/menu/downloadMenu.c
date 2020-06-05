@@ -119,10 +119,12 @@ void downloadMenu()
 	
 	while(AppRunning())
 	{
-		showFrame();
-		
 		if(app == 2)
 			continue;
+		else if(app == 9)
+			drawDownloadFrame1();
+		
+		showFrame();
 		
 		if (vpad.trigger == VPAD_BUTTON_A) {
 			if(showKeyboard(KEYBOARD_TYPE_RESTRICTED, titleID, CHECK_HEXADECIMAL, 16, true, "00050000101", NULL))
@@ -161,10 +163,12 @@ void downloadMenu()
 	bool inst, toUSB;
 	while(loop && AppRunning())
 	{
-		showFrame();
-		
 		if(app == 2)
 			continue;
+		else if(app == 9)
+			drawDownloadFrame2(titleID, titleVer, folderName, usbMounted, dlToUSB, keepFiles);
+		
+		showFrame();
 		
 		switch(vpad.trigger)
 		{
