@@ -40,7 +40,7 @@ void drawFBMenuFrame(char **folders, const int foldersSize, const int pos, const
 	
 	boxToFrame(1, MAX_LINES - 3);
 	
-	char toWrite[257];
+	char toWrite[512];
 	strcpy(toWrite, "Press \uE000 to select || \uE001 to return || \uE002 to switch to ");
 	strcat(toWrite, onUSB ? "SD" : "USB");
 	strcat(toWrite, " || \uE003 to refresh");
@@ -113,7 +113,7 @@ refreshDirList:
 	{
 		if(app == 2)
 			continue;
-		else if(app == 9)
+		if(app == 9)
 			drawFBMenuFrame(folders, foldersSize, pos, cursor, onUSB);
 		
 		showFrame();
@@ -129,7 +129,7 @@ refreshDirList:
 					{
 						strcpy(ret, onUSB ? INSTALL_DIR_USB : INSTALL_DIR_SD);
 						strcat(ret, folders[cursor + pos]);
-					ret[len] = '\0';
+						ret[len] = '\0';
 					}
 					goto exitFileBrowserMenu;
 				}

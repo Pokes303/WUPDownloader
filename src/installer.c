@@ -90,7 +90,6 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	if(data.err != 0)
 	{
 		char toScreen[2048];
-		enableShutdown(); //TODO
 		
 		switch(data.err)
 		{
@@ -112,7 +111,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		{
 			if(app == 2)
 				continue;
-			else if(app == 9)
+			if(app == 9)
 				drawErrorFrame(toScreen, B_RETURN);
 			
 			showFrame();
@@ -127,7 +126,6 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	if(data.err != 0 || MCP_InstallSetTargetUsb(mcpHandle, toUsb) != 0)
 	{
 		debugPrintf(toUsb ? "Error opening USB device" : "Error opening internal memory");
-		enableShutdown(); //TODO
 		addToScreenLog("Installation failed!");
 		drawErrorFrame(toUsb ? "Error opening USB device" : "Error opening internal memory", B_RETURN);
 		
@@ -135,7 +133,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		{
 			if(app == 2)
 				continue;
-			else if(app == 9)
+			if(app == 9)
 				drawErrorFrame(toUsb ? "Error opening USB device" : "Error opening internal memory", B_RETURN);
 			
 			showFrame();
@@ -157,11 +155,12 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	debugPrintf("MCP Path:      %s (%d)", newPath, strlen(newPath));
 	
 	// Last prepairing step...
+	disableShutdown();
 	MCPInstallProgress *progress = MEMAllocFromDefaultHeapEx(sizeof(MCPInstallProgress), 0x40);
 	if(progress == NULL)
 	{
 		debugPrintf("Error allocating memory!");
-		enableShutdown(); //TODO
+		enableShutdown();
 		return false;
 	}
 	
@@ -187,7 +186,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		char toScreen[2048];
 		sprintf(toScreen, "Error starting async installation of \"%s\": %#010x", newPath, data.err);
 		debugPrintf(toScreen);
-		enableShutdown(); //TODO
+		enableShutdown();
 		addToScreenLog("Installation failed!");
 		drawErrorFrame(toScreen, B_RETURN);
 		
@@ -195,7 +194,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		{
 			if(app == 2)
 				continue;
-			else if(app == 9)
+			if(app == 9)
 				drawErrorFrame(toScreen, B_RETURN);
 			
 			showFrame();
@@ -203,7 +202,6 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 			if(vpad.trigger == VPAD_BUTTON_B)
 				return false;
 		}
-		return false;
 		return false;
 	}
 	
@@ -275,6 +273,8 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	// Quarkys ASAN catched this / seems like MCP already frees it for us
 //	MEMFreeToDefaultHeap(progress);
 	
+	enableShutdown();
+	
 	// MCP thread finished. Let's see if we got any error - TODO: This is a 1:1 copy&paste from WUP Installer GX2 which itself stole it from WUP Installer Y mod which got it from WUP Installer minor edit by Nexocube who got it from WUP installer JHBL Version by Dimrok who portet it from the ASM of WUP Installer. So I think it's time for something new... ^^
 	if(data.err != 0)
 	{
@@ -312,7 +312,6 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 					sprintf(toScreen + 12, "Unknown Error: %#010x", data.err);
 		}
 		
-		enableShutdown(); //TODO
 		addToScreenLog("Installation failed!");
 		drawErrorFrame(toScreen, B_RETURN);
 		
@@ -320,7 +319,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		{
 			if(app == 2)
 				continue;
-			else if(app == 9)
+			if(app == 9)
 				drawErrorFrame(toScreen, B_RETURN);
 			
 			showFrame();
@@ -338,8 +337,6 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	for (int i = 0; i < 0x10; i++)
 		VPADControlMotor(VPAD_CHAN_0, vibrationPattern, 0xF);
 	
-	enableShutdown(); //TODO
-	
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 	textToFrame(0, 0, game);
 	textToFrame(0, 1, "Installed successfully!");
@@ -350,7 +347,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	{
 		if(app == 2)
 			continue;
-		else if(app == 9)
+		if(app == 9)
 		{
 			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 			textToFrame(0, 0, game);

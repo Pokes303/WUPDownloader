@@ -59,6 +59,7 @@ GuiImage *background;
 uint32_t bgColor = SCREEN_COLOR_BLACK;
 uint32_t width, height;
 GuiSound *backgroundMusic;
+bool rendererRunning = false;
 
 int32_t spaceWidth;
 
@@ -83,6 +84,9 @@ static inline GX2Color screenColorToGX2color(uint32_t color)
 
 void textToFrame(int row, int column, const char *str)
 {
+	if(!rendererRunning)
+		return;
+	
 	column += 2;
 	column *= -FONT_SIZE;
 	
@@ -111,6 +115,9 @@ void textToFrame(int row, int column, const char *str)
 
 void lineToFrame(int column, uint32_t color)
 {
+	if(!rendererRunning)
+		return;
+	
 	GuiImage *line = new GuiImage(width - (FONT_SIZE << 1), 3, screenColorToGX2color(color), GuiImage::IMAGE_COLOR);
 	line->setAlignment(ALIGN_TOP_CENTER);
 	line->setPosition(0.0f, ((column + 2) * -FONT_SIZE) + ((FONT_SIZE >> 1) + 1));
@@ -120,6 +127,9 @@ void lineToFrame(int column, uint32_t color)
 
 void boxToFrame(int lineStart, int lineEnd)
 {
+	if(!rendererRunning)
+		return;
+	
 	int size = (lineEnd - lineStart) * FONT_SIZE;
 	
 	// Horizontal lines
@@ -151,6 +161,9 @@ void boxToFrame(int lineStart, int lineEnd)
 
 void barToFrame(int line, int column, uint32_t width, float progress)
 {
+	if(!rendererRunning)
+		return;
+	
 	int x = FONT_SIZE + (column * spaceWidth);
 	int y = ((line + 1) * -FONT_SIZE) + 2;
 	int height = FONT_SIZE;
@@ -194,6 +207,9 @@ void barToFrame(int line, int column, uint32_t width, float progress)
 
 void addErrorOverlay(const char *err)
 {
+	if(!rendererRunning)
+		return;
+	
 	if(errorOverlay != NULL)
 		return;
 	
@@ -241,6 +257,9 @@ void removeErrorOverlay()
 
 void initRenderer()
 {
+	if(rendererRunning)
+		return;
+	
 	libgui_memoryInitialize();
 	
 	OSThread *audioThread = (OSThread *)SoundHandler::instance()->getThread();
@@ -273,6 +292,7 @@ void initRenderer()
 	GuiText::setPresetFont(font);
 	
 	background = new GuiImage(width, height, screenColorToGX2color(bgColor), GuiImage::IMAGE_COLOR);
+	rendererRunning = true;
 	
 	addToScreenLog("libgui initialized!");
 	startNewFrame();
@@ -286,8 +306,19 @@ void initRenderer()
 	showFrame();
 }
 
+static inline void clearFrame()
+{
+	for(uint32_t i = 1; i < window->getSize(); i++)
+		delete window->getGuiElementAt(i);
+	
+	window->removeAll();
+}
+
 void shutdownRenderer()
 {
+	if(!rendererRunning)
+		return;
+	
 	colorStartNewFrame(SCREEN_COLOR_BLUE);
 	
 	GuiImageData *byeData = new GuiImageData(goodbyeTex_png, goodbyeTex_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
@@ -295,6 +326,8 @@ void shutdownRenderer()
 	window->append(bye);
 	
 	drawFrame();
+	clearFrame();
+	removeErrorOverlay();
 	
 	backgroundMusic->Stop();
 	
@@ -308,18 +341,14 @@ void shutdownRenderer()
 	
 	libgui_memoryRelease();
 	bgColor = SCREEN_COLOR_BLACK;
-}
-
-static inline void clearFrame()
-{
-	for(uint32_t i = 1; i < window->getSize(); i++)
-		delete window->getGuiElementAt(i);
-	
-	window->removeAll();
+	rendererRunning = false;
 }
 
 void colorStartNewFrame(uint32_t color)
 {
+	if(!rendererRunning)
+		return;
+	
 	clearFrame();
 	
 //	if((color & 0xFFFFFF00) == 0xFFFFFF00 || (color & 0xFF) == 0x00)
@@ -348,6 +377,9 @@ void colorStartNewFrame(uint32_t color)
 
 void showFrame()
 {
+	if(!rendererRunning)
+		return;
+	
 	renderer->waitForVSync();
 	readInput();
 }
@@ -355,6 +387,9 @@ void showFrame()
 // We need to draw the DRC before the TV, else the DRC is always one frame behind
 void drawFrame()
 {
+	if(!rendererRunning)
+		return;
+	
 	renderer->prepareDrcRendering();
 	window->draw(renderer);
 	if(errorOverlay != NULL)
@@ -370,6 +405,9 @@ void drawFrame()
 
 void drawKeyboard()
 {
+	if(!rendererRunning)
+		return;
+	
 	renderer->prepareDrcRendering();
 	window->draw(renderer);
 	Swkbd_DrawDRC();

@@ -20,74 +20,91 @@
 
 #include <wut-fixups.h>
 
-#include <main.h>
 #include <renderer.h>
 #include <status.h>
+#include <usb.h>
 #include <utils.h>
 
 #include <coreinit/core.h>
+#include <coreinit/energysaver.h>
+#include <coreinit/foreground.h>
+#include <coreinit/systeminfo.h>
+#include <coreinit/title.h>
 #include <proc_ui/procui.h>
-#include <whb/proc.h>
+#include <sysapp/launch.h>
 
 #include <stdbool.h>
 
 int app = 1;
 bool appRunning = true;
+bool shutdownEnabled = true;
 
-
-void exitApp()
+void enableShutdown()
 {
-	if(hbl)
-		WHBProcStopRunning();
-	else
-		ProcUIShutdown();
+	IMEnableAPD();
+	shutdownEnabled = true;
+}
+void disableShutdown()
+{
+	IMDisableAPD();
+	shutdownEnabled = false;
 }
 
+static uint32_t homeButtonCallback(void *dummy)
+{
+	if(shutdownEnabled)
+	{
+		unmountUSB();
+		if(OSGetTitleID() == 0x000500004E555373)
+			SYSLaunchMenu();
+		else
+			SYSRelaunchTitle(0, NULL);
+	}
+	
+	return 0;
+}
+
+void initStatus()
+{
+	ProcUIInit(&OSSavesDone_ReadyToRelease);
+	ProcUIRegisterCallback(PROCUI_CALLBACK_HOME_BUTTON_DENIED, &homeButtonCallback, NULL, 100);
+	OSEnableHomeButtonMenu(false);
+}
 
 bool AppRunning()
 {
 	if(appRunning)
 	{
-		if(hbl)
-			appRunning = WHBProcIsRunning();
-		else
+		switch(ProcUIProcessMessages(true))
 		{
-			switch(ProcUIProcessMessages(true))
-			{
-				case PROCUI_STATUS_EXITING:
-					// Being closed, deinit, free, and prepare to exit
-					app = 0;
-					appRunning = false;
-					break;
-				case PROCUI_STATUS_RELEASE_FOREGROUND:
-					// Free up MEM1 to next foreground app, deinit screen, etc.
-					if(app == 1 || app == 9)
-					{
-						shutdownRenderer();
-						debugPrintf("TO BACKGROUND!");
-						shutdownDebug();
-					}
-					
-					app = 2;
-					ProcUIDrawDoneRelease();
-					break;
-				case PROCUI_STATUS_IN_FOREGROUND:
-					// Executed while app is in foreground
-					if(app == 2)
-					{
-						debugInit();
-						debugPrintf("TO FOREGROUND!");
-						initRenderer();
-						app = 9;
-					}
-					else
-						app = 1;
-					
-					break;
-				case PROCUI_STATUS_IN_BACKGROUND:
-					app = 2;
-					break;
-			}
+			case PROCUI_STATUS_EXITING:
+				// Being closed, deinit, free, and prepare to exit
+				app = 0;
+				appRunning = false;
+				debugPrintf("Exiting!");
+				break;
+			case PROCUI_STATUS_RELEASE_FOREGROUND:
+				// Free up MEM1 to next foreground app, deinit screen, etc.
+				if(app == 1 || app == 9)
+					shutdownRenderer();
+				
+				app = 2;
+				ProcUIDrawDoneRelease();
+				break;
+			case PROCUI_STATUS_IN_FOREGROUND:
+				// Executed while app is in foreground
+				if(app == 2)
+				{
+					initRenderer();
+					app = 9;
+				}
+				else
+					app = 1;
+				
+				break;
+			case PROCUI_STATUS_IN_BACKGROUND:
+				app = 2;
+				break;
 		}
 	}
 	

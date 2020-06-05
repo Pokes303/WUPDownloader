@@ -20,11 +20,8 @@
 
 #include <wut-fixups.h>
 
-#include <sysapp/launch.h>
-
 #include <input.h>
 #include <installer.h>
-#include <main.h>
 #include <renderer.h>
 #include <status.h>
 #include <ticket.h>
@@ -36,7 +33,6 @@
 #include <menu/utils.h>
 
 #include <coreinit/memdefaultheap.h>
-#include <whb/proc.h>
 
 #include <string.h>
 
@@ -53,11 +49,11 @@ void drawMainMenuFrame()
 	
 	textToFrame(ALIGNED_CENTER, 4, "© 2020 V10lator <v10lator@myway.de>");
 	
-	textToFrame(0, 13, "Press \uE000 to download content");
-	textToFrame(0, 14, "Press \uE002 to install content");
-	textToFrame(0, 15, "Press \uE003 to generate a fake <title.tik> file");
-	textToFrame(0, 16, "Press \uE041 LEFT for options");
-	textToFrame(0, 17, "Press \uE044 or \uE001 to exit");
+	textToFrame(0, 13, "Press \uE000 to download content"); // A
+	textToFrame(0, 14, "Press \uE001 to install content"); // B
+	textToFrame(0, 15, "Press \uE002 to generate a fake <title.tik> file"); // X
+	textToFrame(0, 16, "Press \uE003 for options"); // Y
+	textToFrame(0, 17, "Press \uE044 to exit");
 	
 	textToFrame(MAX_CHARS - 24, 9, "Thanks to:      ");
 	textToFrame(MAX_CHARS - 23, 10, "• cJSON        ");
@@ -76,7 +72,7 @@ void drawMainMenuFrame()
 	
 	textToFrame(0, MAX_LINES - 3, "WARNING:");
 	textToFrame(1, MAX_LINES - 2, "• Don't eject the SD Card or the application will crash!");
-	textToFrame(1, MAX_LINES - 1, "• You are unable to exit while downloading a game");
+	textToFrame(1, MAX_LINES - 1, "• You are unable to exit while installing a game");
 	drawFrame();
 }
 
@@ -88,7 +84,7 @@ void mainMenu()
 	{
 		if(app == 2)
 			continue;
-		else if(app == 9)
+		if(app == 9)
 			drawMainMenuFrame();
 		
 		showFrame();
@@ -99,7 +95,7 @@ void mainMenu()
 				downloadMenu();
 				drawMainMenuFrame();
 				break;
-			case VPAD_BUTTON_X:
+			case VPAD_BUTTON_B:
 				;
 				char *dir = fileBrowserMenu();
 				if(dir != NULL)
@@ -109,18 +105,13 @@ void mainMenu()
 				}
 				drawMainMenuFrame();
 				break;
-			case VPAD_BUTTON_LEFT:
+			case  VPAD_BUTTON_Y:
 				configMenu();
 				drawMainMenuFrame();
 				break;
-			case VPAD_BUTTON_Y:
-				if(!generateFakeTicket())
-					exitApp();
-				else
-					drawMainMenuFrame();
-				break;
-			case VPAD_BUTTON_B:
-				exitApp();
+			case VPAD_BUTTON_X:
+				generateFakeTicket();
+				drawMainMenuFrame();
 				break;
 		}
 	}

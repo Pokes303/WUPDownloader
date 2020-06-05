@@ -70,7 +70,7 @@ void installerMenu(const char *dir)
 	{
 		if(app == 2)
 			continue;
-		else if(app == 9)
+		if(app == 9)
 			drawInstallerMenuFrame(fromUSB, keepFiles);
 		
 		showFrame();

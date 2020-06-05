@@ -121,7 +121,7 @@ void downloadMenu()
 	{
 		if(app == 2)
 			continue;
-		else if(app == 9)
+		if(app == 9)
 			drawDownloadFrame1();
 		
 		showFrame();
@@ -165,7 +165,7 @@ void downloadMenu()
 	{
 		if(app == 2)
 			continue;
-		else if(app == 9)
+		if(app == 9)
 			drawDownloadFrame2(titleID, titleVer, folderName, usbMounted, dlToUSB, keepFiles);
 		
 		showFrame();

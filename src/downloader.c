@@ -93,15 +93,10 @@ static int progressCallback(void *curl, double dltotal, double dlnow, double ult
 			}
 			return 0;
 		}
-		else
+		if(downloadPaused && curl_easy_pause(curl, CURLPAUSE_CONT) == CURLE_OK)
 		{
-			if(downloadPaused && curl_easy_pause(curl, CURLPAUSE_CONT) == CURLE_OK)
-			{
-				downloadPaused = false;
-				debugPrintf("Download resumed");
-			}
-			else
-				return 0;
+			downloadPaused = false;
+			debugPrintf("Download resumed");
 		}
 	}
 	else
@@ -317,8 +312,13 @@ int downloadFile(const char *url, char *file, FileType type)
 		
 		drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
 		
-		while(true)
+		while(AppRunning())
 		{
+			if(app == 2)
+				continue;
+			if(app == 9)
+				drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
+			
 			showFrame();
 			
 			switch (vpad.trigger) {
@@ -399,7 +399,6 @@ int downloadFile(const char *url, char *file, FileType type)
 bool downloadTitle(GameInfo game, const char *titleVer, char *folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles)
 {
 	debugPrintf("Downloading title... tID: %s, tVer: %s, name: %s, folder: %s", game.tid, titleVer, game.name == NULL ? "NULL" : game.name, folderName);
-	disableShutdown(); //TODO
 	
 	char downloadUrl[128];
 	strcpy(downloadUrl, DOWNLOAD_URL);
@@ -685,8 +684,6 @@ bool downloadTitle(GameInfo game, const char *titleVer, char *folderName, bool i
 	if(inst)
 		return install(game.name, hasDependencies, dlToUSB, installDir, toUSB, keepFiles);
 	
-	enableShutdown(); //TODO
-	
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 	textToFrame(0, 0, game.name);
 	textToFrame(0, 1, "Downloaded successfully!");
@@ -701,7 +698,7 @@ bool downloadTitle(GameInfo game, const char *titleVer, char *folderName, bool i
 	{
 		if(app == 2)
 			continue;
-		else if(app == 9)
+		if(app == 9)
 		{
 			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 			textToFrame(0, 0, game.name);

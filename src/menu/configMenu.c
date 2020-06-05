@@ -23,7 +23,6 @@
 #include <input.h>
 #include <renderer.h>
 #include <status.h>
-#include <main.h>
 #include <menu/download.h>
 #include <menu/main.h>
 
@@ -47,7 +46,7 @@ void configMenu()
 	{
 		if(app == 2)
 			continue;
-		else if(app == 9)
+		if(app == 9)
 			drawConfigMenu();
 		
 		showFrame();
