@@ -20,6 +20,7 @@
 
 #include <wut-fixups.h>
 
+#include <ioThread.h>
 #include <renderer.h>
 #include <status.h>
 #include <usb.h>
@@ -54,6 +55,7 @@ uint32_t homeButtonCallback(void *dummy)
 {
 	if(shutdownEnabled)
 	{
+		flushIOQueue();
 		unmountUSB();
 		if(OSGetTitleID() == 0x000500004E555373)
 			SYSLaunchMenu();
