@@ -21,7 +21,6 @@
 #include <wut-fixups.h>
 
 #include <input.h>
-#include <main.h>
 #include <renderer.h>
 #include <status.h>
 #include <swkbd_wrapper.h>

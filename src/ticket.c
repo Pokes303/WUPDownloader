@@ -38,7 +38,6 @@
 #include <string.h>
 
 #include <coreinit/memdefaultheap.h>
-#include <whb/proc.h>
 
 /* This generates a ticket and writes it to a file.
  * The ticket algorithm is ported from FunkiiU combined

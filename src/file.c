@@ -22,7 +22,6 @@
 
 #include <file.h>
 #include <ioThread.h>
-#include <main.h>
 #include <utils.h>
 
 #include <dirent.h>
@@ -80,17 +79,6 @@ void writeVoidBytes(FILE* fp, uint32_t len)
 	uint8_t bytes[len];
 	OSBlockSet(bytes, 0, len);
 	addToIOQueue(bytes, len, 1, fp);
-}
-
-uint8_t charToByte(char c)
-{
-	if(isNumber(c))
-		return c - '0';
-	if(isLowercaseHexa(c))
-		return c - 'a' + 0xA;
-	if(isUppercaseHexa(c))
-		return c - 'A' + 0xA;
-	return 0xFF;
 }
 
 void writeCustomBytes(FILE *fp, const char *str)

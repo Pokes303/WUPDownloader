@@ -50,7 +50,7 @@ void disableShutdown()
 	shutdownEnabled = false;
 }
 
-static uint32_t homeButtonCallback(void *dummy)
+uint32_t homeButtonCallback(void *dummy)
 {
 	if(shutdownEnabled)
 	{
@@ -81,7 +81,6 @@ bool AppRunning()
 				// Being closed, deinit, free, and prepare to exit
 				app = 0;
 				appRunning = false;
-				debugPrintf("Exiting!");
 				break;
 			case PROCUI_STATUS_RELEASE_FOREGROUND:
 				// Free up MEM1 to next foreground app, deinit screen, etc.

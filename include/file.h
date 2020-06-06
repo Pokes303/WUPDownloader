@@ -54,7 +54,6 @@ uint32_t readUInt32(const char *file, uint32_t pos);
 uint64_t readUInt64(const char *file, uint32_t pos);
 
 void writeVoidBytes(FILE *fp, uint32_t length);
-uint8_t charToByte(char c);
 void writeCustomBytes(FILE *fp, const char *str);
 void writeRandomBytes(FILE *fp, uint32_t length);
 void writeHeader(FILE *fp, FileType type);

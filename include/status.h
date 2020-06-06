@@ -30,8 +30,12 @@
 #endif
 
 extern int app;
-void exitApp();
+
+void initStatus();
+void enableShutdown();
+void disableShutdown();
 bool AppRunning();
+uint32_t homeButtonCallback(void *dummy);
 
 #ifdef __cplusplus
 	}

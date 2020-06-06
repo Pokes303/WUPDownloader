@@ -25,7 +25,6 @@
 #include <input.h>
 #include <installer.h>
 #include <ioThread.h>
-#include <main.h>
 #include <memdebug.h>
 #include <otp.h>
 #include <renderer.h>
@@ -57,19 +56,10 @@
 #include <nn/result.h>
 #include <proc_ui/procui.h>
 #include <whb/crash.h>
-#include <whb/proc.h>
-
-bool hbl;
 
 int main()
 {
-	// Init
-	hbl = OSGetTitleID() != 0x000500004E555373;
-	
-	if(hbl)
-		WHBProcInit();
-	else
-		ProcUIInit(&OSSavesDone_ReadyToRelease);
+	initStatus();
 	
 	OSThread *mainThread = OSGetCurrentThread();
 	OSSetThreadName(mainThread, "NUSspli");
@@ -244,17 +234,16 @@ int main()
 	shutdownDebug();
 #endif
 	
+	deinitASAN();
+	
 	if(AppRunning())
 	{
-		exitApp();
+		homeButtonCallback(NULL);
 		while(AppRunning())
 			;
 	}
 	
-	deinitASAN();
-	
-	if(hbl)
-		WHBProcShutdown();
+	ProcUIShutdown();
 	
 	return 0;
 }

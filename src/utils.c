@@ -20,7 +20,6 @@
 
 #include <wut-fixups.h>
 
-#include <main.h>
 #include <utils.h>
 
 #include <stdio.h>
@@ -28,25 +27,11 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#include <coreinit/energysaver.h>
-#include <coreinit/foreground.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
-#include <coreinit/systeminfo.h>
 #include <coreinit/thread.h>
 
 int mcpHandle;
-
-void enableShutdown() {
-	if (!hbl)
-		OSEnableHomeButtonMenu(true);
-	IMEnableAPD();
-}
-void disableShutdown() {
-	if (!hbl)
-		OSEnableHomeButtonMenu(false);
-	IMDisableAPD();
-}
 
 char* hex(uint64_t i, int digits) {
 	char h[33];
@@ -155,6 +140,17 @@ void getSpeedString(float bytePerSecond, char *out)
 		sprintf(out, "%.2f Kbit/s", bytePerSecond / 1024.0f);
 	else
 		sprintf(out, "%.2f Mbit/s", bytePerSecond / (1024.0f * 1024.0f));
+}
+
+uint8_t charToByte(char c)
+{
+	if(isNumber(c))
+		return c - '0';
+	if(isLowercaseHexa(c))
+		return c - 'a' + 0xA;
+	if(isUppercaseHexa(c))
+		return c - 'A' + 0xA;
+	return 0xFF;
 }
 
 void hexToByte(const char *hex, uint8_t *out)

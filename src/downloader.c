@@ -643,7 +643,8 @@ bool downloadTitle(GameInfo game, const char *titleVer, char *folderName, bool i
 	}
 	
 	dcontent = 0;
-	for(int i = 0; i < conts; i++) {
+	for(int i = 0; i < conts && AppRunning(); i++)
+	{
 		strcpy(tDownloadUrl, downloadUrl);
 		strcat(tDownloadUrl, apps[i]);
 		strcpy(tmpFileName, installDir);
@@ -673,6 +674,9 @@ bool downloadTitle(GameInfo game, const char *titleVer, char *folderName, bool i
 			dcontent++;
 		}
 	}
+	
+	if(!AppRunning())
+		return true;
 	
 	startNewFrame();
 	textToFrame(0, 0, "Flushing I/O queue");

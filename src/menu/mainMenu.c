@@ -49,11 +49,11 @@ void drawMainMenuFrame()
 	
 	textToFrame(ALIGNED_CENTER, 4, "© 2020 V10lator <v10lator@myway.de>");
 	
-	textToFrame(0, 13, "Press \uE000 to download content"); // A
-	textToFrame(0, 14, "Press \uE001 to install content"); // B
-	textToFrame(0, 15, "Press \uE002 to generate a fake <title.tik> file"); // X
-	textToFrame(0, 16, "Press \uE003 for options"); // Y
-	textToFrame(0, 17, "Press \uE044 to exit");
+	textToFrame(0, 13, "Press \uE000 to download content");
+	textToFrame(0, 14, "Press \uE002 to install content");
+	textToFrame(0, 15, "Press \uE003 to generate a fake <title.tik> file");
+	textToFrame(0, 16, "Press \uE041 LEFT for options");
+	textToFrame(0, 17, "Press \uE044 or \uE001 to exit");
 	
 	textToFrame(MAX_CHARS - 24, 9, "Thanks to:      ");
 	textToFrame(MAX_CHARS - 23, 10, "• cJSON        ");
@@ -95,7 +95,7 @@ void mainMenu()
 				downloadMenu();
 				drawMainMenuFrame();
 				break;
-			case VPAD_BUTTON_B:
+			case VPAD_BUTTON_X:
 				;
 				char *dir = fileBrowserMenu();
 				if(dir != NULL)
@@ -105,14 +105,16 @@ void mainMenu()
 				}
 				drawMainMenuFrame();
 				break;
-			case  VPAD_BUTTON_Y:
+			case  VPAD_BUTTON_LEFT:
 				configMenu();
 				drawMainMenuFrame();
 				break;
-			case VPAD_BUTTON_X:
+			case VPAD_BUTTON_Y:
 				generateFakeTicket();
 				drawMainMenuFrame();
 				break;
+			case VPAD_BUTTON_B:
+				return;
 		}
 	}
 }
