@@ -16,7 +16,7 @@
   <closing_msg type="unsignedInt" length="4">1</closing_msg>
   <title_version type="unsignedInt" length="4">0</title_version>
   <title_id type="hexBinary" length="8">000500004E555373</title_id>
-  <group_id type="hexBinary" length="4">00005678</group_id>
+  <group_id type="hexBinary" length="4">00000812</group_id>
   <boss_id type="hexBinary" length="8">0000000000000000</boss_id>
   <os_version type="hexBinary" length="8">000500101000400A</os_version>
   <app_size type="hexBinary" length="8">0000000000000000</app_size>

@@ -6,6 +6,6 @@
   <title_version type="hexBinary" length="2">0000</title_version>
   <sdk_version type="unsignedInt" length="4">20811</sdk_version>
   <app_type type="hexBinary" length="4">80000000</app_type>
-  <group_id type="hexBinary" length="4">00005678</group_id>
+  <group_id type="hexBinary" length="4">00000812</group_id>
   <os_mask type="hexBinary" length="32">0000000000000000000000000000000000000000000000000000000000000000</os_mask>
 </app>
