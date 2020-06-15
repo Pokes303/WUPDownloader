@@ -549,27 +549,31 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 	char tInstallDir[FILENAME_MAX + 37];
 	strcpy(tInstallDir, installDir);
 	strcat(tInstallDir, "title.tik");
-	int tikRes = downloadFile(tDownloadUrl, tInstallDir, FILE_TYPE_TIK);
-	if(tikRes == 1)
-		return true;
-	if(tikRes == 2)
+	if(!fileExists(tInstallDir))
 	{
-		addToScreenLog("Title.tik not found on the NUS. Generating...");
-		startNewFrame();
-		textToFrame(0, 0, "Creating fake title.tik");
-		writeScreenLog();
-		drawFrame();
-		showFrame();
-		
-		generateTik(tInstallDir, tid);
-		addToScreenLog("Fake ticket created successfully");
+		int tikRes = downloadFile(tDownloadUrl, tInstallDir, FILE_TYPE_TIK);
+		if(tikRes == 1)
+			return true;
+		if(tikRes == 2)
+		{
+			addToScreenLog("title.tik not found on the NUS. Generating...");
+			startNewFrame();
+			textToFrame(0, 0, "Creating fake title.tik");
+			writeScreenLog();
+			drawFrame();
+			showFrame();
+			
+			generateTik(tInstallDir, tid);
+			addToScreenLog("Fake ticket created successfully");
+		}
 	}
+	else
+		addToScreenLog("title.tik skipped!");
 	
-	char tmpFileName[FILENAME_MAX + 37];
-	strcpy(tmpFileName, installDir);
-	strcat(tmpFileName, "title.cert");
+	strcpy(tInstallDir, installDir);
+	strcat(tInstallDir, "title.cert");
 	
-	if(!fileExists(tmpFileName))
+	if(!fileExists(tInstallDir))
 	{
 		debugPrintf("Creating CERT...");
 		startNewFrame();
@@ -578,7 +582,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 		drawFrame();
 		showFrame();
 		
-		FILE *cert = fopen(tmpFileName, "wb");
+		FILE *cert = fopen(tInstallDir, "wb");
 		
 		// NUSspli adds its own header.
 		writeHeader(cert, FILE_TYPE_CERT);
@@ -637,6 +641,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 			contents++;
 	}
 	
+	char tmpFileName[FILENAME_MAX + 37];
 	dcontent = 0;
 	for(int i = 0; i < conts && AppRunning(); i++)
 	{
