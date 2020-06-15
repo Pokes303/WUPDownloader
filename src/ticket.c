@@ -114,11 +114,12 @@ void drawTicketFrame(const char *titleID)
 	textToFrame(0, 0, "Title ID:");
 	textToFrame(3, 1, titleID[0] == '\0' ? "NOT SET" : titleID);
 	
-	textToFrame(0, 3, "You need to set the title ID to generate a fake ticket");
+	if(titleID[0] == '\0')
+		textToFrame(0, 3, "You need to set the title ID to generate a fake ticket");
 	
 	int line = MAX_LINES - 3;
 	textToFrame(0, line--, "Press \uE001 to return");
-	if (titleID[0] != '\0')
+	if(titleID[0] != '\0')
 		textToFrame(0, line--, "Press \uE000 to continue");
 	lineToFrame(line, SCREEN_COLOR_WHITE);
 	
@@ -135,6 +136,27 @@ bool generateFakeTicket()
 	
 	char titleID[17];
 	titleID[0] = '\0';
+	
+	char *ids = strstr(dir, "[");
+	if(ids != NULL)
+	{
+		char *ide = strstr(++ids, "]");
+		if(ide != NULL && ide - ids == 16)
+		{
+			ide[0] = '\0';
+			for(int i = 0; i < 16; i++)
+			{
+				if(isHexa(ids[i]))
+					titleID[i] = ids[i];
+				else
+				{
+					titleID[0] = '\0';
+					break;
+				}
+			}
+			titleID[16] = '\0';
+		}
+	}
 	
 	drawTicketFrame(titleID);
 	
