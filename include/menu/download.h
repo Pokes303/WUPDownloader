@@ -15,16 +15,7 @@
 	extern "C" {
 #endif
 
-//TODO: Replace this with something better.
-typedef struct
-{
-	char *tid;
-	char *name;
-} GameInfo;
-
 void downloadMenu();
-bool downloadJSON();
-void freeJSON();
 
 #ifdef __cplusplus
 	}

@@ -38,8 +38,6 @@
 #include <coreinit/memdefaultheap.h>
 #include <vpad/input.h>
 
-GameInfo *gameInfo = NULL;
-size_t gameInfoSize;
 bool vibrateWhenFinished = true;
 
 void drawDownloadFrame1()
@@ -139,21 +137,6 @@ void downloadMenu()
 	
 	toLowercase(titleID);
 	
-	GameInfo gameToInstall;
-	
-	gameToInstall.tid = titleID;
-	gameToInstall.name = NULL;
-	
-	if(gameInfo != NULL)
-	{
-		for(int i = 0; i < gameInfoSize; i++)
-			if(gameInfo[i].tid != NULL && strcmp(gameInfo[i].tid, titleID) == 0)
-			{
-				gameToInstall.name = gameInfo[i].name;
-				break;
-			}
-	}
-	
 	bool usbMounted = mountUSB();
 	bool dlToUSB = false;
 	bool keepFiles = true;
@@ -230,142 +213,5 @@ void downloadMenu()
 	if(!AppRunning())
 		return;
 	
-	downloadTitle(gameToInstall, titleVer, folderName, inst, dlToUSB, toUSB, keepFiles);
-}
-
-void drawDownloadJSONFrame()
-{
-	colorStartNewFrame(SCREEN_COLOR_RED);
-	textToFrame(0, 0, "Could not download from");
-	textToFrame(0, 1, getTitleKeySite());
-	lineToFrame(MAX_LINES - 4, SCREEN_COLOR_WHITE);
-	textToFrame(0, MAX_LINES - 3, "Press \uE000 to enter a new URL");
-	textToFrame(0, MAX_LINES - 2, "Press \uE003 to continue");
-	textToFrame(0, MAX_LINES - 1, "Press \uE001 to exit");
-	drawFrame();
-}
-
-bool enterKeySite()
-{
-	drawDownloadJSONFrame();
-	
-	while(true)
-	{
-		showFrame();
-		
-		switch(vpad.trigger)
-		{
-			case VPAD_BUTTON_A:
-				;
-				char newUrl[1024];
-				if(showKeyboard(KEYBOARD_TYPE_NORMAL, newUrl, CHECK_URL, 1024, false, getTitleKeySite(), "SAVE"))
-					setTitleKeySite(newUrl);
-				
-				return downloadJSON();
-			case VPAD_BUTTON_B:
-				return false;
-			case VPAD_BUTTON_Y:
-				return true;
-		}
-	}
-}
-
-bool downloadJSON()
-{
-	char jsonUrl[2048];
-	strcpy(jsonUrl, getTitleKeySite());
-	strcat(jsonUrl, "/json");
-	contents = 0xFFFF;
-	if(downloadFile(jsonUrl, "keys.json", FILE_TYPE_JSON | FILE_TYPE_TORAM) != 0)
-	{
-		flushIOQueue();
-		if(ramBuf != NULL)
-		{
-			MEMFreeToDefaultHeap(ramBuf);
-			ramBuf = NULL;
-			ramBufSize = 0;
-		}
-		
-		return enterKeySite();
-	}
-	
-	startNewFrame();
-	textToFrame(0, 0, "Parsing keys.json");
-	writeScreenLog();
-	drawFrame();
-	showFrame();
-	
-	flushIOQueue();
-	cJSON *json = cJSON_ParseWithLength(ramBuf, ramBufSize);
-	if(json == NULL)
-	{
-		debugPrintf("json == NULL");
-		return enterKeySite();
-	}
-	
-	gameInfoSize = cJSON_GetArraySize(json);
-	gameInfo = MEMAllocFromDefaultHeap(sizeof(GameInfo) * gameInfoSize);
-	if(gameInfo == NULL)
-	{
-		cJSON_Delete(json);
-		return false;
-	}
-	
-	char *tid;
-	char *name;
-	cJSON *start = json;
-	cJSON *tmpObj;
-	for(int i = 0; i < gameInfoSize; i++)
-	{
-		json = cJSON_GetArrayItem(start, i);
-		tid = name = NULL;
-		tmpObj = cJSON_GetObjectItemCaseSensitive(json, "titleID");
-		if(tmpObj != NULL && cJSON_IsString(tmpObj) && tmpObj->valuestring != NULL)
-		{
-			tid = tmpObj->valuestring;
-			
-			tmpObj = cJSON_GetObjectItemCaseSensitive(json, "name");
-			if(tmpObj != NULL && cJSON_IsString(tmpObj) && tmpObj->valuestring != NULL)
-			{
-				name = tmpObj->valuestring;
-				for(int j = 0; j < strlen(name); j++)
-					if(name[j] == '\n')
-						name[j] = ' ';
-			}
-			
-			if(name != NULL)
-			{
-				gameInfo[i].tid = MEMAllocFromDefaultHeap(17);
-				gameInfo[i].name = name == NULL ? NULL : MEMAllocFromDefaultHeap(sizeof(char) * strlen(name));
-				
-				strcpy(gameInfo[i].tid, tid);
-				if(gameInfo[i].name != NULL)
-					strcpy(gameInfo[i].name, name);
-				continue;
-			}
-		}
-		gameInfo[i].tid = gameInfo[i].name = NULL;
-	}
-	
-	cJSON_Delete(start);
-	MEMFreeToDefaultHeap(ramBuf);
-	ramBuf = NULL;
-	ramBufSize = 0;
-	addToScreenLog("keys.json parsed!");
-	return true;
-}
-
-void freeJSON()
-{
-	if(gameInfo != NULL)
-	{
-		for(int i = 0; i < gameInfoSize; i++)
-		{
-			if(gameInfo[i].tid != NULL)
-				MEMFreeToDefaultHeap(gameInfo[i].tid);
-			if(gameInfo[i].name != NULL)
-				MEMFreeToDefaultHeap(gameInfo[i].name);
-		}
-		MEMFreeToDefaultHeap(gameInfo);
-	}
+	downloadTitle(titleID, titleVer, folderName, inst, dlToUSB, toUSB, keepFiles);
 }

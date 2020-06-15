@@ -34,7 +34,8 @@
 #define CONFIG_VERSION 1
 
 bool changed = false;
-char thatTitleKeySite[TITLE_KEY_URL_MAX_SIZE];
+char thatTitleKeySite[TITLE_KEY_URL_MAX_SIZE]; // We keep this as we might need it later on. Currently it's not used through.
+bool useTitleDB = true;
 int configInitTries = 0;
 
 bool initConfig()
@@ -80,6 +81,12 @@ bool initConfig()
 	else
 		changed = true;
 	
+	configEntry = cJSON_GetObjectItemCaseSensitive(json, "Use online title DB");
+	if(configEntry != NULL && cJSON_IsBool(configEntry))
+		useTitleDB = cJSON_IsTrue(configEntry);
+	else
+		changed = true;
+	
 	cJSON_Delete(json);
 	
 	if(changed)
@@ -112,6 +119,14 @@ void saveConfig()
 	}
 	cJSON_AddItemToObject(config, "File Version", entry);
 	
+	entry = cJSON_CreateBool(useTitleDB);
+	if(entry == NULL)
+	{
+		cJSON_Delete(config);
+		return;
+	}
+	cJSON_AddItemToObject(config, "Use online title DB", entry);
+	
 	entry = cJSON_CreateString(thatTitleKeySite);
 	if(entry == NULL)
 	{
@@ -134,6 +149,20 @@ void saveConfig()
 	fclose(fp);
 	
 	changed = false;
+}
+
+bool useOnlineTitleDB()
+{
+	return useTitleDB;
+}
+
+void setUseOnlineTitleDB(bool use)
+{
+	if(useTitleDB == use)
+		return;
+	
+	useTitleDB = use;
+	changed = true;
 }
 
 char *getTitleKeySite()

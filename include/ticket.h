@@ -30,7 +30,7 @@
 	extern "C" {
 #endif
 
-void generateTik(const char *path, char *titleID, char *encKey);
+void generateTik(const char *path, const char *titleID);
 bool generateFakeTicket();
 
 #ifdef __cplusplus

@@ -17,64 +17,37 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
+#ifndef NUSSPLI_TITLES_H
+#define NUSSPLI_TITLES_H
+
 #include <wut-fixups.h>
 
-#include <aes.h>
-#include <md5.h>
-#include <otp.h>
-#include <pbkdf2.h>
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
-#include <utils.h>
-
-#include <string.h>
-
-#include <coreinit/memdefaultheap.h>
-#include <coreinit/memory.h>
-
-#define KEYGEN_SECRET  "fd040105060b111c2d49"
-
-//const uint8_t keygen_pw[] = { 0x6e, 0x690, 0x6e, 0x74, 0x65, 0x6e, 0x64, 0x6f };
-const uint8_t keygen_pw[] = { 0x6d, 0x79, 0x70, 0x61, 0x73, 0x73 };
-
-
-char *generateKey(const char *tid)
+typedef enum
 {
-	char *ret = MEMAllocFromDefaultHeap(33);
-	if(ret == NULL)
-		return NULL;
-	
-	const char *tmp = tid;
-	while(tmp[0] == '0' && tmp[1] == '0')
-		tmp += 2;
-	
-	char h[1024];
-	strcpy(h, KEYGEN_SECRET);
-	strcat(h, tmp);
-	
-	size_t bhl = strlen(h) >> 1;
-	uint8_t bh[bhl];
-	hexToByte(h, bh);
-	
-	MD5_CTX md5c;
-	uint8_t md5sum[16];
-	MD5_Init(&md5c);
-	MD5_Update(&md5c, bh, bhl);
-	MD5_Final(&md5sum[0], &md5c);
-	
-	uint8_t key[16];
-	pbkdf2_hmac_sha1(keygen_pw, sizeof(keygen_pw), md5sum, 16, 20, key, 16);
-	
-	uint8_t iv[16];
-	hexToByte(tid, iv);
-	
-	OSBlockSet(&iv[8], 0, 8);
-	struct AES_ctx aesc;
-	AES_init_ctx_iv(&aesc, getCommonKey(), iv);
-	AES_CBC_encrypt_buffer(&aesc, key, 16);
-	
-	char *t = ret;
-	for(int i = 0; i < 16; i++, t += 2)
-		sprintf(t, "%02x", key[i]);
-	
-	return ret;
-}
+	TID_HIGH_GAME =				0x00050000,
+	TID_HIGH_DEMO =				0x00050002,
+	TID_HIGH_SYSTEM_APP =		0x00050010,
+	TID_HIGH_SYSTEM_DATA =		0x0005001B,
+	TID_HIGH_SYSTEM_APPLET =	0x00050030,
+	TID_HIGH_VWII_IOS =			0x00000007,
+	TID_HIGH_VWII_SYSTEM_APP =	0x00070002,
+	TID_HIGH_VWII_SYSTEM =		0x00070008,
+	TID_HIGH_DLC =				0x0005000C,
+	TID_HIGH_UPDATE =			0x0005000E,
+} TID_HIGH;
+
+char *tid2name(const char *tid);
+bool initTitles();
+void clearTitles();
+
+// TODO
+
+#ifdef __cplusplus
+	}
+#endif
+
+#endif // ifndef NUSSPLI_TITLES_H

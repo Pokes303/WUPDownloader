@@ -26,7 +26,7 @@
 	extern "C" {
 #endif
 
-char *generateKey(char *tid);
+char *generateKey(const char *tid);
 
 #ifdef __cplusplus
 	}

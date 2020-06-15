@@ -33,8 +33,11 @@
 
 bool initConfig();
 void saveConfig();
-char *getTitleKeySite();
-void setTitleKeySite(char *url);
+bool useOnlineTitleDB();
+void setUseOnlineTitleDB(bool use);
+// Don't use / deprecated
+//char *getTitleKeySite();
+//void setTitleKeySite(char *url);
 
 #ifdef __cplusplus
 	}

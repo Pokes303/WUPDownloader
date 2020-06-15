@@ -26,6 +26,7 @@
 #include <file.h>
 #include <input.h>
 #include <ioThread.h>
+#include <keygen.h>
 #include <renderer.h>
 #include <status.h>
 #include <usb.h>
@@ -44,8 +45,12 @@
  * with the randomness of NUSPackager to create unique
  * NUSspli tickets.
  */
-void generateTik(const char *path, char *titleID, char *encKey)
+void generateTik(const char *path, const char *titleID)
 {
+	char *encKey = generateKey(titleID);
+	if(encKey == NULL)
+		return;
+	
 	FILE *tik = fopen(path, "wb");
 	if(tik == NULL)
 	{
@@ -100,27 +105,25 @@ void generateTik(const char *path, char *titleID, char *encKey)
 	writeVoidBytes(tik, 0x60);
 	
 	addToIOQueue(NULL, 0, 0, tik);
+	MEMFreeToDefaultHeap(encKey);
 }
 
-void drawTicketFrame(const char *titleID, const char* encKey)
+void drawTicketFrame(const char *titleID)
 {
 	startNewFrame();
 	textToFrame(0, 0, "Title ID:");
 	textToFrame(3, 1, titleID[0] == '\0' ? "NOT SET" : titleID);
-	textToFrame(0, 2, "Encrypted title key:");
-	textToFrame(3, 3, encKey[0] == '\0' ? "NOT SET" : encKey);
 	
-	textToFrame(0, 5, "You need to set the title ID and the Encrypted title key to generate a fake ticket");
+	textToFrame(0, 3, "You need to set the title ID to generate a fake ticket");
 	
-	int line = MAX_LINES - 4;
+	int line = MAX_LINES - 3;
 	textToFrame(0, line--, "Press \uE001 to return");
-	if (titleID[0] != '\0' && encKey[0] != '\0')
+	if (titleID[0] != '\0')
 		textToFrame(0, line--, "Press \uE000 to continue");
 	lineToFrame(line, SCREEN_COLOR_WHITE);
 	
-	lineToFrame(MAX_LINES - 3, SCREEN_COLOR_WHITE);
-	textToFrame(0, MAX_LINES - 2, "Press \uE041 UP to set the title ID");
-	textToFrame(0, MAX_LINES - 1, "Press \uE041 DOWN to set the Encrypted title key");
+	lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
+	textToFrame(0, MAX_LINES - 1, "Press \uE041 UP to set the title ID");
 	drawFrame();
 }
 
@@ -131,10 +134,9 @@ bool generateFakeTicket()
 		return true;
 	
 	char titleID[17];
-	char encKey[33];
-	titleID[0] = encKey[0] = '\0';
+	titleID[0] = '\0';
 	
-	drawTicketFrame(titleID, encKey);
+	drawTicketFrame(titleID);
 	
 	while(AppRunning())
 	{
@@ -146,7 +148,7 @@ bool generateFakeTicket()
 		switch(vpad.trigger)
 		{
 			case VPAD_BUTTON_A:
-				if(titleID[0] != '\0' && encKey[0] != '\0')
+				if(titleID[0] != '\0')
 				{
 					startNewFrame();
 					textToFrame(0, 0, "Generating fake ticket...");
@@ -155,20 +157,11 @@ bool generateFakeTicket()
 					
 					char tikPath[1024];
 					strcpy(tikPath, dir);
-					if(dir[0] == '.')
-					{
-						strcat(tikPath, "ticket_");
-						strcat(tikPath, titleID);
-						strcat(tikPath, "_");
-						strcat(tikPath, encKey);
-					}
-					else
-						strcat(tikPath, "title");
-					
+					strcat(tikPath, dir[0] == '.' ? titleID : "title");
 					MEMFreeToDefaultHeap(dir);
 					strcat(tikPath, ".tik");
 					
-					generateTik(tikPath, titleID, encKey);
+					generateTik(tikPath, titleID);
 					
 					colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 					textToFrame(0, 0, "Fake ticket generated on:");
@@ -195,12 +188,7 @@ bool generateFakeTicket()
 			case VPAD_BUTTON_UP:
 				showKeyboard(KEYBOARD_TYPE_RESTRICTED, titleID, CHECK_HEXADECIMAL, 16, true, titleID, NULL);
 				toLowercase(titleID);
-				drawTicketFrame(titleID, encKey);
-				break;
-			case VPAD_BUTTON_DOWN:
-				showKeyboard(KEYBOARD_TYPE_RESTRICTED, encKey, CHECK_HEXADECIMAL, 32, true, encKey, NULL);
-				toLowercase(encKey);
-				drawTicketFrame(titleID, encKey);
+				drawTicketFrame(titleID);
 				break;
 		}
 	}

@@ -330,14 +330,13 @@ void shutdownRenderer()
 	removeErrorOverlay();
 	
 	backgroundMusic->Stop();
-	
-	delete bye;
-	delete byeData;
 	delete backgroundMusic;
 	delete renderer;
 	delete window;
 	delete background;
 	delete font;
+	delete bye;
+	delete byeData;
 	
 	libgui_memoryRelease();
 	bgColor = SCREEN_COLOR_BLACK;

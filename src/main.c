@@ -30,6 +30,7 @@
 #include <renderer.h>
 #include <status.h>
 #include <ticket.h>
+#include <titles.h>
 #include <usb.h>
 #include <utils.h>
 #include <cJSON.h>
@@ -106,7 +107,7 @@ int main()
 	
 	char *lerr = NULL;
 	
-	FSInit(); // We need to start this before the SWKBD.
+	FSInit();
 	if(NNResult_IsSuccess(ACInitialize()))
 	{
 		ACConfigId networkID;
@@ -133,7 +134,6 @@ int main()
 			drawFrame();
 			showFrame();
 			
-			FSInit();
 			if(SWKBD_Init())
 			{
 				addToScreenLog("SWKBD initialized!");
@@ -159,7 +159,7 @@ int main()
 						startNewFrame();
 						textToFrame(0, 0, "Loading config file...");
 						writeScreenLog();
-							drawFrame();
+						drawFrame();
 						showFrame();
 						
 						#ifdef NUSSPLI_DEBUG
@@ -169,11 +169,12 @@ int main()
 					
 						if(initConfig())
 						{
-							if(downloadJSON())
-								// Main loop
-								mainMenu();
+							initTitles();
+							
+							mainMenu(); // main loop
 							
 							debugPrintf("Deinitializing libraries...");
+							clearTitles();
 							saveConfig();
 							
 							#ifdef NUSSPLI_DEBUG
@@ -202,9 +203,6 @@ int main()
 			}
 			else
 				lerr = "Couldn't initialize SWKBD!";
-			
-			FSShutdown();
-			freeJSON();
 		}
 		else
 			lerr = "Couldn't get default network connection!";
@@ -221,10 +219,11 @@ int main()
 			
 		while(vpad.trigger != VPAD_BUTTON_B)
 			showFrame();
-	} 
+	}
 	
 	shutdownRenderer();
 	clearScreenLog();
+	FSShutdown();
 	debugPrintf("libgui closed");
 	
 #ifdef NUSSPLI_DEBUG

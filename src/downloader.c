@@ -31,20 +31,20 @@
 #include <input.h>
 #include <installer.h>
 #include <ioThread.h>
-#include <keygen.h>
 #include <memdebug.h>
 #include <menu/utils.h>
 #include <renderer.h>
 #include <status.h>
 #include <ticket.h>
+#include <titles.h>
 #include <utils.h>
 
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/time.h>
 #include <curl/curl.h>
 
-uint16_t contents; //Contents count
-uint16_t dcontent; //Actual content number
+uint16_t contents = 0xFFFF; //Contents count
+uint16_t dcontent = 0xFFFF; //Actual content number
 
 double downloaded;
 
@@ -105,7 +105,7 @@ static int progressCallback(void *curl, double dltotal, double dlnow, double ult
 		return 1;
 	}
 	
-	// debugPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", downloading, dcontent, contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
+	//debugPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", downloading, dcontent, contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
 	startNewFrame();
 	char tmpString[13 + strlen(downloading)];
 	if (dltotal == 0 || isinf(dltotal) || isnan(dltotal))
@@ -265,25 +265,19 @@ int downloadFile(const char *url, char *file, FileType type)
 	{
 		fflush(fp);
 		fclose(fp);
-		
-		long resp;
-		if(ret == CURLE_OK)
-			curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &resp);
-		else
-			resp = 0;
-		debugPrintf("CURL returned: %d / %d", ret, resp);
-		curl_easy_cleanup(curl);
-		return ret | (resp == 200 ? 0 : resp);
 	}
+	else
+		addToIOQueue(NULL, 0, 0, fp);
 	
-	addToIOQueue(NULL, 0, 0, fp);
-	
-	if(ret != CURLE_OK && !(fileExist && ret == CURLE_WRITE_ERROR && fileSize == 0))
+	if(ret != CURLE_OK && (toRam || !(fileExist && ret == CURLE_WRITE_ERROR && fileSize == 0)))
 	{
-		debugPrintf("curl_easy_perform returned an error: %s (%d)\nFile: %s\n\n", curlError, ret, file);
+		debugPrintf("curl_easy_perform returned an error: %s (%d)\nFile: %s\n\n", curlError, ret, toRam ? "<RAM>" : file);
 		curl_easy_cleanup(curl);
-		flushIOQueue();
-		remove(file);
+		if(!toRam)
+		{
+			flushIOQueue();
+			remove(file);
+		}
 		
 		char toScreen[1024];
 		sprintf(toScreen, "curl_easy_perform returned a non-valid value: %d\n\n", ret);
@@ -332,7 +326,7 @@ int downloadFile(const char *url, char *file, FileType type)
 	}
 	debugPrintf("curl_easy_perform executed successfully");
 	
-	if(fileExist && fileSize == 0)
+	if(!toRam && fileExist && fileSize == 0)
 	{
 		curl_easy_cleanup(curl);
 		addToScreenLog("Download %s skipped!", downloading);
@@ -346,8 +340,12 @@ int downloadFile(const char *url, char *file, FileType type)
 	debugPrintf("The download returned: %u", resp);
 	if(resp != 200)
 	{
-		flushIOQueue();
-		remove(file);
+		if(!toRam)
+		{
+			flushIOQueue();
+			remove(file);
+		}
+		
 		if(resp == 404 && (type & FILE_TYPE_TMD) == FILE_TYPE_TMD) //Title.tmd not found
 		{
 			drawErrorFrame("The download of title.tmd failed with error: 404\n\nThe title cannot be found on the NUS, maybe the provided title ID doesn't exists or\nthe TMD was deleted", B_RETURN | Y_RETRY);
@@ -396,36 +394,37 @@ int downloadFile(const char *url, char *file, FileType type)
 	return 0;
 }
 
-bool downloadTitle(GameInfo game, const char *titleVer, char *folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles)
+bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles)
 {
-	debugPrintf("Downloading title... tID: %s, tVer: %s, name: %s, folder: %s", game.tid, titleVer, game.name == NULL ? "NULL" : game.name, folderName);
+	const char *gameName = tid2name(tid);
+	debugPrintf("Downloading title... tID: %s, tVer: %s, name: %s, folder: %s", tid, titleVer, gameName == NULL ? "NULL" : gameName, folderName);
 	
 	char downloadUrl[128];
 	strcpy(downloadUrl, DOWNLOAD_URL);
-	strcat(downloadUrl, game.tid);
+	strcat(downloadUrl, tid);
 	strcat(downloadUrl, "/");
 	
 	if(folderName[0] == '\0')
 	{
-		if(game.name != NULL)
+		if(gameName != NULL)
 		{
-			for(int i = 0; i < strlen(game.name); i++)
-				folderName[i] = isSpecial(game.name[i]) ? game.name[i] : '_';
+			for(int i = 0; i < strlen(gameName); i++)
+				folderName[i] = isSpecial(gameName[i]) ? gameName[i] : '_';
 			
-			strcpy(folderName + strlen(game.name), " [");
-			strcat(folderName, game.tid);
+			strcpy(folderName + strlen(gameName), " [");
+			strcat(folderName, tid);
 		}
 		else
 		{
 			folderName[0] = '[';
-			strcpy(folderName + 1, game.tid);
+			strcpy(folderName + 1, tid);
 		}
 			
 	}
 	else
 	{
 		strcat(folderName, " [");
-		strcat(folderName, game.tid);
+		strcat(folderName, tid);
 	}
 	strcat(folderName, "]");
 	
@@ -446,10 +445,10 @@ bool downloadTitle(GameInfo game, const char *titleVer, char *folderName, bool i
 	strcat(installDir, folderName);
 	strcat(installDir, "/");
 	
-	if(game.name == NULL)
-		game.name = game.tid;
+	if(gameName == NULL)
+		gameName = tid;
 	
-	addToScreenLog("Started the download of \"%s\"", game.name);
+	addToScreenLog("Started the download of \"%s\"", gameName);
 	addToScreenLog("The content will be saved on \"%s:/install/%s\"", dlToUSB ? "usb" : "sd", folderName);
 	
 	if(!dirExists(installDir))
@@ -491,45 +490,46 @@ bool downloadTitle(GameInfo game, const char *titleVer, char *folderName, bool i
 	char toScreen[128];
 	strcpy(toScreen, "=>Title type: ");
 	bool hasDependencies;
-	switch (readUInt32(tmd, 0x18C)) { //Title type
-		case 0x00050000:
+	switch(readUInt32(tmd, 0x18C)) //Title type
+	{
+		case TID_HIGH_GAME:
 			strcat(toScreen, "eShop or Packed");
 			hasDependencies = false;
 			break;
-		case 0x00050002:
+		case TID_HIGH_DEMO:
 			strcat(toScreen, "eShop/Kiosk demo");
 			hasDependencies = false;
 			break;
-		case 0x0005000C:
+		case TID_HIGH_DLC:
 			strcat(toScreen, "eShop DLC");
 			hasDependencies = true;
 			break;
-		case 0x0005000E:
+		case TID_HIGH_UPDATE:
 			strcat(toScreen, "eShop Update");
 			hasDependencies = true;
 			break;
-		case 0x00050010:
+		case TID_HIGH_SYSTEM_APP:
 			strcat(toScreen, "System Application");
 			hasDependencies = false;
 			break;
-		case 0x0005001B:
+		case TID_HIGH_SYSTEM_DATA:
 			strcat(toScreen, "System Data Archive");
 			hasDependencies = false;
 			break;
-		case 0x00050030:
+		case TID_HIGH_SYSTEM_APPLET:
 			strcat(toScreen, "Applet");
 			hasDependencies = false;
 			break;
 		// vWii //
-		case 0x7:
+		case TID_HIGH_VWII_IOS:
 			strcat(toScreen, "Wii IOS");
 			hasDependencies = false;
 			break;
-		case 0x00070002:
-			strcat(toScreen, "vWii Default Channel");
+		case TID_HIGH_VWII_SYSTEM_APP:
+			strcat(toScreen, "vWii System Application");
 			hasDependencies = false;
 			break;
-		case 0x00070008:
+		case TID_HIGH_VWII_SYSTEM:
 			strcat(toScreen, "vWii System Channel");
 			hasDependencies = false;
 			break;
@@ -561,12 +561,7 @@ bool downloadTitle(GameInfo game, const char *titleVer, char *folderName, bool i
 		drawFrame();
 		showFrame();
 		
-		char *key = generateKey(game.tid);
-		if(key == NULL)
-			return false;
-		
-		generateTik(tInstallDir, game.tid, key);
-		MEMFreeToDefaultHeap(key);
+		generateTik(tInstallDir, tid);
 		addToScreenLog("Fake ticket created successfully");
 	}
 	
@@ -686,10 +681,10 @@ bool downloadTitle(GameInfo game, const char *titleVer, char *folderName, bool i
 	
 	flushIOQueue();
 	if(inst)
-		return install(game.name, hasDependencies, dlToUSB, installDir, toUSB, keepFiles);
+		return install(gameName, hasDependencies, dlToUSB, installDir, toUSB, keepFiles);
 	
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-	textToFrame(0, 0, game.name);
+	textToFrame(0, 0, gameName);
 	textToFrame(0, 1, "Downloaded successfully!");
 	writeScreenLog();
 	drawFrame();
@@ -705,7 +700,7 @@ bool downloadTitle(GameInfo game, const char *titleVer, char *folderName, bool i
 		if(app == 9)
 		{
 			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-			textToFrame(0, 0, game.name);
+			textToFrame(0, 0, gameName);
 			textToFrame(0, 1, "Downloaded successfully!");
 			writeScreenLog();
 			drawFrame();

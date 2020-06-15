@@ -23,6 +23,7 @@
 #include <input.h>
 #include <renderer.h>
 #include <status.h>
+#include <titles.h>
 #include <menu/download.h>
 #include <menu/main.h>
 
@@ -31,10 +32,15 @@
 void drawConfigMenu()
 {
 	startNewFrame();
-	textToFrame(0, 0, "That Title Key Site:");
-	textToFrame(0, 1, getTitleKeySite());
-	textToFrame(0, 4, "Press \uE000 to change");
-	textToFrame(0, 5, "Press \uE001 to go back");
+//	textToFrame(0, 0, "That Title Key Site:");
+//	textToFrame(0, 1, getTitleKeySite());
+//	textToFrame(0, 4, "Press \uE000 to change");
+	char toScreen[64];
+	strcpy(toScreen, "Press \uE000 to ");
+	strcat(toScreen, useOnlineTitleDB() ? "disable" : "enable");
+	strcat(toScreen, " the online title database");
+	textToFrame(0, 0, toScreen);
+	textToFrame(0, 2, "Press \uE001 to go back");
 	drawFrame();
 }
 
@@ -54,14 +60,18 @@ void configMenu()
 		switch(vpad.trigger)
 		{
 			case VPAD_BUTTON_A:
-				;
-				char newUrl[1024];
-				if(showKeyboard(KEYBOARD_TYPE_NORMAL, newUrl, CHECK_URL, 1024, false, getTitleKeySite(), "SAVE"))
-					setTitleKeySite(newUrl);
+//				;
+//				char newUrl[1024];
+//				if(showKeyboard(KEYBOARD_TYPE_NORMAL, newUrl, CHECK_URL, 1024, false, getTitleKeySite(), "SAVE"))
+//					setTitleKeySite(newUrl);
+				setUseOnlineTitleDB(!useOnlineTitleDB());
 				drawConfigMenu();
 				break;
 			case VPAD_BUTTON_B:
 				saveConfig();
+				if(!useOnlineTitleDB())
+					clearTitles();
+				initTitles();
 				return;
 		}
 	}
