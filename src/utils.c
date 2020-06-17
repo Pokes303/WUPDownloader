@@ -74,7 +74,7 @@ bool isUppercase(char c)
 
 bool isSpecial(char c)
 {
-	return isNumber(c) || isLowercase(c) || isUppercase(c) || c == ' ';
+	return c !='"' && c != '*' && c != '/' && c != ':' && c != '<' && c != '>' && c != '?' && c != '\\' && c != '|' && c != ',' && c != ';'; // && c != '¥';
 }
 
 bool isLowercaseHexa(char c)
