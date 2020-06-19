@@ -33,6 +33,7 @@
 #include <iosuhax_devoptab.h>
 
 int fsaHandle = -1;
+bool haxchi;
 
 static void iosuCallback(IOSError err, void *dummy)
 {
@@ -47,8 +48,9 @@ void IOSUHAXHookClose()
 	//close down wupserver, return control to mcp
 	IOSUHAX_Close();
 	//wait for mcp to return
-	while(fsaHandle >= 0)
-		OSSleepTicks(1024 << 10); //TODO: What's a good value here?
+	if(haxchi)
+		while(fsaHandle >= 0)
+			OSSleepTicks(1024 << 10); //TODO: What's a good value here?
 }
 
 bool mountUSB()
@@ -56,21 +58,28 @@ bool mountUSB()
 	if(fsaHandle >= 0)
 		return true;
 	
-	//take over mcp thread
-	IOSError err = IOS_IoctlAsync(mcpHandle, 0x62, NULL, 0, NULL, 0, iosuCallback, NULL);
-	if(err != IOS_ERROR_OK)
+	// Try to open Mocha iosuhax
+	if(IOSUHAX_Open(NULL) < 0)
 	{
-		debugPrintf("IOSUHAX: Error sending IOCTL: %d", err);
-		return false;
+		// We're not on Mocha. So try the Haxchi method of taking over MCP
+		IOSError err = IOS_IoctlAsync(mcpHandle, 0x62, NULL, 0, NULL, 0, iosuCallback, NULL);
+		if(err != IOS_ERROR_OK)
+		{
+			debugPrintf("IOSUHAX: Error sending IOCTL: %d", err);
+			return false;
+		}
+		
+		//let wupserver start up
+		OSSleepTicks(OSMillisecondsToTicks(50)); // TODO: Extensively test this in release builds
+		if(IOSUHAX_Open("/dev/mcp") < 0)
+		{
+			debugPrintf("IOSUHAX: Error opening!");
+			return false;
+		}
+		haxchi = true;
 	}
-	
-	//let wupserver start up
-	OSSleepTicks(OSMillisecondsToTicks(50)); // TODO: Extensively test this in release builds
-	if(IOSUHAX_Open("/dev/mcp") < 0)
-	{
-		debugPrintf("IOSUHAX: Error opening!");
-		return false;
-	}
+	else
+		haxchi = false;
 	
 	fsaHandle = IOSUHAX_FSA_Open();
 	if(fsaHandle < 0)
