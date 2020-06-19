@@ -32,7 +32,7 @@
 #endif
 
 bool initConfig();
-void saveConfig();
+bool saveConfig();
 bool useOnlineTitleDB();
 void setUseOnlineTitleDB(bool use);
 // Don't use / deprecated

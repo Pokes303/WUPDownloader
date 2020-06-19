@@ -54,7 +54,8 @@ bool initConfig()
 	{
 		debugPrintf("\tFile not found!");
 		changed = true;
-		saveConfig();
+		if(!saveConfig())
+			return false;
 	}
 	
 	FILE *fp = fopen(CONFIG_PATH, "rb");
@@ -101,21 +102,21 @@ bool initConfig()
 	return true;
 }
 
-void saveConfig()
+bool saveConfig()
 {
 	debugPrintf("saveConfig()");
 	if(!changed)
-		return;
+		return true;
 	
 	cJSON *config = cJSON_CreateObject();
 	if(config == NULL )
-		return;
+		return false;
 	
 	cJSON *entry = cJSON_CreateNumber(CONFIG_VERSION);
 	if(entry == NULL)
 	{
 		cJSON_Delete(config);
-		return;
+		return false;;
 	}
 	cJSON_AddItemToObject(config, "File Version", entry);
 	
@@ -123,7 +124,7 @@ void saveConfig()
 	if(entry == NULL)
 	{
 		cJSON_Delete(config);
-		return;
+		return false;
 	}
 	cJSON_AddItemToObject(config, "Use online title DB", entry);
 	
@@ -131,24 +132,25 @@ void saveConfig()
 	if(entry == NULL)
 	{
 		cJSON_Delete(config);
-		return;
+		return false;
 	}
 	cJSON_AddItemToObject(config, "That Title Key Site", entry);
 	
 	char *configString = cJSON_Print(config);
 	cJSON_Delete(config);
 	if(configString == NULL)
-		return;
+		return false;
 	
 	FILE *fp = fopen(CONFIG_PATH, "w");
 	if(fp == NULL)
-		return;
+		return false;
 	
 	fwrite(configString, strlen(configString), 1, fp);
 	debugPrintf("Config written!");
 	fclose(fp);
 	
 	changed = false;
+	return true;
 }
 
 bool useOnlineTitleDB()

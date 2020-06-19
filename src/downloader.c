@@ -209,8 +209,13 @@ int downloadFile(const char *url, char *file, FileType type)
 		sprintf(err, "ERROR: curl_easy_init failed\nFile: %s", file);
 		drawErrorFrame(err, B_RETURN);
 		
-		while(true)
+		while(AppRunning())
 		{
+			if(app == 2)
+				continue;
+			if(app == 9)
+				drawErrorFrame(err, B_RETURN);
+		
 			showFrame();
 			if(vpad.trigger ==  VPAD_BUTTON_B)
 				return 1;
@@ -350,8 +355,13 @@ int downloadFile(const char *url, char *file, FileType type)
 		{
 			drawErrorFrame("The download of title.tmd failed with error: 404\n\nThe title cannot be found on the NUS, maybe the provided title ID doesn't exists or\nthe TMD was deleted", B_RETURN | Y_RETRY);
 			
-			while(true)
+			while(AppRunning())
 			{
+				if(app == 2)
+					continue;
+				if(app == 9)
+					drawErrorFrame("The download of title.tmd failed with error: 404\n\nThe title cannot be found on the NUS, maybe the provided title ID doesn't exists or\nthe TMD was deleted", B_RETURN | Y_RETRY);
+				
 				showFrame();
 
 				switch(vpad.trigger)
@@ -374,8 +384,13 @@ int downloadFile(const char *url, char *file, FileType type)
 				strcat(toScreen, "Request failed. Try again\n\n");
 			drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
 			
-			while(true)
+			while(AppRunning())
 			{
+				if(app == 2)
+					continue;
+				if(app == 9)
+					drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
+				
 				showFrame();
 				
 				switch (vpad.trigger) {
@@ -457,8 +472,23 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 		errno = 0;
 		if(mkdir(installDir, 777) == -1)
 		{
-			addToScreenLog("Error creating directory: %d %s", errno, strerror(errno));
-			return false; // TODO
+			char toScreen[1024];
+			sprintf(toScreen, "Error creating directory: %d %s", errno, strerror(errno));
+			
+			drawErrorFrame(toScreen, B_RETURN);
+			
+			while(AppRunning())
+			{
+				if(app == 2)
+					continue;
+				if(app == 9)
+					drawErrorFrame(toScreen, B_RETURN);
+				
+				showFrame();
+				
+				if(vpad.trigger == VPAD_BUTTON_B)
+					return false;
+			}
 		}
 		else
 			addToScreenLog("Download directory successfully created");
