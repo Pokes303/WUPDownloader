@@ -66,7 +66,7 @@ OUTPUT(arm_user.elf elf32-bigarm)
  .ARM.attributes
                 0x0000000000000048       0x2c build/main.o
 
-.comment        0x0000000000000000       0x22
- .comment       0x0000000000000000       0x22 build/utils.o
-                                         0x23 (size before relaxing)
- .comment       0x0000000000000022       0x23 build/main.o
+.comment        0x0000000000000000       0x23
+ .comment       0x0000000000000000       0x23 build/utils.o
+                                         0x24 (size before relaxing)
+ .comment       0x0000000000000023       0x24 build/main.o

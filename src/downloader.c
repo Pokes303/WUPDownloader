@@ -666,7 +666,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 	for(int i = 0; i < conts; i++)
 	{
 		apps[i] = hex(readUInt32(tmd, 0xB04 + i * 0x30), 8);
-		h3[i] = readUInt16(tmd, 0xB0A + i * 0x30) == 0x2003;
+		h3[i] = readUInt8(tmd, 0xB0B + i * 0x30) == 0x03;
 		if(h3[i])
 			contents++;
 	}
