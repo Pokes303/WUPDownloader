@@ -6,6 +6,7 @@ TODO.txt
 arm_kernel/arm_kernel.bin
 arm_kernel/arm_kernel.elf
 arm_kernel/arm_kernel_bin.h
+arm_kernel/output.map
 arm_kernel/build/crt0.d
 arm_kernel/build/crt0.o
 arm_kernel/build/main.d
@@ -15,6 +16,7 @@ arm_kernel/build/utils.o
 arm_user/arm_user.bin
 arm_user/arm_user.elf
 arm_user/arm_user_bin.h
+arm_user/output.map
 arm_user/build/crt0.d
 arm_user/build/crt0.o
 arm_user/build/main.d
