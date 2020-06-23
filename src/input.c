@@ -56,7 +56,8 @@ typedef bool (*checkingFunction)(char);
 
 void SWKBD_Render(KeyboardChecks check)
 {
-	if (globalMaxlength != -1) {
+	if(globalMaxlength != -1)
+	{
 		char *inputFormString = Swkbd_GetInputFormString();
 		if(inputFormString != NULL)
 		{
@@ -82,20 +83,13 @@ void SWKBD_Render(KeyboardChecks check)
 						return;
 				}
 				
-				len = 0;
-				while(true)
-				{
+				for(len = 0; inputFormString[len] != '\0'; len++)
 					if(!cf(inputFormString[len]))
 					{
-						if(inputFormString[len] != '\0')
-						{
-							inputFormString[len] = '\0';
-							Swkbd_SetInputFormString(inputFormString);
-						}
+						inputFormString[len] = '\0';
+						Swkbd_SetInputFormString(inputFormString);
 						break;
 					}
-					len++;
-				}
 			}
 			
 			MEMFreeToDefaultHeap(inputFormString);
@@ -103,6 +97,7 @@ void SWKBD_Render(KeyboardChecks check)
 		}
 		else
 			okButtonEnabled = false;
+		
 		Swkbd_SetEnableOkButton(okButtonEnabled);
 	}
 	
