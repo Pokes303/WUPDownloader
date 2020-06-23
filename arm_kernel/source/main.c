@@ -62,7 +62,7 @@ int _main()
 	char* (*kernel_memcpy)(void*, void*, int) = (char*(*)(void*, void*, int))0x08131D04;
     int (*read_otp_internal)(int index, void* out_buf, uint32_t size) = (int (*)(int, void*, uint32_t)) 0x08120248;
 
-    read_otp_internal(0, (void*)(0x0012F000 - 0x400), 0x400);
+    read_otp_internal(0x38, (void*)(0x0012F000 - 16), 16);
 
 	flush_dcache(0x081200F0, 0x4001); // giving a size >= 0x4000 flushes all cache
 

@@ -359,16 +359,19 @@ uint8_t *getCommonKey()
 		
 		uhs_write32(CHAIN_START, 0x1012392b, uhs); // pop {R4-R6,PC}
 		
-		DCInvalidateRange((void*)(0xF412F000 - 0x400), 0x400);
-		OSBlockMove(&otp_common_key[0], (void *)(0xF412F000 - 0x400 + 0x0E0), 16, false);
+		void *armHackAddr = (void *)(0xF412F000 - 16);
+		DCInvalidateRange(armHackAddr, 16);
+		OSBlockMove(&otp_common_key[0], armHackAddr, 16, false);
 		
 		IOS_Close(uhs);
 		
+#ifdef NUSSPLI_DEBUG
 		char ret[33];
 		char *tmp = &ret[0];
 		for(int i = 0; i < 16; i++, tmp += 2)
 			sprintf(tmp, "%02x", otp_common_key[i]);
 		debugPrintf("CC: %s", ret);
+#endif
 	}
 	return otp_common_key;
 }
