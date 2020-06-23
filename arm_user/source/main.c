@@ -1,16 +1,14 @@
-#include "types.h"
-#include "utils.h"
-
+#include <stdint.h>
 
 void _main()
 {
 
-	void(*ios_shutdown)(int) = (void(*)(int))0x1012EE4C;
+	void(*ios_shutdown)(int32_t) = (void(*)(int32_t))0x1012EE4C;
 
-	int(*reply)(int, int) = (int(*)(int, int))0x1012ED04;
+	int32_t(*reply)(int32_t, int32_t) = (int32_t(*)(int32_t, int32_t))0x1012ED04;
 	
-	int saved_handle = *(volatile u32*)0x0012F000;
-	int myret = reply(saved_handle, 0);
+	int32_t saved_handle = *(volatile uint32_t*)0x0012F000;
+	int32_t myret = reply(saved_handle, 0);
 	if (myret != 0)
 		ios_shutdown(1);
 

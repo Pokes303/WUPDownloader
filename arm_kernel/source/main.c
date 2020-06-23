@@ -1,5 +1,5 @@
-#include "types.h"
-#include "utils.h"
+#include <stdint.h>
+
 #include "../../payload/arm_user_bin.h"
 
 static const char repairData_set_fault_behavior[] = {
@@ -39,8 +39,6 @@ static const char os_launch_hook[] = {
 	0x05, 0x0b, 0xcf, 0xfc, 0x05, 0x05, 0x99, 0x70, 0x05, 0x05, 0x99, 0x7e,
 };
 
-static const char sd_path[] = "/vol/sdcard";
-
 static unsigned int __attribute__((noinline)) disable_mmu(void)
 {
 	unsigned int control_register = 0;
@@ -62,7 +60,7 @@ int _main()
 	void(*invalidate_dcache)(unsigned int, unsigned int) = (void(*)())0x08120164;
 	void(*flush_dcache)(unsigned int, unsigned int) = (void(*)())0x08120160;
 	char* (*kernel_memcpy)(void*, void*, int) = (char*(*)(void*, void*, int))0x08131D04;
-    int (*read_otp_internal)(int index, void* out_buf, u32 size) = (int (*)(int, void*, u32)) 0x08120248;
+    int (*read_otp_internal)(int index, void* out_buf, uint32_t size) = (int (*)(int, void*, uint32_t)) 0x08120248;
 
     read_otp_internal(0, (void*)(0x0012F000 - 0x400), 0x400);
 
@@ -73,7 +71,7 @@ int _main()
 	unsigned int control_register = disable_mmu();
 
 	/* Save the request handle so we can reply later */
-	*(volatile u32*)0x0012F000 = *(volatile u32*)0x1016AD18;
+	*(volatile uint32_t*)0x0012F000 = *(volatile uint32_t*)0x1016AD18;
 
 	/* Patch kernel_error_handler to BX LR immediately */
 	*(int*)0x08129A24 = 0xE12FFF1E;
@@ -91,14 +89,6 @@ int _main()
 	void * pUserBinDest = (void*)0x101312D0;
 	kernel_memcpy(pUserBinDest, (void*)pUserBinSource, sizeof(arm_user_bin));
 
-	int i;
-/*
-	for (i = 0; i < 32; i++)
-		if (i < 11)
-			((char*)(0x050663B4 - 0x05000000 + 0x081C0000))[i] = sd_path[i];
-		else
-			((char*)(0x050663B4 - 0x05000000 + 0x081C0000))[i] = (char)0;
-*/
 	*(int*)(0x050282AE - 0x05000000 + 0x081C0000) = 0xF031FB43; // bl launch_os_hook
 
 	*(int*)(0x05052C44 - 0x05000000 + 0x081C0000) = 0xE3A00000; // mov r0, #0
@@ -111,7 +101,7 @@ int _main()
 	*(int*)(0x04001BB0 - 0x04000000 + 0x08280000) = 0xE3A00000;
 	*(int*)(0x04001D40 - 0x04000000 + 0x08280000) = 0xE3A00000;
 
-	for (i = 0; i < sizeof(os_launch_hook); i++)
+	for (int i = 0; i < sizeof(os_launch_hook); i++)
 		((char*)(0x05059938 - 0x05000000 + 0x081C0000))[i] = os_launch_hook[i];
 
 	*(int*)(0x1555500) = 0;
