@@ -40,6 +40,7 @@ extern size_t ramBufSize;
 
 int downloadFile(const char *url, char *file, FileType type);
 bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles);
+void clearRamBuf();
 
 #ifdef __cplusplus
 	}

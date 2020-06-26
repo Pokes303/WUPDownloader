@@ -188,6 +188,43 @@ void removeDirectory(const char *path)
 	}
 }
 
+void moveDirectory(const char *src, const char *dest)
+{
+	size_t len = strlen(src);
+	char newSrc[len + 1024]; // TODO
+	strcpy(newSrc, src);
+	
+	if(newSrc[len - 1] != '/')
+		newSrc[len++] = '/';
+	
+	char *inSrc = newSrc + len;
+	DIR *dir = opendir(src);
+	if(dir != NULL)
+	{
+		mkdir(dest, 0777);
+		len = strlen(dest);
+		char newDest[len + 1024]; // TODO
+		strcpy(newDest, dest);
+		
+		if(newDest[len - 1] != '/')
+			newDest[len++] = '/';
+		
+		char *inDest = newDest + len;
+		
+		for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
+		{
+			strcpy(inSrc, entry->d_name);
+			strcpy(inDest, entry->d_name);
+			if(entry->d_type & DT_DIR)
+				moveDirectory(newSrc, newDest);
+			else
+				rename(newSrc, newDest);
+		}
+		closedir(dir);
+		remove(src);
+	}
+}
+
 long getFilesize(FILE *fp)
 {
 	off_t i = ftello(fp);

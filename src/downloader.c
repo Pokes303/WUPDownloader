@@ -749,3 +749,13 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 	
 	return true;
 }
+
+void clearRamBuf()
+{
+	if(ramBuf == NULL)
+		return;
+	
+	ramBufSize = 0;
+	MEMFreeToDefaultHeap(ramBuf);
+	ramBuf = NULL;
+}

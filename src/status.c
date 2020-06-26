@@ -39,6 +39,7 @@
 int app = 1;
 bool appRunning = true;
 bool shutdownEnabled = true;
+unsigned int standalone = 0xABCD;
 
 void enableShutdown()
 {
@@ -51,13 +52,21 @@ void disableShutdown()
 	shutdownEnabled = false;
 }
 
+bool isStandalone()
+{
+	if(standalone == 0xABCD)
+		standalone = OSGetTitleID() == 0x000500004E555373;
+	
+	return standalone;
+}
+
 uint32_t homeButtonCallback(void *dummy)
 {
 	if(shutdownEnabled)
 	{
 		flushIOQueue();
 		unmountUSB();
-		if(OSGetTitleID() == 0x000500004E555373)
+		if(isStandalone())
 			SYSLaunchMenu();
 		else
 			SYSRelaunchTitle(0, NULL);

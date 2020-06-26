@@ -24,8 +24,7 @@
 
 #include <stdbool.h>
 
-#include <ft2build.h>
-#include FT_TYPES_H
+#include <coreinit/mcp.h>
 
 #ifdef __cplusplus
 	extern "C" {
@@ -45,6 +44,11 @@ typedef struct
 	uint32_t unk05;
 } RPX_Info;
 
+// MCP
+extern MCPError MCP_DeleteTitleAsync(int handle, char *path, MCPInstallTitleInfo *out);
+extern bool MCP_DeleteTitleDoneAsync(int handle, bool *out);
+
+// OSDynLoad
 extern int OSDynLoad_GetRPLInfo(uint32_t unk01, uint32_t size, RPX_Info *out);
 extern bool OSGetSharedData(uint32_t a, uint32_t b, FT_Bytes *font, size_t *size);
 

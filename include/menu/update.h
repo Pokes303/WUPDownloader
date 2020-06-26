@@ -1,6 +1,5 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
- * Copyright (c) 2019-2020 Pokes303                                        *
  * Copyright (c) 2020 V10lator <v10lator@myway.de>                         *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
@@ -18,28 +17,19 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_STATUS_H
-#define NUSSPLI_STATUS_H
+#ifndef NUSSPLI_MENU_UPDATE_H
+#define NUSSPLI_MENU_UPDATE_H
 
 #include <wut-fixups.h>
-
-#include <stdbool.h>
 
 #ifdef __cplusplus
 	extern "C" {
 #endif
 
-extern int app;
-
-void initStatus();
-void enableShutdown();
-void disableShutdown();
-bool isStandalone();
-bool AppRunning();
-uint32_t homeButtonCallback(void *dummy);
+bool updateMenu(char *newVersion);
 
 #ifdef __cplusplus
 	}
 #endif
 
-#endif // ifndef NUSSPLI_STATUS_H
+#endif // ifndef NUSSPLI_MENU_UPDATE_H

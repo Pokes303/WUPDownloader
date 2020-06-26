@@ -121,12 +121,7 @@ bool initTitles()
 	
 	if(downloadFile(TITLE_DB, "JSON", FILE_TYPE_JSON | FILE_TYPE_TORAM) != 0)
 	{
-		if(ramBuf != NULL)
-		{
-			MEMFreeToDefaultHeap(ramBuf);
-			ramBuf = NULL;
-			ramBufSize = 0;
-		}
+		clearRamBuf();
 		debugPrintf("Error downloading %s", TITLE_DB);
 		return false;
 	}
@@ -140,9 +135,7 @@ bool initTitles()
 	cJSON *json = cJSON_ParseWithLength(ramBuf, ramBufSize);
 	if(json == NULL)
 	{
-		MEMFreeToDefaultHeap(ramBuf);
-		ramBuf = NULL;
-		ramBufSize = 0;
+		clearRamBuf();
 		debugPrintf("json == NULL");
 		return false;
 	}
@@ -180,9 +173,7 @@ bool initTitles()
 	if(titleMemArea == NULL)
 	{
 		cJSON_Delete(json);
-		MEMFreeToDefaultHeap(ramBuf);
-		ramBuf = NULL;
-		ramBufSize = 0;
+		clearRamBuf();
 		return false;
 	}
 	
@@ -216,9 +207,7 @@ bool initTitles()
 	}
 	
 	cJSON_Delete(json);
-	MEMFreeToDefaultHeap(ramBuf);
-	ramBuf = NULL;
-	ramBufSize = 0;
+	clearRamBuf();
 	addToScreenLog("title database parsed!");
 	return true;
 }

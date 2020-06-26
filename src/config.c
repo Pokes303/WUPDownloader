@@ -36,6 +36,7 @@
 bool changed = false;
 char thatTitleKeySite[TITLE_KEY_URL_MAX_SIZE]; // We keep this as we might need it later on. Currently it's not used through.
 bool useTitleDB = true;
+bool checkForUpdates = true;
 int configInitTries = 0;
 
 bool initConfig()
@@ -88,6 +89,12 @@ bool initConfig()
 	else
 		changed = true;
 	
+	configEntry = cJSON_GetObjectItemCaseSensitive(json, "Check for updates");
+	if(configEntry != NULL && cJSON_IsBool(configEntry))
+		checkForUpdates = cJSON_IsTrue(configEntry);
+	else
+		changed = true;
+	
 	cJSON_Delete(json);
 	
 	if(changed)
@@ -128,6 +135,14 @@ bool saveConfig()
 	}
 	cJSON_AddItemToObject(config, "Use online title DB", entry);
 	
+	entry = cJSON_CreateBool(checkForUpdates);
+	if(entry == NULL)
+	{
+		cJSON_Delete(config);
+		return false;
+	}
+	cJSON_AddItemToObject(config, "Check for updates", entry);
+	
 	entry = cJSON_CreateString(thatTitleKeySite);
 	if(entry == NULL)
 	{
@@ -164,6 +179,20 @@ void setUseOnlineTitleDB(bool use)
 		return;
 	
 	useTitleDB = use;
+	changed = true;
+}
+
+bool updateCheckEnabled()
+{
+	return checkForUpdates;
+}
+
+void setUpdateCheck(bool enabled)
+{
+	if(checkForUpdates == enabled)
+		return;
+	
+	checkForUpdates = enabled;
 	changed = true;
 }
 

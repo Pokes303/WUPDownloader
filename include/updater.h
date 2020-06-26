@@ -17,32 +17,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_CONFIG_H
-#define NUSSPLI_CONFIG_H
+#ifndef NUSSPLI_UPDATER_H
+#define NUSSPLI_UPDATER_H
 
 #include <wut-fixups.h>
-
-#include <stdbool.h>
-
-#define CONFIG_PATH "/vol/external01/NUSspli.txt"
-#define TITLE_KEY_URL_MAX_SIZE 1024
 
 #ifdef __cplusplus
 	extern "C" {
 #endif
 
-bool initConfig();
-bool saveConfig();
-bool useOnlineTitleDB();
-void setUseOnlineTitleDB(bool use);
-bool updateCheckEnabled();
-void setUpdateCheck(bool enabled);
-// Don't use / deprecated
-//char *getTitleKeySite();
-//void setTitleKeySite(char *url);
+bool updateCheck();
+void update(char *newVersion);
 
 #ifdef __cplusplus
 	}
 #endif
 
-#endif // ifndef NUSSPLI_CONFIG_H
+#endif // ifndef NUSSPLI_UPDATER_H

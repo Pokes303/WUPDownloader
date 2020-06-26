@@ -20,21 +20,23 @@ include $(DEVKITPRO)/wut/share/wut_rules
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		?=	debug
 
-SOURCES		:=	src/cJSON \
+SOURCES		:=	zlib/contrib/minizip \
+				src/cJSON \
 				src/menu \
 				src
 
 DATA		:=	data
 INCLUDES	:=	include \
 				payload \
-				src/cJSON
+				src/cJSON \
+				zlib/contrib/minizip
 
 #-------------------------------------------------------------------------------
 # options for code generation
 #-------------------------------------------------------------------------------
 CFLAGS		:=	$(MACHDEP) -Ofast -flto=auto -fno-fat-lto-objects \
 				-fuse-linker-plugin -pipe -D__WIIU__ -D__WUT__ \
-				-DNUSSPLI_VERSION=\"$(NUSSPLI_VERSION)\"
+				-DNUSSPLI_VERSION=\"$(NUSSPLI_VERSION)\" -DIOAPI_NO_64
 
 CXXFLAGS	:=	$(CFLAGS)
 ASFLAGS		:=	-g $(ARCH)
@@ -69,6 +71,8 @@ all: debug
 real: $(CURDIR)/payload/arm_kernel_bin.h
 	@git submodule deinit --force libgui
 	@git submodule update --init --recursive
+	@rm -f zlib/contrib/minizip/iowin* zlib/contrib/minizip/mini* zlib/contrib/minizip/zip.? zlib/contrib/minizip/mztools.? zlib/contrib/minizip/configure.ac zlib/contrib/minizip/Makefile zlib/contrib/minizip/Makefile.am zlib/contrib/minizip/*.com zlib/contrib/minizip/*.txt
+	@cd zlib && git apply ../minizip.patch || true
 	@mv $(CURDIR)/src/cJSON/test.c $(CURDIR)/src/cJSON/test.c.old 2>/dev/null || true
 	@sed -i 's/-save-temps/-pipe/g' libgui/Makefile
 	@sed -i '/			-ffunction-sections -fdata-sections \\/d' libgui/Makefile

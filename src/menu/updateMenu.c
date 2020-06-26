@@ -19,70 +19,59 @@
 
 #include <wut-fixups.h>
 
-#include <config.h>
 #include <input.h>
 #include <renderer.h>
 #include <status.h>
-#include <titles.h>
-#include <menu/download.h>
-#include <menu/main.h>
+#include <updater.h>
+#include <menu/utils.h>
 
 #include <string.h>
 
-void drawConfigMenu()
+void drawUpdateMenuFrame(char *newVersion)
 {
 	startNewFrame();
-//	textToFrame(0, 0, "That Title Key Site:");
-//	textToFrame(0, 1, getTitleKeySite());
-//	textToFrame(0, 4, "Press \uE000 to change");
-	char toScreen[64];
-	strcpy(toScreen, "Press \uE000 to ");
-	strcat(toScreen, useOnlineTitleDB() ? "disable" : "enable");
-	strcat(toScreen, " the online title database");
-	textToFrame(0, 0, toScreen);
+	boxToFrame(0, 5);
+	textToFrame(ALIGNED_CENTER, 1, "NUSspli");
+	char toScreen[256];
+	strcpy(toScreen, "NUS simple packet loader/installer [");
+	strcat(toScreen, NUSSPLI_VERSION);
+	strcat(toScreen, "]");
+	textToFrame(ALIGNED_CENTER, 3, toScreen);
 	
-	strcpy(toScreen, "Press \uE002 to ");
-	strcat(toScreen, updateCheckEnabled() ? "disable" : "enable");
-	strcat(toScreen, " online updates");
-	textToFrame(0, 1, toScreen);
+	textToFrame(ALIGNED_CENTER, 4, "© 2020 V10lator <v10lator@myway.de>");
 	
-	textToFrame(0, 3, "Press \uE001 to go back");
+	textToFrame(0, 7, "Update available!");
+	lineToFrame(MAX_LINES - 3, SCREEN_COLOR_WHITE);
+	strcpy(toScreen, "Press \uE000 to update to ");
+	strcat(toScreen, newVersion);
+	textToFrame(0, MAX_LINES - 2, toScreen);
+	textToFrame(0, MAX_LINES - 1, "Press \uE001 to cancel");
 	drawFrame();
 }
 
-void configMenu()
+bool updateMenu(char *newVersion)
 {
-	drawConfigMenu();
+	drawUpdateMenuFrame(newVersion);
 	
 	while(AppRunning())
 	{
 		if(app == 2)
 			continue;
 		if(app == 9)
-			drawConfigMenu();
+			drawUpdateMenuFrame(newVersion);
 		
 		showFrame();
 		
 		switch(vpad.trigger)
 		{
 			case VPAD_BUTTON_A:
-//				;
-//				char newUrl[1024];
-//				if(showKeyboard(KEYBOARD_TYPE_NORMAL, newUrl, CHECK_URL, 1024, false, getTitleKeySite(), "SAVE"))
-//					setTitleKeySite(newUrl);
-				setUseOnlineTitleDB(!useOnlineTitleDB());
-				drawConfigMenu();
-				break;
-			case VPAD_BUTTON_X:
-				setUpdateCheck(!updateCheckEnabled());
-				drawConfigMenu();
-				break;
+				update(newVersion);
+				return true;
 			case VPAD_BUTTON_B:
-				saveConfig();
-				if(!useOnlineTitleDB())
-					clearTitles();
-				initTitles();
-				return;
+				return false;
 		}
 	}
+	
+	// 0xDEADC0DE
+	return false;
 }

@@ -31,6 +31,7 @@
 #include <status.h>
 #include <ticket.h>
 #include <titles.h>
+#include <updater.h>
 #include <usb.h>
 #include <utils.h>
 #include <cJSON.h>
@@ -169,18 +170,21 @@ int main()
 					
 						if(initConfig())
 						{
-							initTitles();
-							
-							mainMenu(); // main loop
-							
-							debugPrintf("Deinitializing libraries...");
-							clearTitles();
-							saveConfig();
-							
-							#ifdef NUSSPLI_DEBUG
-							debugPrintf("Checking thread stacks...");
-							OSCheckActiveThreads();
-							#endif
+							if(!updateCheck())
+							{
+								initTitles();
+								
+								mainMenu(); // main loop
+								
+								debugPrintf("Deinitializing libraries...");
+								clearTitles();
+								saveConfig();
+								
+								#ifdef NUSSPLI_DEBUG
+								debugPrintf("Checking thread stacks...");
+								OSCheckActiveThreads();
+								#endif
+							}
 						}
 						else
 							lerr = "Couldn't load config file!";
