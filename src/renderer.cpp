@@ -47,7 +47,6 @@
 #include <goodbyeTex_png.h>
 #include <input.h>
 #include <renderer.h>
-#include <osdefs.h>
 #include <swkbd_wrapper.h>
 #include <utils.h>
 #include <menu/utils.h>
@@ -284,7 +283,7 @@ void initRenderer()
 	
 	FT_Bytes ttf;
 	size_t ttfSize;
-	OSGetSharedData(2, 0, &ttf, &ttfSize);
+	OSGetSharedData(OS_SHAREDDATATYPE_FONT_STANDARD, 0, (void **)&ttf, &ttfSize);
 	font = new FreeTypeGX(ttf, ttfSize);
 	spaceWidth = font->getCharWidth(L' ', FONT_SIZE);
 	

@@ -149,5 +149,5 @@ void Swkbd_Destroy()
 
 bool Swkbd_IsHidden()
 {
-	return nn::swkbd::GetStateInputForm() == nn::swkbd::State::Unknown0;
+	return nn::swkbd::GetStateInputForm() == nn::swkbd::State::Hidden;
 }

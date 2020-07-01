@@ -50,7 +50,6 @@ extern bool MCP_DeleteTitleDoneAsync(int handle, bool *out);
 
 // OSDynLoad
 extern int OSDynLoad_GetRPLInfo(uint32_t unk01, uint32_t size, RPX_Info *out);
-extern bool OSGetSharedData(uint32_t a, uint32_t b, FT_Bytes *font, size_t *size);
 
 #ifdef __cplusplus
 	}
