@@ -38,7 +38,7 @@
 #define TITLE_DB "http://napi.nbg01.v10lator.de/?v="NUSSPLI_VERSION
 
 char *titleMemArea = NULL;
-char **titleNames[8] = { NULL };
+char **titleNames[8];
 
 int transformTidHigh(uint32_t tidHigh)
 {
@@ -106,18 +106,7 @@ bool initTitles()
 	showFrame();
 	
 	for(int i = 0; i < 8; i++)
-	{
-		titleNames[i] = MEMAllocFromDefaultHeap(0xFFFFFF);
-		if(titleNames[i] == NULL)
-		{
-			for(i-- ; i >= 0; i--)
-				MEMFreeToDefaultHeap(titleNames[i]);
-			
-			return false;
-		}
-		
-		OSBlockSet(titleNames[i], 0, 0xFFFFFF);
-	}
+		titleNames[i] = NULL;
 	
 	if(downloadFile(TITLE_DB, "JSON", FILE_TYPE_JSON | FILE_TYPE_TORAM) != 0)
 	{
@@ -142,31 +131,52 @@ bool initTitles()
 	
 	cJSON *curr[2];
 	int i;
-	uint32_t j;
+	size_t ma = 0;
+	size_t size;
 	char sj[9];
 	sj[0] = sj[1] = '0';
-	size_t ma = 0;
+	uint32_t j;
+	uint32_t maxJ;
 	cJSON_ArrayForEach(curr[0], json)
 	{
 		i = atoi(curr[0]->string);
 		if(i < 0 || i > 7)
 			continue;
 		
+		maxJ = 0;
 		cJSON_ArrayForEach(curr[1], curr[0])
 		{
-			size_t size = strlen(curr[1]->string);
+			size = strlen(curr[1]->string);
 			if(size != 6)
 				continue;
 			
-			size = strlen(curr[1]->valuestring);
+			size = strlen(curr[1]->valuestring) + 1;
 			if(size > 128)
 			{
 				debugPrintf("Too long title name detected!");
 				continue;
 			}
 			
-			ma += ++size;
+			j = 0;
+			strcpy(&sj[2], curr[1]->string);
+			hexToByte(sj, (uint8_t *)&j);
+			
+			if(j > maxJ)
+				maxJ = j;
+			
+			ma += size;
 		}
+		
+		titleNames[i] = MEMAllocFromDefaultHeap(++maxJ);
+		if(titleNames[i] == NULL)
+		{
+			cJSON_Delete(json);
+			clearRamBuf();
+			clearTitles();
+			return false;
+		}
+		
+		OSBlockSet(titleNames[i], 0, maxJ);
 	}
 	
 	titleMemArea = MEMAllocFromDefaultHeap(ma);
@@ -174,6 +184,7 @@ bool initTitles()
 	{
 		cJSON_Delete(json);
 		clearRamBuf();
+		clearTitles();
 		return false;
 	}
 	
@@ -186,23 +197,21 @@ bool initTitles()
 		
 		cJSON_ArrayForEach(curr[1], curr[0])
 		{
-			size_t size = strlen(curr[1]->string);
+			size = strlen(curr[1]->string);
 			if(size != 6)
 				continue;
 			
-			size = strlen(curr[1]->valuestring);
-			if(size > 1024)
-			{
-				debugPrintf("Too long title name detected!");
+			size = strlen(curr[1]->valuestring) + 1;
+			if(size > 128)
 				continue;
-			}
 			
 			j = 0;
 			strcpy(&sj[2], curr[1]->string);
 			hexToByte(sj, (uint8_t *)&j);
 			strcpy(ptr, curr[1]->valuestring);
+//			debugPrintf("titleNames[%d][0x%08X] = %s", i, j, ptr);
 			titleNames[i][j] = ptr;
-			ptr += size + 1;
+			ptr += size;
 		}
 	}
 	
@@ -214,17 +223,16 @@ bool initTitles()
 
 void clearTitles()
 {
-	if(titleNames[0] != NULL)
-	{
-		for(int i = 0; i < 8; i++)
+	for(int i = 0; i < 8; i++)
+		if(titleNames[i] != NULL)
+		{
 			MEMFreeToDefaultHeap(titleNames[i]);
-		
-		titleNames[0] = NULL;
-	}
+			titleNames[i] = NULL;
+		}
 	
 	if(titleMemArea == NULL)
 		return;
 	
 	MEMFreeToDefaultHeap(titleMemArea);
-	titleMemArea= NULL;
+	titleMemArea = NULL;
 }
