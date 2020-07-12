@@ -17,47 +17,50 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_OSDEFS_H
-#define NUSSPLI_OSDEFS_H
-
 #include <wut-fixups.h>
 
-#include <stdbool.h>
+#include <stdlib.h>
 
-#include <coreinit/mcp.h>
+#include <coreinit/thread.h>
+#include <padscore/wpad.h>
+#include <vpad/input.h>
 
-#ifdef __cplusplus
-	extern "C" {
-#endif
+#include <osdefs.h>
+#include <utils.h>
 
-typedef struct
+#define RUMBLE_STACK_SIZE 0x200
+
+static OSThread rumbleThread;
+static uint8_t rumbleThreadStack[RUMBLE_STACK_SIZE];
+static uint8_t pattern[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+
+static int rumbleThreadMain(int argc, const char **argv)
 {
-	char *name;
-	void *codeStart;
-	uint32_t unk01;
-	uint32_t codeSize;
-	void *dataStart;
-	uint32_t unk02;
-	uint32_t dataSize;
-	uint32_t unk03;
-	uint32_t unk04;
-	uint32_t unk05;
-} RPX_Info;
-
-extern void KPADShutdown();
-
-// MCP
-extern MCPError MCP_DeleteTitleAsync(int handle, char *path, MCPInstallTitleInfo *out);
-extern bool MCP_DeleteTitleDoneAsync(int handle, bool *out);
-
-// OSDynLoad
-extern int OSDynLoad_GetRPLInfo(uint32_t unk01, uint32_t size, RPX_Info *out);
-
-//WPAD:
-extern void WPADControlMotor(int controller, int onOff);
-
-#ifdef __cplusplus
+	int i = 3;
+	for(; i > 1; i--)
+		VPADControlMotor(VPAD_CHAN_0, pattern, 120);
+	
+	for(; i > -1; i--)
+	{
+		for(int j = 0; j < 4; j++)
+			WPADControlMotor(j, i);
+		
+		OSSleepTicks(OSSecondsToTicks(i));
 	}
+	
+	VPADStopMotor(VPAD_CHAN_0);
+#ifdef NUSSPLI_DEBUG
+	debugPrintf("Checking thread stacks...");
+	OSCheckActiveThreads();
 #endif
+	return 0;
+}
 
-#endif // ifndef NUSSPLI_OSDEFS_H
+void startRumble()
+{
+	if(!OSCreateThread(&rumbleThread, rumbleThreadMain, 0, NULL, rumbleThreadStack + RUMBLE_STACK_SIZE, RUMBLE_STACK_SIZE, 0, OS_THREAD_ATTRIB_DETACHED | OS_THREAD_ATTRIB_AFFINITY_CPU0))
+		return;
+	
+	OSSetThreadName(&rumbleThread, "NUSspli Rumble");
+	OSResumeThread(&rumbleThread);
+}

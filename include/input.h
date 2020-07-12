@@ -25,6 +25,7 @@
 
 #include <stdbool.h>
 
+#include <padscore/wpad.h>
 #include <vpad/input.h>
 
 #ifdef __cplusplus
@@ -47,6 +48,15 @@ typedef enum
 	KEYBOARD_TYPE_RESTRICTED,
 	KEYBOARD_TYPE_NORMAL
 } KeyboardType;
+
+typedef enum
+{
+	CT_WPAD_0 = WPAD_CHAN_0,
+	CT_WPAD_1 = WPAD_CHAN_1,
+	CT_WPAD_2 = WPAD_CHAN_2,
+	CT_WPAD_3 = WPAD_CHAN_3,
+	CT_VPAD_0 = 4 + VPAD_CHAN_0,
+} ControllerType;
 
 bool SWKBD_Init();
 void SWKBD_Shutdown();

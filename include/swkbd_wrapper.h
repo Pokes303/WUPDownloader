@@ -59,7 +59,7 @@ typedef struct
    char16_t *str;
    WUT_UNKNOWN_BYTES(0x9C - 0x20);
    uint32_t framerate;
-   WUT_UNKNOWN_BYTES(4);
+   bool showCursor;
    int32_t unk_0xA4;
 } Swkbd_ConfigArg;
 WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x00, languageType);
@@ -71,6 +71,7 @@ WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x14, unk_0x14);
 WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x18, unk_0x18);
 WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x1C, str);
 WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x9C, framerate);
+WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0xA0, showCursor);
 WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0xA4, unk_0xA4);
 WUT_CHECK_SIZE(Swkbd_ConfigArg, 0xA8);
 

@@ -28,8 +28,6 @@
 	extern "C" {
 #endif
 
-extern uint8_t vibrationPattern[];
-
 bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, bool toUsb, bool keepFiles);
 
 #ifdef __cplusplus

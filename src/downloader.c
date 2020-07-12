@@ -34,6 +34,7 @@
 #include <memdebug.h>
 #include <menu/utils.h>
 #include <renderer.h>
+#include <rumbleThread.h>
 #include <status.h>
 #include <ticket.h>
 #include <titles.h>
@@ -725,8 +726,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 	drawFrame();
 	showFrame();
 	
-	for(int i = 0; i < 0x10; i++)
-		VPADControlMotor(VPAD_CHAN_0, vibrationPattern, 0xF);
+	startRumble();
 	
 	while(AppRunning())
 	{

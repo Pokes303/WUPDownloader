@@ -69,7 +69,7 @@ static inline void startNewFrame()
 void startNewFrame();
 void showFrame();
 void drawFrame();
-void drawKeyboard();
+void drawKeyboard(bool tv);
 void textToFrame(int row, int column, const char* str);
 void lineToFrame(int column, uint32_t color);
 void boxToFrame(int lineStart, int lineEnd);

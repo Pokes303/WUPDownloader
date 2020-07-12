@@ -35,6 +35,7 @@
 #include <input.h>
 #include <installer.h>
 #include <renderer.h>
+#include <rumbleThread.h>
 #include <status.h>
 #include <usb.h>
 #include <utils.h>
@@ -46,8 +47,6 @@ typedef struct
 	bool processing;
 	MCPError err;
 } McpInstallationData;
-
-uint8_t vibrationPattern[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
 // The callback function. It tells the install function that installation finished and passes the error code (if any)
 static void mcpCallback(IOSError err, void *rawData)
@@ -334,8 +333,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	if(!fromUSB && !keepFiles)
 		removeDirectory(path);
 	
-	for (int i = 0; i < 0x10; i++)
-		VPADControlMotor(VPAD_CHAN_0, vibrationPattern, 0xF);
+	startRumble();
 	
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 	textToFrame(0, 0, game);

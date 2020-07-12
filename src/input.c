@@ -35,10 +35,14 @@
 #include <coreinit/memfrmheap.h>
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
+#include <padscore/kpad.h>
+#include <padscore/wpad.h>
 
 //WIP. This need a better implementation
 
 VPADStatus vpad;
+KPADStatus kpad[4];
+ControllerType lastUsedController;
 
 Swkbd_CreateArg createArg;
 
@@ -103,10 +107,9 @@ void SWKBD_Render(KeyboardChecks check)
 	
 	Swkbd_ControllerInfo controllerInfo;
 	controllerInfo.vpad = &vpad;
-	controllerInfo.kpad[0] = NULL;
-	controllerInfo.kpad[1] = NULL;
-	controllerInfo.kpad[2] = NULL;
-	controllerInfo.kpad[3] = NULL;
+	for(int i = 0; i < 4; i++)
+		controllerInfo.kpad[i] = &kpad[i];
+	
 	Swkbd_Calc(controllerInfo); //TODO: Do this in a new thread?
 
 	if (Swkbd_IsNeedCalcSubThreadFont())
@@ -115,7 +118,7 @@ void SWKBD_Render(KeyboardChecks check)
 		debugPrintf("SWKBD nn::swkbd::IsNeedCalcSubThreadFont()");
 	}
 
-	drawKeyboard();
+	drawKeyboard(lastUsedController != CT_VPAD_0);
 }
 
 bool SWKBD_Show(KeyboardType type, int maxlength, bool limit, const char *okStr) {
@@ -145,13 +148,14 @@ bool SWKBD_Show(KeyboardType type, int maxlength, bool limit, const char *okStr)
 	OSBlockSet(&appearArg.keyboardArg.receiverArg, 0, sizeof(Swkbd_ReceiverArg));
 	
 	appearArg.keyboardArg.configArg.languageType = Swkbd_LanguageType__English;
-	appearArg.keyboardArg.configArg.unk_0x04 = 4;
+	appearArg.keyboardArg.configArg.unk_0x04 = lastUsedController;
 	appearArg.keyboardArg.configArg.unk_0x08 = 2;
 	appearArg.keyboardArg.configArg.unk_0x0C = 2;
 	appearArg.keyboardArg.configArg.unk_0x10 = 2;
 	appearArg.keyboardArg.configArg.unk_0x14 = -1;
 	appearArg.keyboardArg.configArg.str = okStrL;
 	appearArg.keyboardArg.configArg.framerate = FRAMERATE_30FPS;
+	appearArg.keyboardArg.configArg.showCursor = true;
 	appearArg.keyboardArg.configArg.unk_0xA4 = -1;
 	
 	appearArg.keyboardArg.receiverArg.unk_0x14 = 2;
@@ -180,6 +184,8 @@ bool SWKBD_Show(KeyboardType type, int maxlength, bool limit, const char *okStr)
 	okButtonEnabled = limit || maxlength == -1;
 	Swkbd_SetEnableOkButton(okButtonEnabled);
 	
+	VPADSetSensorBar(VPAD_CHAN_0, true);
+	
 	debugPrintf("nn::swkbd::AppearInputForm success");
 	return true;
 }
@@ -193,6 +199,7 @@ void SWKBD_Hide()
 		return;
 	}
 	
+	VPADSetSensorBar(VPAD_CHAN_0, false);
 	Swkbd_DisappearInputForm();
 	
 	// DisappearInputForm() wants to render a fade out animation
@@ -239,29 +246,120 @@ void SWKBD_Shutdown()
 void readInput()
 {
 	VPADReadError vError;
-	bool run = true;
-	while(run)
+	VPADRead(VPAD_CHAN_0, &vpad, 1, &vError);
+	if(vError != VPAD_READ_SUCCESS)
+		OSBlockSet(&vpad, 0, sizeof(VPADStatus));
+	else if(vpad.trigger != 0 && Swkbd_IsHidden())
+		lastUsedController = CT_VPAD_0;
+	
+	bool altCon = false;
+	uint32_t controllerType;
+	for(int i = 0; i < 4; i++)
 	{
-		VPADRead(VPAD_CHAN_0, &vpad, 1, &vError);
+		if(WPADProbe(i, &controllerType) != 0)
+			continue;
 		
-		if(!run)
-			break;
+		OSBlockSet(&kpad[i], 0, sizeof(KPADStatus));
+		KPADRead(i, &kpad[i], 1);
 		
-		switch(vError)
+		if(vpad.trigger == 0)
 		{
-			case VPAD_READ_NO_SAMPLES:
-				OSSleepTicks(10);
-				break;
-			case VPAD_READ_INVALID_CONTROLLER:
-				OSBlockSet(&vpad, 0, sizeof(VPADStatus));
-				addErrorOverlay("Error reading the WiiU Gamepad!");
-				run = false;
-				break;
-			default:
-				removeErrorOverlay();
-				run = false;
+			altCon = true;
+			if(controllerType == WPAD_EXT_PRO_CONTROLLER || // With a simple input like ours we're able to handle Wii u pro as Wii classic controllers.
+					controllerType == WPAD_EXT_CLASSIC ||
+					controllerType == WPAD_EXT_MPLUS_CLASSIC)
+			{
+				switch(kpad[i].classic.trigger)
+				{
+					case WPAD_CLASSIC_BUTTON_A:
+						vpad.trigger = VPAD_BUTTON_A;
+						break;
+					case WPAD_CLASSIC_BUTTON_B:
+						vpad.trigger = VPAD_BUTTON_B;
+						break;
+					case WPAD_CLASSIC_BUTTON_X:
+						vpad.trigger = VPAD_BUTTON_X;
+						break;
+					case WPAD_CLASSIC_BUTTON_Y:
+						vpad.trigger = VPAD_BUTTON_Y;
+						break;
+					case WPAD_CLASSIC_BUTTON_UP:
+						vpad.trigger = VPAD_BUTTON_UP;
+						break;
+					case WPAD_CLASSIC_BUTTON_DOWN:
+						vpad.trigger = VPAD_BUTTON_DOWN;
+						break;
+					case WPAD_CLASSIC_BUTTON_LEFT:
+						vpad.trigger = VPAD_BUTTON_LEFT;
+						break;
+					case WPAD_CLASSIC_BUTTON_RIGHT:
+						vpad.trigger = VPAD_BUTTON_RIGHT;
+						break;
+					case WPAD_CLASSIC_BUTTON_PLUS:
+						vpad.trigger = VPAD_BUTTON_PLUS;
+						break;
+					case WPAD_CLASSIC_BUTTON_MINUS:
+						vpad.trigger = VPAD_BUTTON_MINUS;
+						break;
+					case WPAD_CLASSIC_BUTTON_HOME:
+						vpad.trigger = VPAD_BUTTON_HOME;
+						break;
+				}
+				
+				if(vpad.trigger != 0)
+				{
+					if(Swkbd_IsHidden())
+						lastUsedController = i;
+					
+					continue;
+				}
+			}
+				
+			switch(kpad[i].trigger)
+			{
+				case WPAD_BUTTON_A:
+					vpad.trigger = VPAD_BUTTON_A;
+					break;
+				case WPAD_BUTTON_B:
+					vpad.trigger = VPAD_BUTTON_B;
+					break;
+				case WPAD_BUTTON_1:
+					vpad.trigger = VPAD_BUTTON_X;
+					break;
+				case WPAD_BUTTON_2:
+					vpad.trigger = VPAD_BUTTON_Y;
+					break;
+				case WPAD_BUTTON_UP:
+					vpad.trigger = VPAD_BUTTON_UP;
+					break;
+				case WPAD_BUTTON_DOWN:
+					vpad.trigger = VPAD_BUTTON_DOWN;
+					break;
+				case WPAD_BUTTON_LEFT:
+					vpad.trigger = VPAD_BUTTON_LEFT;
+					break;
+				case WPAD_BUTTON_RIGHT:
+					vpad.trigger = VPAD_BUTTON_RIGHT;
+					break;
+				case WPAD_BUTTON_PLUS:
+					vpad.trigger = VPAD_BUTTON_PLUS;
+					break;
+				case WPAD_BUTTON_MINUS:
+					vpad.trigger = VPAD_BUTTON_MINUS;
+					break;
+				case WPAD_BUTTON_HOME:
+					vpad.trigger = VPAD_BUTTON_HOME;
+			}
+			
+			if(vpad.trigger != 0 && Swkbd_IsHidden())
+				lastUsedController = i;
 		}
 	}
+	
+	if(!altCon && vError == VPAD_READ_INVALID_CONTROLLER)
+		addErrorOverlay("No Controller connected!");
+	else
+		removeErrorOverlay();
 }
 
 bool showKeyboard(KeyboardType type, char *output, KeyboardChecks check, int maxlength, bool limit, const char *input, const char *okStr) {
@@ -306,13 +404,7 @@ bool showKeyboard(KeyboardType type, char *output, KeyboardChecks check, int max
 			char *inputFormString = Swkbd_GetInputFormString();
 			if(inputFormString != NULL)
 			{
-				size_t ifslen = strlen(inputFormString);
-				close = ifslen == 0;
-				if(!close)
-				{
-					inputFormString[ifslen] = '\0';
-					Swkbd_SetInputFormString(inputFormString);
-				}
+				close = strlen(inputFormString) == 0;
 				MEMFreeToDefaultHeap(inputFormString);
 			}
 		}

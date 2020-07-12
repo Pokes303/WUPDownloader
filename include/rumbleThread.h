@@ -17,47 +17,19 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_OSDEFS_H
-#define NUSSPLI_OSDEFS_H
+#ifndef NUSSPLI_RUMBLETHREAD_H
+#define NUSSPLI_RUMBLETHREAD_H
 
 #include <wut-fixups.h>
-
-#include <stdbool.h>
-
-#include <coreinit/mcp.h>
 
 #ifdef __cplusplus
 	extern "C" {
 #endif
 
-typedef struct
-{
-	char *name;
-	void *codeStart;
-	uint32_t unk01;
-	uint32_t codeSize;
-	void *dataStart;
-	uint32_t unk02;
-	uint32_t dataSize;
-	uint32_t unk03;
-	uint32_t unk04;
-	uint32_t unk05;
-} RPX_Info;
-
-extern void KPADShutdown();
-
-// MCP
-extern MCPError MCP_DeleteTitleAsync(int handle, char *path, MCPInstallTitleInfo *out);
-extern bool MCP_DeleteTitleDoneAsync(int handle, bool *out);
-
-// OSDynLoad
-extern int OSDynLoad_GetRPLInfo(uint32_t unk01, uint32_t size, RPX_Info *out);
-
-//WPAD:
-extern void WPADControlMotor(int controller, int onOff);
+void startRumble();
 
 #ifdef __cplusplus
 	}
 #endif
 
-#endif // ifndef NUSSPLI_OSDEFS_H
+#endif // ifndef NUSSPLI_RUMBLETHREAD_H

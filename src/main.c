@@ -26,6 +26,7 @@
 #include <installer.h>
 #include <ioThread.h>
 #include <memdebug.h>
+#include <osdefs.h>
 #include <otp.h>
 #include <renderer.h>
 #include <status.h>
@@ -56,6 +57,8 @@
 #include <curl/curl.h>
 #include <nn/ac/ac_c.h>
 #include <nn/result.h>
+#include <padscore/kpad.h>
+#include <padscore/wpad.h>
 #include <proc_ui/procui.h>
 #include <whb/crash.h>
 
@@ -163,13 +166,17 @@ int main()
 						drawFrame();
 						showFrame();
 						
+						KPADInit();
+						WPADEnableURCC(true);
+						
 						#ifdef NUSSPLI_DEBUG
 						debugPrintf("Checking thread stacks...");
 						OSCheckActiveThreads();
 						#endif
-					
+						
 						if(initConfig())
 						{
+							
 							if(!updateCheck())
 							{
 								initTitles();
@@ -189,6 +196,7 @@ int main()
 						else
 							lerr = "Couldn't load config file!";
 						
+						KPADShutdown();
 						shutdownIOThread();
 						debugPrintf("I/O thread closed");
 					}

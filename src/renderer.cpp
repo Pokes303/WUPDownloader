@@ -401,21 +401,27 @@ void drawFrame()
 	renderer->tvDrawDone();
 }
 
-void drawKeyboard()
+void drawKeyboard(bool tv)
 {
 	if(!rendererRunning)
 		return;
 	
 	renderer->prepareDrcRendering();
 	window->draw(renderer);
-	Swkbd_DrawDRC();
+	if(tv)
+		Swkbd_DrawTV();
+	else
+		Swkbd_DrawDRC();
 	if(errorOverlay != NULL)
 		errorOverlay->draw(renderer);
 	renderer->drcDrawDone();
 	
 	renderer->prepareTvRendering();
 	window->draw(renderer);
-	Swkbd_DrawTV();
+	if(tv)
+		Swkbd_DrawTV();
+	else
+		Swkbd_DrawDRC();
 	if(errorOverlay != NULL)
 		errorOverlay->draw(renderer);
 	renderer->tvDrawDone();
