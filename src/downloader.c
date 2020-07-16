@@ -40,6 +40,7 @@
 #include <titles.h>
 #include <utils.h>
 
+#include <coreinit/filesystem.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/time.h>
 #include <curl/curl.h>
@@ -473,8 +474,22 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 		errno = 0;
 		if(mkdir(installDir, 777) == -1)
 		{
+			int ie = errno;
 			char toScreen[1024];
-			sprintf(toScreen, "Error creating directory: %d %s", errno, strerror(errno));
+			switch(ie)
+			{
+				case FS_ERROR_WRITE_PROTECTED:	// Cafe, not yet mapped by WUT to
+				case EROFS:						// POSIX
+					strcpy(toScreen, "SD card write locked!");
+					break;
+				case FS_ERROR_MAX_FILES:
+				case FS_ERROR_MAX_DIRS:
+				case ENOSPC:
+					strcpy(toScreen, "Filesystem limits reached!");
+					break;
+				default:
+					sprintf(toScreen, "Error creating directory: %d %s", ie, strerror(ie));
+			}
 			
 			drawErrorFrame(toScreen, B_RETURN);
 			
