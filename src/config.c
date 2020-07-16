@@ -34,7 +34,6 @@
 #define CONFIG_VERSION 1
 
 bool changed = false;
-char thatTitleKeySite[TITLE_KEY_URL_MAX_SIZE]; // We keep this as we might need it later on. Currently it's not used through.
 bool useTitleDB = true;
 bool checkForUpdates = true;
 int configInitTries = 0;
@@ -48,8 +47,6 @@ bool initConfig()
 	}
 	
 	debugPrintf("Initializing config file...");
-	
-	strcpy(thatTitleKeySite, "http://enter.that.title.key/site/here");
 	
 	if(!fileExists(CONFIG_PATH))
 	{
@@ -77,13 +74,7 @@ bool initConfig()
 	if(json == NULL)
 		return false;
 	
-	cJSON *configEntry = cJSON_GetObjectItemCaseSensitive(json, "That Title Key Site");
-	if(configEntry != NULL && cJSON_IsString(configEntry) && configEntry->valuestring != NULL)
-		strcpy(thatTitleKeySite, configEntry->valuestring);
-	else
-		changed = true;
-	
-	configEntry = cJSON_GetObjectItemCaseSensitive(json, "Use online title DB");
+	cJSON *configEntry = cJSON_GetObjectItemCaseSensitive(json, "Use online title DB");
 	if(configEntry != NULL && cJSON_IsBool(configEntry))
 		useTitleDB = cJSON_IsTrue(configEntry);
 	else
@@ -143,14 +134,6 @@ bool saveConfig()
 	}
 	cJSON_AddItemToObject(config, "Check for updates", entry);
 	
-	entry = cJSON_CreateString(thatTitleKeySite);
-	if(entry == NULL)
-	{
-		cJSON_Delete(config);
-		return false;
-	}
-	cJSON_AddItemToObject(config, "That Title Key Site", entry);
-	
 	char *configString = cJSON_Print(config);
 	cJSON_Delete(config);
 	if(configString == NULL)
@@ -193,19 +176,5 @@ void setUpdateCheck(bool enabled)
 		return;
 	
 	checkForUpdates = enabled;
-	changed = true;
-}
-
-char *getTitleKeySite()
-{
-	return thatTitleKeySite;
-}
-
-void setTitleKeySite(char *url)
-{
-	if(strlen(url) + 1 > TITLE_KEY_URL_MAX_SIZE || strcmp(thatTitleKeySite, url) == 0)
-		return;
-	
-	strcpy(thatTitleKeySite, url);
 	changed = true;
 }

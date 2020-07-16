@@ -37,9 +37,6 @@ bool useOnlineTitleDB();
 void setUseOnlineTitleDB(bool use);
 bool updateCheckEnabled();
 void setUpdateCheck(bool enabled);
-// Don't use / deprecated
-//char *getTitleKeySite();
-//void setTitleKeySite(char *url);
 
 #ifdef __cplusplus
 	}
