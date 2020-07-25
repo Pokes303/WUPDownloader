@@ -22,7 +22,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include <coreinit/atomic.h>
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
@@ -70,7 +69,7 @@ void executeIOQueue()
 		fclose(sliceEntries[activeSliceBuffer[1]].file);
 	}
 	
-	OSSwapAtomic(&sliceEntries[activeSliceBuffer[1]].inUse, false);
+	sliceEntries[activeSliceBuffer[1]].inUse = false;
 	
 	if(++activeSliceBuffer[1] == MAX_IO_QUEUE_ENTRIES)
 		activeSliceBuffer[1] = 0;
@@ -79,6 +78,7 @@ void executeIOQueue()
 int ioThreadMain(int argc, const char **argv)
 {
 	debugPrintf("I/O queue running!");
+	ioWriteLock = false;
 	while(ioRunning)
 		executeIOQueue();
 	
@@ -97,7 +97,6 @@ bool initIOThread()
 	
 	ioRunning = true;
 	OSResumeThread(&ioThread);
-	OSSwapAtomic(&ioWriteLock, false);
 	return true;
 }
 
@@ -106,11 +105,11 @@ void shutdownIOThread()
 	if(!ioRunning)
 		return;
 	
-	OSSwapAtomic(&ioWriteLock, true);
+	ioWriteLock = true;
 	while(sliceEntries[activeSliceBuffer[1]].inUse)
 		;
 	
-	OSSwapAtomic(&ioRunning, false);
+	ioRunning = false;
 	int ret;
 	OSJoinThread(&ioThread, &ret);
 	debugPrintf("I/O thread returned: %d", ret);
@@ -147,7 +146,7 @@ size_t addToIOQueue(const void *buf, size_t size, size_t n, FILE *file)
 	sliceEntries[activeSliceBuffer[0]].buf = &sliceBuffer[activeSliceBuffer[0]][0];
 	sliceEntries[activeSliceBuffer[0]].size = sliceBufferPointer - sliceEntries[activeSliceBuffer[0]].buf;
 	sliceEntries[activeSliceBuffer[0]].file = file;
-	OSSwapAtomic(&sliceEntries[activeSliceBuffer[0]].inUse, true);
+	sliceEntries[activeSliceBuffer[0]].inUse = true;
 	
 	if(++activeSliceBuffer[0] == MAX_IO_QUEUE_ENTRIES)
 		activeSliceBuffer[0] = 0;
@@ -170,9 +169,9 @@ size_t addToIOQueue(const void *buf, size_t size, size_t n, FILE *file)
 void flushIOQueue()
 {
 	debugPrintf("Flushing...");
-	OSSwapAtomic(&ioWriteLock, true);
+	ioWriteLock = true;
 	while(sliceEntries[activeSliceBuffer[1]].inUse)
 		OSSleepTicks(256);
 	
-	OSSwapAtomic(&ioWriteLock, false);
+	ioWriteLock = false;
 }
