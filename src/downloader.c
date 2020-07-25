@@ -56,6 +56,7 @@ size_t ramBufSize = 0;
 char *downloading = "UNKNOWN";
 bool downloadPaused = false;
 OSTime lastDraw = 0;
+OSTime lastTransfair = 0;
 
 static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData)
 {
@@ -76,41 +77,78 @@ static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData
 	return size;
 }
 
-static int progressCallback(void *curl, double dltotal, double dlnow, double ultotal, double ulnow)
+typedef enum
 {
-	OSTime now = OSGetSystemTime();
-	if(lastDraw > 0 && OSTicksToMilliseconds(now - lastDraw) < 1000)
-		return 0;
-	
-	lastDraw = now;
-	
+	CDE_OK,
+	CDE_TIMEOUT,
+	CDE_CANCELLED,
+} CURL_DATA_ERROR;
+
+typedef struct
+{
+	CURL *curl;
+	CURL_DATA_ERROR error;
+} curlProgressData;
+
+static int progressCallback(void *rawData, double dltotal, double dlnow, double ultotal, double ulnow)
+{
 	if(AppRunning())
 	{
+/*
 		if(app == 2)
 		{
-			if(!downloadPaused && curl_easy_pause(curl, CURLPAUSE_ALL) == CURLE_OK)
+			if(!downloadPaused && curl_easy_pause(((curlProgressData *)rawData)->curl, CURLPAUSE_ALL) == CURLE_OK)
 			{
 				downloadPaused = true;
 				debugPrintf("Download paused!");
 			}
 			return 0;
 		}
-		if(downloadPaused && curl_easy_pause(curl, CURLPAUSE_CONT) == CURLE_OK)
+		if(downloadPaused && curl_easy_pause(((curlProgressData *)rawData)->curl, CURLPAUSE_CONT) == CURLE_OK)
 		{
 			downloadPaused = false;
+			lastDraw = lastTransfair = 0;
 			debugPrintf("Download resumed");
 		}
+*/
 	}
 	else
 	{
 		debugPrintf("Download cancelled!");
+		((curlProgressData *)rawData)->error = CDE_CANCELLED;
 		return 1;
 	}
+	
+	OSTime now = OSGetSystemTime();
+	
+	if(lastDraw > 0 && OSTicksToMilliseconds(now - lastDraw) < 1000)
+		return 0;
+	
+	bool dling = dltotal > 0.0d && !isinf(dltotal) && !isnan(dltotal);
+	double dls;
+	if(dling)
+	{
+		dls = dlnow - downloaded;
+		if(dls < 0.01d)
+		{
+			if(lastTransfair > 0 && OSTicksToSeconds(now - lastTransfair) > 30)
+			{
+				((curlProgressData *)rawData)->error = CDE_TIMEOUT;
+				return 1;
+			}
+		}
+		else
+			lastTransfair = now;
+	}
+	else
+		lastTransfair = now;
+	
+	lastDraw = now;
 	
 	//debugPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", downloading, dcontent, contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
 	startNewFrame();
 	char tmpString[13 + strlen(downloading)];
-	if (dltotal == 0 || isinf(dltotal) || isnan(dltotal))
+	if(!dling)
 	{
 		strcpy(tmpString, "Preparing ");
 		strcat(tmpString, downloading);
@@ -155,10 +193,10 @@ static int progressCallback(void *curl, double dltotal, double dlnow, double ult
 		textToFrame(ALIGNED_RIGHT, 0, tmpString);
 	}
 	
-	if(dlnow != 0)
+	if(dling)
 	{
 		char buf[32];
-		getSpeedString(dlnow - downloaded, buf);
+		getSpeedString(dls, buf);
 		
 		downloaded = dlnow;
 		textToFrame(ALIGNED_RIGHT, 1, buf);
@@ -251,7 +289,10 @@ int downloadFile(const char *url, char *file, FileType type)
     ret |= curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
 
 	ret |= curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressCallback);
-	ret |= curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, curl);
+	curlProgressData data;
+	data.curl = curl;
+	data.error = CDE_OK;
+	ret |= curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &data);
 	ret |= curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
 	
 	ret |= curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
@@ -288,6 +329,22 @@ int downloadFile(const char *url, char *file, FileType type)
 		
 		char toScreen[1024];
 		sprintf(toScreen, "curl_easy_perform returned a non-valid value: %d\n\n", ret);
+		if(ret == CURLE_ABORTED_BY_CALLBACK)
+		{
+			switch(data.error)
+			{
+				case CDE_TIMEOUT:
+					ret = CURLE_OPERATION_TIMEDOUT;
+					break;
+				case CDE_OK:
+					ret = CURLE_OK;
+					break;
+				case CDE_CANCELLED:
+					// Do nothing
+					;
+			}
+		}
+		
 		switch(ret) {
 			case CURLE_FAILED_INIT:
 			case CURLE_COULDNT_RESOLVE_HOST:
@@ -304,7 +361,8 @@ int downloadFile(const char *url, char *file, FileType type)
 				strcat(toScreen, "---> Network error\nFailed while trying to download data, probably your router was turned off,\ncheck the internet connecition and try again");
 				break;
 			case CURLE_ABORTED_BY_CALLBACK:
-				return 0;
+				debugPrintf("CURLE_ABORTED_BY_CALLBACK");
+				return 1;
 			default:
 				strcat(toScreen, "---> Unknown error\n");
 				strcat(toScreen, curlError);
@@ -611,6 +669,8 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 			
 			generateTik(tInstallDir, tid);
 			addToScreenLog("Fake ticket created successfully");
+			if(!AppRunning())
+				return true;
 		}
 	}
 	else
@@ -669,6 +729,8 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 		addToIOQueue(NULL, 0, 0, cert);
 		
 		addToScreenLog("Cert created!");
+		if(!AppRunning())
+			return true;
 	}
 	else
 		addToScreenLog("Cert skipped!");
