@@ -43,7 +43,7 @@ static void iosuCallback(IOSError err, void *dummy)
 	fsaHandle = err == 0 ? -1 : err;
 }
 
-void IOSUHAXHookClose()
+static inline void IOSUHAXHookClose()
 {
 	//close down wupserver, return control to mcp
 	IOSUHAX_Close();
