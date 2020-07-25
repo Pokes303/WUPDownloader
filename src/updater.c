@@ -192,9 +192,9 @@ void showUpdateError(const char* msg)
 	drawErrorFrame(msg, B_RETURN);
 	while(AppRunning())
 	{
-		if(app == 2)
+		if(app == APP_STATE_BACKGROUND)
 			continue;
-		if(app == 9)
+		if(app == APP_STATE_RETURNING)
 			drawErrorFrame(msg, B_RETURN);
 		
 		showFrame();
@@ -421,9 +421,9 @@ void update(char *newVersion)
 		
 		while(AppRunning())
 		{
-			if(app == 2)
+			if(app == APP_STATE_BACKGROUND)
 				continue;
-			if(app == 9)
+			if(app == APP_STATE_RETURNING)
 			{
 				colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 				textToFrame(0, 0, "Update");

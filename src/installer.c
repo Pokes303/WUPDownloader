@@ -108,9 +108,9 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		
 		while(AppRunning())
 		{
-			if(app == 2)
+			if(app == APP_STATE_BACKGROUND)
 				continue;
-			if(app == 9)
+			if(app == APP_STATE_RETURNING)
 				drawErrorFrame(toScreen, B_RETURN);
 			
 			showFrame();
@@ -130,9 +130,9 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		
 		while(AppRunning())
 		{
-			if(app == 2)
+			if(app == APP_STATE_BACKGROUND)
 				continue;
-			if(app == 9)
+			if(app == APP_STATE_RETURNING)
 				drawErrorFrame(toUsb ? "Error opening USB device" : "Error opening internal memory", B_RETURN);
 			
 			showFrame();
@@ -191,9 +191,9 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		
 		while(AppRunning())
 		{
-			if(app == 2)
+			if(app == APP_STATE_BACKGROUND)
 				continue;
-			if(app == 9)
+			if(app == APP_STATE_RETURNING)
 				drawErrorFrame(toScreen, B_RETURN);
 			
 			showFrame();
@@ -316,9 +316,9 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		
 		while(AppRunning())
 		{
-			if(app == 2)
+			if(app == APP_STATE_BACKGROUND)
 				continue;
-			if(app == 9)
+			if(app == APP_STATE_RETURNING)
 				drawErrorFrame(toScreen, B_RETURN);
 			
 			showFrame();
@@ -343,9 +343,9 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	
 	while(AppRunning())
 	{
-		if(app == 2)
+		if(app == APP_STATE_BACKGROUND)
 			continue;
-		if(app == 9)
+		if(app == APP_STATE_RETURNING)
 		{
 			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 			textToFrame(0, 0, game);

@@ -117,9 +117,9 @@ void downloadMenu()
 	
 	while(AppRunning())
 	{
-		if(app == 2)
+		if(app == APP_STATE_BACKGROUND)
 			continue;
-		if(app == 9)
+		if(app == APP_STATE_RETURNING)
 			drawDownloadFrame1();
 		
 		showFrame();
@@ -146,9 +146,9 @@ void downloadMenu()
 	bool inst, toUSB;
 	while(loop && AppRunning())
 	{
-		if(app == 2)
+		if(app == APP_STATE_BACKGROUND)
 			continue;
-		if(app == 9)
+		if(app == APP_STATE_RETURNING)
 			drawDownloadFrame2(titleID, titleVer, folderName, usbMounted, dlToUSB, keepFiles);
 		
 		showFrame();

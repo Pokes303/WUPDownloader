@@ -36,9 +36,10 @@
 
 #include <stdbool.h>
 
-int app = 1;
+APP_STATE app = APP_STATE_RUNNING;
 bool shutdownEnabled = true;
-unsigned int standalone = 0xABCD;
+bool shutdownRequested = false;
+uint32_t standalone = 0xABCD;
 
 void enableShutdown()
 {
@@ -62,14 +63,7 @@ bool isStandalone()
 uint32_t homeButtonCallback(void *dummy)
 {
 	if(shutdownEnabled)
-	{
-		flushIOQueue();
-		unmountUSB();
-		if(isStandalone())
-			SYSLaunchMenu();
-		else
-			SYSRelaunchTitle(0, NULL);
-	}
+		shutdownRequested = true;
 	
 	return 0;
 }
@@ -83,35 +77,47 @@ void initStatus()
 
 bool AppRunning()
 {
+	if(shutdownRequested)
+	{
+		flushIOQueue();
+		unmountUSB();
+		if(isStandalone())
+			SYSLaunchMenu();
+		else
+			SYSRelaunchTitle(0, NULL);
+		
+		shutdownRequested = false;
+	}
+	
 	if(app)
 	{
 		switch(ProcUIProcessMessages(true))
 		{
 			case PROCUI_STATUS_EXITING:
 				// Being closed, deinit, free, and prepare to exit
-				app = 0;
+				app = APP_STATE_STOPPED;
 				break;
 			case PROCUI_STATUS_RELEASE_FOREGROUND:
 				// Free up MEM1 to next foreground app, deinit screen, etc.
-				if(app == 1 || app == 9)
+				if(app == APP_STATE_RUNNING || app == APP_STATE_RETURNING)
 					shutdownRenderer();
 				
-				app = 2;
+				app = APP_STATE_BACKGROUND;
 				ProcUIDrawDoneRelease();
 				break;
 			case PROCUI_STATUS_IN_FOREGROUND:
 				// Executed while app is in foreground
-				if(app == 2)
+				if(app == APP_STATE_BACKGROUND)
 				{
 					initRenderer();
-					app = 9;
+					app = APP_STATE_RETURNING;
 				}
 				else
-					app = 1;
+					app = APP_STATE_RUNNING;
 				
 				break;
 			case PROCUI_STATUS_IN_BACKGROUND:
-				app = 2;
+				app = APP_STATE_BACKGROUND;
 				break;
 		}
 	}

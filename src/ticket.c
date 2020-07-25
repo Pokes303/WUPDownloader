@@ -62,8 +62,10 @@ void generateTik(const char *path, const char *titleID)
 		{
 			showFrame();
 			
-			if(app == 2)
+			if(app == APP_STATE_BACKGROUND)
 				continue;
+			if(app == APP_STATE_RETURNING)
+				drawErrorFrame(err, B_RETURN);
 			
 			if(vpad.trigger == VPAD_BUTTON_B)
 				return;
@@ -164,8 +166,10 @@ bool generateFakeTicket()
 	{
 		showFrame();
 		
-		if(app == 2)
+		if(app == APP_STATE_BACKGROUND)
 			continue;
+		if(app == APP_STATE_RETURNING)
+			drawTicketFrame(titleID);
 		
 		switch(vpad.trigger)
 		{
@@ -195,8 +199,9 @@ bool generateFakeTicket()
 					{
 						showFrame();
 						
-						if(app == 2)
+						if(app == APP_STATE_BACKGROUND)
 							continue;
+						//TODO: APP_STATE_RETURNING
 						
 						if(vpad.trigger == VPAD_BUTTON_A)
 							return true;

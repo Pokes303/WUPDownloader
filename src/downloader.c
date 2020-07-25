@@ -98,7 +98,7 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 	if(AppRunning())
 	{
 /*
-		if(app == 2)
+		if(app == APP_STATE_BACKGROUND)
 		{
 			if(!downloadPaused && curl_easy_pause(((curlProgressData *)rawData)->curl, CURLPAUSE_ALL) == CURLE_OK)
 			{
@@ -305,9 +305,9 @@ int downloadFile(const char *url, char *file, FileType type)
 		
 		while(AppRunning())
 		{
-			if(app == 2)
+			if(app == APP_STATE_BACKGROUND)
 				continue;
-			if(app == 9)
+			if(app == APP_STATE_RETURNING)
 				drawErrorFrame(err, B_RETURN);
 		
 			showFrame();
@@ -422,9 +422,9 @@ int downloadFile(const char *url, char *file, FileType type)
 		
 		while(AppRunning())
 		{
-			if(app == 2)
+			if(app == APP_STATE_BACKGROUND)
 				continue;
-			if(app == 9)
+			if(app == APP_STATE_RETURNING)
 				drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
 			
 			showFrame();
@@ -471,9 +471,9 @@ int downloadFile(const char *url, char *file, FileType type)
 			
 			while(AppRunning())
 			{
-				if(app == 2)
+				if(app == APP_STATE_BACKGROUND)
 					continue;
-				if(app == 9)
+				if(app == APP_STATE_RETURNING)
 					drawErrorFrame("The download of title.tmd failed with error: 404\n\nThe title cannot be found on the NUS, maybe the provided title ID doesn't exists or\nthe TMD was deleted", B_RETURN | Y_RETRY);
 				
 				showFrame();
@@ -500,9 +500,9 @@ int downloadFile(const char *url, char *file, FileType type)
 			
 			while(AppRunning())
 			{
-				if(app == 2)
+				if(app == APP_STATE_BACKGROUND)
 					continue;
-				if(app == 9)
+				if(app == APP_STATE_RETURNING)
 					drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
 				
 				showFrame();
@@ -607,9 +607,9 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 			
 			while(AppRunning())
 			{
-				if(app == 2)
+				if(app == APP_STATE_BACKGROUND)
 					continue;
-				if(app == 9)
+				if(app == APP_STATE_RETURNING)
 					drawErrorFrame(toScreen, B_RETURN);
 				
 				showFrame();
@@ -861,9 +861,9 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 	
 	while(AppRunning())
 	{
-		if(app == 2)
+		if(app == APP_STATE_BACKGROUND)
 			continue;
-		if(app == 9)
+		if(app == APP_STATE_RETURNING)
 		{
 			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 			textToFrame(0, 0, gameName);

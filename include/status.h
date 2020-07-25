@@ -29,7 +29,16 @@
 	extern "C" {
 #endif
 
-extern int app;
+typedef enum
+{
+	APP_STATE_STOPPED = 0,
+	APP_STATE_RUNNING,
+	APP_STATE_BACKGROUND,
+	APP_STATE_RETURNING,
+	
+} APP_STATE;
+
+extern APP_STATE app;
 
 void initStatus();
 void enableShutdown();

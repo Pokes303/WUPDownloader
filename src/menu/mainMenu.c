@@ -82,9 +82,9 @@ void mainMenu()
 	
 	while(AppRunning())
 	{
-		if(app == 2)
+		if(app == APP_STATE_BACKGROUND)
 			continue;
-		if(app == 9)
+		if(app == APP_STATE_RETURNING)
 			drawMainMenuFrame();
 		
 		showFrame();

@@ -68,9 +68,9 @@ void installerMenu(const char *dir)
 	
 	while(AppRunning())
 	{
-		if(app == 2)
+		if(app == APP_STATE_BACKGROUND)
 			continue;
-		if(app == 9)
+		if(app == APP_STATE_RETURNING)
 			drawInstallerMenuFrame(fromUSB, keepFiles);
 		
 		showFrame();
