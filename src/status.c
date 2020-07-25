@@ -37,7 +37,6 @@
 #include <stdbool.h>
 
 int app = 1;
-bool appRunning = true;
 bool shutdownEnabled = true;
 unsigned int standalone = 0xABCD;
 
@@ -84,14 +83,13 @@ void initStatus()
 
 bool AppRunning()
 {
-	if(appRunning)
+	if(app)
 	{
 		switch(ProcUIProcessMessages(true))
 		{
 			case PROCUI_STATUS_EXITING:
 				// Being closed, deinit, free, and prepare to exit
 				app = 0;
-				appRunning = false;
 				break;
 			case PROCUI_STATUS_RELEASE_FOREGROUND:
 				// Free up MEM1 to next foreground app, deinit screen, etc.
@@ -118,5 +116,5 @@ bool AppRunning()
 		}
 	}
 	
-	return appRunning;
+	return app;
 }
