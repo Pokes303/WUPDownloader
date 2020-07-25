@@ -45,10 +45,13 @@
 #include <coreinit/time.h>
 #include <curl/curl.h>
 
+#define USERAGENT "NUSspli/"NUSSPLI_VERSION" (WarezLoader, like WUPDownloader)" // TODO: Spoof eShop here?
+
 uint16_t contents = 0xFFFF; //Contents count
 uint16_t dcontent = 0xFFFF; //Actual content number
 
 double downloaded;
+double onDisc;
 
 char *ramBuf = NULL;
 size_t ramBufSize = 0;
@@ -128,6 +131,9 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 	double dls;
 	if(dling)
 	{
+		dlnow += onDisc;
+		dltotal += onDisc;
+		
 		dls = dlnow - downloaded;
 		if(dls < 0.01d)
 		{
@@ -144,7 +150,6 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 		lastTransfair = now;
 	
 	lastDraw = now;
-	
 	//debugPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", downloading, dcontent, contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
 	startNewFrame();
 	char tmpString[13 + strlen(downloading)];
@@ -208,6 +213,46 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 	return 0;
 }
 
+static size_t headerResumeCallback(void *buf, size_t size, size_t multi, void *rawData)
+{
+	char *cb = (char *)buf;
+	if(cb[0] == '\r')
+		return 0;
+	
+	size *= multi;
+	cb[size - 2] = '\0';
+	
+	toLowercase(cb);
+	if(strcmp(cb, "accept-ranges: bytes") == 0)
+	{
+		*(bool *)rawData = true;
+		return 0;
+	}
+	
+	return size;
+}
+
+bool isResumeable(const char *url)
+{
+	CURL *curl = curl_easy_init();
+	if(curl == NULL)
+		return false;
+	
+	CURLcode ret = curl_easy_setopt(curl, CURLOPT_URL, url);
+	ret |= curl_easy_setopt(curl, CURLOPT_USERAGENT, USERAGENT);
+	ret |= curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+	
+	bool out = false;
+	ret |= curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerResumeCallback);
+	ret |= curl_easy_setopt(curl, CURLOPT_WRITEHEADER, &out);
+	
+	if(ret == CURLE_OK)
+		curl_easy_perform(curl);
+	
+	curl_easy_cleanup(curl);
+	return out;
+}
+
 int downloadFile(const char *url, char *file, FileType type)
 {
 	//Results: 0 = OK | 1 = Error | 2 = No ticket aviable | 3 = Exit
@@ -228,16 +273,25 @@ int downloadFile(const char *url, char *file, FileType type)
 		downloading = &file[++haystack];
 	}
 	
-	downloaded = 0.0D;
+	downloaded = onDisc = 0.0D;
 	
 	bool fileExist;
 	FILE *fp;
+	uint32_t fileSize;
 	if(toRam)
 		fp = open_memstream(&ramBuf, &ramBufSize);
 	else
 	{
 		fileExist = fileExists(file);
 		fp = fopen(file, fileExist ? "rb+" : "wb");
+		
+		if(fileExist)
+		{
+			fileSize = getFilesize(fp);
+			fileExist = fileSize > 0;
+		}
+		else
+			fileSize = 0;
 	}
 	
 	CURL *curl = curl_easy_init();
@@ -268,21 +322,21 @@ int downloadFile(const char *url, char *file, FileType type)
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curlError);
 	curlError[0] = '\0';
 	
-	{
-		//TODO: Spoof eShop here?
-		char ua[128];
-		strcpy(ua, "NUSspli/");
-		strcat(ua, NUSSPLI_VERSION);
-		strcat(ua, " (WarezLoader, like WUPDownloader)");
-		ret |= curl_easy_setopt(curl, CURLOPT_USERAGENT, ua);
-	}
+	ret |= curl_easy_setopt(curl, CURLOPT_USERAGENT, USERAGENT);
 	
-	uint32_t fileSize;
 	if(!toRam && fileExist)
 	{
-		fileSize = getFilesize(fp);
-		ret |= curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerCallback);
-		ret |= curl_easy_setopt(curl, CURLOPT_WRITEHEADER, &fileSize);
+		if(isResumeable(url))
+		{
+			onDisc = fileSize;
+			ret |= curl_easy_setopt(curl, CURLOPT_RESUME_FROM, fileSize);
+			fseek(fp, 0, SEEK_END);
+		}
+		else
+		{
+			ret |= curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerCallback);
+			ret |= curl_easy_setopt(curl, CURLOPT_WRITEHEADER, &fileSize);
+		}
 	}
 	
 	ret |= curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, toRam ? fwrite : addToIOQueue);
@@ -321,11 +375,6 @@ int downloadFile(const char *url, char *file, FileType type)
 	{
 		debugPrintf("curl_easy_perform returned an error: %s (%d)\nFile: %s\n\n", curlError, ret, toRam ? "<RAM>" : file);
 		curl_easy_cleanup(curl);
-		if(!toRam)
-		{
-			flushIOQueue();
-			remove(file);
-		}
 		
 		char toScreen[1024];
 		sprintf(toScreen, "curl_easy_perform returned a non-valid value: %d\n\n", ret);
@@ -391,15 +440,20 @@ int downloadFile(const char *url, char *file, FileType type)
 	}
 	debugPrintf("curl_easy_perform executed successfully");
 	
-	if(!toRam && fileExist && fileSize == 0)
-	{
-		curl_easy_cleanup(curl);
-		addToScreenLog("Download %s skipped!", downloading);
-		return 0;
-	}
-
 	long resp;
-	ret = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &resp);
+	if(!toRam && fileExist && fileSize == 0) // File skipped by headerCallback
+		resp = 200;
+	else
+	{
+		ret = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &resp);
+		switch(resp)
+		{
+			case 206: // Resumed download OK
+			case 416: // Invalid range request (we assume file already completely on disc)
+				resp = 200;
+		}
+	}
+	
 	curl_easy_cleanup(curl);
 	
 	debugPrintf("The download returned: %u", resp);
