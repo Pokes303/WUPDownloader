@@ -187,6 +187,7 @@ bool createDirRecursive(char *dir)
 
 void showUpdateError(const char* msg)
 {
+	enableShutdown();
 	drawErrorFrame(msg, B_RETURN);
 	while(AppRunning())
 	{
@@ -214,6 +215,7 @@ void showUpdateErrorf(const char *msg, ...)
 
 void update(char *newVersion)
 {
+	disableShutdown();
 	removeDirectory(UPDATE_TEMP_FOLDER);
 	if(mkdir(UPDATE_TEMP_FOLDER, 777) != 0)
 	{
@@ -391,6 +393,7 @@ void update(char *newVersion)
 		
 		install("Update", false, false, installPath, ownInfo.indexedDevice[0] == 'u', true);
 		removeDirectory(UPDATE_TEMP_FOLDER);
+		enableShutdown();
 	}
 	else
 	{
@@ -407,6 +410,7 @@ void update(char *newVersion)
 		moveDirectory(installPath, UPDATE_HBL_FOLDER);
 		removeDirectory(UPDATE_TEMP_FOLDER);
 		
+		enableShutdown();
 		colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 		textToFrame(0, 0, "Update");
 		textToFrame(0, 1, "Installed successfully!");
