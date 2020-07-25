@@ -27,6 +27,7 @@
 #include <ioThread.h>
 #include <osdefs.h>
 #include <renderer.h>
+#include <rumbleThread.h>
 #include <status.h>
 #include <utils.h>
 #include <cJSON.h>
@@ -411,6 +412,7 @@ void update(char *newVersion)
 		removeDirectory(UPDATE_TEMP_FOLDER);
 		
 		enableShutdown();
+		startRumble();
 		colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 		textToFrame(0, 0, "Update");
 		textToFrame(0, 1, "Installed successfully!");
