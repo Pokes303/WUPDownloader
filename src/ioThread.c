@@ -73,7 +73,7 @@ void executeIOQueue()
 	
 	sliceEntries[asl].inUse = false;
 	
-	if(++asl > MAX_IO_QUEUE_ENTRIES)
+	if(++asl == MAX_IO_QUEUE_ENTRIES)
 		asl = 0;
 	
 	activeWriteBuffer = asl;
@@ -125,8 +125,14 @@ size_t addToIOQueue(const void *buf, size_t size, size_t n, FILE *file)
 		if(!ioRunning)
 			return 0;
 	
-	size_t written, rest;
 	uint32_t asl = activeReadBuffer;
+	while(sliceEntries[asl].inUse)
+	{
+		debugPrintf("Waiting for free slot...");
+		OSSleepTicks(256);
+	}
+	
+	size_t written, rest;
 	if(buf != NULL)
 	{
 		size *= n;
@@ -157,12 +163,6 @@ size_t addToIOQueue(const void *buf, size_t size, size_t n, FILE *file)
 		asl = 0;
 	
 	activeReadBuffer = asl;
-	
-	while(sliceEntries[asl].inUse)
-	{
-		debugPrintf("Waiting for free slot...");
-		OSSleepTicks(256);
-	}
 	
 	sliceBufferPointer = &sliceBuffer[asl][0];
 	sliceBufferEnd = sliceBufferPointer + SLICE_SIZE;
