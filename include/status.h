@@ -38,7 +38,7 @@ typedef enum
 	
 } APP_STATE;
 
-extern APP_STATE app;
+extern volatile APP_STATE app;
 
 void initStatus();
 void enableShutdown();
