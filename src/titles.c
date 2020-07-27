@@ -38,22 +38,15 @@
 #define TITLE_DB "http://napi.nbg01.v10lator.de/?v="NUSSPLI_VERSION
 
 char *titleMemArea = NULL;
-char **titleNames[8];
+char **titleNames[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
 int transformTidHigh(uint32_t tidHigh)
 {
 	switch(tidHigh)
 	{
+		case TID_HIGH_GAME:
 		case TID_HIGH_DLC:
 		case TID_HIGH_UPDATE:
-			tidHigh = TID_HIGH_GAME;
-		default:
-			break;
-	}
-	
-	switch(tidHigh)
-	{
-		case TID_HIGH_GAME:
 			return 0;
 		case TID_HIGH_DEMO:
 			return 1;
@@ -84,12 +77,13 @@ char *tid2name(const char *tid)
 	tidHigh[8] = '\0';
 	
 	uint32_t tl;
-	hexToByte(tidHigh, (uint8_t *)&tl);
+	uint8_t *tlp = (uint8_t *)&tl;
+	hexToByte(tidHigh, tlp);
 	int tt = transformTidHigh(tl);
 	if(tt == -1)
 		return NULL;
 	
-	hexToByte(tid + 8, (uint8_t *)&tl);
+	hexToByte(tid + 8, tlp);
 	tl &= 0x00FFFFFF;
 	return titleNames[tt][tl];
 }
@@ -104,9 +98,6 @@ bool initTitles()
 	writeScreenLog();
 	drawFrame();
 	showFrame();
-	
-	for(int i = 0; i < 8; i++)
-		titleNames[i] = NULL;
 	
 	if(downloadFile(TITLE_DB, "JSON", FILE_TYPE_JSON | FILE_TYPE_TORAM) != 0)
 	{
@@ -223,16 +214,16 @@ bool initTitles()
 
 void clearTitles()
 {
+	if(titleMemArea != NULL)
+	{
+		MEMFreeToDefaultHeap(titleMemArea);
+		titleMemArea = NULL;
+	}
+	
 	for(int i = 0; i < 8; i++)
 		if(titleNames[i] != NULL)
 		{
 			MEMFreeToDefaultHeap(titleNames[i]);
 			titleNames[i] = NULL;
 		}
-	
-	if(titleMemArea == NULL)
-		return;
-	
-	MEMFreeToDefaultHeap(titleMemArea);
-	titleMemArea = NULL;
 }
