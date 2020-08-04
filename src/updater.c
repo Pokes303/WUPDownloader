@@ -46,8 +46,8 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#define UPDATE_CHECK_URL "http://napi.nbg01.v10lator.de/versioncheck.php?v="NUSSPLI_VERSION
-#define UPDATE_DL_URL "http://napi.nbg01.v10lator.de/dl.php?v="
+#define UPDATE_CHECK_URL "http://napi.nbg01.v10lator.de/versioncheck.php"
+#define UPDATE_DL_URL "http://napi.nbg01.v10lator.de/dl.php?t="
 #define UPDATE_TEMP_FOLDER "/vol/external01/NUSspli_temp/"
 #define UPDATE_HBL_FOLDER "/vol/external01/wiiu/apps/NUSspli"
 #define UPDATE_ZIP_BUF (2048 << 10) // 2 MB
@@ -232,8 +232,7 @@ void update(char *newVersion)
 		return;
 	}
 	
-	char url[128];
-	sprintf(url, UPDATE_DL_URL"%s&t=%c", newVersion, isStandalone() ? 'c' : 'h');
+	char *url = isStandalone() ? UPDATE_DL_URL"c" : UPDATE_DL_URL"h";
 	
 	if(downloadFile(url, "NUSspli.zip", FILE_TYPE_JSON | FILE_TYPE_TORAM) != 0)
 	{

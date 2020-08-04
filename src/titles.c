@@ -35,7 +35,7 @@
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 
-#define TITLE_DB "http://napi.nbg01.v10lator.de/?v="NUSSPLI_VERSION
+#define TITLE_DB "http://napi.nbg01.v10lator.de"
 
 char *titleMemArea = NULL;
 char **titleNames[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
