@@ -423,7 +423,7 @@ void update(char *newVersion)
 		startRumble();
 		colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 		textToFrame(0, 0, "Update");
-		textToFrame(0, 1, "Installed successfully!");
+		textToFrame(1, 0, "Installed successfully!");
 		writeScreenLog();
 		drawFrame();
 		
@@ -435,7 +435,7 @@ void update(char *newVersion)
 			{
 				colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 				textToFrame(0, 0, "Update");
-				textToFrame(0, 1, "Installed successfully!");
+				textToFrame(1, 0, "Installed successfully!");
 				writeScreenLog();
 				drawFrame();
 			}

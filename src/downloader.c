@@ -189,13 +189,13 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 		}
 		barToFrame(1, 0, 40, (float)(dlnow / dltotal) * 100.0f);
 		sprintf(tmpString, "%.2f / %.2f %s", dlnow / multiplier, dltotal / multiplier, multiplierName);
-		textToFrame(41, 1, tmpString);
+		textToFrame(1, 41, tmpString);
 	}
 	
 	if(contents < 0xFFFF)
 	{
 		sprintf(tmpString, "(%d/%d)", dcontent + 1, contents);
-		textToFrame(ALIGNED_RIGHT, 0, tmpString);
+		textToFrame(0, ALIGNED_RIGHT, tmpString);
 	}
 	
 	if(dling)
@@ -204,7 +204,7 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 		getSpeedString(dls, buf);
 		
 		downloaded = dlnow;
-		textToFrame(ALIGNED_RIGHT, 1, buf);
+		textToFrame(1, ALIGNED_RIGHT, buf);
 	}
 	
 	writeScreenLog();
@@ -852,7 +852,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 	
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 	textToFrame(0, 0, gameName);
-	textToFrame(0, 1, "Downloaded successfully!");
+	textToFrame(1, 0, "Downloaded successfully!");
 	writeScreenLog();
 	drawFrame();
 	showFrame();
@@ -867,7 +867,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 		{
 			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 			textToFrame(0, 0, gameName);
-			textToFrame(0, 1, "Downloaded successfully!");
+			textToFrame(1, 0, "Downloaded successfully!");
 			writeScreenLog();
 			drawFrame();
 		}

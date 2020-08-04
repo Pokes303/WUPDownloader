@@ -81,31 +81,30 @@ static inline GX2Color screenColorToGX2color(uint32_t color)
 	return gx2color;
 }
 
-void textToFrame(int row, int column, const char *str)
+void textToFrame(int line, int column, const char *str)
 {
 	if(!rendererRunning)
 		return;
 	
-	column += 2;
-	column *= -FONT_SIZE;
+	line += 2;
+	line *= -FONT_SIZE;
 	
 	GuiText *text = new GuiText(str);
 	
-	if(row == ALIGNED_CENTER)
+	switch(column)
 	{
-		text->setAlignment(ALIGN_TOP_CENTER);
-		text->setPosition(0.0f, column);
-	}
-	else if(row ==  ALIGNED_RIGHT)
-	{
-		text->setAlignment(ALIGN_TOP_RIGHT);
-		text->setPosition(-FONT_SIZE, column);
-	}
-	else
-	{
-		row *= spaceWidth;
-		text->setPosition(row + FONT_SIZE, column);
-		text->setMaxWidth(width - row, GuiText::DOTTED);
+		case ALIGNED_CENTER:
+			text->setAlignment(ALIGN_TOP_CENTER);
+			text->setPosition(0.0f, line);
+			break;
+		case ALIGNED_RIGHT:
+			text->setAlignment(ALIGN_TOP_RIGHT);
+			text->setPosition(-FONT_SIZE, line);
+			break;
+		default:
+			column *= spaceWidth;
+			text->setPosition(column + FONT_SIZE, line);
+			text->setMaxWidth(width - column, GuiText::DOTTED);
 	}
 	
 	window->append(text);
@@ -202,7 +201,7 @@ void barToFrame(int line, int column, uint32_t width, float progress)
 	char text[5];
 	sprintf(text, "%d%%", (int)progress);
 	tc -= strlen(text) >> 1;
-	textToFrame(tc, line, text);
+	textToFrame(line, tc, text);
 }
 
 void arrowToFrame(int line, int column)

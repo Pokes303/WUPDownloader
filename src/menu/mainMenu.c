@@ -40,39 +40,39 @@ void drawMainMenuFrame()
 {
 	startNewFrame();
 	boxToFrame(0, 5);
-	textToFrame(ALIGNED_CENTER, 1, "NUSspli");
+	textToFrame(1, ALIGNED_CENTER, "NUSspli");
 	char toScreen[256];
 	strcpy(toScreen, "NUS simple packet loader/installer [");
 	strcat(toScreen, NUSSPLI_VERSION);
 	strcat(toScreen, "]");
-	textToFrame(ALIGNED_CENTER, 3, toScreen);
+	textToFrame(3, ALIGNED_CENTER, toScreen);
 	
-	textToFrame(ALIGNED_CENTER, 4, "© 2020 V10lator <v10lator@myway.de>");
+	textToFrame(4, ALIGNED_CENTER, "© 2020 V10lator <v10lator@myway.de>");
 	
-	textToFrame(0, 13, "Press \uE000 to download content");
-	textToFrame(0, 14, "Press \uE002 to install content");
-	textToFrame(0, 15, "Press \uE003 to generate a fake <title.tik> file");
-	textToFrame(0, 16, "Press \uE07B for options");
-	textToFrame(0, 17, "Press \uE044 or \uE001 to exit");
+	textToFrame(13, 0, "Press \uE000 to download content");
+	textToFrame(14, 0, "Press \uE002 to install content");
+	textToFrame(15, 0, "Press \uE003 to generate a fake <title.tik> file");
+	textToFrame(16, 0, "Press \uE07B for options");
+	textToFrame(17, 0, "Press \uE044 or \uE001 to exit");
 	
-	textToFrame(MAX_CHARS - 24, 9, "Thanks to:      ");
-	textToFrame(MAX_CHARS - 23, 10, "• cJSON        ");
-	textToFrame(MAX_CHARS - 23, 11, "• E1ite007     ");
-	textToFrame(MAX_CHARS - 23, 12, "• libgui       ");
-	textToFrame(MAX_CHARS - 23, 13, "• Pokes303     ");
-	textToFrame(MAX_CHARS - 23, 14, "• Quarky       ");
-	textToFrame(MAX_CHARS - 23, 15, "• Simone Z.    ");
-	textToFrame(MAX_CHARS - 23, 16, "• WUP installer");
+	textToFrame(9, MAX_CHARS - 24, "Thanks to:      ");
+	textToFrame(10, MAX_CHARS - 23, "• cJSON        ");
+	textToFrame(11, MAX_CHARS - 23, "• E1ite007     ");
+	textToFrame(12, MAX_CHARS - 23, "• libgui       ");
+	textToFrame(13, MAX_CHARS - 23, "• Pokes303     ");
+	textToFrame(14, MAX_CHARS - 23, "• Quarky       ");
+	textToFrame(15, MAX_CHARS - 23, "• Simone Z.    ");
+	textToFrame(16, MAX_CHARS - 23, "• WUP installer");
 	
-	textToFrame(MAX_CHARS - 24, 18, "Beta testers:   ");
-	textToFrame(MAX_CHARS - 23, 19, "• Anonym       ");
-	textToFrame(MAX_CHARS - 23, 20, "• huma_dawii   ");
-	textToFrame(MAX_CHARS - 23, 21, "• jacobsson    ");
-	textToFrame(MAX_CHARS - 23, 22, "• pirate       ");
+	textToFrame(18, MAX_CHARS - 24, "Beta testers:   ");
+	textToFrame(19, MAX_CHARS - 23, "• Anonym       ");
+	textToFrame(20, MAX_CHARS - 23, "• huma_dawii   ");
+	textToFrame(21, MAX_CHARS - 23, "• jacobsson    ");
+	textToFrame(22, MAX_CHARS - 23, "• pirate       ");
 	
-	textToFrame(0, MAX_LINES - 3, "WARNING:");
-	textToFrame(1, MAX_LINES - 2, "• Don't eject the SD Card or the application will crash!");
-	textToFrame(1, MAX_LINES - 1, "• You are unable to exit while installing a game");
+	textToFrame(MAX_LINES - 3, 0, "WARNING:");
+	textToFrame(MAX_LINES - 2, 1, "• Don't eject the SD Card or the application will crash!");
+	textToFrame(MAX_LINES - 1, 1, "• You are unable to exit while installing a game");
 	drawFrame();
 }
 

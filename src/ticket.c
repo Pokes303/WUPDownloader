@@ -114,19 +114,19 @@ void drawTicketFrame(const char *titleID)
 {
 	startNewFrame();
 	textToFrame(0, 0, "Title ID:");
-	textToFrame(3, 1, titleID[0] == '\0' ? "NOT SET" : titleID);
+	textToFrame(1, 3, titleID[0] == '\0' ? "NOT SET" : titleID);
 	
 	if(titleID[0] == '\0')
-		textToFrame(0, 3, "You need to set the title ID to generate a fake ticket");
+		textToFrame(3, 0, "You need to set the title ID to generate a fake ticket");
 	
 	int line = MAX_LINES - 3;
-	textToFrame(0, line--, "Press \uE001 to return");
+	textToFrame(line--, 0, "Press \uE001 to return");
 	if(titleID[0] != '\0')
-		textToFrame(0, line--, "Press \uE000 to continue");
+		textToFrame(line--, 0, "Press \uE000 to continue");
 	lineToFrame(line, SCREEN_COLOR_WHITE);
 	
 	lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
-	textToFrame(0, MAX_LINES - 1, "Press \uE07B to set the title ID");
+	textToFrame(MAX_LINES - 1, 0, "Press \uE07B to set the title ID");
 	drawFrame();
 }
 
@@ -191,8 +191,8 @@ bool generateFakeTicket()
 					
 					colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 					textToFrame(0, 0, "Fake ticket generated on:");
-					textToFrame(0, 1, tikPath);
-					textToFrame(0, 3, "Press \uE000 to return");
+					textToFrame(1, 0, tikPath);
+					textToFrame(3, 0, "Press \uE000 to return");
 					drawFrame();
 					
 					while(AppRunning())

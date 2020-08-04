@@ -60,8 +60,9 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 {
 	startNewFrame();
 	textToFrame(0, 0, "Installing");
-	textToFrame(11, 0, game);
-	textToFrame(0, 1, "[  0%] Preparing...");
+	textToFrame(0, 11, game);
+	barToFrame(1, 0, 40, 0);
+	textToFrame(1, 41, "Preparing...");
 	writeScreenLog();
 	drawFrame();
 	showFrame();
@@ -246,7 +247,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 				textToFrame(0, 0, toScreen);
 				barToFrame(1, 0, 40, progress->sizeProgress * 100.0f / progress->sizeTotal);
 				sprintf(toScreen, "%.2f / %.2f %s", ((float)progress->sizeProgress) / multiplier, ((float)progress->sizeTotal) / multiplier, multiplierName);
-				textToFrame(41, 1, toScreen);
+				textToFrame(1, 41, toScreen);
 				
 				if(progress->sizeProgress != 0)
 				{
@@ -257,7 +258,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 						lsp = progress->sizeProgress;
 						lastSpeedCalc = now;
 					}
-					textToFrame(ALIGNED_RIGHT, 1, speedBuf);
+					textToFrame(1, ALIGNED_RIGHT, speedBuf);
 				}
 				
 				writeScreenLog();
@@ -337,7 +338,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 	textToFrame(0, 0, game);
-	textToFrame(0, 1, "Installed successfully!");
+	textToFrame(1, 0, "Installed successfully!");
 	writeScreenLog();
 	drawFrame();
 	
@@ -349,7 +350,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		{
 			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 			textToFrame(0, 0, game);
-			textToFrame(0, 1, "Installed successfully!");
+			textToFrame(1, 0, "Installed successfully!");
 			writeScreenLog();
 			drawFrame();
 		}

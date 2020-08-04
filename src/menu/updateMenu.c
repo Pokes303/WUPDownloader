@@ -31,21 +31,21 @@ void drawUpdateMenuFrame(char *newVersion)
 {
 	startNewFrame();
 	boxToFrame(0, 5);
-	textToFrame(ALIGNED_CENTER, 1, "NUSspli");
+	textToFrame(1, ALIGNED_CENTER, "NUSspli");
 	char toScreen[256];
 	strcpy(toScreen, "NUS simple packet loader/installer [");
 	strcat(toScreen, NUSSPLI_VERSION);
 	strcat(toScreen, "]");
-	textToFrame(ALIGNED_CENTER, 3, toScreen);
+	textToFrame(3, ALIGNED_CENTER, toScreen);
 	
-	textToFrame(ALIGNED_CENTER, 4, "© 2020 V10lator <v10lator@myway.de>");
+	textToFrame(4, ALIGNED_CENTER, "© 2020 V10lator <v10lator@myway.de>");
 	
-	textToFrame(0, 7, "Update available!");
+	textToFrame(7, 0, "Update available!");
 	lineToFrame(MAX_LINES - 3, SCREEN_COLOR_WHITE);
 	strcpy(toScreen, "Press \uE000 to update to ");
 	strcat(toScreen, newVersion);
-	textToFrame(0, MAX_LINES - 2, toScreen);
-	textToFrame(0, MAX_LINES - 1, "Press \uE001 to cancel");
+	textToFrame(MAX_LINES - 2, 0, toScreen);
+	textToFrame(MAX_LINES - 1, 0, "Press \uE001 to cancel");
 	drawFrame();
 }
 

@@ -33,8 +33,8 @@ void drawConfigMenu()
 {
 	startNewFrame();
 //	textToFrame(0, 0, "That Title Key Site:");
-//	textToFrame(0, 1, getTitleKeySite());
-//	textToFrame(0, 4, "Press \uE000 to change");
+//	textToFrame(1, 0, getTitleKeySite());
+//	textToFrame(4, 0, "Press \uE000 to change");
 	char toScreen[64];
 	strcpy(toScreen, "Press \uE000 to ");
 	strcat(toScreen, useOnlineTitleDB() ? "disable" : "enable");
@@ -44,9 +44,9 @@ void drawConfigMenu()
 	strcpy(toScreen, "Press \uE002 to ");
 	strcat(toScreen, updateCheckEnabled() ? "disable" : "enable");
 	strcat(toScreen, " online updates");
-	textToFrame(0, 1, toScreen);
+	textToFrame(1, 0, toScreen);
 	
-	textToFrame(0, 3, "Press \uE001 to go back");
+	textToFrame(3, 0, "Press \uE001 to go back");
 	drawFrame();
 }
 

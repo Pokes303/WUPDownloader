@@ -105,7 +105,7 @@ void writeScreenLog()
 	lineToFrame(2, SCREEN_COLOR_WHITE);
 	int i = 3;
 	for(DownloadLogList *entry = downloadLogList; entry != NULL; entry = entry->nextEntry)
-		textToFrame(0, i++, entry->line);
+		textToFrame(i++, 0, entry->line);
 }
 
 void drawErrorFrame(const char *text, ErrorOptions option)
@@ -125,18 +125,18 @@ void drawErrorFrame(const char *text, ErrorOptions option)
 			tmp[i] = text[i];
 		
 		tmp[size] = '\0';
-		textToFrame(0, line++, tmp);
+		textToFrame(line++, 0, tmp);
 		
 		text = l == NULL ? NULL : (l + 1);
 	}
 	
 	line = MAX_LINES - 1;
 	if((option & B_RETURN) == B_RETURN)
-		textToFrame(0, line--, "Press \uE001 to return");
+		textToFrame(line--, 0, "Press \uE001 to return");
 	if((option & Y_RETRY) == Y_RETRY)
-		textToFrame(0, line--, "Press \uE003 to retry");
+		textToFrame(line--, 0, "Press \uE003 to retry");
 	if((option & A_CONTINUE) == A_CONTINUE)
-		textToFrame(0, line--, "Press \uE000 to continue");
+		textToFrame(line--, 0, "Press \uE000 to continue");
 	lineToFrame(line, SCREEN_COLOR_WHITE);
 	
 	drawFrame();

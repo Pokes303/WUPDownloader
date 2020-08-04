@@ -31,20 +31,20 @@ void drawInstallerMenuFrame(bool fromUSB, bool keepFiles)
 	startNewFrame();
 	
 	lineToFrame(MAX_LINES - 6, SCREEN_COLOR_WHITE);
-	textToFrame(0, MAX_LINES - 5, "Press \uE000 to install to USB");
-	textToFrame(0, MAX_LINES - 4, "Press \uE002 to install to NAND");
-	textToFrame(0, MAX_LINES - 3, "Press \uE001 to return");
+	textToFrame(MAX_LINES - 5, 0, "Press \uE000 to install to USB");
+	textToFrame(MAX_LINES - 4, 0, "Press \uE002 to install to NAND");
+	textToFrame(MAX_LINES - 3, 0, "Press \uE001 to return");
 	
 	lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
 	if(fromUSB)
-		textToFrame(0, MAX_LINES - 1, "WARNING: Files on USB will always be deleted after installing!");
+		textToFrame(MAX_LINES - 1, 0, "WARNING: Files on USB will always be deleted after installing!");
 	else
 	{
 		char toFrame[128];
 		strcpy(toFrame, "Press \uE07B to ");
 		strcat(toFrame, keepFiles ? "delete" : "keep");
 		strcat(toFrame, " downloaded files after the installation");
-		textToFrame(0, MAX_LINES - 1, toFrame);
+		textToFrame(MAX_LINES - 1, 0, toFrame);
 	}
 	
 	drawFrame();

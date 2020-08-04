@@ -38,7 +38,7 @@
 void drawFBMenuFrame(char **folders, size_t foldersSize, const size_t pos, const size_t cursor, const bool onUSB)
 {
 	startNewFrame();
-	textToFrame(6, 0, "Select a folder:");
+	textToFrame(0, 6, "Select a folder:");
 	
 	boxToFrame(1, MAX_LINES - 3);
 	
@@ -46,18 +46,18 @@ void drawFBMenuFrame(char **folders, size_t foldersSize, const size_t pos, const
 	strcpy(toWrite, "Press \uE000 to select || \uE001 to return || \uE002 to switch to ");
 	strcat(toWrite, onUSB ? "SD" : "USB");
 	strcat(toWrite, " || \uE003 to refresh");
-	textToFrame(ALIGNED_CENTER, MAX_LINES - 2, toWrite);
+	textToFrame(MAX_LINES - 2, ALIGNED_CENTER, toWrite);
 	
 	strcpy(toWrite, "Searching on => ");
 	strcat(toWrite, onUSB ? "USB" : "SD");
 	strcat(toWrite, ":/install/");
-	textToFrame(ALIGNED_CENTER, MAX_LINES - 1, toWrite);
+	textToFrame(MAX_LINES - 1, ALIGNED_CENTER, toWrite);
 	
 	foldersSize -= pos;
 	size_t max = MAX_FILEBROWSER_LINES < foldersSize ? MAX_FILEBROWSER_LINES : foldersSize;
 	for(size_t i = 0; i < max; i++)
 	{
-		textToFrame(8, i + 2, folders[i + pos]);
+		textToFrame(i + 2, 8, folders[i + pos]);
 		if(cursor == i)
 			arrowToFrame(i + 2, 1);
 	}
