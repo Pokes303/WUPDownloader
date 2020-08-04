@@ -378,7 +378,7 @@ void showFrame()
 	if(!rendererRunning)
 		return;
 	
-	renderer->waitForVSync();
+	GX2WaitForFlip();
 	readInput();
 }
 
