@@ -59,6 +59,7 @@ uint32_t bgColor = SCREEN_COLOR_BLACK;
 uint32_t width, height;
 GuiSound *backgroundMusic;
 bool rendererRunning = false;
+GuiImageData *arrowData = NULL;
 
 int32_t spaceWidth;
 
@@ -103,9 +104,9 @@ void textToFrame(int row, int column, const char *str)
 	}
 	else
 	{
-		int w = FONT_SIZE + (row * spaceWidth);
-		text->setPosition(w, column);
-		text->setMaxWidth(width - w - FONT_SIZE, GuiText::DOTTED);
+		row *= spaceWidth;
+		text->setPosition(row + FONT_SIZE, column);
+		text->setMaxWidth(width - row, GuiText::DOTTED);
 	}
 	
 	window->append(text);
@@ -129,32 +130,33 @@ void boxToFrame(int lineStart, int lineEnd)
 	if(!rendererRunning)
 		return;
 	
-	int size = (lineEnd - lineStart) * FONT_SIZE;
-	
 	// Horizontal lines
 	lineToFrame(lineStart, SCREEN_COLOR_GRAY);
 	lineToFrame(lineEnd, SCREEN_COLOR_GRAY);
 	
 	// Vertical lines
 	GX2Color co = screenColorToGX2color(SCREEN_COLOR_GRAY);
+	int size = (lineEnd - lineStart) * FONT_SIZE;
+	int y = ((lineStart + 2) * -FONT_SIZE) + (FONT_SIZE >> 1);
 	
 	GuiImage *box = new GuiImage(3, size, co, GuiImage::IMAGE_COLOR);
 	box->setAlignment(ALIGN_TOP_LEFT);
-	box->setPosition(FONT_SIZE, ((lineStart + 2) * -FONT_SIZE) + (FONT_SIZE >> 1));
+	box->setPosition(FONT_SIZE, y);
 	window->append(box);
 	
 	box = new GuiImage(3, size, co, GuiImage::IMAGE_COLOR);
 	box->setAlignment(ALIGN_TOP_RIGHT);
-	box->setPosition(-FONT_SIZE, ((lineStart + 2) * -FONT_SIZE) + (FONT_SIZE >> 1));
+	box->setPosition(-FONT_SIZE, y);
 	window->append(box);
 	
-	// Backgtound - we paint it on top of the gray lines as they look better that way
+	// Background - we paint it on top of the gray lines as they look better that way
 	co = screenColorToGX2color(SCREEN_COLOR_BLACK);
 	co.a = 64;
 	size -= 6;
+	y -= 3;
 	box = new GuiImage(width - (FONT_SIZE << 1) - 6, size, co, GuiImage::IMAGE_COLOR);
 	box->setAlignment(ALIGN_TOP_CENTER);
-	box->setPosition(0.0f, (((lineStart + 2) * -FONT_SIZE) + (FONT_SIZE >> 1)) - 3);
+	box->setPosition(0.0f, y);
 	window->append(box);
 }
 
