@@ -33,7 +33,9 @@
 #include <stdbool.h>
 #include <string.h>
 
-void drawFBMenuFrame(char **folders, const int foldersSize, const int pos, const int cursor, const bool onUSB)
+#define MAX_FILEBROWSER_LINES (MAX_LINES - 5)
+
+void drawFBMenuFrame(char **folders, size_t foldersSize, const size_t pos, const size_t cursor, const bool onUSB)
 {
 	startNewFrame();
 	textToFrame(6, 0, "Select a folder:");
@@ -51,7 +53,9 @@ void drawFBMenuFrame(char **folders, const int foldersSize, const int pos, const
 	strcat(toWrite, ":/install/");
 	textToFrame(ALIGNED_CENTER, MAX_LINES - 1, toWrite);
 	
-	for(int i = 0; i < 13 && i < foldersSize; i++)
+	foldersSize -= pos;
+	size_t max = MAX_FILEBROWSER_LINES < foldersSize ? MAX_FILEBROWSER_LINES : foldersSize;
+	for(size_t i = 0; i < max; i++)
 	{
 		textToFrame(6, i + 2, folders[i + pos]);
 		if(cursor == i)
@@ -62,21 +66,18 @@ void drawFBMenuFrame(char **folders, const int foldersSize, const int pos, const
 
 char *fileBrowserMenu()
 {
-	int foldersSize = 1;
 	char *folders[1024];
 	folders[0] = MEMAllocFromDefaultHeap(3);
 	if(folders[0] == NULL)
 		return NULL;
 	
 	strcpy(folders[0], "./");
-	bool usbMounted;
-	bool onUSB = false;
-	DIR *dir;
 	
-	int cursor;
-	int pos;
-	int max = MAX_LINES - 5;
-	bool mov;
+	size_t foldersSize = 1;
+	size_t cursor, pos;
+	bool onUSB = false;
+	bool usbMounted, mov;
+	DIR *dir;
 	
 refreshDirList:
 	usbMounted = mountUSB();
@@ -87,7 +88,6 @@ refreshDirList:
 		MEMFreeToDefaultHeap(folders[i]);
 	foldersSize = 1;
 	cursor = pos = 0;
-	mov = foldersSize >= max;
 	
 	dir = opendir(onUSB ? INSTALL_DIR_USB : INSTALL_DIR_SD);
 	if(dir != NULL)
@@ -108,6 +108,7 @@ refreshDirList:
 	
 	drawFBMenuFrame(folders, foldersSize, pos, cursor, onUSB);
 	
+	mov = foldersSize >= MAX_FILEBROWSER_LINES;
 	char *ret = NULL;
 	while(AppRunning())
 	{
@@ -137,36 +138,33 @@ refreshDirList:
 			case VPAD_BUTTON_B:
 				goto exitFileBrowserMenu;
 			case VPAD_BUTTON_UP:
-				if(cursor <= 0)
+				if(cursor)
+					cursor--;
+				else
 				{
 					if(mov)
 					{
-						if(pos > 0)
+						if(pos)
 							pos--;
 						else
 						{
-							cursor = max;
-							pos = foldersSize % max - 1;
+							cursor = MAX_FILEBROWSER_LINES - 1;
+							pos = foldersSize % MAX_FILEBROWSER_LINES - 1;
 						}
 					}
 					else
 						cursor = foldersSize - 1;
 				}
-				else
-					cursor--;
 				
 				drawFBMenuFrame(folders, foldersSize, pos, cursor, onUSB);
 				break;
 			case VPAD_BUTTON_DOWN:
-				if(cursor >= max || cursor >= foldersSize - 1)
+				if(cursor >= foldersSize - 1 || cursor >= MAX_FILEBROWSER_LINES - 1)
 				{
-					if (mov && pos < foldersSize % max - 1)
+					if(mov && pos < foldersSize % MAX_FILEBROWSER_LINES - 1)
 						pos++;
 					else
-					{
-						cursor = 0;
-						pos = 0;
-					}
+						cursor = pos = 0;
 				}
 				else
 					cursor++;
