@@ -57,9 +57,9 @@ void drawFBMenuFrame(char **folders, size_t foldersSize, const size_t pos, const
 	size_t max = MAX_FILEBROWSER_LINES < foldersSize ? MAX_FILEBROWSER_LINES : foldersSize;
 	for(size_t i = 0; i < max; i++)
 	{
-		textToFrame(6, i + 2, folders[i + pos]);
+		textToFrame(8, i + 2, folders[i + pos]);
 		if(cursor == i)
-			textToFrame(1, i + 2, "-->");
+			arrowToFrame(i + 2, 1);
 	}
 	drawFrame();
 }

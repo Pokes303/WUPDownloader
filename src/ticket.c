@@ -126,7 +126,7 @@ void drawTicketFrame(const char *titleID)
 	lineToFrame(line, SCREEN_COLOR_WHITE);
 	
 	lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
-	textToFrame(0, MAX_LINES - 1, "Press \uE041 UP to set the title ID");
+	textToFrame(0, MAX_LINES - 1, "Press \uE07B to set the title ID");
 	drawFrame();
 }
 
@@ -212,7 +212,7 @@ bool generateFakeTicket()
 			case VPAD_BUTTON_B:
 				MEMFreeToDefaultHeap(dir);
 				return true;
-			case VPAD_BUTTON_UP:
+			case VPAD_BUTTON_LEFT:
 				showKeyboard(KEYBOARD_TYPE_RESTRICTED, titleID, CHECK_HEXADECIMAL, 16, true, titleID, NULL);
 				toLowercase(titleID);
 				drawTicketFrame(titleID);

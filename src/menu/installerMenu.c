@@ -41,7 +41,7 @@ void drawInstallerMenuFrame(bool fromUSB, bool keepFiles)
 	else
 	{
 		char toFrame[128];
-		strcpy(toFrame, "Press \uE041 LEFT to ");
+		strcpy(toFrame, "Press \uE07B to ");
 		strcat(toFrame, keepFiles ? "delete" : "keep");
 		strcat(toFrame, " downloaded files after the installation");
 		textToFrame(0, MAX_LINES - 1, toFrame);

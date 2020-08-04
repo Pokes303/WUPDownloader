@@ -79,7 +79,7 @@ void drawDownloadFrame2(const char *titleID, const char *titleVer, const char *f
 		textToFrame(0, line--, "WARNING: Files on USB will always be deleted after installing!");
 	else
 	{
-		strcpy(toFrame, "Press \uE041 LEFT to ");
+		strcpy(toFrame, "Press \uE07B to ");
 		strcat(toFrame, keepFiles ? "delete" : "keep");
 		strcat(toFrame, " downloaded files after the installation");
 		textToFrame(0, line--, toFrame);
@@ -87,9 +87,9 @@ void drawDownloadFrame2(const char *titleID, const char *titleVer, const char *f
 	
 	lineToFrame(line--, SCREEN_COLOR_WHITE);
 	
-	textToFrame(0, line--, "Press \uE041 DOWN to set a custom name to the download folder");
-	textToFrame(0, line--, "Press \uE041 RIGHT to set the title version");
-	textToFrame(0, line--, "Press \uE041 UP to set the title ID");
+	textToFrame(0, line--, "Press \uE07A to set a custom name to the download folder");
+	textToFrame(0, line--, "Press \uE07C to set the title version");
+	textToFrame(0, line--, "Press \uE079 to set the title ID");
 	lineToFrame(line--, SCREEN_COLOR_WHITE);
 	
 	textToFrame(0, line--, "Press \uE001 to return");

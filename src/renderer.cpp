@@ -204,6 +204,25 @@ void barToFrame(int line, int column, uint32_t width, float progress)
 	textToFrame(tc, line, text);
 }
 
+void arrowToFrame(int line, int column)
+{
+	if(!rendererRunning)
+		return;
+	
+	line += 3;
+	line *= -FONT_SIZE;
+	line += 0.25F * FONT_SIZE;
+	
+	GuiText *arrow = new GuiText("\u261E");
+	
+	column *= spaceWidth;
+	arrow->setFontSize(FONT_SIZE << 1);
+	arrow->setPosition(column + FONT_SIZE, line);
+	arrow->setMaxWidth(width - column, GuiText::DOTTED);
+	
+	window->append(arrow);
+}
+
 void addErrorOverlay(const char *err)
 {
 	if(!rendererRunning)
