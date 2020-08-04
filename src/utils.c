@@ -132,14 +132,23 @@ void initRandom()
 
 void getSpeedString(float bytePerSecond, char *out)
 {
-	bytePerSecond *= 8.0f; // byte to bit
+	float bitPerSecond = bytePerSecond * 8.0f;
+	
+	if(bitPerSecond < 1024.0f)
+		sprintf(out, "%.2f b/s (", bitPerSecond);
+	else if(bitPerSecond < 1024.0f * 1024.0f)
+		sprintf(out, "%.2f Kb/s (", bitPerSecond / 1024.0f);
+	else
+		sprintf(out, "%.2f Mb/s (", bitPerSecond / (1024.0f * 1024.0f));
+	
+	out += strlen(out);
 	
 	if(bytePerSecond < 1024.0f)
-		sprintf(out, "%.2f Bit/s", bytePerSecond);
+		sprintf(out, "%.2f B/s)", bytePerSecond);
 	else if(bytePerSecond < 1024.0f * 1024.0f)
-		sprintf(out, "%.2f Kbit/s", bytePerSecond / 1024.0f);
+		sprintf(out, "%.2f KB/s)", bytePerSecond / 1024.0f);
 	else
-		sprintf(out, "%.2f Mbit/s", bytePerSecond / (1024.0f * 1024.0f));
+		sprintf(out, "%.2f MB/s)", bytePerSecond / (1024.0f * 1024.0f));
 }
 
 uint8_t charToByte(char c)
