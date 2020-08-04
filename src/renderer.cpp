@@ -59,7 +59,6 @@ uint32_t bgColor = SCREEN_COLOR_BLACK;
 uint32_t width, height;
 GuiSound *backgroundMusic;
 bool rendererRunning = false;
-GuiImageData *arrowData = NULL;
 
 int32_t spaceWidth;
 
