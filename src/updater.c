@@ -57,13 +57,6 @@ bool updateCheck()
 	if(!updateCheckEnabled())
 		return false;
 	
-	char curVer[8];
-	strcpy(curVer, NUSSPLI_VERSION);
-	char *needle = strchr(curVer, '.');
-	needle[0] = '\0';
-	int curMajor = atoi(curVer);
-	int curMinor = atoi(++needle);
-	
 	startNewFrame();
 	textToFrame(0, 0, "Prepairing download");
 	writeScreenLog();
@@ -127,6 +120,21 @@ bool updateCheck()
 	strcpy(versionString, jsonObj->valuestring);
 	cJSON_Delete(json);
 	clearRamBuf();
+	
+	char cv[8];
+	char *curVer = cv;
+	strcpy(curVer, NUSSPLI_VERSION);
+	char *needle = strchr(curVer, '.');
+	needle[0] = '\0';
+	int curMajor = atoi(curVer);
+	curVer = needle + 1;
+	needle = strchr(curVer, '-');
+	if(needle != NULL) // BETA version
+		needle[0] = '\0';
+	
+	int curMinor = atoi(curVer);
+	if(needle != NULL)
+		curMinor--;
 	
 	needle = strchr(versionString, '.');
 	if(needle == NULL)
