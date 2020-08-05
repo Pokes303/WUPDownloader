@@ -28,7 +28,6 @@
 #include <wut-fixups.h>
 
 #include <memdebug.h>
-#include <osdefs.h>
 #include <utils.h>
 
 #include <string.h>
@@ -289,10 +288,10 @@ MEMFreeToDefaultHeapFn defaultFreeFn;
 
 void initASAN(MEMHeapHandle mem2)
 {
-	RPX_Info rpxInfo[1];
+	OSDynLoad_NotifyData rpxInfo[1];
 	OSDynLoad_GetRPLInfo(0, 1, rpxInfo);
-	codeStart = rpxInfo[0].codeStart;
-	codeEnd = codeStart + rpxInfo[0].codeSize;
+	codeStart = rpxInfo[0].textOffset;
+	codeEnd = codeStart + rpxInfo[0].textSize;
 	
 	OSFastMutex_Init(&asanMutex, "NUSspli ASAN");
 	OSFastMutex_Unlock(&asanMutex);

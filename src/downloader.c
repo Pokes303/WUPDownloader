@@ -590,8 +590,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 			char toScreen[1024];
 			switch(ie)
 			{
-				case FS_ERROR_WRITE_PROTECTED:	// Cafe, not yet mapped by WUT to
-				case EROFS:						// POSIX
+				case EROFS:
 					strcpy(toScreen, "SD card write locked!");
 					break;
 				case FS_ERROR_MAX_FILES:

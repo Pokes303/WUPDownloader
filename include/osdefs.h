@@ -30,28 +30,12 @@
 	extern "C" {
 #endif
 
-typedef struct
-{
-	char *name;
-	void *codeStart;
-	uint32_t unk01;
-	uint32_t codeSize;
-	void *dataStart;
-	uint32_t unk02;
-	uint32_t dataSize;
-	uint32_t unk03;
-	uint32_t unk04;
-	uint32_t unk05;
-} RPX_Info;
-
+// KPAD
 extern void KPADShutdown();
 
 // MCP
 extern MCPError MCP_DeleteTitleAsync(int handle, char *path, MCPInstallTitleInfo *out);
 extern bool MCP_DeleteTitleDoneAsync(int handle, bool *out);
-
-// OSDynLoad
-extern int OSDynLoad_GetRPLInfo(uint32_t unk01, uint32_t size, RPX_Info *out);
 
 //WPAD:
 extern void WPADControlMotor(int controller, int onOff);
