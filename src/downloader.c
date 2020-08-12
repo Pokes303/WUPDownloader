@@ -71,8 +71,12 @@ static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData
 	if(sscanf(buf, "content-length: %u", &contentLength) != 1)
 		return size;
 	
+	debugPrintf("rawData: %d", *(uint32_t *)rawData);
+	debugPrintf("contentLength: %d", contentLength);
+	
 	if(*(uint32_t *)rawData == contentLength)
 	{
+		debugPrintf("equal!");
 		*(uint32_t *)rawData = 0;
 		return 0;
 	}
@@ -213,47 +217,7 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 	return 0;
 }
 
-static size_t headerResumeCallback(void *buf, size_t size, size_t multi, void *rawData)
-{
-	char *cb = (char *)buf;
-	if(cb[0] == '\r')
-		return 0;
-	
-	size *= multi;
-	cb[size - 2] = '\0';
-	
-	toLowercase(cb);
-	if(strcmp(cb, "accept-ranges: bytes") == 0)
-	{
-		*(bool *)rawData = true;
-		return 0;
-	}
-	
-	return size;
-}
-
-bool isResumeable(const char *url)
-{
-	CURL *curl = curl_easy_init();
-	if(curl == NULL)
-		return false;
-	
-	CURLcode ret = curl_easy_setopt(curl, CURLOPT_URL, url);
-	ret |= curl_easy_setopt(curl, CURLOPT_USERAGENT, USERAGENT);
-	ret |= curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-	
-	bool out = false;
-	ret |= curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerResumeCallback);
-	ret |= curl_easy_setopt(curl, CURLOPT_WRITEHEADER, &out);
-	
-	if(ret == CURLE_OK)
-		curl_easy_perform(curl);
-	
-	curl_easy_cleanup(curl);
-	return out;
-}
-
-int downloadFile(const char *url, char *file, FileType type)
+int downloadFile(const char *url, char *file, FileType type, bool resume)
 {
 	//Results: 0 = OK | 1 = Error | 2 = No ticket aviable | 3 = Exit
 	//Types: 0 = .app | 1 = .h3 | 2 = title.tmd | 3 = tilte.tik
@@ -285,7 +249,7 @@ int downloadFile(const char *url, char *file, FileType type)
 	}
 	else
 	{
-		fileExist = fileExists(file);
+		fileExist = resume && fileExists(file);
 		fp = fopen(file, fileExist ? "rb+" : "wb");
 		
 		if(fileExist)
@@ -329,17 +293,14 @@ int downloadFile(const char *url, char *file, FileType type)
 	
 	if(fileExist)
 	{
-		if(isResumeable(url))
+		if(resume)
 		{
 			onDisc = fileSize;
 			ret |= curl_easy_setopt(curl, CURLOPT_RESUME_FROM, fileSize);
 			fseek(fp, 0, SEEK_END);
 		}
-		else
-		{
-			ret |= curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerCallback);
-			ret |= curl_easy_setopt(curl, CURLOPT_WRITEHEADER, &fileSize);
-		}
+		ret |= curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerCallback);
+		ret |= curl_easy_setopt(curl, CURLOPT_WRITEHEADER, &fileSize);
 	}
 	
 	ret |= curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, toRam ? fwrite : addToIOQueue);
@@ -399,6 +360,9 @@ int downloadFile(const char *url, char *file, FileType type)
 		}
 		
 		switch(ret) {
+			case CURLE_RANGE_ERROR:
+				fseek(fp, 0, SEEK_SET);
+				return downloadFile(url, file, type, false);
 			case CURLE_FAILED_INIT:
 			case CURLE_COULDNT_RESOLVE_HOST:
 				strcat(toScreen, "---> Network error\nYour WiiU is not connected to the internet,\ncheck the network settings and try again");
@@ -437,7 +401,7 @@ int downloadFile(const char *url, char *file, FileType type)
 				case VPAD_BUTTON_B:
 					return 1;
 				case VPAD_BUTTON_Y:
-					return downloadFile(url, file, type);
+					return downloadFile(url, file, type, resume);
 			}
 		}
 		return 1;
@@ -487,7 +451,7 @@ int downloadFile(const char *url, char *file, FileType type)
 					case VPAD_BUTTON_B:
 						return 1;
 					case VPAD_BUTTON_Y:
-						return downloadFile(url, file, type);
+						return downloadFile(url, file, type, resume);
 				}
 			}
 			return 1;
@@ -516,7 +480,7 @@ int downloadFile(const char *url, char *file, FileType type)
 					case VPAD_BUTTON_B:
 						return 1;
 					case VPAD_BUTTON_Y:
-						return downloadFile(url, file, type);
+						return downloadFile(url, file, type, resume);
 				}
 			}
 			return 1;
@@ -642,7 +606,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 	strcpy(tmd, installDir);
 	strcat(tmd, "title.tmd");
 	contents = 0xFFFF;
-	if(downloadFile(tDownloadUrl, tmd, FILE_TYPE_TMD))
+	if(downloadFile(tDownloadUrl, tmd, FILE_TYPE_TMD, true))
 	{
 		debugPrintf("Error downloading TMD");
 		return true;
@@ -714,7 +678,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 	strcat(tInstallDir, "title.tik");
 	if(!fileExists(tInstallDir))
 	{
-		int tikRes = downloadFile(tDownloadUrl, tInstallDir, FILE_TYPE_TIK);
+		int tikRes = downloadFile(tDownloadUrl, tInstallDir, FILE_TYPE_TIK, true);
 		if(tikRes == 1)
 			return true;
 		if(tikRes == 2)
@@ -820,7 +784,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 		
 		strcpy(tInstallDir, tmpFileName);
 		strcat(tInstallDir, ".app");
-		if(downloadFile(tDownloadUrl, tInstallDir, FILE_TYPE_APP) == 1)
+		if(downloadFile(tDownloadUrl, tInstallDir, FILE_TYPE_APP, true) == 1)
 		{
 			for(int j = ++i; j < conts; j++)
 				MEMFreeToDefaultHeap(apps[j]);
@@ -832,7 +796,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 		{
 			strcat(tDownloadUrl, ".h3");
 			strcat(tmpFileName, ".h3");
-			if(downloadFile(tDownloadUrl, tmpFileName, FILE_TYPE_H3) == 1)
+			if(downloadFile(tDownloadUrl, tmpFileName, FILE_TYPE_H3, true) == 1)
 			{
 				for(int j = ++i; j < conts; j++)
 					MEMFreeToDefaultHeap(apps[j]);
