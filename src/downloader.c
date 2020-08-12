@@ -56,7 +56,7 @@ double onDisc;
 char *ramBuf = NULL;
 size_t ramBufSize = 0;
 
-char *downloading = "UNKNOWN";
+char *downloading;
 bool downloadPaused = false;
 OSTime lastDraw = 0;
 OSTime lastTransfair = 0;
