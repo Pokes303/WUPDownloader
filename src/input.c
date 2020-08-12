@@ -269,42 +269,29 @@ void readInput()
 					controllerType == WPAD_EXT_CLASSIC ||
 					controllerType == WPAD_EXT_MPLUS_CLASSIC)
 			{
-				switch(kpad[i].classic.trigger)
-				{
-					case WPAD_CLASSIC_BUTTON_A:
-						vpad.trigger = VPAD_BUTTON_A;
-						break;
-					case WPAD_CLASSIC_BUTTON_B:
-						vpad.trigger = VPAD_BUTTON_B;
-						break;
-					case WPAD_CLASSIC_BUTTON_X:
-						vpad.trigger = VPAD_BUTTON_X;
-						break;
-					case WPAD_CLASSIC_BUTTON_Y:
-						vpad.trigger = VPAD_BUTTON_Y;
-						break;
-					case WPAD_CLASSIC_BUTTON_UP:
-						vpad.trigger = VPAD_BUTTON_UP;
-						break;
-					case WPAD_CLASSIC_BUTTON_DOWN:
-						vpad.trigger = VPAD_BUTTON_DOWN;
-						break;
-					case WPAD_CLASSIC_BUTTON_LEFT:
-						vpad.trigger = VPAD_BUTTON_LEFT;
-						break;
-					case WPAD_CLASSIC_BUTTON_RIGHT:
-						vpad.trigger = VPAD_BUTTON_RIGHT;
-						break;
-					case WPAD_CLASSIC_BUTTON_PLUS:
-						vpad.trigger = VPAD_BUTTON_PLUS;
-						break;
-					case WPAD_CLASSIC_BUTTON_MINUS:
-						vpad.trigger = VPAD_BUTTON_MINUS;
-						break;
-					case WPAD_CLASSIC_BUTTON_HOME:
-						vpad.trigger = VPAD_BUTTON_HOME;
-						break;
-				}
+				
+				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_A)
+					vpad.trigger = VPAD_BUTTON_A;
+				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_B)
+					vpad.trigger |= VPAD_BUTTON_B;
+				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_X)
+					vpad.trigger |= VPAD_BUTTON_X;
+				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_Y)
+					vpad.trigger |= VPAD_BUTTON_Y;
+				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_UP)
+					vpad.trigger |= VPAD_BUTTON_UP;
+				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_DOWN)
+					vpad.trigger |= VPAD_BUTTON_DOWN;
+				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_LEFT)
+					vpad.trigger |= VPAD_BUTTON_LEFT;
+				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_RIGHT)
+					vpad.trigger |= VPAD_BUTTON_RIGHT;
+				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_PLUS)
+					vpad.trigger |= VPAD_BUTTON_PLUS;
+				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_MINUS)
+					vpad.trigger |= VPAD_BUTTON_MINUS;
+				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_HOME)
+					vpad.trigger |= VPAD_BUTTON_HOME;
 				
 				if(vpad.trigger != 0)
 				{
@@ -315,41 +302,28 @@ void readInput()
 				}
 			}
 				
-			switch(kpad[i].trigger)
-			{
-				case WPAD_BUTTON_A:
-					vpad.trigger = VPAD_BUTTON_A;
-					break;
-				case WPAD_BUTTON_B:
-					vpad.trigger = VPAD_BUTTON_B;
-					break;
-				case WPAD_BUTTON_1:
-					vpad.trigger = VPAD_BUTTON_X;
-					break;
-				case WPAD_BUTTON_2:
-					vpad.trigger = VPAD_BUTTON_Y;
-					break;
-				case WPAD_BUTTON_UP:
-					vpad.trigger = VPAD_BUTTON_UP;
-					break;
-				case WPAD_BUTTON_DOWN:
-					vpad.trigger = VPAD_BUTTON_DOWN;
-					break;
-				case WPAD_BUTTON_LEFT:
-					vpad.trigger = VPAD_BUTTON_LEFT;
-					break;
-				case WPAD_BUTTON_RIGHT:
-					vpad.trigger = VPAD_BUTTON_RIGHT;
-					break;
-				case WPAD_BUTTON_PLUS:
-					vpad.trigger = VPAD_BUTTON_PLUS;
-					break;
-				case WPAD_BUTTON_MINUS:
-					vpad.trigger = VPAD_BUTTON_MINUS;
-					break;
-				case WPAD_BUTTON_HOME:
-					vpad.trigger = VPAD_BUTTON_HOME;
-			}
+			if(kpad[i].trigger & WPAD_BUTTON_A)
+				vpad.trigger = VPAD_BUTTON_A;
+			if(kpad[i].trigger & WPAD_BUTTON_B)
+				vpad.trigger |= VPAD_BUTTON_B;
+			if(kpad[i].trigger & WPAD_BUTTON_1)
+				vpad.trigger |= VPAD_BUTTON_X;
+			if(kpad[i].trigger & WPAD_BUTTON_2)
+				vpad.trigger |= VPAD_BUTTON_Y;
+			if(kpad[i].trigger & WPAD_BUTTON_UP)
+				vpad.trigger |= VPAD_BUTTON_UP;
+			if(kpad[i].trigger & WPAD_BUTTON_DOWN)
+				vpad.trigger |= VPAD_BUTTON_DOWN;
+			if(kpad[i].trigger & WPAD_BUTTON_LEFT)
+				vpad.trigger |= VPAD_BUTTON_LEFT;
+			if(kpad[i].trigger & WPAD_BUTTON_RIGHT)
+				vpad.trigger |= VPAD_BUTTON_RIGHT;
+			if(kpad[i].trigger & WPAD_BUTTON_PLUS)
+				vpad.trigger |= VPAD_BUTTON_PLUS;
+			if(kpad[i].trigger & WPAD_BUTTON_MINUS)
+				vpad.trigger |= VPAD_BUTTON_MINUS;
+			if(kpad[i].trigger & WPAD_BUTTON_HOME)
+				vpad.trigger |= VPAD_BUTTON_HOME;
 			
 			if(vpad.trigger != 0 && Swkbd_IsHidden())
 				lastUsedController = i;
