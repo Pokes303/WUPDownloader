@@ -279,7 +279,10 @@ int downloadFile(const char *url, char *file, FileType type)
 	FILE *fp;
 	uint32_t fileSize;
 	if(toRam)
+	{
+		fileExist = false;
 		fp = open_memstream(&ramBuf, &ramBufSize);
+	}
 	else
 	{
 		fileExist = fileExists(file);
@@ -324,7 +327,7 @@ int downloadFile(const char *url, char *file, FileType type)
 	
 	ret |= curl_easy_setopt(curl, CURLOPT_USERAGENT, USERAGENT);
 	
-	if(!toRam && fileExist)
+	if(fileExist)
 	{
 		if(isResumeable(url))
 		{
@@ -371,7 +374,7 @@ int downloadFile(const char *url, char *file, FileType type)
 	else
 		addToIOQueue(NULL, 0, 0, fp);
 	
-	if(ret != CURLE_OK && (toRam || !(fileExist && ret == CURLE_WRITE_ERROR && fileSize == 0)))
+	if(ret != CURLE_OK && !(fileExist && ret == CURLE_WRITE_ERROR && fileSize == 0))
 	{
 		debugPrintf("curl_easy_perform returned an error: %s (%d)\nFile: %s\n\n", curlError, ret, toRam ? "<RAM>" : file);
 		curl_easy_cleanup(curl);
