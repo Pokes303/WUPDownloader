@@ -439,8 +439,8 @@ int downloadFile(const char *url, char *file, FileType type)
 				case VPAD_BUTTON_Y:
 					return downloadFile(url, file, type);
 			}
-		
 		}
+		return 1;
 	}
 	debugPrintf("curl_easy_perform executed successfully");
 	
@@ -490,6 +490,7 @@ int downloadFile(const char *url, char *file, FileType type)
 						return downloadFile(url, file, type);
 				}
 			}
+			return 1;
 		}
 		else if (resp == 404 && (type & FILE_TYPE_TIK) == FILE_TYPE_TIK) { //Fake ticket needed
 			return 2;
@@ -518,6 +519,7 @@ int downloadFile(const char *url, char *file, FileType type)
 						return downloadFile(url, file, type);
 				}
 			}
+			return 1;
 		}
 	}
 	
