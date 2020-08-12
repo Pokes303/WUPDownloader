@@ -184,17 +184,6 @@ debug: all
 	@echo $(notdir $<)
 	@$(bin2o)
 
-# https://github.com/devkitPro/devkitppc-rules/pull/2
-define bin2o
-	bin2s -a 32 $< | $(AS) -o $(@)
-	echo "#pragma once" > `(echo $(<F) | tr . _)`.h
-	echo "#include <stddef.h>" >> `(echo $(<F) | tr . _)`.h
-	echo "#include <stdint.h>" >> `(echo $(<F) | tr . _)`.h
-	echo "extern const uint8_t" `(echo $(<F) | sed -e 's/^\([0-9]\)/_\1/' -e 's/[^A-Za-z0-9_]/_/g')`"_end[];" >> `(echo $(<F) | tr . _)`.h
-	echo "extern const uint8_t" `(echo $(<F) | sed -e 's/^\([0-9]\)/_\1/' -e 's/[^A-Za-z0-9_]/_/g')`"[];" >> `(echo $(<F) | tr . _)`.h
-	echo "extern const size_t" `(echo $(<F) | sed -e 's/^\([0-9]\)/_\1/' -e 's/[^A-Za-z0-9_]/_/g')`_size";" >> `(echo $(<F) | tr . _)`.h
-endef
-
 %.mp3.o %_mp3.h	:	%.mp3
 	@echo $(notdir $<)
 	@$(bin2o)
