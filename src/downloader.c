@@ -59,7 +59,7 @@ size_t ramBufSize = 0;
 char *downloading;
 bool downloadPaused = false;
 OSTime lastDraw = 0;
-OSTime lastTransfair = 0;
+OSTime lastTransfair;
 
 static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData)
 {
@@ -363,6 +363,7 @@ int downloadFile(const char *url, char *file, FileType type)
 	}
 	
 	debugPrintf("Calling curl_easy_perform()");
+	lastTransfair = 0;
 	ret = curl_easy_perform(curl);
 	debugPrintf("curl_easy_perform() returned: %d", ret);
 	
