@@ -67,7 +67,7 @@ void generateTik(const char *path, const char *titleID)
 			if(app == APP_STATE_RETURNING)
 				drawErrorFrame(err, B_RETURN);
 			
-			if(vpad.trigger == VPAD_BUTTON_B)
+			if(vpad.trigger & VPAD_BUTTON_B)
 				return;
 		}
 		return;
@@ -171,52 +171,54 @@ bool generateFakeTicket()
 		if(app == APP_STATE_RETURNING)
 			drawTicketFrame(titleID);
 		
-		switch(vpad.trigger)
+		if(vpad.trigger & VPAD_BUTTON_A)
 		{
-			case VPAD_BUTTON_A:
-				if(titleID[0] != '\0')
+			if(titleID[0] != '\0')
+			{
+				startNewFrame();
+				textToFrame(0, 0, "Generating fake ticket...");
+				drawFrame();
+				showFrame();
+				
+				char tikPath[1024];
+				strcpy(tikPath, dir);
+				strcat(tikPath, dir[0] == '.' ? titleID : "title");
+				MEMFreeToDefaultHeap(dir);
+				strcat(tikPath, ".tik");
+				
+				generateTik(tikPath, titleID);
+				
+				colorStartNewFrame(SCREEN_COLOR_D_GREEN);
+				textToFrame(0, 0, "Fake ticket generated on:");
+				textToFrame(1, 0, tikPath);
+				textToFrame(3, 0, "Press \uE000 to return");
+				drawFrame();
+				
+				while(AppRunning())
 				{
-					startNewFrame();
-					textToFrame(0, 0, "Generating fake ticket...");
-					drawFrame();
 					showFrame();
 					
-					char tikPath[1024];
-					strcpy(tikPath, dir);
-					strcat(tikPath, dir[0] == '.' ? titleID : "title");
-					MEMFreeToDefaultHeap(dir);
-					strcat(tikPath, ".tik");
+					if(app == APP_STATE_BACKGROUND)
+						continue;
+					//TODO: APP_STATE_RETURNING
 					
-					generateTik(tikPath, titleID);
-					
-					colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-					textToFrame(0, 0, "Fake ticket generated on:");
-					textToFrame(1, 0, tikPath);
-					textToFrame(3, 0, "Press \uE000 to return");
-					drawFrame();
-					
-					while(AppRunning())
-					{
-						showFrame();
-						
-						if(app == APP_STATE_BACKGROUND)
-							continue;
-						//TODO: APP_STATE_RETURNING
-						
-						if(vpad.trigger == VPAD_BUTTON_A)
-							return true;
-					}
-					return false;
+					if(vpad.trigger & VPAD_BUTTON_A)
+						return true;
 				}
-				break;
-			case VPAD_BUTTON_B:
-				MEMFreeToDefaultHeap(dir);
-				return true;
-			case VPAD_BUTTON_LEFT:
-				showKeyboard(KEYBOARD_TYPE_RESTRICTED, titleID, CHECK_HEXADECIMAL, 16, true, titleID, NULL);
-				toLowercase(titleID);
-				drawTicketFrame(titleID);
-				break;
+				return false;
+			}
+		}
+		else if(vpad.trigger & VPAD_BUTTON_B)
+		{
+			MEMFreeToDefaultHeap(dir);
+			return true;
+		}
+		
+		if(vpad.trigger & VPAD_BUTTON_LEFT)
+		{
+			showKeyboard(KEYBOARD_TYPE_RESTRICTED, titleID, CHECK_HEXADECIMAL, 16, true, titleID, NULL);
+			toLowercase(titleID);
+			drawTicketFrame(titleID);
 		}
 	}
 	MEMFreeToDefaultHeap(dir);

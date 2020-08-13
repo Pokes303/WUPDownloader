@@ -116,7 +116,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 			
 			showFrame();
 			
-			if(vpad.trigger == VPAD_BUTTON_B)
+			if(vpad.trigger & VPAD_BUTTON_B)
 				return false;
 		}
 	}
@@ -138,7 +138,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 			
 			showFrame();
 			
-			if(vpad.trigger == VPAD_BUTTON_B)
+			if(vpad.trigger & VPAD_BUTTON_B)
 				return false;
 		}
 		return false;
@@ -199,7 +199,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 			
 			showFrame();
 			
-			if(vpad.trigger == VPAD_BUTTON_B)
+			if(vpad.trigger & VPAD_BUTTON_B)
 				return false;
 		}
 		return false;
@@ -324,7 +324,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 			
 			showFrame();
 			
-			if(vpad.trigger == VPAD_BUTTON_B)
+			if(vpad.trigger & VPAD_BUTTON_B)
 				return false;
 		}
 	}
@@ -357,7 +357,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		
 		showFrame();
 		
-		if(vpad.trigger == VPAD_BUTTON_A || vpad.trigger == VPAD_BUTTON_B)
+		if(vpad.trigger)
 			break;
 	}
 	return true;

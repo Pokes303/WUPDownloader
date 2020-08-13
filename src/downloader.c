@@ -278,7 +278,7 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 				drawErrorFrame(err, B_RETURN);
 		
 			showFrame();
-			if(vpad.trigger ==  VPAD_BUTTON_B)
+			if(vpad.trigger & VPAD_BUTTON_B)
 				return 1;
 		}
 	}
@@ -397,12 +397,10 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 			
 			showFrame();
 			
-			switch (vpad.trigger) {
-				case VPAD_BUTTON_B:
-					return 1;
-				case VPAD_BUTTON_Y:
-					return downloadFile(url, file, type, resume);
-			}
+			if(vpad.trigger & VPAD_BUTTON_B)
+				return 1;
+			if(vpad.trigger & VPAD_BUTTON_Y)
+				return downloadFile(url, file, type, resume);
 		}
 		return 1;
 	}
@@ -446,13 +444,10 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 				
 				showFrame();
 
-				switch(vpad.trigger)
-				{
-					case VPAD_BUTTON_B:
-						return 1;
-					case VPAD_BUTTON_Y:
-						return downloadFile(url, file, type, resume);
-				}
+				if(vpad.trigger & VPAD_BUTTON_B)
+					return 1;
+				if(vpad.trigger & VPAD_BUTTON_Y)
+					return downloadFile(url, file, type, resume);
 			}
 			return 1;
 		}
@@ -476,12 +471,10 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 				
 				showFrame();
 				
-				switch (vpad.trigger) {
-					case VPAD_BUTTON_B:
-						return 1;
-					case VPAD_BUTTON_Y:
-						return downloadFile(url, file, type, resume);
-				}
+				if(vpad.trigger & VPAD_BUTTON_B)
+					return 1;
+				if(vpad.trigger & VPAD_BUTTON_Y)
+					return downloadFile(url, file, type, resume);
 			}
 			return 1;
 		}
@@ -583,7 +576,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 				
 				showFrame();
 				
-				if(vpad.trigger == VPAD_BUTTON_B)
+				if(vpad.trigger & VPAD_BUTTON_B)
 					return false;
 			}
 		}
@@ -843,7 +836,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 		
 		showFrame();
 		
-		if(vpad.trigger == VPAD_BUTTON_A || vpad.trigger == VPAD_BUTTON_B)
+		if(vpad.trigger)
 			break;
 	}
 	

@@ -90,32 +90,32 @@ void mainMenu()
 		
 		showFrame();
 		
-		switch(vpad.trigger)
+		if(vpad.trigger & VPAD_BUTTON_A)
 		{
-			case VPAD_BUTTON_A:
-				downloadMenu();
-				drawMainMenuFrame();
-				break;
-			case VPAD_BUTTON_X:
-				;
-				char *dir = fileBrowserMenu();
-				if(dir != NULL)
-				{
-					installerMenu(dir);
-					MEMFreeToDefaultHeap(dir);
-				}
-				drawMainMenuFrame();
-				break;
-			case  VPAD_BUTTON_LEFT:
-				configMenu();
-				drawMainMenuFrame();
-				break;
-			case VPAD_BUTTON_Y:
-				generateFakeTicket();
-				drawMainMenuFrame();
-				break;
-			case VPAD_BUTTON_B:
-				return;
+			downloadMenu();
+			drawMainMenuFrame();
 		}
+		else if(vpad.trigger & VPAD_BUTTON_X)
+		{
+			char *dir = fileBrowserMenu();
+			if(dir != NULL)
+			{
+				installerMenu(dir);
+				MEMFreeToDefaultHeap(dir);
+			}
+			drawMainMenuFrame();
+		}
+		else if(vpad.trigger & VPAD_BUTTON_LEFT)
+		{
+			configMenu();
+			drawMainMenuFrame();
+		}
+		else if(vpad.trigger & VPAD_BUTTON_Y)
+		{
+			generateFakeTicket();
+			drawMainMenuFrame();
+		}
+		else if(vpad.trigger & VPAD_BUTTON_B)
+			return;
 	}
 }

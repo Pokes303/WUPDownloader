@@ -207,7 +207,7 @@ void showUpdateError(const char* msg)
 		
 		showFrame();
 		
-		if(vpad.trigger == VPAD_BUTTON_B)
+		if(vpad.trigger & VPAD_BUTTON_B)
 			return;
 	}
 }
@@ -441,7 +441,7 @@ void update(char *newVersion)
 			
 			showFrame();
 			
-			if(vpad.trigger == VPAD_BUTTON_A || vpad.trigger == VPAD_BUTTON_B)
+			if(vpad.trigger)
 				return;
 		}
 	}

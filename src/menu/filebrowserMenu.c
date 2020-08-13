@@ -110,6 +110,7 @@ refreshDirList:
 	
 	mov = foldersSize >= MAX_FILEBROWSER_LINES;
 	char *ret = NULL;
+	bool redraw = false;
 	while(AppRunning())
 	{
 		if(app == APP_STATE_BACKGROUND)
@@ -118,63 +119,73 @@ refreshDirList:
 			drawFBMenuFrame(folders, foldersSize, pos, cursor, onUSB);
 		
 		showFrame();
-		
-		switch(vpad.trigger)
+		if(vpad.trigger & VPAD_BUTTON_B)
+			goto exitFileBrowserMenu;
+		if(vpad.trigger & VPAD_BUTTON_A)
 		{
-			case VPAD_BUTTON_A:
-				if(dir != NULL)
+			if(dir != NULL)
+			{
+				size_t len = strlen(onUSB ? INSTALL_DIR_USB : INSTALL_DIR_SD) + strlen(folders[cursor + pos]) + 1;
+				ret = MEMAllocFromDefaultHeap(len);
+				if(ret != NULL)
 				{
-					size_t len = strlen(onUSB ? INSTALL_DIR_USB : INSTALL_DIR_SD) + strlen(folders[cursor + pos]) + 1;
-					ret = MEMAllocFromDefaultHeap(len);
-					if(ret != NULL)
-					{
-						strcpy(ret, onUSB ? INSTALL_DIR_USB : INSTALL_DIR_SD);
-						strcat(ret, folders[cursor + pos]);
-						ret[len] = '\0';
-					}
-					goto exitFileBrowserMenu;
+					strcpy(ret, onUSB ? INSTALL_DIR_USB : INSTALL_DIR_SD);
+					strcat(ret, folders[cursor + pos]);
+					ret[len] = '\0';
 				}
-				break;
-			case VPAD_BUTTON_B:
 				goto exitFileBrowserMenu;
-			case VPAD_BUTTON_UP:
-				if(cursor)
-					cursor--;
-				else
+			}
+		}
+		
+		if(vpad.trigger & VPAD_BUTTON_UP)
+		{
+			if(cursor)
+				cursor--;
+			else
+			{
+				if(mov)
 				{
-					if(mov)
+					if(pos)
+						pos--;
+					else
 					{
-						if(pos)
-							pos--;
-						else
-						{
-							cursor = MAX_FILEBROWSER_LINES - 1;
-							pos = foldersSize % MAX_FILEBROWSER_LINES - 1;
-						}
+						cursor = MAX_FILEBROWSER_LINES - 1;
+						pos = foldersSize % MAX_FILEBROWSER_LINES - 1;
 					}
-					else
-						cursor = foldersSize - 1;
-				}
-				
-				drawFBMenuFrame(folders, foldersSize, pos, cursor, onUSB);
-				break;
-			case VPAD_BUTTON_DOWN:
-				if(cursor >= foldersSize - 1 || cursor >= MAX_FILEBROWSER_LINES - 1)
-				{
-					if(mov && pos < foldersSize % MAX_FILEBROWSER_LINES - 1)
-						pos++;
-					else
-						cursor = pos = 0;
 				}
 				else
-					cursor++;
-				
-				drawFBMenuFrame(folders, foldersSize, pos, cursor, onUSB);
-				break;
-			case VPAD_BUTTON_X:
-				onUSB = !onUSB;
-			case VPAD_BUTTON_Y:
-				goto refreshDirList;
+					cursor = foldersSize - 1;
+			}
+			
+			redraw = true;
+		}
+		else if(vpad.trigger & VPAD_BUTTON_DOWN)
+		{
+			if(cursor >= foldersSize - 1 || cursor >= MAX_FILEBROWSER_LINES - 1)
+			{
+				if(mov && pos < foldersSize % MAX_FILEBROWSER_LINES - 1)
+					pos++;
+				else
+					cursor = pos = 0;
+			}
+			else
+				cursor++;
+			
+			redraw = true;
+		}
+		
+		if(vpad.trigger & VPAD_BUTTON_X)
+		{
+			onUSB = !onUSB;
+			redraw = true;
+		}
+		if(vpad.trigger & VPAD_BUTTON_Y)
+			goto refreshDirList;
+		
+		if(redraw)
+		{
+			drawFBMenuFrame(folders, foldersSize, pos, cursor, onUSB);
+			redraw = false;
 		}
 	}
 	

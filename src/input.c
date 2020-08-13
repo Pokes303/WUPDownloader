@@ -262,72 +262,69 @@ void readInput()
 		OSBlockSet(&kpad[i], 0, sizeof(KPADStatus));
 		KPADRead(i, &kpad[i], 1);
 		
-		if(vpad.trigger == 0)
+		altCon = true;
+		if(controllerType == WPAD_EXT_PRO_CONTROLLER || // With a simple input like ours we're able to handle Wii u pro as Wii classic controllers.
+				controllerType == WPAD_EXT_CLASSIC ||
+				controllerType == WPAD_EXT_MPLUS_CLASSIC)
 		{
-			altCon = true;
-			if(controllerType == WPAD_EXT_PRO_CONTROLLER || // With a simple input like ours we're able to handle Wii u pro as Wii classic controllers.
-					controllerType == WPAD_EXT_CLASSIC ||
-					controllerType == WPAD_EXT_MPLUS_CLASSIC)
-			{
-				
-				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_A)
-					vpad.trigger = VPAD_BUTTON_A;
-				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_B)
-					vpad.trigger |= VPAD_BUTTON_B;
-				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_X)
-					vpad.trigger |= VPAD_BUTTON_X;
-				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_Y)
-					vpad.trigger |= VPAD_BUTTON_Y;
-				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_UP)
-					vpad.trigger |= VPAD_BUTTON_UP;
-				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_DOWN)
-					vpad.trigger |= VPAD_BUTTON_DOWN;
-				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_LEFT)
-					vpad.trigger |= VPAD_BUTTON_LEFT;
-				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_RIGHT)
-					vpad.trigger |= VPAD_BUTTON_RIGHT;
-				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_PLUS)
-					vpad.trigger |= VPAD_BUTTON_PLUS;
-				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_MINUS)
-					vpad.trigger |= VPAD_BUTTON_MINUS;
-				if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_HOME)
-					vpad.trigger |= VPAD_BUTTON_HOME;
-				
-				if(vpad.trigger != 0)
-				{
-					if(Swkbd_IsHidden())
-						lastUsedController = i;
-					
-					continue;
-				}
-			}
-				
-			if(kpad[i].trigger & WPAD_BUTTON_A)
+			
+			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_A)
 				vpad.trigger = VPAD_BUTTON_A;
-			if(kpad[i].trigger & WPAD_BUTTON_B)
+			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_B)
 				vpad.trigger |= VPAD_BUTTON_B;
-			if(kpad[i].trigger & WPAD_BUTTON_1)
+			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_X)
 				vpad.trigger |= VPAD_BUTTON_X;
-			if(kpad[i].trigger & WPAD_BUTTON_2)
+			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_Y)
 				vpad.trigger |= VPAD_BUTTON_Y;
-			if(kpad[i].trigger & WPAD_BUTTON_UP)
+			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_UP)
 				vpad.trigger |= VPAD_BUTTON_UP;
-			if(kpad[i].trigger & WPAD_BUTTON_DOWN)
+			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_DOWN)
 				vpad.trigger |= VPAD_BUTTON_DOWN;
-			if(kpad[i].trigger & WPAD_BUTTON_LEFT)
+			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_LEFT)
 				vpad.trigger |= VPAD_BUTTON_LEFT;
-			if(kpad[i].trigger & WPAD_BUTTON_RIGHT)
+			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_RIGHT)
 				vpad.trigger |= VPAD_BUTTON_RIGHT;
-			if(kpad[i].trigger & WPAD_BUTTON_PLUS)
+			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_PLUS)
 				vpad.trigger |= VPAD_BUTTON_PLUS;
-			if(kpad[i].trigger & WPAD_BUTTON_MINUS)
+			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_MINUS)
 				vpad.trigger |= VPAD_BUTTON_MINUS;
-			if(kpad[i].trigger & WPAD_BUTTON_HOME)
+			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_HOME)
 				vpad.trigger |= VPAD_BUTTON_HOME;
 			
-			if(vpad.trigger != 0 && Swkbd_IsHidden())
-				lastUsedController = i;
+			if(vpad.trigger != 0)
+			{
+				if(Swkbd_IsHidden())
+					lastUsedController = i;
+				
+				continue;
+			}
 		}
+			
+		if(kpad[i].trigger & WPAD_BUTTON_A)
+			vpad.trigger = VPAD_BUTTON_A;
+		if(kpad[i].trigger & WPAD_BUTTON_B)
+			vpad.trigger |= VPAD_BUTTON_B;
+		if(kpad[i].trigger & WPAD_BUTTON_1)
+			vpad.trigger |= VPAD_BUTTON_X;
+		if(kpad[i].trigger & WPAD_BUTTON_2)
+			vpad.trigger |= VPAD_BUTTON_Y;
+		if(kpad[i].trigger & WPAD_BUTTON_UP)
+			vpad.trigger |= VPAD_BUTTON_UP;
+		if(kpad[i].trigger & WPAD_BUTTON_DOWN)
+			vpad.trigger |= VPAD_BUTTON_DOWN;
+		if(kpad[i].trigger & WPAD_BUTTON_LEFT)
+			vpad.trigger |= VPAD_BUTTON_LEFT;
+		if(kpad[i].trigger & WPAD_BUTTON_RIGHT)
+			vpad.trigger |= VPAD_BUTTON_RIGHT;
+		if(kpad[i].trigger & WPAD_BUTTON_PLUS)
+			vpad.trigger |= VPAD_BUTTON_PLUS;
+		if(kpad[i].trigger & WPAD_BUTTON_MINUS)
+			vpad.trigger |= VPAD_BUTTON_MINUS;
+		if(kpad[i].trigger & WPAD_BUTTON_HOME)
+			vpad.trigger |= VPAD_BUTTON_HOME;
+		
+		if(vpad.trigger != 0 && Swkbd_IsHidden())
+			lastUsedController = i;
 	}
 	
 	if(!altCon && vError == VPAD_READ_INVALID_CONTROLLER)
@@ -345,7 +342,7 @@ bool showKeyboard(KeyboardType type, char *output, KeyboardChecks check, int max
 		while(true)
 		{
 			showFrame();							
-			if(vpad.trigger == VPAD_BUTTON_B)
+			if(vpad.trigger & VPAD_BUTTON_B)
 				return false;
 		}
 	}
@@ -362,7 +359,7 @@ bool showKeyboard(KeyboardType type, char *output, KeyboardChecks check, int max
 		SWKBD_Render(check);
 //		sleepTillFrameEnd();
 		
-		if(okButtonEnabled && (Swkbd_IsDecideOkButton(&dummy) || vpad.trigger == VPAD_BUTTON_A))
+		if(okButtonEnabled && (Swkbd_IsDecideOkButton(&dummy) || vpad.trigger & VPAD_BUTTON_A))
 		{
 			debugPrintf("SWKBD Ok button pressed");
 			char *outputStr = Swkbd_GetInputFormString();
@@ -372,7 +369,7 @@ bool showKeyboard(KeyboardType type, char *output, KeyboardChecks check, int max
 			return true;
 		}
 		
-		bool close = vpad.trigger == VPAD_BUTTON_B;
+		bool close = vpad.trigger & VPAD_BUTTON_B;
 		if(close)
 		{
 			char *inputFormString = Swkbd_GetInputFormString();

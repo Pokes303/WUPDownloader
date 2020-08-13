@@ -62,16 +62,14 @@ bool updateMenu(char *newVersion)
 		
 		showFrame();
 		
-		switch(vpad.trigger)
+		if(vpad.trigger & VPAD_BUTTON_A)
 		{
-			case VPAD_BUTTON_A:
-				update(newVersion);
-				return true;
-			case VPAD_BUTTON_B:
-				return false;
+			update(newVersion);
+			return true;
 		}
+		if(vpad.trigger & VPAD_BUTTON_B)
+			return false;
 	}
 	
-	// 0xDEADC0DE
 	return false;
 }

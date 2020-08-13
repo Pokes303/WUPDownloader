@@ -75,17 +75,24 @@ void installerMenu(const char *dir)
 		
 		showFrame();
 		
-		switch(vpad.trigger)
+		if(vpad.trigger & VPAD_BUTTON_A)
 		{
-			case VPAD_BUTTON_X:
-				toUSB = false;
-			case VPAD_BUTTON_A:
-				install(name, false, fromUSB, dir, toUSB, keepFiles);
-			case VPAD_BUTTON_B:
-				return;
-			case VPAD_BUTTON_LEFT:
-				keepFiles = !keepFiles;
-				drawInstallerMenuFrame(fromUSB, keepFiles);
+			install(name, false, fromUSB, dir, toUSB, keepFiles);
+			return;
+		}
+		if(vpad.trigger & VPAD_BUTTON_B)
+			return;
+		if(vpad.trigger & VPAD_BUTTON_X)
+		{
+			toUSB = false;
+			install(name, false, fromUSB, dir, toUSB, keepFiles);
+			return;
+		}
+		
+		if(vpad.trigger & VPAD_BUTTON_LEFT)
+		{
+			keepFiles = !keepFiles;
+			drawInstallerMenuFrame(fromUSB, keepFiles);
 		}
 	}
 }

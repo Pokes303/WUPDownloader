@@ -229,7 +229,7 @@ int main()
 	{
 		drawErrorFrame(lerr, B_RETURN);
 			
-		while(vpad.trigger != VPAD_BUTTON_B)
+		while(!(vpad.trigger & VPAD_BUTTON_B))
 			showFrame();
 	}
 	

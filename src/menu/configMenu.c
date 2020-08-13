@@ -54,6 +54,7 @@ void configMenu()
 {
 	drawConfigMenu();
 	
+	bool redraw = false;
 	while(AppRunning())
 	{
 		if(app == APP_STATE_BACKGROUND)
@@ -63,26 +64,29 @@ void configMenu()
 		
 		showFrame();
 		
-		switch(vpad.trigger)
+		if(vpad.trigger & VPAD_BUTTON_A)
 		{
-			case VPAD_BUTTON_A:
-//				;
-//				char newUrl[1024];
-//				if(showKeyboard(KEYBOARD_TYPE_NORMAL, newUrl, CHECK_URL, 1024, false, getTitleKeySite(), "SAVE"))
-//					setTitleKeySite(newUrl);
-				setUseOnlineTitleDB(!useOnlineTitleDB());
-				drawConfigMenu();
-				break;
-			case VPAD_BUTTON_X:
-				setUpdateCheck(!updateCheckEnabled());
-				drawConfigMenu();
-				break;
-			case VPAD_BUTTON_B:
-				saveConfig();
-				if(!useOnlineTitleDB())
-					clearTitles();
-				initTitles();
-				return;
+			setUseOnlineTitleDB(!useOnlineTitleDB());
+			redraw = true;
+		}
+		if(vpad.trigger & VPAD_BUTTON_X)
+		{
+			setUpdateCheck(!updateCheckEnabled());
+			redraw = true;
+		}
+		if(vpad.trigger & VPAD_BUTTON_B)
+		{
+			saveConfig();
+			if(!useOnlineTitleDB())
+				clearTitles();
+			initTitles();
+			return;
+		}
+		
+		if(redraw)
+		{
+			drawConfigMenu();
+			redraw = false;
 		}
 	}
 }

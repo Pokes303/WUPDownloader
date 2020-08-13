@@ -124,12 +124,13 @@ void downloadMenu()
 		
 		showFrame();
 		
-		if (vpad.trigger == VPAD_BUTTON_A) {
+		if(vpad.trigger & VPAD_BUTTON_A)
+		{
 			if(showKeyboard(KEYBOARD_TYPE_RESTRICTED, titleID, CHECK_HEXADECIMAL, 16, true, "00050000101", NULL))
 				 break;
 			 drawDownloadFrame1();
 		}
-		else if (vpad.trigger == VPAD_BUTTON_B)
+		else if(vpad.trigger & VPAD_BUTTON_B)
 			return;
 	}
 	if(!AppRunning())
@@ -144,6 +145,7 @@ void downloadMenu()
 	
 	bool loop = true;
 	bool inst, toUSB;
+	bool redraw = false;
 	while(loop && AppRunning())
 	{
 		if(app == APP_STATE_BACKGROUND)
@@ -153,60 +155,72 @@ void downloadMenu()
 		
 		showFrame();
 		
-		switch(vpad.trigger)
+		if(vpad.trigger & VPAD_BUTTON_B)
+			return;
+		
+		if(vpad.trigger & VPAD_BUTTON_A)
 		{
-			case VPAD_BUTTON_A:
-				inst = toUSB = true;
-				loop = false;
-				break;
-			case VPAD_BUTTON_Y:
-				inst = toUSB = loop = false;
-				break;
-			case VPAD_BUTTON_X:
-				inst = true;
-				toUSB = loop = false;
-				break;
-			case VPAD_BUTTON_B:
-				return;
-			case VPAD_BUTTON_UP:
-				;
-				char tmpTitleID[17];
-				if(showKeyboard(KEYBOARD_TYPE_RESTRICTED, tmpTitleID, CHECK_HEXADECIMAL, 16, true, titleID, NULL))
-				{
-					toLowercase(tmpTitleID);
-					strcpy(titleID, tmpTitleID);
-					drawDownloadFrame2(titleID, titleVer, folderName, usbMounted, dlToUSB, keepFiles);
-				}
-				break;
-			case VPAD_BUTTON_RIGHT:
-				if(!showKeyboard(KEYBOARD_TYPE_RESTRICTED, titleVer, CHECK_NUMERICAL, 5, false, titleVer, NULL))
-					titleVer[0] = '\0';
-				drawDownloadFrame2(titleID, titleVer, folderName, usbMounted, dlToUSB, keepFiles);
-				break;
-			case VPAD_BUTTON_DOWN:
-				if(!showKeyboard(KEYBOARD_TYPE_NORMAL, folderName, CHECK_NOSPECIAL, FILENAME_MAX - 11, false, folderName, NULL))
-					folderName[0] = '\0';
-				drawDownloadFrame2(titleID, titleVer, folderName, usbMounted, dlToUSB, keepFiles);
-				break;
-			case VPAD_BUTTON_MINUS:
-				if(usbMounted)
-				{
-					dlToUSB = !dlToUSB;
-					keepFiles = !dlToUSB;
-					drawDownloadFrame2(titleID, titleVer, folderName, usbMounted, dlToUSB, keepFiles);
-				}
-				break;
-			case VPAD_BUTTON_PLUS:
-				vibrateWhenFinished = !vibrateWhenFinished;
-				drawDownloadFrame2(titleID, titleVer, folderName, usbMounted, dlToUSB, keepFiles);
-				break;
-			case VPAD_BUTTON_LEFT:
-				if(!dlToUSB)
-				{
-					keepFiles = !keepFiles;
-					drawDownloadFrame2(titleID, titleVer, folderName, usbMounted, dlToUSB, keepFiles);
-				}
-				break;
+			inst = toUSB = true;
+			loop = false;
+		}
+		else if(vpad.trigger & VPAD_BUTTON_Y)
+			inst = toUSB = loop = false;
+		else if(vpad.trigger & VPAD_BUTTON_X)
+		{
+			inst = true;
+			toUSB = loop = false;
+		}
+		
+		if(vpad.trigger & VPAD_BUTTON_UP)
+		{
+			char tmpTitleID[17];
+			if(showKeyboard(KEYBOARD_TYPE_RESTRICTED, tmpTitleID, CHECK_HEXADECIMAL, 16, true, titleID, NULL))
+			{
+				toLowercase(tmpTitleID);
+				strcpy(titleID, tmpTitleID);
+				redraw = true;
+			}
+		}
+		else if(vpad.trigger & VPAD_BUTTON_RIGHT)
+		{
+			if(!showKeyboard(KEYBOARD_TYPE_RESTRICTED, titleVer, CHECK_NUMERICAL, 5, false, titleVer, NULL))
+				titleVer[0] = '\0';
+			redraw = true;
+		}
+		else if(vpad.trigger & VPAD_BUTTON_DOWN)
+		{
+			if(!showKeyboard(KEYBOARD_TYPE_NORMAL, folderName, CHECK_NOSPECIAL, FILENAME_MAX - 11, false, folderName, NULL))
+				folderName[0] = '\0';
+			redraw = true;
+		}
+		
+		if(vpad.trigger & VPAD_BUTTON_MINUS)
+		{
+			if(usbMounted)
+			{
+				dlToUSB = !dlToUSB;
+				keepFiles = !dlToUSB;
+				redraw = true;
+			}
+		}
+		if(vpad.trigger & VPAD_BUTTON_PLUS)
+		{
+			vibrateWhenFinished = !vibrateWhenFinished;
+			redraw = true;
+		}
+		if(vpad.trigger & VPAD_BUTTON_LEFT)
+		{
+			if(!dlToUSB)
+			{
+				keepFiles = !keepFiles;
+				redraw = true;
+			}
+		}
+		
+		if(redraw)
+		{
+			drawDownloadFrame2(titleID, titleVer, folderName, usbMounted, dlToUSB, keepFiles);
+			redraw = false;
 		}
 	}
 	
