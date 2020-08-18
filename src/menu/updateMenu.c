@@ -68,7 +68,7 @@ bool updateMenu(char *newVersion)
 			return true;
 		}
 		if(vpad.trigger & VPAD_BUTTON_B)
-			return false;
+			break;
 	}
 	
 	return false;

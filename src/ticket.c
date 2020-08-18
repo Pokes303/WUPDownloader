@@ -68,7 +68,7 @@ void generateTik(const char *path, const char *titleID)
 				drawErrorFrame(err, B_RETURN);
 			
 			if(vpad.trigger & VPAD_BUTTON_B)
-				return;
+				break;
 		}
 		return;
 	}

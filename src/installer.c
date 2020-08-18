@@ -117,8 +117,9 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 			showFrame();
 			
 			if(vpad.trigger & VPAD_BUTTON_B)
-				return false;
+				break;
 		}
+		return false;
 	}
 	
 	// Allright, let's set if we want to install to USB or NAND
@@ -139,7 +140,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 			showFrame();
 			
 			if(vpad.trigger & VPAD_BUTTON_B)
-				return false;
+				break;
 		}
 		return false;
 	}
@@ -200,7 +201,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 			showFrame();
 			
 			if(vpad.trigger & VPAD_BUTTON_B)
-				return false;
+				break;
 		}
 		return false;
 	}
@@ -325,8 +326,9 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 			showFrame();
 			
 			if(vpad.trigger & VPAD_BUTTON_B)
-				return false;
+				break;
 		}
+		return false;
 	}
 	else 
 		addToScreenLog("Installation finished!");

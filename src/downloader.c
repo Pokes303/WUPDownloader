@@ -279,8 +279,9 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 		
 			showFrame();
 			if(vpad.trigger & VPAD_BUTTON_B)
-				return 1;
+				break;
 		}
+		return 1;
 	}
 	
 	CURLcode ret = curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -398,7 +399,7 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 			showFrame();
 			
 			if(vpad.trigger & VPAD_BUTTON_B)
-				return 1;
+				break;
 			if(vpad.trigger & VPAD_BUTTON_Y)
 				return downloadFile(url, file, type, resume);
 		}
@@ -445,7 +446,7 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 				showFrame();
 
 				if(vpad.trigger & VPAD_BUTTON_B)
-					return 1;
+					break;
 				if(vpad.trigger & VPAD_BUTTON_Y)
 					return downloadFile(url, file, type, resume);
 			}
@@ -472,7 +473,7 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 				showFrame();
 				
 				if(vpad.trigger & VPAD_BUTTON_B)
-					return 1;
+					break;
 				if(vpad.trigger & VPAD_BUTTON_Y)
 					return downloadFile(url, file, type, resume);
 			}
@@ -577,8 +578,9 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 				showFrame();
 				
 				if(vpad.trigger & VPAD_BUTTON_B)
-					return false;
+					break;
 			}
+			return false;
 		}
 		else
 			addToScreenLog("Download directory successfully created");
