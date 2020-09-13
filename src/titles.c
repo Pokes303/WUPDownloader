@@ -39,6 +39,7 @@
 
 char *titleMemArea = NULL;
 char **titleNames[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+size_t titleSizes[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
 int transformTidHigh(uint32_t tidHigh)
 {
@@ -85,7 +86,7 @@ char *tid2name(const char *tid)
 	
 	hexToByte(tid + 8, tlp);
 	tl &= 0x00FFFFFF;
-	return titleNames[tt][tl];
+	return tl > titleSizes[tt] ? NULL : titleNames[tt][tl];
 }
 
 bool initTitles()
@@ -126,15 +127,13 @@ bool initTitles()
 	size_t size;
 	char sj[9];
 	sj[0] = sj[1] = '0';
-	uint32_t j;
-	uint32_t maxJ;
+	size_t j;
 	cJSON_ArrayForEach(curr[0], json)
 	{
 		i = atoi(curr[0]->string);
 		if(i < 0 || i > 7)
 			continue;
 		
-		maxJ = 0;
 		cJSON_ArrayForEach(curr[1], curr[0])
 		{
 			size = strlen(curr[1]->string);
@@ -152,13 +151,13 @@ bool initTitles()
 			strcpy(&sj[2], curr[1]->string);
 			hexToByte(sj, (uint8_t *)&j);
 			
-			if(j > maxJ)
-				maxJ = j;
+			if(j > titleSizes[i])
+				titleSizes[i] = j;
 			
 			ma += size;
 		}
 		
-		titleNames[i] = MEMAllocFromDefaultHeap(++maxJ);
+		titleNames[i] = MEMAllocFromDefaultHeap(++titleSizes[i]);
 		if(titleNames[i] == NULL)
 		{
 			cJSON_Delete(json);
@@ -167,7 +166,7 @@ bool initTitles()
 			return false;
 		}
 		
-		OSBlockSet(titleNames[i], 0, maxJ);
+		OSBlockSet(titleNames[i], 0, titleSizes[i]);
 	}
 	
 	titleMemArea = MEMAllocFromDefaultHeap(ma);
@@ -221,9 +220,12 @@ void clearTitles()
 	}
 	
 	for(int i = 0; i < 8; i++)
+	{
 		if(titleNames[i] != NULL)
 		{
 			MEMFreeToDefaultHeap(titleNames[i]);
 			titleNames[i] = NULL;
 		}
+		titleSizes[i] = 0;
+	}
 }
