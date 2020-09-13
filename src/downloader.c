@@ -388,6 +388,7 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 		}
 		
 		drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
+		size_t framesLeft = 30 * 30; // 30 seconds with 30 FPS - TODO: Why isn't this working as expected?
 		
 		while(AppRunning())
 		{
@@ -400,8 +401,10 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 			
 			if(vpad.trigger & VPAD_BUTTON_B)
 				break;
-			if(vpad.trigger & VPAD_BUTTON_Y)
+			if(vpad.trigger & VPAD_BUTTON_Y /*|| (autoResumeEnabled() && --framesLeft == 0) TODO: Activate */)
 				return downloadFile(url, file, type, resume);
+			
+				
 		}
 		return 1;
 	}

@@ -36,6 +36,7 @@
 bool changed = false;
 bool useTitleDB = true;
 bool checkForUpdates = true;
+bool autoResume = true;
 int configInitTries = 0;
 
 bool initConfig()
@@ -83,6 +84,12 @@ bool initConfig()
 	configEntry = cJSON_GetObjectItemCaseSensitive(json, "Check for updates");
 	if(configEntry != NULL && cJSON_IsBool(configEntry))
 		checkForUpdates = cJSON_IsTrue(configEntry);
+	else
+		changed = true;
+	
+	configEntry = cJSON_GetObjectItemCaseSensitive(json, "Auto resume failed downloads");
+	if(configEntry != NULL && cJSON_IsBool(configEntry))
+		autoResume = cJSON_IsTrue(configEntry);
 	else
 		changed = true;
 	
@@ -134,6 +141,14 @@ bool saveConfig()
 	}
 	cJSON_AddItemToObject(config, "Check for updates", entry);
 	
+	entry = cJSON_CreateBool(autoResume);
+	if(entry == NULL)
+	{
+		cJSON_Delete(config);
+		return false;
+	}
+	cJSON_AddItemToObject(config, "Auto resume failed downloads", entry);
+	
 	char *configString = cJSON_Print(config);
 	cJSON_Delete(config);
 	if(configString == NULL)
@@ -176,5 +191,19 @@ void setUpdateCheck(bool enabled)
 		return;
 	
 	checkForUpdates = enabled;
+	changed = true;
+}
+
+bool autoResumeEnabled()
+{
+	return autoResume;
+}
+
+void setAutoResume(bool enabled)
+{
+	if(autoResume == enabled)
+		return;
+	
+	autoResume = enabled;
 	changed = true;
 }
