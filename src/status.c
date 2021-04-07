@@ -27,6 +27,7 @@
 #include <utils.h>
 
 #include <coreinit/core.h>
+#include <coreinit/dynload.h>
 #include <coreinit/energysaver.h>
 #include <coreinit/foreground.h>
 #include <coreinit/systeminfo.h>
@@ -40,6 +41,7 @@ volatile APP_STATE app = APP_STATE_RUNNING;
 volatile bool shutdownEnabled = true;
 volatile bool shutdownRequested = false;
 uint32_t standalone = 0xABCD;
+bool armor;
 
 void enableShutdown()
 {
@@ -52,8 +54,16 @@ void disableShutdown()
 	shutdownEnabled = false;
 }
 
+bool isArmor()
+{
+	return armor;
+}
+
 bool isStandalone()
 {
+	if(armor)
+		return true;
+	
 	if(standalone == 0xABCD)
 		standalone = OSGetTitleID() == 0x000500004E555373;
 	
@@ -73,6 +83,11 @@ void initStatus()
 	ProcUIInit(&OSSavesDone_ReadyToRelease);
 	ProcUIRegisterCallback(PROCUI_CALLBACK_HOME_BUTTON_DENIED, &homeButtonCallback, NULL, 100);
 	OSEnableHomeButtonMenu(false);
+	
+	OSDynLoad_Module mod;
+	armor = OSDynLoad_Acquire("homebrew_kernel", &mod) == OS_DYNLOAD_OK;
+	if(armor)
+		OSDynLoad_Release(mod);
 }
 
 bool AppRunning()
