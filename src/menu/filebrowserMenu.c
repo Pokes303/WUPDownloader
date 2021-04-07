@@ -177,7 +177,7 @@ refreshDirList:
 		if(vpad.trigger & VPAD_BUTTON_X)
 		{
 			onUSB = !onUSB;
-			redraw = true;
+			goto refreshDirList;
 		}
 		if(vpad.trigger & VPAD_BUTTON_Y)
 			goto refreshDirList;
