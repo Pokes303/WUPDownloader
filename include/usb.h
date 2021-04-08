@@ -30,6 +30,7 @@
 
 bool mountUSB();
 void unmountUSB();
+bool isUSB01();
 
 #ifdef __cplusplus
 	}

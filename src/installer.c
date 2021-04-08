@@ -73,7 +73,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	if(fromUSB)
 	{
 		//TODO
-		strcpy(newPath, "/vol/storage_usb01");
+		strcpy(newPath, isUSB01() ? "/vol/storage_usb01" : "/vol/storage_usb02");
 		strcat(newPath, path + 4);
 	}
 	else

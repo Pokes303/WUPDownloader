@@ -34,6 +34,7 @@
 
 int fsaHandle = -1;
 bool haxchi;
+bool usb01;
 
 static void iosuCallback(IOSError err, void *dummy)
 {
@@ -53,12 +54,17 @@ static inline void IOSUHAXHookClose()
 			OSSleepTicks(1024 << 10); //TODO: What's a good value here?
 }
 
+bool isUSB01()
+{
+	return usb01;
+}
+
 bool mountUSB()
 {
 	if(fsaHandle >= 0)
 		return true;
 	
-	// Try to open Mocha iosuhax
+	// Try to open Aroma/Mocha iosuhax
 	if(IOSUHAX_Open(NULL) < 0)
 	{
 		// We're not on Mocha. So try the Haxchi method of taking over MCP
@@ -91,14 +97,22 @@ bool mountUSB()
 	
 	int ret = mount_fs("usb", fsaHandle, NULL, "/vol/storage_usb01");
 	if(ret != 0 || !dirExists("usb:/"))
-    {
-        IOSUHAX_FSA_Close(fsaHandle);
-		IOSUHAXHookClose();
-		debugPrintf("IOSUHAX: error mounting USB drive: %#010x", ret);
-		return false;
-    }
+	{
+		debugPrintf("IOSUHAX: error mounting USB drive 1: %#010x", ret);
+		ret = mount_fs("usb", fsaHandle, NULL, "/vol/storage_usb02");
+		if(ret != 0 || !dirExists("usb:/"))
+		{
+			IOSUHAX_FSA_Close(fsaHandle);
+			IOSUHAXHookClose();
+			debugPrintf("IOSUHAX: error mounting USB drive 2: %#010x", ret);
+			return false;
+		}
+		usb01 = false;
+	}
+	else
+		usb01 = true;
 	
-	debugPrintf("IOSUHAX: USB drive mounted!");
+	debugPrintf("IOSUHAX: USB drive %s mounted!", usb01 ? "1" : "2");
 	return true;
 }
 
