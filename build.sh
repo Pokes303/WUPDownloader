@@ -5,7 +5,9 @@ WUHBTOOL="../wut-tools/install/bin/wuhbtool" # Set path to wuhbtool. Will use th
 
 # Don't edit below this line
 
-NUSSPLI_VERSION=$(xmllint --xpath 'app/version/text()' meta/hbl/meta.xml)
+NUSSPLI_VERSION="$(xmllint --xpath 'app/version/text()' meta/hbl/meta.xml)"
+grep -q "BETA" <<< "${NUSSPLI_VERSION}" > /dev/null 2>&1
+NUSSPLI_BETA=$?
 
 if [ "x${NUSPACKER}" = "x" ]; then
 	NUSPACKER="NUSPacker.jar"
@@ -57,13 +59,15 @@ mv NUSspli.wuhb NUSspli-${NUSSPLI_VERSION}-DEBUG.wuhb
 # Move debug rpx
 mv NUSspli.rpx NUSspli-${NUSSPLI_VERSION}-DEBUG.rpx
 
-# Build release rpx
-make -j8 release
-
-# Build release Aroma wuhb
-$WUHBTOOL NUSspli.rpx NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga #--tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga
-zip -9 zips/NUSspli-${NUSSPLI_VERSION}-Aroma.zip NUSspli.wuhb
-mv NUSspli.wuhb NUSspli-${NUSSPLI_VERSION}.wuhb
+if [ $NUSSPLI_BETA -ne 0 ]; then
+	# Build release rpx
+	make -j8 release
+	
+	# Build release Aroma wuhb
+	$WUHBTOOL NUSspli.rpx NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga #--tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga
+	zip -9 zips/NUSspli-${NUSSPLI_VERSION}-Aroma.zip NUSspli.wuhb
+	mv NUSspli.wuhb NUSspli-${NUSSPLI_VERSION}.wuhb
+fi
 
 # Build debug homebrew loader zip
 mkdir NUSspli
@@ -72,10 +76,13 @@ cp meta/hbl/meta.xml NUSspli/meta.xml
 cp meta/hbl/icon.png NUSspli/icon.png
 zip -9 -r zips/NUSspli-${NUSSPLI_VERSION}-HBL-DEBUG.zip NUSspli
 
-# Build release homebrew loader zip
-rm NUSspli/NUSspli.rpx
-cp NUSspli.rpx NUSspli/NUSspli.rpx
-zip -9 -r zips/NUSspli-${NUSSPLI_VERSION}-HBL.zip NUSspli
+if [ $NUSSPLI_BETA -ne 0 ]; then
+	# Build release homebrew loader zip
+	rm NUSspli/NUSspli.rpx
+	cp NUSspli.rpx NUSspli/NUSspli.rpx
+	zip -9 -r zips/NUSspli-${NUSSPLI_VERSION}-HBL.zip NUSspli
+fi
+
 rm -f NUSspli/*
 
 # Build debug channel version
@@ -94,14 +101,16 @@ java -jar "${NUSPACKER}" -in NUStmp -out NUSspli
 zip -9 -r zips/NUSspli-${NUSSPLI_VERSION}-Channel-DEBUG.zip NUSspli
 rm -rf NUSspli/*
 
-# Build release channel version
-rm NUStmp/code/NUSspli.rpx
-mv NUSspli.rpx NUStmp/code/NUSspli.rpx
-java -jar "${NUSPACKER}" -in NUStmp -out NUSspli
-zip -9 -r zips/NUSspli-${NUSSPLI_VERSION}-Channel.zip NUSspli
-
-# Move release rpx
-mv NUStmp/code/NUSspli.rpx NUSspli-${NUSSPLI_VERSION}.rpx
+if [ $NUSSPLI_BETA -ne 0 ]; then
+	# Build release channel version
+	rm NUStmp/code/NUSspli.rpx
+	mv NUSspli.rpx NUStmp/code/NUSspli.rpx
+	java -jar "${NUSPACKER}" -in NUStmp -out NUSspli
+	zip -9 -r zips/NUSspli-${NUSSPLI_VERSION}-Channel.zip NUSspli
+	
+	# Move release rpx
+	mv NUStmp/code/NUSspli.rpx NUSspli-${NUSSPLI_VERSION}.rpx
+fi
 
 # Cleanup
 rm -rf NUSspli NUStmp
