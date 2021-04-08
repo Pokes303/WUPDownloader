@@ -43,7 +43,7 @@ extern volatile APP_STATE app;
 void initStatus();
 void enableShutdown();
 void disableShutdown();
-bool isArmor();
+bool isAroma();
 bool isStandalone();
 bool AppRunning();
 uint32_t homeButtonCallback(void *dummy);

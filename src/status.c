@@ -41,7 +41,7 @@ volatile APP_STATE app = APP_STATE_RUNNING;
 volatile bool shutdownEnabled = true;
 volatile bool shutdownRequested = false;
 uint32_t standalone = 0xABCD;
-bool armor;
+bool aroma;
 
 void enableShutdown()
 {
@@ -54,14 +54,14 @@ void disableShutdown()
 	shutdownEnabled = false;
 }
 
-bool isArmor()
+bool isAroma()
 {
-	return armor;
+	return aroma;
 }
 
 bool isStandalone()
 {
-	if(armor)
+	if(aroma)
 		return true;
 	
 	if(standalone == 0xABCD)
@@ -85,8 +85,8 @@ void initStatus()
 	OSEnableHomeButtonMenu(false);
 	
 	OSDynLoad_Module mod;
-	armor = OSDynLoad_Acquire("homebrew_kernel", &mod) == OS_DYNLOAD_OK;
-	if(armor)
+	aroma = OSDynLoad_Acquire("homebrew_kernel", &mod) == OS_DYNLOAD_OK;
+	if(aroma)
 		OSDynLoad_Release(mod);
 }
 

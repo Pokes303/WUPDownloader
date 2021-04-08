@@ -49,6 +49,8 @@
 #define UPDATE_CHECK_URL "http://napi.nbg01.v10lator.de/versioncheck.php"
 #define UPDATE_DL_URL "http://napi.nbg01.v10lator.de/dl.php?t="
 #define UPDATE_TEMP_FOLDER "/vol/external01/NUSspli_temp/"
+#define UPDATE_AROMA_FOLDER "/vol/external01/wiiu/apps/"
+#define UPDATE_AROMA_FILE "NUSspli.wuhb"
 #define UPDATE_HBL_FOLDER "/vol/external01/wiiu/apps/NUSspli"
 #define UPDATE_ZIP_BUF (2048 << 10) // 2 MB
 
@@ -232,7 +234,7 @@ void update(char *newVersion)
 		return;
 	}
 	
-	char *url = isStandalone() ? UPDATE_DL_URL"c" : UPDATE_DL_URL"h";
+	char *url = isAroma() ? UPDATE_DL_URL"a" : (isStandalone() ? UPDATE_DL_URL"c" : UPDATE_DL_URL"h");
 	
 	if(downloadFile(url, "NUSspli.zip", FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
 	{
@@ -393,6 +395,9 @@ void update(char *newVersion)
 			return;
 		}
 		
+		if(isAroma())
+			goto aromaInstallation;
+		
 		OSSleepTicks(OSSecondsToTicks(10)); // TODO: Check if MCP finished in a loop
 		
 		char installPath[strlen(UPDATE_TEMP_FOLDER) + 8];
@@ -405,19 +410,34 @@ void update(char *newVersion)
 	}
 	else
 	{
-		if(!dirExists(UPDATE_HBL_FOLDER))
+		if(isAroma())
 		{
-			showUpdateError("Couldn't find NUSspli folder on the SD card");
-			return;
+			if(dirExists(UPDATE_HBL_FOLDER))
+				removeDirectory(UPDATE_HBL_FOLDER);
+			
+			char *aromaFile = UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE;
+			if(fileExists(aromaFile))
+				remove(aromaFile);
+			
+aromaInstallation:
+			rename(UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE, aromaFile);
+		}
+		else
+		{
+			if(!dirExists(UPDATE_HBL_FOLDER))
+			{
+				showUpdateError("Couldn't find NUSspli folder on the SD card");
+				return;
+			}
+			
+			removeDirectory(UPDATE_HBL_FOLDER);
+			char installPath[strlen(UPDATE_TEMP_FOLDER) + 8];
+			strcpy(installPath, UPDATE_TEMP_FOLDER);
+			strcat(installPath, "NUSspli");
+			moveDirectory(installPath, UPDATE_HBL_FOLDER);
 		}
 		
-		removeDirectory(UPDATE_HBL_FOLDER);
-		char installPath[strlen(UPDATE_TEMP_FOLDER) + 8];
-		strcpy(installPath, UPDATE_TEMP_FOLDER);
-		strcat(installPath, "NUSspli");
-		moveDirectory(installPath, UPDATE_HBL_FOLDER);
 		removeDirectory(UPDATE_TEMP_FOLDER);
-		
 		enableShutdown();
 		startRumble();
 		colorStartNewFrame(SCREEN_COLOR_D_GREEN);
