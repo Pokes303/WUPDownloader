@@ -4,7 +4,7 @@ Install content directly from the Nintendo Update Servers to your Wii U.
 # Features
 - Download titles from Nintendo's servers (NUS).
 - Install the downloaded titles to external or internal storage.
-- Search tickets on NUS and 'That title key site'.
+- Includes a keygen!
 - Create fake tickets at will or if not found.
 - Shows the download speed.
 - On screen keyboard.
@@ -14,7 +14,7 @@ Install content directly from the Nintendo Update Servers to your Wii U.
 
 # Usage
 To download a title, search on a Title Database for a title ID (Ex: WiiUBrew's database)\
-To create a fake ticket, you will need the title ID and the encryption key (Avaible on 'That title key site').
+To create a fake ticket, you will need the title ID, too.
 
 To install the app, download and unzip the contents of the [latest release](https://github.com/V10lator/NUSspli/releases) and depending on how you will run the app, follow the next steps:
 
