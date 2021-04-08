@@ -44,7 +44,7 @@ void initStatus();
 void enableShutdown();
 void disableShutdown();
 bool isAroma();
-bool isStandalone();
+bool isChannel();
 bool AppRunning();
 uint32_t homeButtonCallback(void *dummy);
 

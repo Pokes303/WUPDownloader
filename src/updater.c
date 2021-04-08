@@ -234,7 +234,7 @@ void update(char *newVersion)
 		return;
 	}
 	
-	char *url = isAroma() ? UPDATE_DL_URL"a" : (isStandalone() ? UPDATE_DL_URL"c" : UPDATE_DL_URL"h");
+	char *url = isAroma() ? UPDATE_DL_URL"a" : (isChannel() ? UPDATE_DL_URL"c" : UPDATE_DL_URL"h");
 	
 	if(downloadFile(url, "NUSspli.zip", FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
 	{
@@ -375,7 +375,7 @@ void update(char *newVersion)
 	clearRamBuf();
 	flushIOQueue();
 	
-	if(isStandalone())
+	if(isChannel())
 	{
 		MCPTitleListType ownInfo;
 		MCPError err = MCP_GetOwnTitleInfo(mcpHandle, &ownInfo);

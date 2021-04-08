@@ -40,7 +40,7 @@
 volatile APP_STATE app = APP_STATE_RUNNING;
 volatile bool shutdownEnabled = true;
 volatile bool shutdownRequested = false;
-uint32_t standalone = 0xABCD;
+bool channel;
 bool aroma;
 
 void enableShutdown()
@@ -59,15 +59,9 @@ bool isAroma()
 	return aroma;
 }
 
-bool isStandalone()
+bool isChannel()
 {
-	if(aroma)
-		return true;
-	
-	if(standalone == 0xABCD)
-		standalone = OSGetTitleID() == 0x000500004E555373;
-	
-	return standalone;
+	return channel;
 }
 
 uint32_t homeButtonCallback(void *dummy)
@@ -88,6 +82,8 @@ void initStatus()
 	aroma = OSDynLoad_Acquire("homebrew_kernel", &mod) == OS_DYNLOAD_OK;
 	if(aroma)
 		OSDynLoad_Release(mod);
+	channel = OSGetTitleID() == 0x000500004E555373;
+	
 }
 
 bool AppRunning()
@@ -98,7 +94,7 @@ bool AppRunning()
 		{
 			flushIOQueue();
 			unmountUSB();
-			if(isStandalone())
+			if(isAroma() || isChannel())
 				SYSLaunchMenu();
 			else
 				SYSRelaunchTitle(0, NULL);
