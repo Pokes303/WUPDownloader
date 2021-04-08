@@ -46,8 +46,8 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#define UPDATE_CHECK_URL "http://napi.nbg01.v10lator.de/versioncheck.php"
-#define UPDATE_DL_URL "http://napi.nbg01.v10lator.de/dl.php?t="
+#define UPDATE_CHECK_URL NAPI_URL "versioncheck.php"
+#define UPDATE_DL_URL NAPI_URL "dl.php?t="
 #define UPDATE_TEMP_FOLDER "/vol/external01/NUSspli_temp/"
 #define UPDATE_AROMA_FOLDER "/vol/external01/wiiu/apps/"
 #define UPDATE_AROMA_FILE "NUSspli.wuhb"

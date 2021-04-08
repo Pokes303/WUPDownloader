@@ -27,6 +27,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define NAPI_URL "http://napi.nbg01.v10lator.de/"
+
 #ifdef NUSSPLI_DEBUG
 	#include <whb/log.h>
 	#include <whb/log_udp.h>
