@@ -1,5 +1,33 @@
 #!/bin/sh
+
+NUSPACKER="../nuspacker/NUSPacker.jar" # Set path to NUSPacker.jar here. will be downloaded if empty
+WUHBTOOL="../wut-tools/install/bin/wuhbtool" # Set path to wuhbtool. Will use the one from PATH if empty
+
+# Don't edit below this line
+
 NUSSPLI_VERSION=$(xmllint --xpath 'app/version/text()' meta/hbl/meta.xml)
+
+if [ "x${NUSPACKER}" = "x" ]; then
+	NUSPACKER="NUSPacker.jar"
+	wget "https://github.com/ihaveamac/nuspacker/blob/master/NUSPacker.jar?raw=true" -O $NUSPACKER
+	NUSPACKER_DL="true"
+else
+	if [ ! -e "${NUSPACKER}" ]; then
+		echo "${NUSPACKER} not found!"
+		exit
+	fi
+	NUSPACKER_DL="false"
+fi
+
+if [ "x${WUHBTOOL}" = "x" ]; then
+	WUHBTOOL="wuhbtool"
+else
+	if [ ! -e "${WUHBTOOL}" ]; then
+		test  "${NUSPACKER_DL}" = "true" && rm $NUSPACKER
+		echo "${WUHBTOOL} not found!"
+		exit
+	fi
+fi
 
 # Cleanup
 rm -f NUSspli.wuhb
@@ -15,14 +43,13 @@ rm -f zips/NUSspli-${NUSSPLI_VERSION}-HBL.zip
 rm -f zips/NUSspli-${NUSSPLI_VERSION}-Channel.zip
 rm -rf NUSspli
 rm -rf NUStmp
-rm -f NUSPacker.jar
+test  "${NUSPACKER_DL}" = "true" && rm $NUSPACKER
 
 # Build debug rpx
 make -j8 debug
 
 # Build debug Aroma wuhb
-PATH="$PATH:${CWD}../wut-tools/install/bin/" # Not needed if wuhbtool is upstream in WUT
-wuhbtool NUSspli.rpx NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga #--tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga
+$WUHBTOOL NUSspli.rpx NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga #--tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga
 mkdir zips
 zip -9 zips/NUSspli-${NUSSPLI_VERSION}-Aroma-DEBUG.zip NUSspli.wuhb
 mv NUSspli.wuhb NUSspli-${NUSSPLI_VERSION}-DEBUG.wuhb
@@ -34,7 +61,7 @@ mv NUSspli.rpx NUSspli-${NUSSPLI_VERSION}-DEBUG.rpx
 make -j8 release
 
 # Build release Aroma wuhb
-wuhbtool NUSspli.rpx NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga #--tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga
+$WUHBTOOL NUSspli.rpx NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga #--tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga
 zip -9 zips/NUSspli-${NUSSPLI_VERSION}-Aroma.zip NUSspli.wuhb
 mv NUSspli.wuhb NUSspli-${NUSSPLI_VERSION}.wuhb
 
@@ -63,19 +90,19 @@ cp meta/menu/iconTex.tga NUStmp/meta/iconTex.tga
 cp meta/menu/meta.xml NUStmp/meta/meta.xml
 cp meta/menu/title.cert NUStmp/meta/title.cert
 cp meta/menu/title.tik NUStmp/meta/title.tik
-wget "https://github.com/ihaveamac/nuspacker/blob/master/NUSPacker.jar?raw=true" -O NUSPacker.jar
-java -jar NUSPacker.jar -in NUStmp -out NUSspli
+java -jar "${NUSPACKER}" -in NUStmp -out NUSspli
 zip -9 -r zips/NUSspli-${NUSSPLI_VERSION}-Channel-DEBUG.zip NUSspli
 rm -rf NUSspli/*
 
 # Build release channel version
 rm NUStmp/code/NUSspli.rpx
 mv NUSspli.rpx NUStmp/code/NUSspli.rpx
-java -jar NUSPacker.jar -in NUStmp -out NUSspli
+java -jar "${NUSPACKER}" -in NUStmp -out NUSspli
 zip -9 -r zips/NUSspli-${NUSSPLI_VERSION}-Channel.zip NUSspli
 
 # Move release rpx
 mv NUStmp/code/NUSspli.rpx NUSspli-${NUSSPLI_VERSION}.rpx
 
 # Cleanup
-rm -rf NUSspli NUStmp NUSPacker.jar
+rm -rf NUSspli NUStmp
+test  "${NUSPACKER_DL}" = "true" && rm $NUSPACKER
