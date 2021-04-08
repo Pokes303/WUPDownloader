@@ -1,7 +1,7 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
  * Copyright (c) 2019-2020 Pokes303                                        *
- * Copyright (c) 2020 V10lator <v10lator@myway.de>                         *
+ * Copyright (c) 2020-2021 V10lator <v10lator@myway.de>                    *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
@@ -47,7 +47,7 @@ void drawMainMenuFrame()
 	strcat(toScreen, "]");
 	textToFrame(3, ALIGNED_CENTER, toScreen);
 	
-	textToFrame(4, ALIGNED_CENTER, "© 2020 V10lator <v10lator@myway.de>");
+	textToFrame(4, ALIGNED_CENTER, "© 2020-2021 V10lator <v10lator@myway.de>");
 	
 	textToFrame(13, 0, "Press \uE000 to download content");
 	textToFrame(14, 0, "Press \uE002 to install content");
