@@ -100,7 +100,8 @@ void drawDownloadFrame2(const char *titleID, const char *titleVer, const char *f
 	textToFrame(line--, 0, toFrame);
 	
 	textToFrame(line--, 0, "Press \uE002 to install to NAND");
-	textToFrame(line--, 0, "Press \uE000 to install to USB");
+	if(usbMounted)
+		textToFrame(line--, 0, "Press \uE000 to install to USB");
 	lineToFrame(line--, SCREEN_COLOR_WHITE);
 	
 	drawFrame();
@@ -158,7 +159,7 @@ void downloadMenu()
 		if(vpad.trigger & VPAD_BUTTON_B)
 			return;
 		
-		if(vpad.trigger & VPAD_BUTTON_A)
+		if(usbMounted && vpad.trigger & VPAD_BUTTON_A)
 		{
 			inst = toUSB = true;
 			loop = false;
@@ -194,14 +195,11 @@ void downloadMenu()
 			redraw = true;
 		}
 		
-		if(vpad.trigger & VPAD_BUTTON_MINUS)
+		if(usbMounted && vpad.trigger & VPAD_BUTTON_MINUS)
 		{
-			if(usbMounted)
-			{
-				dlToUSB = !dlToUSB;
-				keepFiles = !dlToUSB;
-				redraw = true;
-			}
+			dlToUSB = !dlToUSB;
+			keepFiles = !dlToUSB;
+			redraw = true;
 		}
 		if(vpad.trigger & VPAD_BUTTON_PLUS)
 		{
