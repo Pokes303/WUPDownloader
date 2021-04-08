@@ -8,6 +8,10 @@ WUHBTOOL="../wut-tools/install/bin/wuhbtool" # Set path to wuhbtool. Will use th
 NUSSPLI_VERSION="$(xmllint --xpath 'app/version/text()' meta/hbl/meta.xml)"
 grep -q "BETA" <<< "${NUSSPLI_VERSION}" > /dev/null 2>&1
 NUSSPLI_BETA=$?
+if [ $NUSSPLI_BETA -ne 0 ]; then
+	grep -q "ALPHA" <<< "${NUSSPLI_VERSION}" > /dev/null 2>&1
+	NUSSPLI_BETA=$?
+fi
 
 if [ "x${NUSPACKER}" = "x" ]; then
 	NUSPACKER="NUSPacker.jar"
