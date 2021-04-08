@@ -1,9 +1,12 @@
 debug
 release
 payload
-NUSspli.elf
-NUSSpli.rpx
+*.elf
+*.rpx
+*.wuhb
 TODO.txt
+encryptKeyWith
+NUSPacker.jar
 arm_kernel/arm_kernel.bin
 arm_kernel/arm_kernel.elf
 arm_kernel/arm_kernel_bin.h
@@ -24,3 +27,5 @@ arm_user/build/main.d
 arm_user/build/main.o
 arm_user/build/utils.d
 arm_user/build/utils.o
+zips
+zips/NUSspli*.zip

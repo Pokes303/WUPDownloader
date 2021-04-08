@@ -1,0 +1,81 @@
+#!/bin/sh
+NUSSPLI_VERSION=$(xmllint --xpath 'app/version/text()' meta/hbl/meta.xml)
+
+# Cleanup
+rm -f NUSspli.wuhb
+rm -f NUSspli-${NUSSPLI_VERSION}-DEBUG.wuhb
+rm -f NUSspli-${NUSSPLI_VERSION}-DEBUG.rpx
+rm -f NUSspli-${NUSSPLI_VERSION}.wuhb
+rm -f NUSspli-${NUSSPLI_VERSION}.rpx
+rm -f zips/NUSspli-${NUSSPLI_VERSION}-Aroma-DEBUG.zip
+rm -f zips/NUSspli-${NUSSPLI_VERSION}-HBL-DEBUG.zip
+rm -f zips/NUSspli-${NUSSPLI_VERSION}-Channel-DEBUG.zip
+rm -f zips/NUSspli-${NUSSPLI_VERSION}-Aroma.zip
+rm -f zips/NUSspli-${NUSSPLI_VERSION}-HBL.zip
+rm -f zips/NUSspli-${NUSSPLI_VERSION}-Channel.zip
+rm -rf NUSspli
+rm -rf NUStmp
+rm -f NUSPacker.jar
+
+# Build debug rpx
+make -j8 debug
+
+# Build debug Aroma wuhb
+PATH="$PATH:${CWD}../wut-tools/install/bin/" # Not needed if wuhbtool is upstream in WUT
+wuhbtool NUSspli.rpx NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga #--tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga
+mkdir zips
+zip -9 zips/NUSspli-${NUSSPLI_VERSION}-Aroma-DEBUG.zip NUSspli.wuhb
+mv NUSspli.wuhb NUSspli-${NUSSPLI_VERSION}-DEBUG.wuhb
+
+# Move debug rpx
+mv NUSspli.rpx NUSspli-${NUSSPLI_VERSION}-DEBUG.rpx
+
+# Build release rpx
+make -j8 release
+
+# Build release Aroma wuhb
+wuhbtool NUSspli.rpx NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga #--tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga
+zip -9 zips/NUSspli-${NUSSPLI_VERSION}-Aroma.zip NUSspli.wuhb
+mv NUSspli.wuhb NUSspli-${NUSSPLI_VERSION}.wuhb
+
+# Build debug homebrew loader zip
+mkdir NUSspli
+cp NUSspli-${NUSSPLI_VERSION}-DEBUG.rpx NUSspli/NUSspli.rpx
+cp meta/hbl/meta.xml NUSspli/meta.xml
+cp meta/hbl/icon.png NUSspli/icon.png
+zip -9 -r zips/NUSspli-${NUSSPLI_VERSION}-HBL-DEBUG.zip NUSspli
+
+# Build release homebrew loader zip
+rm NUSspli/NUSspli.rpx
+cp NUSspli.rpx NUSspli/NUSspli.rpx
+zip -9 -r zips/NUSspli-${NUSSPLI_VERSION}-HBL.zip NUSspli
+rm -f NUSspli/*
+
+# Build debug channel version
+mkdir NUStmp
+mkdir NUStmp/code
+mkdir NUStmp/content
+mkdir NUStmp/meta
+cp NUSspli-${NUSSPLI_VERSION}-DEBUG.rpx NUStmp/code/NUSspli.rpx
+cp meta/menu/app.xml NUStmp/code/app.xml
+cp meta/menu/cos.xml NUStmp/code/cos.xml
+cp meta/menu/iconTex.tga NUStmp/meta/iconTex.tga
+cp meta/menu/meta.xml NUStmp/meta/meta.xml
+cp meta/menu/title.cert NUStmp/meta/title.cert
+cp meta/menu/title.tik NUStmp/meta/title.tik
+wget "https://github.com/ihaveamac/nuspacker/blob/master/NUSPacker.jar?raw=true" -O NUSPacker.jar
+java -jar NUSPacker.jar -in NUStmp -out NUSspli
+zip -9 -r zips/NUSspli-${NUSSPLI_VERSION}-Channel-DEBUG.zip NUSspli
+rm -rf NUSspli/*
+
+# Build release channel version
+rm NUStmp/code/NUSspli.rpx
+mv NUSspli.rpx NUStmp/code/NUSspli.rpx
+java -jar NUSPacker.jar -in NUStmp -out NUSspli
+zip -9 -r zips/NUSspli-${NUSSPLI_VERSION}-Channel.zip NUSspli
+
+# Move release rpx
+mv NUStmp/code/NUSspli.rpx NUSspli-${NUSSPLI_VERSION}.rpx
+
+# Cleanup
+rm -rf NUSspli NUStmp NUSPacker.jar
