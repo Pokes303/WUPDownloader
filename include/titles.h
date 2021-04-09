@@ -40,7 +40,16 @@ typedef enum
 	TID_HIGH_UPDATE =			0x0005000E,
 } TID_HIGH;
 
+typedef struct
+{
+	char *name;
+	uint64_t tid;
+} TitleEntry;
+
+TitleEntry *getTitleEntries();
+size_t getTitleEntriesSize();
 char *tid2name(const char *tid);
+uint64_t name2tid(const char *name);
 bool initTitles();
 void clearTitles();
 

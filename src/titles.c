@@ -40,8 +40,10 @@
 char *titleMemArea = NULL;
 char **titleNames[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 size_t titleSizes[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+size_t titleEntries = 0;
+TitleEntry *titleEntry = NULL;
 
-int transformTidHigh(uint32_t tidHigh)
+int transformTidHigh(TID_HIGH tidHigh)
 {
 	switch(tidHigh)
 	{
@@ -68,6 +70,42 @@ int transformTidHigh(uint32_t tidHigh)
 	}
 }
 
+TID_HIGH retransformTidHigh(int transformedTidHigh)
+{
+	switch(transformedTidHigh)
+	{
+		case 0:
+			return TID_HIGH_GAME;
+		case 1:
+			return TID_HIGH_DEMO;
+		case 2:
+			return TID_HIGH_SYSTEM_APP;
+		case 3:
+			return TID_HIGH_SYSTEM_DATA;
+		case 4:
+			return TID_HIGH_SYSTEM_APPLET;
+		case 5:
+			return TID_HIGH_VWII_IOS;
+		case 6:
+			return TID_HIGH_VWII_SYSTEM_APP;
+		case 7:
+			return TID_HIGH_VWII_SYSTEM;
+		default:
+			return -1;
+	}
+}
+
+
+TitleEntry *getTitleEntries()
+{
+	return titleEntry;
+}
+
+size_t getTitleEntriesSize()
+{
+	return titleEntries;
+}
+
 char *tid2name(const char *tid)
 {
 	if(titleMemArea == NULL)
@@ -87,6 +125,36 @@ char *tid2name(const char *tid)
 	hexToByte(tid + 8, tlp);
 	tl &= 0x00FFFFFF;
 	return tl > titleSizes[tt] ? NULL : titleNames[tt][tl];
+}
+
+uint64_t name2tid(const char *name)
+{
+	size_t lower = 0;
+	size_t upper = titleEntries;
+	size_t current = upper / 2;
+	int strret;
+	
+	while(lower != upper)
+	{
+		strret =  strcmp(titleEntry[current].name, name);
+		if(strret == 0)
+			return titleEntry[current].tid;
+		
+		if(strret < 0)
+			upper = current;
+		else
+			lower = current;
+		
+/*		if(lower == upper + 1)
+		{
+			current = current == lower ? current + 1 : current - 1;
+			strret =  strcmp(titleEntry[current].name, name);
+			return strret == 0 ? titleEntry[current].tid : 0;
+		}
+		*/
+		current = ((upper - lower) / 2) + lower;
+	}
+	return 0;
 }
 
 bool initTitles()
@@ -128,6 +196,7 @@ bool initTitles()
 	char sj[9];
 	sj[0] = sj[1] = '0';
 	size_t j;
+	titleEntries = 0;
 	cJSON_ArrayForEach(curr[0], json)
 	{
 		i = atoi(curr[0]->string);
@@ -155,6 +224,7 @@ bool initTitles()
 				titleSizes[i] = j;
 			
 			ma += size;
+			titleEntries++;
 		}
 		
 		titleNames[i] = MEMAllocFromDefaultHeap(++titleSizes[i]);
@@ -178,7 +248,18 @@ bool initTitles()
 		return false;
 	}
 	
+	titleEntry = MEMAllocFromDefaultHeap(sizeof(TitleEntry) * titleEntries);
+	if(titleEntry == NULL)
+	{
+		cJSON_Delete(json);
+		clearRamBuf();
+		clearTitles();
+		return false;
+	}
+	
 	char *ptr = titleMemArea;
+	titleEntries = 0;
+	uint64_t tid;
 	cJSON_ArrayForEach(curr[0], json)
 	{
 		i = atoi(curr[0]->string);
@@ -201,6 +282,13 @@ bool initTitles()
 			strcpy(ptr, curr[1]->valuestring);
 //			debugPrintf("titleNames[%d][0x%08X] = %s", i, j, ptr);
 			titleNames[i][j] = ptr;
+			titleEntry[titleEntries].name = ptr;
+			
+			tid = retransformTidHigh(i);
+			tid <<= 8;
+			tid &= j;
+			titleEntry[titleEntries++].tid = tid;
+			
 			ptr += size;
 		}
 	}
@@ -213,10 +301,18 @@ bool initTitles()
 
 void clearTitles()
 {
+	titleEntries = 0;
+	
 	if(titleMemArea != NULL)
 	{
 		MEMFreeToDefaultHeap(titleMemArea);
 		titleMemArea = NULL;
+	}
+	
+	if(titleEntry != NULL)
+	{
+		MEMFreeToDefaultHeap(titleEntry);
+		titleEntry = NULL;
 	}
 	
 	for(int i = 0; i < 8; i++)
