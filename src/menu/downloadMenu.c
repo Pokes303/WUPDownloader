@@ -190,7 +190,7 @@ void downloadMenu()
 		}
 		else if(vpad.trigger & VPAD_BUTTON_DOWN)
 		{
-			if(!showKeyboard(KEYBOARD_TYPE_NORMAL, folderName, CHECK_NOSPECIAL, FILENAME_MAX - 11, false, folderName, NULL))
+			if(!showKeyboard(KEYBOARD_TYPE_NORMAL, folderName, CHECK_ALPHANUMERICAL, FILENAME_MAX - 11, false, folderName, NULL))
 				folderName[0] = '\0';
 			redraw = true;
 		}

@@ -72,9 +72,9 @@ bool isUppercase(char c)
 	return c >= 'A' && c <= 'Z';
 }
 
-bool isSpecial(char c)
+bool isAlphanumerical(char c)
 {
-	return c != '"' && c != '*' && c != '/' && c != ':' && c != '<' && c != '>' && c != '?' && c != '\\' && c != '|' && c != ',' && c != ';'; // && c != '¥';
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || isNumber(c);
 }
 
 bool isLowercaseHexa(char c)

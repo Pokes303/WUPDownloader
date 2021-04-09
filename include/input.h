@@ -39,7 +39,7 @@ typedef enum
 	CHECK_NONE,			//No check
 	CHECK_NUMERICAL,	//Only numbers
 	CHECK_HEXADECIMAL,	//Only hex
-	CHECK_NOSPECIAL,	//Only letters or numbers
+	CHECK_ALPHANUMERICAL,	//Only letters or numbers
 	CHECK_URL,
 } KeyboardChecks;
 

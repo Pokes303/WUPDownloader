@@ -74,8 +74,8 @@ void SWKBD_Render(KeyboardChecks check)
 					case CHECK_HEXADECIMAL:
 						cf = &isHexa;
 						break;
-					case CHECK_NOSPECIAL:
-						cf = &isSpecial;
+					case CHECK_ALPHANUMERICAL:
+						cf = &isAlphanumerical;
 						break;
 					case CHECK_URL:
 						cf = &isUrl;
