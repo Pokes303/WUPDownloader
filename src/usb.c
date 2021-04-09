@@ -20,6 +20,7 @@
 #include <wut-fixups.h>
 
 #include <file.h>
+#include <status.h>
 #include <usb.h>
 #include <utils.h>
 

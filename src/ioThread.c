@@ -22,6 +22,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include <coreinit/atomic.h>
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
@@ -47,14 +48,15 @@ struct WriteQueueEntry
 static OSThread ioThread;
 static uint8_t ioThreadStack[IOT_STACK_SIZE];
 static volatile bool ioRunning = false;
-static volatile bool ioWriteLock = true;
+static volatile uint32_t ioWriteLock = true;
+static volatile uint32_t *ioWriteLockPtr = &ioWriteLock;
 
 static volatile WriteQueueEntry sliceEntries[MAX_IO_QUEUE_ENTRIES];
 static uint8_t sliceBuffer[MAX_IO_QUEUE_ENTRIES][SLICE_SIZE];
-static uint8_t *sliceBufferPointer = &sliceBuffer[0][0];
-static uint8_t *sliceBufferEnd = &sliceBuffer[0][0] + SLICE_SIZE;
-static volatile uint32_t activeReadBuffer = 0;
-static volatile uint32_t activeWriteBuffer = 0;
+static volatile uint8_t *sliceBufferPointer;
+static volatile uint8_t *sliceBufferEnd;
+static volatile uint32_t activeReadBuffer;
+static volatile uint32_t activeWriteBuffer;
 
 void executeIOQueue()
 {
@@ -71,12 +73,12 @@ void executeIOQueue()
 		fclose(sliceEntries[asl].file);
 	}
 	
-	sliceEntries[asl].inUse = false;
-	
+	uint32_t osl = asl;
 	if(++asl == MAX_IO_QUEUE_ENTRIES)
 		asl = 0;
 	
 	activeWriteBuffer = asl;
+	sliceEntries[osl].inUse = false;
 }
 
 int ioThreadMain(int argc, const char **argv)
@@ -99,6 +101,10 @@ bool initIOThread()
 	for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; i++)
 		sliceEntries[i].inUse = false;
 	
+	sliceBufferPointer = &sliceBuffer[0][0];
+	sliceBufferEnd = sliceBufferPointer + SLICE_SIZE;
+	activeReadBuffer = activeWriteBuffer = 0;
+	
 	ioRunning = true;
 	OSResumeThread(&ioThread);
 	return true;
@@ -109,7 +115,8 @@ void shutdownIOThread()
 	if(!ioRunning)
 		return;
 	
-	ioWriteLock = true;
+	while(!OSCompareAndSwapAtomic(ioWriteLockPtr, false, true))
+		;
 	while(sliceEntries[activeWriteBuffer].inUse)
 		;
 	
@@ -121,7 +128,7 @@ void shutdownIOThread()
 
 size_t addToIOQueue(const void *buf, size_t size, size_t n, FILE *file)
 {
-	while(ioWriteLock)
+	while(!OSCompareAndSwapAtomic(ioWriteLockPtr, false, true))
 		if(!ioRunning)
 			return 0;
 	
@@ -141,6 +148,7 @@ size_t addToIOQueue(const void *buf, size_t size, size_t n, FILE *file)
 		{
 			OSBlockMove(sliceBufferPointer, buf, size, false);
 			sliceBufferPointer = end;
+			ioWriteLock = false;
 			return size;
 		}
 		
@@ -166,17 +174,21 @@ size_t addToIOQueue(const void *buf, size_t size, size_t n, FILE *file)
 	
 	sliceBufferPointer = &sliceBuffer[asl][0];
 	sliceBufferEnd = sliceBufferPointer + SLICE_SIZE;
+	ioWriteLock = false;
 	
 	if(buf != NULL && rest > 0)
-		addToIOQueue(((const uint8_t *)buf) + written, rest, 1, file);
+		written += addToIOQueue(((const uint8_t *)buf) + written, rest, 1, file);
 	
-	return size;
+	return written;
 }
 
 void flushIOQueue()
 {
 	debugPrintf("Flushing...");
-	ioWriteLock = true;
+	
+	while(!OSCompareAndSwapAtomic(ioWriteLockPtr, false, true))
+		;
+	
 	while(sliceEntries[activeWriteBuffer].inUse)
 		OSSleepTicks(1024);
 	
