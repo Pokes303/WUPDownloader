@@ -133,10 +133,11 @@ size_t addToIOQueue(const void *buf, size_t size, size_t n, FILE *file)
 			return 0;
 	
 	uint32_t asl = activeReadBuffer;
-	while(sliceEntries[asl].inUse)
+	if(sliceEntries[asl].inUse)
 	{
 		debugPrintf("Waiting for free slot...");
 		OSSleepTicks(256);
+		return addToIOQueue(buf, size, n, file);
 	}
 	
 	size_t written, rest;
