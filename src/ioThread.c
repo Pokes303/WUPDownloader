@@ -23,6 +23,7 @@
 #include <stdio.h>
 
 #include <coreinit/atomic.h>
+#include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
@@ -31,17 +32,16 @@
 #include <utils.h>
 
 #define IOT_STACK_SIZE			0x2000
-#define SLICE_SIZE				512 * 1024 // 512 KB
-#define MAX_IO_QUEUE_ENTRIES	(128 * 1024 * 1024) / (SLICE_SIZE) // 128 MB
+#define MAX_IO_BUFFER_SIZE	(8 * 1024) // 8 KB
+#define MAX_IO_QUEUE_ENTRIES	((512 * 1024 * 1024) / MAX_IO_BUFFER_SIZE) // 512 MB
 
 struct WriteQueueEntry;
 typedef struct WriteQueueEntry WriteQueueEntry;
 struct WriteQueueEntry
 {
 	FILE *file;
-	uint8_t *buf;
+	void *buf;
 	size_t size;
-	bool close;
 	volatile bool inUse;
 };
 
@@ -51,10 +51,7 @@ static volatile bool ioRunning = false;
 static volatile uint32_t ioWriteLock = true;
 static volatile uint32_t *ioWriteLockPtr = &ioWriteLock;
 
-static volatile WriteQueueEntry sliceEntries[MAX_IO_QUEUE_ENTRIES];
-static uint8_t sliceBuffer[MAX_IO_QUEUE_ENTRIES][SLICE_SIZE];
-static volatile uint8_t *sliceBufferPointer;
-static volatile uint8_t *sliceBufferEnd;
+static volatile WriteQueueEntry *sliceEntries;
 static volatile uint32_t activeReadBuffer;
 static volatile uint32_t activeWriteBuffer;
 
@@ -64,10 +61,11 @@ void executeIOQueue()
 	if(!sliceEntries[asl].inUse)
 		return;
 	
-	if(sliceEntries[asl].buf != NULL)
+	if(sliceEntries[asl].size != 0)
+	{
 		fwrite(sliceEntries[asl].buf, sliceEntries[asl].size, 1, sliceEntries[asl].file);
-	
-	if(sliceEntries[asl].close)
+	}
+	else
 	{
 		fflush(sliceEntries[asl].file);
 		fclose(sliceEntries[asl].file);
@@ -98,11 +96,27 @@ bool initIOThread()
 	
 	OSSetThreadName(&ioThread, "NUSspli I/O");
 	
-	for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; i++)
-		sliceEntries[i].inUse = false;
+	sliceEntries = MEMAllocFromDefaultHeap(MAX_IO_QUEUE_ENTRIES * sizeof(WriteQueueEntry));
+	if(sliceEntries == NULL)
+	{
+		debugPrintf("OUT OF MEMORY!");
+		return false;
+	}
 	
-	sliceBufferPointer = &sliceBuffer[0][0];
-	sliceBufferEnd = sliceBufferPointer + SLICE_SIZE;
+	for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; i++)
+	{
+		sliceEntries[i].buf = MEMAllocFromDefaultHeap(MAX_IO_BUFFER_SIZE);
+		if(sliceEntries[i].buf == NULL)
+		{
+			debugPrintf("OUT OF MEMORY (%i)!", i);
+			for(int j = 0; j < i; j++)
+				MEMFreeToDefaultHeap(sliceEntries[j].buf);
+			MEMFreeToDefaultHeap(sliceEntries);
+			return false;
+		}
+		sliceEntries[i].inUse = false;
+	}
+	
 	activeReadBuffer = activeWriteBuffer = 0;
 	
 	ioRunning = true;
@@ -120,6 +134,10 @@ void shutdownIOThread()
 	while(sliceEntries[activeWriteBuffer].inUse)
 		;
 	
+	for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; i++)
+		MEMFreeToDefaultHeap(sliceEntries[i].buf);
+	MEMFreeToDefaultHeap(sliceEntries);
+	
 	ioRunning = false;
 	int ret;
 	OSJoinThread(&ioThread, &ret);
@@ -135,36 +153,36 @@ size_t addToIOQueue(const void *buf, size_t size, size_t n, FILE *file)
 	uint32_t asl = activeReadBuffer;
 	if(sliceEntries[asl].inUse)
 	{
+		ioWriteLock = false;
 		debugPrintf("Waiting for free slot...");
 		OSSleepTicks(256);
 		return addToIOQueue(buf, size, n, file);
 	}
 	
-	size_t written, rest;
 	if(buf != NULL)
 	{
 		size *= n;
-		uint8_t *end = sliceBufferPointer + size;
-		if(end < sliceBufferEnd)
+		if(size < 1)
 		{
-			OSBlockMove(sliceBufferPointer, buf, size, false);
-			sliceBufferPointer = end;
+			debugPrintf("size < 1 (%i)", size);
 			ioWriteLock = false;
-			return size;
+			return 0;
 		}
 		
-		written = sliceBufferEnd - sliceBufferPointer;
-		OSBlockMove(sliceBufferPointer, buf, written, false);
-		sliceBufferPointer = sliceBufferEnd;
-		rest = size - written;
+		if(size > MAX_IO_BUFFER_SIZE)
+		if(size < 1)
+		{
+			debugPrintf("size > %i (%i)", MAX_IO_BUFFER_SIZE, size);
+			ioWriteLock = false;
+			return 0;
+		}
 		
-		sliceEntries[asl].close = false;
+		OSBlockMove(sliceEntries[asl].buf, buf, size, false);
+		sliceEntries[asl].size = size;
 	}
 	else
-		sliceEntries[asl].close = true;
+		sliceEntries[asl].size = 0;
 	
-	sliceEntries[asl].buf = &sliceBuffer[activeReadBuffer][0];
-	sliceEntries[asl].size = sliceBufferPointer - sliceEntries[asl].buf;
 	sliceEntries[asl].file = file;
 	sliceEntries[asl].inUse = true;
 	
@@ -172,15 +190,8 @@ size_t addToIOQueue(const void *buf, size_t size, size_t n, FILE *file)
 		asl = 0;
 	
 	activeReadBuffer = asl;
-	
-	sliceBufferPointer = &sliceBuffer[asl][0];
-	sliceBufferEnd = sliceBufferPointer + SLICE_SIZE;
 	ioWriteLock = false;
-	
-	if(buf != NULL && rest > 0)
-		written += addToIOQueue(((const uint8_t *)buf) + written, rest, 1, file);
-	
-	return written;
+	return n;
 }
 
 void flushIOQueue()
