@@ -34,16 +34,23 @@
 #define IOT_STACK_SIZE			0x2000
 #define MAX_IO_BUFFER_SIZE	(8 * 1024) // 8 KB
 #define MAX_IO_QUEUE_ENTRIES	((512 * 1024 * 1024) / MAX_IO_BUFFER_SIZE) // 512 MB
+#define IO_MAX_OPEN_FILES	8
+#define IO_MAX_FILE_BUFFER	(1 * 1024 * 1024) // 1 MB
 
-struct WriteQueueEntry;
-typedef struct WriteQueueEntry WriteQueueEntry;
-struct WriteQueueEntry
+typedef struct 
 {
 	FILE *file;
-	void *buf;
+	uint8_t *buf;
 	size_t size;
 	volatile bool inUse;
-};
+} WriteQueueEntry;
+
+typedef struct
+{
+	FILE *file;
+	uint8_t buf[IO_MAX_FILE_BUFFER];
+	size_t i;
+} OpenFile;
 
 static OSThread ioThread;
 static uint8_t ioThreadStack[IOT_STACK_SIZE];
@@ -55,28 +62,79 @@ static volatile WriteQueueEntry *sliceEntries;
 static volatile uint32_t activeReadBuffer;
 static volatile uint32_t activeWriteBuffer;
 
+OpenFile files[IO_MAX_OPEN_FILES];
+
 void executeIOQueue()
 {
 	uint32_t asl = activeWriteBuffer;
 	if(!sliceEntries[asl].inUse)
 		return;
 	
+	int openFile = 0;
+	while(true)
+	{
+		if(files[openFile].file == sliceEntries[asl].file)
+			break;
+		
+		if(++openFile == IO_MAX_OPEN_FILES)
+		{
+			openFile = 0;
+			while(true)
+			{
+				if(files[openFile].file == NULL)
+				{
+					files[openFile].file = sliceEntries[asl].file;
+					break;
+				}
+				
+				if(++openFile == IO_MAX_OPEN_FILES)
+				{
+					debugPrintf("TOO MANY OPEN FILES!");
+					return;
+				}
+			}
+		}
+	}
+	
 	if(sliceEntries[asl].size != 0)
 	{
-		fwrite(sliceEntries[asl].buf, sliceEntries[asl].size, 1, sliceEntries[asl].file);
+		size_t r = 0;
+		if(files[openFile].i + sliceEntries[asl].size >= IO_MAX_FILE_BUFFER)
+		{
+			r = IO_MAX_FILE_BUFFER - files[openFile].i;
+			if(r != 0)
+				OSBlockMove(files[openFile].buf + files[openFile].i, sliceEntries[asl].buf, r, false);
+			
+			fwrite(files[openFile].buf, IO_MAX_FILE_BUFFER, 1, files[openFile].file);
+			
+			sliceEntries[asl].size -= r;
+			files[openFile].i = 0;
+			
+			if(sliceEntries[asl].size == 0)
+				goto ioQueueExitPoint;
+		}
+		
+		OSBlockMove(files[openFile].buf + files[openFile].i, sliceEntries[asl].buf + r, sliceEntries[asl].size, false);
+		files[openFile].i += sliceEntries[asl].size;
 	}
 	else
 	{
-		fflush(sliceEntries[asl].file);
-		fclose(sliceEntries[asl].file);
+		if(files[openFile].i != 0)
+		{
+			fwrite(files[openFile].buf, files[openFile].i, 1, files[openFile].file);
+			files[openFile].i = 0;
+		}
+		fflush(files[openFile].file);
+		fclose(files[openFile].file);
+		files[openFile].file = NULL;
 	}
 	
-	uint32_t osl = asl;
+ioQueueExitPoint:
+	sliceEntries[asl].inUse = false;
 	if(++asl == MAX_IO_QUEUE_ENTRIES)
 		asl = 0;
 	
 	activeWriteBuffer = asl;
-	sliceEntries[osl].inUse = false;
 }
 
 int ioThreadMain(int argc, const char **argv)
@@ -114,6 +172,12 @@ bool initIOThread()
 	{
 		sliceEntries[i].buf = ptr;
 		sliceEntries[i].inUse = false;
+	}
+	
+	for(int i = 0; i < IO_MAX_OPEN_FILES; i++)
+	{
+		files[i].i = 0;
+		files[i].file = NULL;
 	}
 	
 	activeReadBuffer = activeWriteBuffer = 0;
