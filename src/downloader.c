@@ -807,13 +807,6 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 	if(!AppRunning())
 		return true;
 	
-	startNewFrame();
-	textToFrame(0, 0, "Flushing I/O queue");
-	writeScreenLog();
-	drawFrame();
-	showFrame();
-	
-	flushIOQueue();
 	if(inst)
 		return install(gameName, hasDependencies, dlToUSB, installDir, toUSB, keepFiles);
 	

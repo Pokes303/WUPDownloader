@@ -34,6 +34,7 @@
 #include <file.h>
 #include <input.h>
 #include <installer.h>
+#include <ioThread.h>
 #include <renderer.h>
 #include <rumbleThread.h>
 #include <status.h>
@@ -67,8 +68,6 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	drawFrame();
 	showFrame();
 	
-	unmountUSB();
-	
 	char newPath[0x27F]; // MCP mounts the card at another point, so we have to adjust the path -  The length of 0x27F is important!
 	if(fromUSB)
 	{
@@ -84,6 +83,8 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	
 	uint32_t info[80]; // WUT doesn't define MCPInstallInfo, so we define it like WUP Installer does, just without the malloc() nonsense. TDOD: Does it really have to be that big?
 	McpInstallationData data;
+	
+	unmountUSB(); // Get MCP ready
 	
 	// Let's see if MCP is able to parse the TMD...
 	data.err = MCP_InstallGetInfo(mcpHandle, newPath, (MCPInstallInfo *)info);
@@ -176,6 +177,8 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	OSTime now;
 	uint64_t lsp = 0;
 	char speedBuf[32];
+	
+	flushIOQueue(); // Make sure all game files are on disc
 	
 	// Start the installation process
 	// err = MCP_InstallTitleAsync(mcpHandle, newPath, (MCPInstallTitleInfo *)info);
