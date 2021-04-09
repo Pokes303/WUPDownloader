@@ -99,21 +99,20 @@ bool initIOThread()
 	sliceEntries = MEMAllocFromDefaultHeap(MAX_IO_QUEUE_ENTRIES * sizeof(WriteQueueEntry));
 	if(sliceEntries == NULL)
 	{
-		debugPrintf("OUT OF MEMORY!");
+		debugPrintf("OUT OF MEMORY (sliceEntries)!");
 		return false;
 	}
 	
-	for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; i++)
+	uint8_t *ptr = MEMAllocFromDefaultHeap(MAX_IO_QUEUE_ENTRIES * MAX_IO_BUFFER_SIZE);
+	if(ptr == NULL)
 	{
-		sliceEntries[i].buf = MEMAllocFromDefaultHeap(MAX_IO_BUFFER_SIZE);
-		if(sliceEntries[i].buf == NULL)
-		{
-			debugPrintf("OUT OF MEMORY (%i)!", i);
-			for(int j = 0; j < i; j++)
-				MEMFreeToDefaultHeap(sliceEntries[j].buf);
-			MEMFreeToDefaultHeap(sliceEntries);
-			return false;
-		}
+		MEMFreeToDefaultHeap(sliceEntries);
+		debugPrintf("OUT OF MEMORY (ptr)!");
+		return false;
+	}
+	for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; i++, ptr += MAX_IO_BUFFER_SIZE)
+	{
+		sliceEntries[i].buf = ptr;
 		sliceEntries[i].inUse = false;
 	}
 	
@@ -134,8 +133,7 @@ void shutdownIOThread()
 	while(sliceEntries[activeWriteBuffer].inUse)
 		;
 	
-	for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; i++)
-		MEMFreeToDefaultHeap(sliceEntries[i].buf);
+	MEMFreeToDefaultHeap(sliceEntries[0].buf);
 	MEMFreeToDefaultHeap(sliceEntries);
 	
 	ioRunning = false;
