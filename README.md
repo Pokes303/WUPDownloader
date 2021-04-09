@@ -18,14 +18,17 @@ To create a fake ticket, you will need the title ID, too.
 
 To install the app, download and unzip the contents of the [latest release](https://github.com/V10lator/NUSspli/releases) and depending on how you will run the app, follow the next steps:
 
-### Homebrew Launcher
-- Move the folder to (SD:/wiiu/apps/).
-- Run the app from HBL through Haxchi, Browserhax or any exploit you want.
+### Aroma
+- Move NUSspli.wuhb to (SD:/wiiu/apps/).
+- Run it from the HOME Menu.
 
-### Home Menu
-- Install a CFW.
+### Channel
 - Move the folder to (SD:/install/) and install it with WUPInstaller.
 - Run it from the HOME Menu.
+
+### HBL
+- Move the folder to (SD:/wiiu/apps/).
+- Run the app from HBL through Haxchi, Browserhax or any exploit you want.
 
 # Building
 - On Linux/WSL/Mac, install devkitPro.
