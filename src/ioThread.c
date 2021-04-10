@@ -48,7 +48,7 @@ typedef struct
 typedef struct
 {
 	FILE *file;
-	uint8_t buf[IO_MAX_FILE_BUFFER];
+	uint8_t *buf;
 	size_t i;
 } OpenFile;
 
@@ -62,7 +62,7 @@ static WriteQueueEntry *queueEntries;
 static volatile uint32_t activeReadBuffer;
 static volatile uint32_t activeWriteBuffer;
 
-OpenFile files[IO_MAX_OPEN_FILES];
+static OpenFile files[IO_MAX_OPEN_FILES];
 
 void executeIOQueue()
 {
@@ -83,6 +83,13 @@ void executeIOQueue()
 			{
 				if(files[openFile].file == NULL)
 				{
+					files[openFile].buf = MEMAllocFromDefaultHeap(IO_MAX_FILE_BUFFER);
+					if(files[openFile].buf == NULL)
+					{
+						debugPrintf("I/O File open: OUT OF MEMORY!");
+						OSSleepTicks(OSMillisecondsToTicks(10));
+						return;
+					}
 					files[openFile].file = queueEntries[asl].file;
 					break;
 				}
@@ -126,15 +133,18 @@ void executeIOQueue()
 		}
 		fflush(files[openFile].file);
 		fclose(files[openFile].file);
+		MEMFreeToDefaultHeap(files[openFile].buf);
 		files[openFile].file = NULL;
 	}
 	
 ioQueueExitPoint:
-	queueEntries[asl].inUse = false;
+	;
+	uint32_t osl = asl;
 	if(++asl == MAX_IO_QUEUE_ENTRIES)
 		asl = 0;
 	
 	activeWriteBuffer = asl;
+	queueEntries[osl].inUse = false;
 }
 
 int ioThreadMain(int argc, const char **argv)
