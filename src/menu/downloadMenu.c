@@ -26,6 +26,7 @@
 #include <ioThread.h>
 #include <renderer.h>
 #include <status.h>
+#include <titles.h>
 #include <usb.h>
 #include <utils.h>
 #include <cJSON.h>
@@ -54,7 +55,17 @@ void drawDownloadFrame2(const char *titleID, const char *titleVer, const char *f
 {
 	startNewFrame();
 	textToFrame(0, 0, "Provided title ID [Only 16 digit hexadecimal]:");
-	textToFrame(1, 3, titleID);
+	
+	char *gameName = tid2name(titleID);
+	char toFrame[256];
+	strcpy(toFrame, titleID);
+	if(gameName != NULL)
+	{
+		strcat(toFrame, " (");
+		strcat(toFrame, gameName);
+		strcat(toFrame, ")");
+	}
+	textToFrame(1, 3, toFrame);
 	
 	textToFrame(2, 0, "Provided title version [Only numbers]:");
 	textToFrame(3, 3, titleVer[0] == '\0' ? "<LATEST>" : titleVer);
@@ -62,7 +73,6 @@ void drawDownloadFrame2(const char *titleID, const char *titleVer, const char *f
 	textToFrame(4, 0, "Custom folder name [Only text and numbers]:");
 	textToFrame(5, 3, folderName);
 	
-	char toFrame[128];
 	strcpy(toFrame, "Press \uE045 to ");
 	strcat(toFrame, vibrateWhenFinished ? "deactivate" : "activate");
 	strcat(toFrame, " the vibration after installing");
