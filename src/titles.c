@@ -35,7 +35,7 @@
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 
-#define TITLE_DB NAPI_URL
+#define TITLE_DB NAPI_URL "titles.php"
 
 char *titleMemArea = NULL;
 char **titleNames[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
@@ -189,7 +189,7 @@ bool initTitles()
 		return false;
 	}
 	
-	cJSON *curr[2];
+	cJSON *curr[3];
 	uint32_t i;
 	size_t ma = 0;
 	size_t size;
@@ -209,7 +209,8 @@ bool initTitles()
 			if(size != 6)
 				continue;
 			
-			size = strlen(curr[1]->valuestring) + 1;
+			curr[2] = cJSON_GetArrayItem(curr[1], 0);
+			size = strlen(curr[2]->valuestring) + 1;
 			if(size > 128)
 			{
 				debugPrintf("Too long title name detected!");
@@ -223,7 +224,7 @@ bool initTitles()
 			if(j > titleSizes[i])
 				titleSizes[i] = j;
 			
-			ma += size;
+			ma += size + 32;
 			titleEntries++;
 		}
 		
@@ -272,16 +273,21 @@ bool initTitles()
 			if(size != 6)
 				continue;
 			
-			size = strlen(curr[1]->valuestring) + 1;
+			curr[2] = cJSON_GetArrayItem(curr[1], 0);
+			size = strlen(curr[2]->valuestring) + 1;
 			if(size > 128)
 				continue;
 			
 			strcpy(&sj[2], curr[1]->string);
 			hexToByte(sj, (uint8_t *)&j);
-			strcpy(ptr, curr[1]->valuestring);
+			strcpy(ptr, curr[2]->valuestring);
 //			debugPrintf("titleNames[%d][0x%08X] = %s", i, j, ptr);
 			titleNames[i][j] = titleEntry[titleEntries].name = ptr;
 			ptr += size;
+			
+			strcpy(ptr, cJSON_GetArrayItem(curr[1], 1)->valuestring);
+			titleEntry[titleEntries].region = ptr;
+			ptr += 32;
 			
 			tid = retransformTidHigh(i);
 			tid <<= 32;

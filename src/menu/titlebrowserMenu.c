@@ -107,9 +107,22 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor)
 	TitleEntry *titleEntries = getTitleEntries();
 	size_t titleEntriesSize = getTitleEntriesSize() - pos;
 	size_t max = MAX_TITLEBROWSER_LINES < titleEntriesSize ? MAX_TITLEBROWSER_LINES : titleEntriesSize;
+	char toFrame[1024];
+	size_t j;
 	for(size_t i = 0; i < max; i++)
 	{
-		textToFrame(i + 2, 8, titleEntries[i + pos].name);
+		j = i + pos;
+		if(titleEntries[j].region != NULL)
+		{
+			toFrame[0] = '[';
+			strcpy(toFrame + 1, titleEntries[j].region);
+			strcat(toFrame, "] ");
+			strcat(toFrame, titleEntries[j].name);
+		}
+		else
+			strcpy(toFrame, titleEntries[j].name);
+		
+		textToFrame(i + 2, 8, toFrame);
 		if(cursor == i)
 			arrowToFrame(i + 2, 1);
 	}

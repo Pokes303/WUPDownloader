@@ -44,6 +44,7 @@ typedef struct
 {
 	char *name;
 	char *tid;
+	char *region;
 } TitleEntry;
 
 TitleEntry *getTitleEntries();
