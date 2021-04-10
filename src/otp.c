@@ -364,7 +364,7 @@ uint8_t *getCommonKey()
 		OSBlockMove(&otp_common_key[0], armHackAddr, 16, false);
 		
 		IOS_Close(uhs);
-		OSSleepTicks(0x200000);
+		OSSleepTicks(0x400000);
 		
 #ifdef NUSSPLI_DEBUG
 		char ret[33];
