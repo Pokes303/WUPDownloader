@@ -34,26 +34,16 @@
 int mcpHandle;
 
 char* hex(uint64_t i, int digits) {
-	char h[33];
-	sprintf(h, "%lx%lx", (long unsigned int)((i & 0xFFFF0000) >> 16), (long unsigned int)(i & 0x0000FFFF));
-	size_t hexDigits = strlen(h);
-	if (hexDigits > digits)
-		return "too few digits error";
+	if(digits > 16)
+		return NULL;
 	
+	char x[16];
+	sprintf(x, "%%ll0%ix", digits);
 	char *result = MEMAllocFromDefaultHeap(sizeof(char) * (digits + 1));
-	if(result != NULL)
-	{
-		int n = digits - hexDigits;
-		if(n > 0)
-		{
-			OSBlockSet(result, '0', n);
-			result[n] = '\0';
-			strcat(result, h);
-		}
-		else
-			strcpy(result, h);
-	}
+	if(result == NULL)
+		return NULL;
 	
+	sprintf(result, x, i);
 	return result;
 }
 

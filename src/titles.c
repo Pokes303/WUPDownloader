@@ -127,7 +127,7 @@ char *tid2name(const char *tid)
 	return tl > titleSizes[tt] ? NULL : titleNames[tt][tl];
 }
 
-uint64_t name2tid(const char *name)
+char *name2tid(const char *name)
 {
 	size_t lower = 0;
 	size_t upper = titleEntries;
@@ -190,7 +190,7 @@ bool initTitles()
 	}
 	
 	cJSON *curr[2];
-	int i;
+	uint32_t i;
 	size_t ma = 0;
 	size_t size;
 	char sj[9];
@@ -200,7 +200,7 @@ bool initTitles()
 	cJSON_ArrayForEach(curr[0], json)
 	{
 		i = atoi(curr[0]->string);
-		if(i < 0 || i > 7)
+		if(i > 7)
 			continue;
 		
 		cJSON_ArrayForEach(curr[1], curr[0])
@@ -263,7 +263,7 @@ bool initTitles()
 	cJSON_ArrayForEach(curr[0], json)
 	{
 		i = atoi(curr[0]->string);
-		if(i < 0 || i > 7)
+		if(i > 7)
 			continue;
 		
 		cJSON_ArrayForEach(curr[1], curr[0])
@@ -276,20 +276,18 @@ bool initTitles()
 			if(size > 128)
 				continue;
 			
-			j = 0;
 			strcpy(&sj[2], curr[1]->string);
 			hexToByte(sj, (uint8_t *)&j);
 			strcpy(ptr, curr[1]->valuestring);
 //			debugPrintf("titleNames[%d][0x%08X] = %s", i, j, ptr);
-			titleNames[i][j] = ptr;
-			titleEntry[titleEntries].name = ptr;
+			titleNames[i][j] = titleEntry[titleEntries].name = ptr;
+			ptr += size;
 			
 			tid = retransformTidHigh(i);
-			tid <<= 8;
-			tid &= j;
-			titleEntry[titleEntries++].tid = tid;
-			
-			ptr += size;
+			tid <<= 32;
+			tid |= 0x0000000010000000;
+			tid |= j;
+			titleEntry[titleEntries++].tid = hex(tid, 16);
 		}
 	}
 	
@@ -300,9 +298,7 @@ bool initTitles()
 }
 
 void clearTitles()
-{
-	titleEntries = 0;
-	
+{	
 	if(titleMemArea != NULL)
 	{
 		MEMFreeToDefaultHeap(titleMemArea);
@@ -311,9 +307,13 @@ void clearTitles()
 	
 	if(titleEntry != NULL)
 	{
+		for(int i = 0; i < titleEntries; i++)
+			MEMFreeToDefaultHeap(titleEntry[i].tid);
+		
 		MEMFreeToDefaultHeap(titleEntry);
 		titleEntry = NULL;
 	}
+	titleEntries = 0;
 	
 	for(int i = 0; i < 8; i++)
 	{

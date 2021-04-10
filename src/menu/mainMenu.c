@@ -26,9 +26,9 @@
 #include <status.h>
 #include <ticket.h>
 #include <menu/config.h>
-#include <menu/download.h>
 #include <menu/filebrowser.h>
 #include <menu/installer.h>
+#include <menu/titlebrowser.h>
 #include <menu/main.h>
 #include <menu/utils.h>
 
@@ -92,7 +92,7 @@ void mainMenu()
 		
 		if(vpad.trigger & VPAD_BUTTON_A)
 		{
-			downloadMenu();
+			titleBrowserMenu();
 			drawMainMenuFrame();
 		}
 		else if(vpad.trigger & VPAD_BUTTON_X)
