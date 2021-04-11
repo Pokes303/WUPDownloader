@@ -31,6 +31,7 @@
 #include <menu/titlebrowser.h>
 #include <menu/utils.h>
 
+#include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -41,6 +42,8 @@
 #define MAX_TITLEBROWSER_LINES (MAX_LINES - 4)
 
 bool vibrateWhenFinished2; // TODO
+TitleEntry *filteredTitleEntries;
+size_t filteredTitleEntrySize;
 
 void drawTBMenuFrame2(const TitleEntry *entry, const char *folderName, bool usbMounted, bool dlToUSB, bool keepFiles)
 {
@@ -104,7 +107,7 @@ void drawTBMenuFrame2(const TitleEntry *entry, const char *folderName, bool usbM
 	drawFrame();
 }
 
-void drawTBMenuFrame(const size_t pos, const size_t cursor)
+void drawTBMenuFrame(const size_t pos, const size_t cursor, const char* search)
 {
 	unmountUSB();
 	startNewFrame();
@@ -112,34 +115,66 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor)
 	
 	boxToFrame(1, MAX_LINES - 2);
 	
-	textToFrame(MAX_LINES - 1, ALIGNED_CENTER, "Press \uE000 to select || \uE001 to return || \uE002 to enter a title ID");
+	textToFrame(MAX_LINES - 1, ALIGNED_CENTER, "Press \uE000 to select || \uE001 to return || \uE002 to enter a title ID || \uE003 to search");
 	
-	TitleEntry *titleEntries = getTitleEntries();
-	size_t titleEntriesSize = getTitleEntriesSize() - pos;
-	size_t max = MAX_TITLEBROWSER_LINES < titleEntriesSize ? MAX_TITLEBROWSER_LINES : titleEntriesSize;
+	filteredTitleEntries = getTitleEntries();
+	filteredTitleEntrySize = getTitleEntriesSize() - pos;
+	
+	TitleEntry tent[filteredTitleEntrySize];
+	if(search[0] != '\0')
+	{
+		size_t ts = strlen(search);
+		char lowerSearch[ts + 1];
+		for(size_t i = 0; i < ts; i++)
+			lowerSearch[i] = tolower(search[i]);
+		lowerSearch[ts] = '\0';
+		
+		ts = 0;
+		char tmpName[1024];
+		for(size_t i = 0 ; i < filteredTitleEntrySize; i++)
+		{
+			for(size_t j = 0; j < 1024; j++)
+			{
+				if(filteredTitleEntries[i].name[j] == '\0')
+				{
+					tmpName[j] = '\0';
+					break;
+				}
+				tmpName[j] = tolower(filteredTitleEntries[i].name[j]);
+			}
+			if(strstr(tmpName, lowerSearch) == NULL)
+				continue;
+			
+			tent[ts++] = filteredTitleEntries[i];
+		}
+		
+		filteredTitleEntries = tent;
+		filteredTitleEntrySize = ts;
+	}
+	
+	size_t max = MAX_TITLEBROWSER_LINES < filteredTitleEntrySize ? MAX_TITLEBROWSER_LINES : filteredTitleEntrySize;
 	char *toFrame = getToFrameBuffer();
 	size_t j;
-	MCPError mcerr;
 	MCPTitleListType titleList;
 	for(size_t i = 0; i < max; i++)
 	{
 		j = i + pos;
-		if(titleEntries[j].region != NULL)
+		
+		if(filteredTitleEntries[j].region != NULL)
 		{
 			toFrame[0] = '[';
-			strcpy(toFrame + 1, titleEntries[j].region);
+			strcpy(toFrame + 1, filteredTitleEntries[j].region);
 			strcat(toFrame, "] ");
-			strcat(toFrame, titleEntries[j].name);
+			strcat(toFrame, filteredTitleEntries[j].name);
 		}
 		else
-			strcpy(toFrame, titleEntries[j].name);
+			strcpy(toFrame, filteredTitleEntries[j].name);
 		
 		textToFrame(i + 2, 11, toFrame);
 		if(cursor == i)
 			arrowToFrame(i + 2, 1);
 		
-		mcerr = MCP_GetTitleInfo(mcpHandle, titleEntries[j].tid, &titleList);
-		if(mcerr == 0)
+		if(MCP_GetTitleInfo(mcpHandle, filteredTitleEntries[j].tid, &titleList) == 0)
 			checkmarkToFrame(i + 2, 7);
 	}
 	drawFrame();
@@ -149,24 +184,26 @@ void titleBrowserMenu()
 {
 	size_t cursor = 0;
 	size_t pos = 0;
+	char search[129];
 	
-	drawTBMenuFrame(pos, cursor);
+	drawTBMenuFrame(pos, cursor, search);
 	
 	debugPrintf("getTitleEntriesSize(): %i", getTitleEntriesSize());
-	bool mov = getTitleEntriesSize() >= MAX_TITLEBROWSER_LINES;
+	bool mov = filteredTitleEntrySize >= MAX_TITLEBROWSER_LINES;
 	bool redraw = false;
 	TitleEntry *entry;
+	search[0] = '\0';
 	while(AppRunning())
 	{
 		if(app == APP_STATE_BACKGROUND)
 			continue;
 		if(app == APP_STATE_RETURNING)
-			drawTBMenuFrame(pos, cursor);
+			drawTBMenuFrame(pos, cursor, search);
 		
 		showFrame();
 		if(vpad.trigger & VPAD_BUTTON_A)
 		{
-			entry = getTitleEntries() + cursor + pos;
+			entry = filteredTitleEntries + cursor + pos;
 			break;
 		}
 		
@@ -186,20 +223,20 @@ void titleBrowserMenu()
 					else
 					{
 						cursor = MAX_TITLEBROWSER_LINES - 1;
-						pos = getTitleEntriesSize() - MAX_TITLEBROWSER_LINES;
+						pos = filteredTitleEntrySize - MAX_TITLEBROWSER_LINES;
 					}
 				}
 				else
-					cursor = getTitleEntriesSize() - 1;
+					cursor = filteredTitleEntrySize - 1;
 			}
 			
 			redraw = true;
 		}
 		else if(vpad.trigger & VPAD_BUTTON_DOWN)
 		{
-			if(cursor >= getTitleEntriesSize() - 1 || cursor >= MAX_TITLEBROWSER_LINES - 1)
+			if(cursor >= filteredTitleEntrySize - 1 || cursor >= MAX_TITLEBROWSER_LINES - 1)
 			{
-				if(mov && pos < getTitleEntriesSize() - MAX_TITLEBROWSER_LINES)
+				if(mov && pos < filteredTitleEntrySize - MAX_TITLEBROWSER_LINES)
 					pos++;
 				else
 					cursor = pos = 0;
@@ -214,15 +251,15 @@ void titleBrowserMenu()
 			if(vpad.trigger & VPAD_BUTTON_RIGHT)
 			{
 				pos += MAX_TITLEBROWSER_LINES;
-				if(pos > getTitleEntriesSize() - MAX_TITLEBROWSER_LINES)
+				if(pos > filteredTitleEntrySize - MAX_TITLEBROWSER_LINES)
 					pos = 0;
 				redraw = true;
 			}
 			else if(vpad.trigger & VPAD_BUTTON_LEFT)
 			{
 				pos -= MAX_TITLEBROWSER_LINES;
-				if(pos > getTitleEntriesSize() - MAX_TITLEBROWSER_LINES) //TODO
-					pos = getTitleEntriesSize() - MAX_TITLEBROWSER_LINES;
+				if(pos > filteredTitleEntrySize - MAX_TITLEBROWSER_LINES) //TODO
+					pos = filteredTitleEntrySize - MAX_TITLEBROWSER_LINES;
 				redraw = true;
 			}
 		}
@@ -232,10 +269,17 @@ void titleBrowserMenu()
 			downloadMenu();
 			return;
 		}
+		if(vpad.trigger & VPAD_BUTTON_Y)
+		{
+			showKeyboard(KEYBOARD_TYPE_NORMAL, search, CHECK_NONE, 128, false, search, "Search");
+			redraw = true;
+		}
+		
 		
 		if(redraw)
 		{
-			drawTBMenuFrame(pos, cursor);
+			drawTBMenuFrame(pos, cursor, search);
+			mov = filteredTitleEntrySize > MAX_TITLEBROWSER_LINES;
 			redraw = false;
 		}
 	}
