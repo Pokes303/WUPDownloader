@@ -490,10 +490,24 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 	return 0;
 }
 
+void showPrepScreen(char *gameName)
+{
+	startNewFrame();
+	textToFrame(0, 0, "Preparing the download of");
+	textToFrame(1, 3, gameName == NULL ? "NULL" : gameName);
+	writeScreenLog();
+	drawFrame();
+	showFrame();
+}
+
 bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles)
 {
 	const char *gameName = tid2name(tid);
-	debugPrintf("Downloading title... tID: %s, tVer: %s, name: %s, folder: %s", tid, titleVer, gameName == NULL ? "NULL" : gameName, folderName);
+	if(gameName == NULL)
+		gameName = "UNKNOWN";
+	
+	showPrepScreen(gameName);
+	debugPrintf("Downloading title... tID: %s, tVer: %s, name: %s, folder: %s", tid, titleVer, gameName, folderName);
 	
 	char downloadUrl[128];
 	strcpy(downloadUrl, DOWNLOAD_URL);
@@ -546,10 +560,11 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 	
 	addToScreenLog("Started the download of \"%s\"", gameName);
 	addToScreenLog("The content will be saved on \"%s:/install/%s\"", dlToUSB ? "usb" : "sd", folderName);
+	showPrepScreen(gameName);
 	
 	if(!dirExists(installDir))
 	{
-		debugPrintf("Creating directory");
+		debugPrintf("Creating directory \"%s\"", installDir);
 		errno = 0;
 		if(mkdir(installDir, 777) == -1)
 		{

@@ -144,6 +144,6 @@ void drawErrorFrame(const char *text, ErrorOptions option)
 }
 
 char *getToFrameBuffer()
-[
+{
 	return toFrameBuffer;
 }
