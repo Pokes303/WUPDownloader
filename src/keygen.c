@@ -42,6 +42,7 @@ char *generateKey(const char *tid)
 	char *ret = MEMAllocFromDefaultHeap(33);
 	if(ret == NULL)
 		return NULL;
+	ret[32] = '\0';
 	
 	const char *tmp = tid;
 	while(tmp[0] == '0' && tmp[1] == '0')

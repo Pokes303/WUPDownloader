@@ -203,8 +203,12 @@ bool generateFakeTicket()
 					//TODO: APP_STATE_RETURNING
 					
 					if(vpad.trigger & VPAD_BUTTON_A)
+					{
+						MEMFreeToDefaultHeap(dir);
 						return true;
+					}
 				}
+				MEMFreeToDefaultHeap(dir);
 				return false;
 			}
 		}
