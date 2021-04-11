@@ -247,9 +247,11 @@ void readInput()
 {
 	VPADReadError vError;
 	VPADRead(VPAD_CHAN_0, &vpad, 1, &vError);
+	bool kbdHidden = Swkbd_IsReady() ? Swkbd_IsHidden() : true;
+	
 	if(vError != VPAD_READ_SUCCESS)
 		OSBlockSet(&vpad, 0, sizeof(VPADStatus));
-	else if(vpad.trigger != 0 && Swkbd_IsHidden())
+	else if(vpad.trigger != 0 && kbdHidden)
 		lastUsedController = CT_VPAD_0;
 	
 	bool altCon = false;
@@ -293,7 +295,7 @@ void readInput()
 			
 			if(vpad.trigger != 0)
 			{
-				if(Swkbd_IsHidden())
+				if(kbdHidden)
 					lastUsedController = i;
 				
 				continue;
@@ -323,7 +325,7 @@ void readInput()
 		if(kpad[i].trigger & WPAD_BUTTON_HOME)
 			vpad.trigger |= VPAD_BUTTON_HOME;
 		
-		if(vpad.trigger != 0 && Swkbd_IsHidden())
+		if(vpad.trigger != 0 && kbdHidden)
 			lastUsedController = i;
 	}
 	

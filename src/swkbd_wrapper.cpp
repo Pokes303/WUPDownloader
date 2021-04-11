@@ -29,6 +29,8 @@
 #include <utils.h>
 #include <swkbd_wrapper.h>
 
+bool kbd_initialized = false;
+
 uint32_t Swkbd_GetWorkMemorySize(uint32_t unk)
 {
 	return nn::swkbd::GetWorkMemorySize(unk);
@@ -41,7 +43,8 @@ bool Swkbd_AppearInputForm(const Swkbd_AppearArg args)
 
 bool Swkbd_Create(const Swkbd_CreateArg args)
 {
-	return nn::swkbd::Create(*(nn::swkbd::CreateArg*)&args);
+	kbd_initialized = nn::swkbd::Create(*(nn::swkbd::CreateArg*)&args);
+	return kbd_initialized;
 }
 
 void Swkbd_SetEnableOkButton(bool enable)
@@ -145,9 +148,15 @@ bool Swkbd_DisappearInputForm()
 void Swkbd_Destroy()
 {
 	nn::swkbd::Destroy();
+	kbd_initialized = false;
 }
 
 bool Swkbd_IsHidden()
 {
 	return nn::swkbd::GetStateInputForm() == nn::swkbd::State::Hidden;
+}
+
+bool Swkbd_IsReady()
+{
+	return kbd_initialized;
 }

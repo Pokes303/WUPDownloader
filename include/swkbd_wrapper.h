@@ -174,6 +174,7 @@ bool Swkbd_IsDecideCancelButton(bool *outIsSelected);
 bool Swkbd_DisappearInputForm();
 void Swkbd_Destroy();
 bool Swkbd_IsHidden();
+bool Swkbd_IsReady();
 
 #ifdef __cplusplus
 	}
