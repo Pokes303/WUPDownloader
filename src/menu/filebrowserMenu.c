@@ -173,6 +173,23 @@ refreshDirList:
 			
 			redraw = true;
 		}
+		else if(mov)
+		{
+			if(vpad.trigger & VPAD_BUTTON_RIGHT)
+			{
+				pos += MAX_FILEBROWSER_LINES;
+				if(pos > foldersSize - MAX_FILEBROWSER_LINES)
+					pos = 0;
+				redraw = true;
+			}
+			else if(vpad.trigger & VPAD_BUTTON_LEFT)
+			{
+				pos -= MAX_FILEBROWSER_LINES;
+				if(pos > foldersSize - MAX_FILEBROWSER_LINES) //TODO
+					pos = foldersSize - MAX_FILEBROWSER_LINES;
+				redraw = true;
+			}
+		}
 		
 		if(vpad.trigger & VPAD_BUTTON_X)
 		{

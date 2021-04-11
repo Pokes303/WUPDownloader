@@ -193,6 +193,23 @@ void titleBrowserMenu()
 			
 			redraw = true;
 		}
+		else if(mov)
+		{
+			if(vpad.trigger & VPAD_BUTTON_RIGHT)
+			{
+				pos += MAX_TITLEBROWSER_LINES;
+				if(pos > getTitleEntriesSize() - MAX_TITLEBROWSER_LINES)
+					pos = 0;
+				redraw = true;
+			}
+			else if(vpad.trigger & VPAD_BUTTON_LEFT)
+			{
+				pos -= MAX_TITLEBROWSER_LINES;
+				if(pos > getTitleEntriesSize() - MAX_TITLEBROWSER_LINES) //TODO
+					pos = getTitleEntriesSize() - MAX_TITLEBROWSER_LINES;
+				redraw = true;
+			}
+		}
 		
 		if(vpad.trigger & VPAD_BUTTON_X)
 		{
