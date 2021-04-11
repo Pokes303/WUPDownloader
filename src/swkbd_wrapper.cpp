@@ -29,6 +29,8 @@
 #include <utils.h>
 #include <swkbd_wrapper.h>
 
+bool kbd_hidden = true;
+
 uint32_t Swkbd_GetWorkMemorySize(uint32_t unk)
 {
 	return nn::swkbd::GetWorkMemorySize(unk);
@@ -36,6 +38,7 @@ uint32_t Swkbd_GetWorkMemorySize(uint32_t unk)
 
 bool Swkbd_AppearInputForm(const Swkbd_AppearArg args)
 {
+	kbd_hidden = false;
 	return nn::swkbd::AppearInputForm(*(nn::swkbd::AppearArg*)&args);
 }
 
@@ -139,15 +142,17 @@ bool Swkbd_IsDecideCancelButton(bool *outIsSelected)
 
 bool Swkbd_DisappearInputForm()
 {
+	kbd_hidden = true;
 	return nn::swkbd::DisappearInputForm();
 }
 
 void Swkbd_Destroy()
 {
 	nn::swkbd::Destroy();
+	kbd_hidden = true;
 }
 
 bool Swkbd_IsHidden()
 {
-	return nn::swkbd::GetStateInputForm() == nn::swkbd::State::Hidden;
+	return kbd_hidden ? true : nn::swkbd::GetStateInputForm() == nn::swkbd::State::Hidden;
 }
