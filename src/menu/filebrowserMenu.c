@@ -150,7 +150,7 @@ refreshDirList:
 					else
 					{
 						cursor = MAX_FILEBROWSER_LINES - 1;
-						pos = foldersSize % MAX_FILEBROWSER_LINES - 1;
+						pos = foldersSize - MAX_FILEBROWSER_LINES;
 					}
 				}
 				else
@@ -163,7 +163,7 @@ refreshDirList:
 		{
 			if(cursor >= foldersSize - 1 || cursor >= MAX_FILEBROWSER_LINES - 1)
 			{
-				if(mov && pos < foldersSize % MAX_FILEBROWSER_LINES - 1)
+				if(mov && pos < foldersSize - MAX_FILEBROWSER_LINES)
 					pos++;
 				else
 					cursor = pos = 0;
