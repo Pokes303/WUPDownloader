@@ -23,6 +23,7 @@
 #include <installer.h>
 #include <renderer.h>
 #include <status.h>
+#include <menu/utils.h>
 
 #include <string.h>
 
@@ -40,7 +41,7 @@ void drawInstallerMenuFrame(bool fromUSB, bool keepFiles)
 		textToFrame(MAX_LINES - 1, 0, "WARNING: Files on USB will always be deleted after installing!");
 	else
 	{
-		char toFrame[128];
+		char *toFrame = getToFrameBuffer();
 		strcpy(toFrame, "Press \uE07B to ");
 		strcat(toFrame, keepFiles ? "delete" : "keep");
 		strcat(toFrame, " downloaded files after the installation");

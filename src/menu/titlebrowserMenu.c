@@ -29,6 +29,7 @@
 #include <utils.h>
 #include <menu/download.h>
 #include <menu/titlebrowser.h>
+#include <menu/utils.h>
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -43,7 +44,7 @@ void drawTBMenuFrame2(const TitleEntry *entry, const char *folderName, bool usbM
 	startNewFrame();
 	textToFrame(0, 0, "Name:");
 	
-	char toFrame[256];
+	char *toFrame = getToFrameBuffer();
 	strcpy(toFrame, entry->name);
 	strcat(toFrame, " [");
 	strcat(toFrame, entry->tid);
@@ -107,7 +108,7 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor)
 	TitleEntry *titleEntries = getTitleEntries();
 	size_t titleEntriesSize = getTitleEntriesSize() - pos;
 	size_t max = MAX_TITLEBROWSER_LINES < titleEntriesSize ? MAX_TITLEBROWSER_LINES : titleEntriesSize;
-	char toFrame[1024];
+	char *toFrame = getToFrameBuffer();
 	size_t j;
 	for(size_t i = 0; i < max; i++)
 	{

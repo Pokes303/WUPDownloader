@@ -27,6 +27,8 @@
 	extern "C" {
 #endif
 
+#define TO_FRAME_BUFFER_SIZE 4096
+
 typedef enum {
 	B_RETURN = 1,
 	A_CONTINUE = 2,
@@ -37,6 +39,7 @@ void addToScreenLog(const char *str, ...);
 void clearScreenLog();
 void writeScreenLog();
 void drawErrorFrame(const char *text, ErrorOptions option);
+char *getToFrameBuffer();
 
 #ifdef __cplusplus
 	}

@@ -57,7 +57,7 @@ void drawDownloadFrame2(const char *titleID, const char *titleVer, const char *f
 	textToFrame(0, 0, "Provided title ID [Only 16 digit hexadecimal]:");
 	
 	char *gameName = tid2name(titleID);
-	char toFrame[256];
+	char *toFrame = getToFrameBuffer();
 	strcpy(toFrame, titleID);
 	if(gameName != NULL)
 	{

@@ -38,6 +38,7 @@ struct DownloadLogList
 };
 
 DownloadLogList *downloadLogList = NULL;
+char toFrameBuffer[TO_FRAME_BUFFER_SIZE];
 
 void addToScreenLog(const char *str, ...)
 {
@@ -140,4 +141,9 @@ void drawErrorFrame(const char *text, ErrorOptions option)
 	lineToFrame(line, SCREEN_COLOR_WHITE);
 	
 	drawFrame();
+}
+
+char *getToFrameBuffer()
+[
+	return toFrameBuffer;
 }
