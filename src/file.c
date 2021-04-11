@@ -28,6 +28,7 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 
@@ -97,7 +98,7 @@ void writeRandomBytes(FILE* fp, uint32_t len)
 	uint32_t len32 = len < 9 ? 1 : len >> 2;
 	uint32_t bytes[len32];
 	for(int i = 0; i < len32; i++)
-		bytes[i] = getRandom();
+		bytes[i] = rand();
 	addToIOQueue(bytes, len, 1, fp);
 }
 

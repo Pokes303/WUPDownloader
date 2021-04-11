@@ -92,34 +92,6 @@ void toLowercase(char *inOut)
 			inOut[i] += 32;
 }
 
-// This extreme fast RNG is based on George Marsaglias paper "Xorshift RNGs" from https://www.jstatsoft.org/article/view/v008i14
-// TODO: Tune the wordsize to the Wii Us CPU.
-uint32_t rngState;
-uint32_t lastSeed = 0;
-uint32_t getRandom()
-{
-	rngState ^= rngState << 13;
-	rngState ^= rngState >> 17;
-	rngState ^= rngState << 5;
-	if(rngState == 0)
-	{
-		initRandom();
-		return 0;
-	}
-	return rngState;
-}
-
-void initRandom()
-{
-	uint32_t seed = OSGetTick();
-	if(lastSeed == seed)
-	{
-		OSSleepTicks(1);
-		seed++;
-	}
-	rngState = lastSeed = seed;
-}
-
 void getSpeedString(float bytePerSecond, char *out)
 {
 	float bitPerSecond = bytePerSecond * 8.0f;
