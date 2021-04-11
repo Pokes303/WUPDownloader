@@ -43,7 +43,7 @@ typedef enum
 typedef struct
 {
 	char *name;
-	char *tid;
+	uint64_t tid;
 	char *region;
 } TitleEntry;
 

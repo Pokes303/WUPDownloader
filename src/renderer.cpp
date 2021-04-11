@@ -44,6 +44,7 @@
 #include <wchar.h>
 
 #include <backgroundMusic_mp3.h>
+#include <checkmarkTex_png.h>
 #include <goodbyeTex_png.h>
 #include <input.h>
 #include <renderer.h>
@@ -63,6 +64,7 @@ bool rendererRunning = false;
 int32_t spaceWidth;
 
 GuiFrame *errorOverlay = NULL;
+GuiImageData *checkmarkData;
 
 #define SSAA 8
 
@@ -223,6 +225,19 @@ void arrowToFrame(int line, int column)
 	window->append(arrow);
 }
 
+void checkmarkToFrame(int line, int column)
+{
+	line += 1;
+	line *= -FONT_SIZE;
+	column *= spaceWidth;
+	column += spaceWidth >> 1;
+	
+	GuiImage *checkmark = new GuiImage(checkmarkData);
+	checkmark->setAlignment(ALIGN_TOP_LEFT);
+	checkmark->setPosition(column + FONT_SIZE, line);
+	window->append(checkmark);
+}
+
 void addErrorOverlay(const char *err)
 {
 	if(!rendererRunning)
@@ -312,6 +327,8 @@ void initRenderer()
 	background = new GuiImage(width, height, screenColorToGX2color(bgColor), GuiImage::IMAGE_COLOR);
 	rendererRunning = true;
 	
+	checkmarkData = new GuiImageData(checkmarkTex_png, checkmarkTex_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
+	
 	addToScreenLog("libgui initialized!");
 	startNewFrame();
 	textToFrame(0, 0, "Loading...");
@@ -355,6 +372,7 @@ void shutdownRenderer()
 	delete font;
 	delete bye;
 	delete byeData;
+	delete checkmarkData;
 	
 	libgui_memoryRelease();
 	bgColor = SCREEN_COLOR_BLACK;

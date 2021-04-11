@@ -35,6 +35,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <coreinit/mcp.h>
+#include <coreinit/memdefaultheap.h>
+
 #define MAX_TITLEBROWSER_LINES (MAX_LINES - 4)
 
 bool vibrateWhenFinished2; // TODO
@@ -46,9 +49,14 @@ void drawTBMenuFrame2(const TitleEntry *entry, const char *folderName, bool usbM
 	
 	char *toFrame = getToFrameBuffer();
 	strcpy(toFrame, entry->name);
-	strcat(toFrame, " [");
-	strcat(toFrame, entry->tid);
-	strcat(toFrame, "]");
+	char *tid = hex(entry->tid, 16);
+	if(tid != NULL)
+	{
+		strcat(toFrame, " [");
+		strcat(toFrame, tid);
+		strcat(toFrame, "]");
+		MEMFreeToDefaultHeap(tid);
+	}
 	textToFrame(1, 3, toFrame);
 	
 	textToFrame(2, 0, "Custom folder name [Only text and numbers]:");
@@ -98,6 +106,7 @@ void drawTBMenuFrame2(const TitleEntry *entry, const char *folderName, bool usbM
 
 void drawTBMenuFrame(const size_t pos, const size_t cursor)
 {
+	unmountUSB();
 	startNewFrame();
 	textToFrame(0, 6, "Select a title:");
 	
@@ -110,6 +119,8 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor)
 	size_t max = MAX_TITLEBROWSER_LINES < titleEntriesSize ? MAX_TITLEBROWSER_LINES : titleEntriesSize;
 	char *toFrame = getToFrameBuffer();
 	size_t j;
+	MCPError mcerr;
+	MCPTitleListType titleList;
 	for(size_t i = 0; i < max; i++)
 	{
 		j = i + pos;
@@ -123,9 +134,13 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor)
 		else
 			strcpy(toFrame, titleEntries[j].name);
 		
-		textToFrame(i + 2, 8, toFrame);
+		textToFrame(i + 2, 11, toFrame);
 		if(cursor == i)
-			arrowToFrame(i + 2, 1);
+			arrowToFrame(i + 2, 4);
+		
+		mcerr = MCP_GetTitleInfo(mcpHandle, titleEntries[j].tid, &titleList);
+		if(mcerr == 0)
+			checkmarkToFrame(i + 2, 1);
 	}
 	drawFrame();
 }
@@ -299,5 +314,11 @@ void titleBrowserMenu()
 	if(!AppRunning())
 		return;
 	
-	downloadTitle(entry->tid, "\0", folderName, inst, dlToUSB, toUSB, keepFiles);
+	char *tid = hex(entry->tid, 16);
+	if(tid != NULL)
+	{
+		downloadTitle(tid, "\0", folderName, inst, dlToUSB, toUSB, keepFiles);
+		MEMFreeToDefaultHeap(tid);
+	}
+	// TODO: Else
 }

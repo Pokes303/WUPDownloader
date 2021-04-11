@@ -490,7 +490,7 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 	return 0;
 }
 
-void showPrepScreen(char *gameName)
+void showPrepScreen(const char *gameName)
 {
 	startNewFrame();
 	textToFrame(0, 0, "Preparing the download of");

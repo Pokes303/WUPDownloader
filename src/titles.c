@@ -138,7 +138,7 @@ char *name2tid(const char *name)
 	{
 		strret =  strcmp(titleEntry[current].name, name);
 		if(strret == 0)
-			return titleEntry[current].tid;
+			return hex(titleEntry[current].tid, 16);
 		
 		if(strret < 0)
 			upper = current;
@@ -293,7 +293,7 @@ bool initTitles()
 			tid <<= 32;
 			tid |= 0x0000000010000000;
 			tid |= j;
-			titleEntry[titleEntries++].tid = hex(tid, 16);
+			titleEntry[titleEntries++].tid = tid;
 		}
 	}
 	
@@ -313,9 +313,6 @@ void clearTitles()
 	
 	if(titleEntry != NULL)
 	{
-		for(int i = 0; i < titleEntries; i++)
-			MEMFreeToDefaultHeap(titleEntry[i].tid);
-		
 		MEMFreeToDefaultHeap(titleEntry);
 		titleEntry = NULL;
 	}

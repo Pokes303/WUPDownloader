@@ -75,6 +75,7 @@ void lineToFrame(int column, uint32_t color);
 void boxToFrame(int lineStart, int lineEnd);
 void barToFrame(int line, int column, uint32_t width, float progress);
 void arrowToFrame(int line, int column);
+void checkmarkToFrame(int line, int column);
 void addErrorOverlay(const char *err);
 void removeErrorOverlay();
 
