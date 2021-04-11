@@ -181,6 +181,11 @@ int main()
 							{
 								initTitles();
 								
+								#ifdef NUSSPLI_DEBUG
+								debugPrintf("Checking thread stacks...");
+								OSCheckActiveThreads();
+								#endif
+								
 								mainMenu(); // main loop
 								
 								debugPrintf("Deinitializing libraries...");
