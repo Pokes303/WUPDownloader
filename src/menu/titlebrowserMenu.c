@@ -136,11 +136,11 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor)
 		
 		textToFrame(i + 2, 11, toFrame);
 		if(cursor == i)
-			arrowToFrame(i + 2, 4);
+			arrowToFrame(i + 2, 1);
 		
 		mcerr = MCP_GetTitleInfo(mcpHandle, titleEntries[j].tid, &titleList);
 		if(mcerr == 0)
-			checkmarkToFrame(i + 2, 1);
+			checkmarkToFrame(i + 2, 7);
 	}
 	drawFrame();
 }
