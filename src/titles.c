@@ -22,6 +22,7 @@
 #include <config.h>
 #include <downloader.h>
 #include <renderer.h>
+#include <titleDB_json.h>
 #include <titles.h>
 #include <utils.h>
 #include <menu/utils.h>
@@ -159,20 +160,21 @@ char *name2tid(const char *name)
 
 bool initTitles()
 {
-	if(!useOnlineTitleDB())
-		return true;
-	
-	startNewFrame();
-	textToFrame(0, 0, "Prepairing download");
-	writeScreenLog();
-	drawFrame();
-	showFrame();
-	
-	if(downloadFile(TITLE_DB, "JSON", FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
+	bool useOnline = useOnlineTitleDB();
+	if(useOnline)
 	{
-		clearRamBuf();
-		debugPrintf("Error downloading %s", TITLE_DB);
-		return false;
+		startNewFrame();
+		textToFrame(0, 0, "Prepairing download");
+		writeScreenLog();
+		drawFrame();
+		showFrame();
+		
+		if(downloadFile(TITLE_DB, "JSON", FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
+		{
+			clearRamBuf();
+			debugPrintf("Error downloading %s", TITLE_DB);
+			useOnline = false;
+		}
 	}
 	
 	startNewFrame();
@@ -181,7 +183,7 @@ bool initTitles()
 	drawFrame();
 	showFrame();
 	
-	cJSON *json = cJSON_ParseWithLength(ramBuf, ramBufSize);
+	cJSON *json = cJSON_ParseWithLength(useOnline ? ramBuf : titleDB_json, useOnline ? ramBufSize : titleDB_json_size);
 	if(json == NULL)
 	{
 		clearRamBuf();

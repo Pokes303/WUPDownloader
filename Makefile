@@ -71,6 +71,8 @@ all: debug
 real: $(CURDIR)/payload/arm_kernel_bin.h
 	@git submodule deinit --force libgui
 	@git submodule update --init --recursive
+	@rm -f data/titleDB.json
+	@wget -U "NUSspli builder" -O data/titleDB.json http://napi.nbg01.v10lator.de/titles.php
 	@rm -f zlib/contrib/minizip/iowin* zlib/contrib/minizip/mini* zlib/contrib/minizip/zip.? zlib/contrib/minizip/mztools.? zlib/contrib/minizip/configure.ac zlib/contrib/minizip/Makefile zlib/contrib/minizip/Makefile.am zlib/contrib/minizip/*.com zlib/contrib/minizip/*.txt
 	@cd zlib && git apply ../minizip.patch || true
 	@mv $(CURDIR)/src/cJSON/test.c $(CURDIR)/src/cJSON/test.c.old 2>/dev/null || true
@@ -185,6 +187,10 @@ debug: all
 	@$(bin2o)
 
 %.mp3.o %_mp3.h	:	%.mp3
+	@echo $(notdir $<)
+	@$(bin2o)
+
+%.json.o %_json.h	:	%.json
 	@echo $(notdir $<)
 	@$(bin2o)
 
