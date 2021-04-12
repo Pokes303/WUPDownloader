@@ -92,8 +92,6 @@ bool AppRunning()
 	{
 		if(shutdownRequested)
 		{
-			flushIOQueue();
-			unmountUSB();
 			if(isAroma() || isChannel())
 				SYSLaunchMenu();
 			else
