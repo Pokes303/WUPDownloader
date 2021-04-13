@@ -21,6 +21,7 @@
 #include <wut-fixups.h>
 
 #include <config.h>
+#include <downloader.h>
 #include <file.h>
 #include <input.h>
 #include <installer.h>
@@ -122,105 +123,118 @@ int main()
 			addToScreenLog("Network initialized!");
 			
 			startNewFrame();
-			textToFrame(0, 0, "Loading cJSON...");
+			textToFrame(0, 0, "Loading downloader...");
 			writeScreenLog();
 			drawFrame();
 			showFrame();
 			
-			cJSON_Hooks ch;
-			ch.malloc_fn = MEMAllocFromDefaultHeap;
-			ch.free_fn = MEMFreeToDefaultHeap;
-			cJSON_InitHooks(&ch);
-			
-			addToScreenLog("cJSON initialized!");
-			startNewFrame();
-			textToFrame(0, 0, "Loading SWKBD...");
-			writeScreenLog();
-			drawFrame();
-			showFrame();
-			
-			if(SWKBD_Init())
+			if(initDownloader())
 			{
-				addToScreenLog("SWKBD initialized!");
+				addToScreenLog("Downloader initialized!");
+				
 				startNewFrame();
-				textToFrame(0, 0, "Loading MCP...");
+				textToFrame(0, 0, "Loading cJSON...");
 				writeScreenLog();
 				drawFrame();
 				showFrame();
 				
-				mcpHandle = MCP_Open();
-				if(mcpHandle != 0)
+				cJSON_Hooks ch;
+				ch.malloc_fn = MEMAllocFromDefaultHeap;
+				ch.free_fn = MEMFreeToDefaultHeap;
+				cJSON_InitHooks(&ch);
+				
+				addToScreenLog("cJSON initialized!");
+				startNewFrame();
+				textToFrame(0, 0, "Loading SWKBD...");
+				writeScreenLog();
+				drawFrame();
+				showFrame();
+				
+				if(SWKBD_Init())
 				{
-					addToScreenLog("MCP initialized!");
+					addToScreenLog("SWKBD initialized!");
 					startNewFrame();
-					textToFrame(0, 0, "Loading I/O thread...");
+					textToFrame(0, 0, "Loading MCP...");
 					writeScreenLog();
 					drawFrame();
 					showFrame();
 					
-					if(initIOThread())
+					mcpHandle = MCP_Open();
+					if(mcpHandle != 0)
 					{
-						addToScreenLog("I/O thread initialized!");
+						addToScreenLog("MCP initialized!");
 						startNewFrame();
-						textToFrame(0, 0, "Loading config file...");
+						textToFrame(0, 0, "Loading I/O thread...");
 						writeScreenLog();
 						drawFrame();
 						showFrame();
 						
-						KPADInit();
-						WPADEnableURCC(true);
-						
-						#ifdef NUSSPLI_DEBUG
-						debugPrintf("Checking thread stacks...");
-						OSCheckActiveThreads();
-						#endif
-						
-						if(initConfig())
+						if(initIOThread())
 						{
+							addToScreenLog("I/O thread initialized!");
+							startNewFrame();
+							textToFrame(0, 0, "Loading config file...");
+							writeScreenLog();
+							drawFrame();
+							showFrame();
 							
-							if(!updateCheck())
+							KPADInit();
+							WPADEnableURCC(true);
+							
+							#ifdef NUSSPLI_DEBUG
+							debugPrintf("Checking thread stacks...");
+							OSCheckActiveThreads();
+							#endif
+							
+							if(initConfig())
 							{
-								initTitles();
 								
-								#ifdef NUSSPLI_DEBUG
-								debugPrintf("Checking thread stacks...");
-								OSCheckActiveThreads();
-								#endif
-								
-								mainMenu(); // main loop
-								
-								debugPrintf("Deinitializing libraries...");
-								clearTitles();
-								saveConfig();
-								
-								#ifdef NUSSPLI_DEBUG
-								debugPrintf("Checking thread stacks...");
-								OSCheckActiveThreads();
-								#endif
+								if(!updateCheck())
+								{
+									initTitles();
+									
+									#ifdef NUSSPLI_DEBUG
+									debugPrintf("Checking thread stacks...");
+									OSCheckActiveThreads();
+									#endif
+									
+									mainMenu(); // main loop
+									
+									debugPrintf("Deinitializing libraries...");
+									clearTitles();
+									saveConfig();
+									
+									#ifdef NUSSPLI_DEBUG
+									debugPrintf("Checking thread stacks...");
+									OSCheckActiveThreads();
+									#endif
+								}
 							}
+							else
+								lerr = "Couldn't load config file!";
+							
+							KPADShutdown();
+							shutdownIOThread();
+							debugPrintf("I/O thread closed");
 						}
 						else
-							lerr = "Couldn't load config file!";
+							lerr = "Couldn't load I/O thread!";
 						
-						KPADShutdown();
-						shutdownIOThread();
-						debugPrintf("I/O thread closed");
+						unmountUSB();
+						MCP_Close(mcpHandle);
+						debugPrintf("MCP closed");
 					}
 					else
-						lerr = "Couldn't load I/O thread!";
+						lerr = "Couldn't initialize MCP!";
 					
-					unmountUSB();
-					MCP_Close(mcpHandle);
-					debugPrintf("MCP closed");
+					SWKBD_Shutdown();
+					debugPrintf("SWKBD closed");
 				}
 				else
-					lerr = "Couldn't initialize MCP!";
-				
-				SWKBD_Shutdown();
-				debugPrintf("SWKBD closed");
+					lerr = "Couldn't initialize SWKBD!";
 			}
 			else
-				lerr = "Couldn't initialize SWKBD!";
+				lerr = "Couldn't initialize downloader!";
 		}
 		else
 			lerr = "Couldn't get default network connection!";

@@ -33,6 +33,7 @@
 #include <ioThread.h>
 #include <memdebug.h>
 #include <menu/utils.h>
+#include <osdefs.h>
 #include <renderer.h>
 #include <rumbleThread.h>
 #include <status.h>
@@ -42,11 +43,14 @@
 
 #include <coreinit/filesystem.h>
 #include <coreinit/memdefaultheap.h>
+#include <coreinit/thread.h>
 #include <coreinit/time.h>
 #include <curl/curl.h>
 #include <nsysnet/socket.h>
 
-#define USERAGENT "NUSspli/"NUSSPLI_VERSION" (WarezLoader, like WUPDownloader)" // TODO: Spoof eShop here?
+#define USERAGENT		"NUSspli/"NUSSPLI_VERSION" (WarezLoader, like WUPDownloader)" // TODO: Spoof eShop here?
+#define DLBGT_STACK_SIZE	0x2000
+#define SOCKLIB_BUFSIZE		(SOCKET_BUFSIZE * 4) // For send & receive + double buffering
 
 uint16_t contents = 0xFFFF; //Contents count
 uint16_t dcontent = 0xFFFF; //Actual content number
@@ -61,6 +65,9 @@ char *downloading;
 bool downloadPaused = false;
 OSTime lastDraw = 0;
 OSTime lastTransfair;
+
+static OSThread dlbgThread;
+static uint8_t dlbgThreadStack[DLBGT_STACK_SIZE];
 
 static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData)
 {
@@ -218,19 +225,64 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 	return 0;
 }
 
+int dlbgThreadMain(int argc, const char **argv)
+{
+	debugPrintf("Socket optimizer running!");
+	
+	void *buf = MEMAllocFromDefaultHeapEx(SOCKLIB_BUFSIZE, 64);
+	if(buf == NULL)
+	{
+		debugPrintf("Socket optimizer: OUT OF MEMORY!");
+		return 1;
+	}
+	
+	if(somemopt(0x01, buf, SOCKLIB_BUFSIZE, 0) == -1 && socketlasterr() != 50)
+	{
+		debugPrintf("somemopt failed!");
+		return 1;
+	}
+	
+	MEMFreeToDefaultHeap(buf);
+	debugPrintf("Socket optimizer finished!");
+	return 0;
+}
+
+bool initDownloader()
+{
+	if(!OSCreateThread(&dlbgThread, dlbgThreadMain, 0, NULL, dlbgThreadStack + DLBGT_STACK_SIZE, DLBGT_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_ANY))
+		return false;
+	
+	OSSetThreadName(&dlbgThread, "NUSspli socket optimizer");
+	OSResumeThread(&dlbgThread);
+	return true;
+}
+
+void deinitDownloader()
+{
+	//TODO: WUT fucks with the socket library already, so calling SOFinish might be a bad idea...
+}
+
 static size_t initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 {
 	int o = 1;
+	// Activate WinScale
 	if(setsockopt(socket, SOL_SOCKET, SO_WINSCALE, &o, sizeof(o)) != 0)
 		return 1;
 	
+	//Activate TCP SAck
 	if(setsockopt(socket, SOL_SOCKET, SO_TCPSACK, &o, sizeof(o)) != 0)
 		return 1;
 	
+	// Activate userspace buffer (fom our socket optimizer)
+	if(setsockopt(socket, SOL_SOCKET, 0x10000, &o, sizeof(o)) != 0)
+		return 1;
+	
 	o = SOCKET_BUFSIZE;
+	// Set send buffersize
 	if(setsockopt(socket, SOL_SOCKET, SO_SNDBUF, &o, sizeof(o)) != 0)
 		return 1;
 	
+	// Set receive buffersize
 	if(setsockopt(socket, SOL_SOCKET, SO_RCVBUF, &o, sizeof(o)) != 0)
 		return 1;
 	

@@ -219,17 +219,21 @@ void shutdownIOThread()
 
 size_t addToIOQueue(const void *buf, size_t size, size_t n, FILE *file)
 {
+	uint32_t asl;
+		
+retryAddingToQueue:
+	
 	while(!OSCompareAndSwapAtomic(ioWriteLockPtr, false, true))
 		if(!ioRunning)
 			return 0;
 	
-	uint32_t asl = activeReadBuffer;
+	asl = activeReadBuffer;
 	if(queueEntries[asl].inUse)
 	{
 		ioWriteLock = false;
 		debugPrintf("Waiting for free slot...");
 		OSSleepTicks(256);
-		return addToIOQueue(buf, size, n, file);
+		goto retryAddingToQueue; // We use goto here instead of just calling addToIOQueue again to not overgrow the stack.
 	}
 	
 	if(buf != NULL)

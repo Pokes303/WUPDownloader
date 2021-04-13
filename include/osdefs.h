@@ -37,8 +37,11 @@ extern void KPADShutdown();
 extern MCPError MCP_DeleteTitleAsync(int handle, char *path, MCPInstallTitleInfo *out);
 extern bool MCP_DeleteTitleDoneAsync(int handle, bool *out);
 
-//WPAD:
+// WPAD
 extern void WPADControlMotor(int controller, int onOff);
+
+// SO
+extern int somemopt (int type, void *buf, size_t bufsize, int unk);
 
 #ifdef __cplusplus
 	}
