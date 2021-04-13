@@ -28,11 +28,12 @@
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
 
+#include <downloader.h>
 #include <ioThread.h>
 #include <utils.h>
 
 #define IOT_STACK_SIZE			0x2000
-#define MAX_IO_BUFFER_SIZE	(8 * 1024) // 8 KB
+#define MAX_IO_BUFFER_SIZE	SOCKET_BUFSIZE
 #define MAX_IO_QUEUE_ENTRIES	((512 * 1024 * 1024) / MAX_IO_BUFFER_SIZE) // 512 MB
 #define IO_MAX_OPEN_FILES	8
 #define IO_MAX_FILE_BUFFER	(1 * 1024 * 1024) // 1 MB

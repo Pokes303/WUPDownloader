@@ -227,7 +227,7 @@ static size_t initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 	if(setsockopt(socket, SOL_SOCKET, SO_TCPSACK, &o, sizeof(o)) != 0)
 		return 1;
 	
-	o = 128 * 1024;
+	o = SOCKET_BUFSIZE;
 	if(setsockopt(socket, SOL_SOCKET, SO_SNDBUF, &o, sizeof(o)) != 0)
 		return 1;
 	

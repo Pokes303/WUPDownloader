@@ -37,6 +37,7 @@ extern char *ramBuf;
 extern size_t ramBufSize;
 
 #define DOWNLOAD_URL "http://ccs.cdn.wup.shop.nintendo.net/ccs/download/"
+#define SOCKET_BUFSIZE (128 * 1024)
 
 int downloadFile(const char *url, char *file, FileType type, bool resume);
 bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles);
