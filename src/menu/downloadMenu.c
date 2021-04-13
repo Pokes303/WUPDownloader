@@ -114,6 +114,9 @@ void drawDownloadFrame2(const char *titleID, const char *titleVer, const char *f
 		textToFrame(line--, 0, "Press \uE000 to install to USB");
 	lineToFrame(line--, SCREEN_COLOR_WHITE);
 	
+	if(!dlToUSB)
+		textToFrame(--line, 0, "WARNING: Downloading to SD is so slow that it's able to trigger network timeouts!");
+	
 	drawFrame();
 }
 
@@ -150,7 +153,7 @@ void downloadMenu()
 	toLowercase(titleID);
 	
 	bool usbMounted = mountUSB();
-	bool dlToUSB = false;
+	bool dlToUSB = usbMounted;
 	bool keepFiles = true;
 	drawDownloadFrame2(titleID, titleVer, folderName, usbMounted, dlToUSB, keepFiles);
 	
