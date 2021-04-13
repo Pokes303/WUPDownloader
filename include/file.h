@@ -37,15 +37,15 @@ typedef enum
 {
 	// Real file types, specify exactly one!
 	FILE_TYPE_TMD = 1,		// 00000001
-	FILE_TYPE_TIK = 2,		// 00000010
-	FILE_TYPE_CERT = 4,		// 00000100
-	FILE_TYPE_APP = 8,		// 00001000
-	FILE_TYPE_H3 = 16,		// 00010000
-	FILE_TYPE_JSON = 32,	// 00100000
+	FILE_TYPE_TIK = 1 << 1,		// 00000010
+	FILE_TYPE_CERT = 1 << 2,	// 00000100
+	FILE_TYPE_APP = 1 << 3,		// 00001000
+	FILE_TYPE_H3 = 1 << 4,		// 00010000
+	FILE_TYPE_JSON = 1 << 5,	// 00100000
 	
-	// Extra flags, OR them to the real file type (except FILE_TYPE_TODISC which exists for beauty reasons only / is the default)
-	FILE_TYPE_TODISC = 0,	// 00000000
-	FILE_TYPE_TORAM = 64,	// 01000000
+	// Extra flags, OR them to the real file type.
+	FILE_TYPE_TORAM = 1 << 6,	// 01000000
+	FILE_TYPE_TOUSB = 1 << 7,	// 10000000
 } FileType;
 
 uint8_t readUInt8(const char *file, uint32_t pos);

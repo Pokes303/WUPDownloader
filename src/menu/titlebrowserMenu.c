@@ -104,6 +104,9 @@ void drawTBMenuFrame2(const TitleEntry *entry, const char *folderName, bool usbM
 		textToFrame(line--, 0, "Press \uE000 to install to USB");
 	lineToFrame(line--, SCREEN_COLOR_WHITE);
 	
+	if(!dlToUSB)
+		textToFrame(--line, 0, "WARNING: Downloading to SD is so slow that it's able to trigger network timeouts!");
+	
 	drawFrame();
 }
 
@@ -288,7 +291,7 @@ void titleBrowserMenu()
 		return;
 	
 	bool usbMounted = mountUSB();
-	bool dlToUSB = false;
+	bool dlToUSB = usbMounted;
 	bool keepFiles = true;
 	char folderName[FILENAME_MAX - 11];
 	folderName[0] = '\0';

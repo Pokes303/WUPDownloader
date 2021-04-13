@@ -51,6 +51,7 @@
 #define USERAGENT		"NUSspli/"NUSSPLI_VERSION" (WarezLoader, like WUPDownloader)" // TODO: Spoof eShop here?
 #define DLBGT_STACK_SIZE	0x2000
 #define SOCKLIB_BUFSIZE		(SOCKET_BUFSIZE * 4) // For send & receive + double buffering
+#define SPEED_LIMIT_USB		512 // B/s
 
 uint16_t contents = 0xFFFF; //Contents count
 uint16_t dcontent = 0xFFFF; //Actual content number
@@ -379,7 +380,7 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 	}
 	
 	ret |= curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, toRam ? fwrite : addToIOQueue);
-    ret |= curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+	ret |= curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
 
 	ret |= curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressCallback);
 	curlProgressData data;
@@ -389,6 +390,14 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 	ret |= curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
 	
 	ret |= curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+	
+	if(!toRam && (type & FILE_TYPE_TOUSB) != FILE_TYPE_TOUSB)
+	{
+		debugPrintf("Limiting DL speed");
+		ret |= curl_easy_setopt(curl, CURLOPT_MAX_RECV_SPEED_LARGE, SPEED_LIMIT_USB);
+	}
+	else
+		debugPrintf("Not to SD, no limit");
 	
 	if(ret != CURLE_OK)
 	{
@@ -693,7 +702,11 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 	strcpy(tmd, installDir);
 	strcat(tmd, "title.tmd");
 	contents = 0xFFFF;
-	if(downloadFile(tDownloadUrl, tmd, FILE_TYPE_TMD, true))
+	FileType ft = FILE_TYPE_TMD;
+	if(dlToUSB)
+		ft |= FILE_TYPE_TOUSB;
+	
+	if(downloadFile(tDownloadUrl, tmd, ft, true))
 	{
 		debugPrintf("Error downloading TMD");
 		return true;
@@ -765,7 +778,11 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 	strcat(tInstallDir, "title.tik");
 	if(!fileExists(tInstallDir))
 	{
-		int tikRes = downloadFile(tDownloadUrl, tInstallDir, FILE_TYPE_TIK, true);
+		ft = FILE_TYPE_TIK;
+		if(dlToUSB)
+			ft |= FILE_TYPE_TOUSB;
+		
+		int tikRes = downloadFile(tDownloadUrl, tInstallDir, ft, true);
 		if(tikRes == 1)
 			return true;
 		if(tikRes == 2)
@@ -861,6 +878,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 	
 	char tmpFileName[FILENAME_MAX + 37];
 	dcontent = 0;
+	flushIOQueue();
 	for(int i = 0; i < conts && AppRunning(); i++)
 	{
 		strcpy(tDownloadUrl, downloadUrl);
@@ -871,7 +889,12 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 		
 		strcpy(tInstallDir, tmpFileName);
 		strcat(tInstallDir, ".app");
-		if(downloadFile(tDownloadUrl, tInstallDir, FILE_TYPE_APP, true) == 1)
+		
+		ft = FILE_TYPE_APP;
+		if(dlToUSB)
+			ft |= FILE_TYPE_TOUSB;
+	
+		if(downloadFile(tDownloadUrl, tInstallDir, ft, true) == 1)
 		{
 			for(int j = ++i; j < conts; j++)
 				MEMFreeToDefaultHeap(apps[j]);
@@ -883,7 +906,12 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 		{
 			strcat(tDownloadUrl, ".h3");
 			strcat(tmpFileName, ".h3");
-			if(downloadFile(tDownloadUrl, tmpFileName, FILE_TYPE_H3, true) == 1)
+			
+			ft = FILE_TYPE_H3;
+			if(dlToUSB)
+				ft |= FILE_TYPE_TOUSB;
+			
+			if(downloadFile(tDownloadUrl, tmpFileName, ft, true) == 1)
 			{
 				for(int j = ++i; j < conts; j++)
 					MEMFreeToDefaultHeap(apps[j]);
