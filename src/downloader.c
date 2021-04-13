@@ -44,6 +44,7 @@
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/time.h>
 #include <curl/curl.h>
+#include <nsysnet/socket.h>
 
 #define USERAGENT "NUSspli/"NUSSPLI_VERSION" (WarezLoader, like WUPDownloader)" // TODO: Spoof eShop here?
 
@@ -217,6 +218,25 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 	return 0;
 }
 
+static size_t initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
+{
+	int o = 1;
+	if(setsockopt(socket, SOL_SOCKET, SO_WINSCALE, &o, sizeof(o)) != 0)
+		return 1;
+	
+	if(setsockopt(socket, SOL_SOCKET, SO_TCPSACK, &o, sizeof(o)) != 0)
+		return 1;
+	
+	o = 128 * 1024;
+	if(setsockopt(socket, SOL_SOCKET, SO_SNDBUF, &o, sizeof(o)) != 0)
+		return 1;
+	
+	if(setsockopt(socket, SOL_SOCKET, SO_RCVBUF, &o, sizeof(o)) != 0)
+		return 1;
+	
+	return 0;
+}
+
 int downloadFile(const char *url, char *file, FileType type, bool resume)
 {
 	//Results: 0 = OK | 1 = Error | 2 = No ticket aviable | 3 = Exit
@@ -284,7 +304,9 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 		return 1;
 	}
 	
-	CURLcode ret = curl_easy_setopt(curl, CURLOPT_URL, url);
+	CURLcode ret = curl_easy_setopt(curl, CURLOPT_SOCKOPTFUNCTION, initSocket);
+	
+	ret |= curl_easy_setopt(curl, CURLOPT_URL, url);
 	
 	char curlError[CURL_ERROR_SIZE];
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curlError);
