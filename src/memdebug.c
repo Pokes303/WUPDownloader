@@ -48,17 +48,17 @@ typedef struct
 } lsan_allocation;
 
 #define LSAN_ALLOCS_SZ 0x20000
-static lsan_allocation lsan_allocs[LSAN_ALLOCS_SZ];
-static MEMHeapHandle asan_heap;
-static void *asan_heap_mem;
-static unsigned int asan_sz;
+static volatile lsan_allocation lsan_allocs[LSAN_ALLOCS_SZ];
+static volatile MEMHeapHandle asan_heap;
+static volatile void *asan_heap_mem;
+static volatile unsigned int asan_sz;
 
-static void *asan_shadow;
-static unsigned int asan_shadow_off;
-static bool asan_ready = false;
+static volatile void *asan_shadow;
+static volatile unsigned int asan_shadow_off;
+static volatile bool asan_ready = false;
 
-static void *codeStart;
-static void *codeEnd;
+static volatile void *codeStart;
+static volatile void *codeEnd;
 
 static OSFastMutex asanMutex;
 

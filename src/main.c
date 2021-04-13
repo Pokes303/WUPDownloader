@@ -265,8 +265,6 @@ int main()
 	shutdownDebug();
 #endif
 	
-	deinitASAN();
-	
 	if(AppRunning())
 	{
 		homeButtonCallback(NULL);
@@ -275,7 +273,7 @@ int main()
 	}
 	
 	ProcUIShutdown();
-	
+	deinitASAN();
 	return 0;
 }
 

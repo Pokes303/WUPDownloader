@@ -173,7 +173,7 @@ void removeDirectory(const char *path)
 		newPath[len++] = '/';
 	
 	char *inSentence = newPath + len;
-	DIR *dir = opendir(path);
+	DIR *dir = opendir(newPath);
 	if(dir != NULL)
 	{
 		for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
@@ -182,11 +182,17 @@ void removeDirectory(const char *path)
 			if(entry->d_type & DT_DIR)
 				removeDirectory(newPath);
 			else
+			{
+				debugPrintf("Removing %s", newPath);
 				remove(newPath);
+			}
 		}
 		closedir(dir);
+		debugPrintf("Removing %s", path);
 		remove(path);
 	}
+	else
+		debugPrintf("Path \"%s\" not found!", newPath);
 }
 
 void moveDirectory(const char *src, const char *dest)

@@ -337,7 +337,10 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		addToScreenLog("Installation finished!");
 	
 	if(!fromUSB && !keepFiles)
+	{
+		debugPrintf("Removing installation files...");
 		removeDirectory(path);
+	}
 	
 	startRumble();
 	
