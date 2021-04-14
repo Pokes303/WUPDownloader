@@ -260,7 +260,11 @@ bool initDownloader()
 
 void deinitDownloader()
 {
-	//TODO: WUT fucks with the socket library already, so calling SOFinish might be a bad idea...
+	shutdownDebug();
+	socket_lib_finish();
+	debugInit();
+	int ret;
+	OSJoinThread(&dlbgThread, &ret);
 }
 
 static size_t initSocket(void *ptr, curl_socket_t socket, curlsocktype type)

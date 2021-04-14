@@ -232,6 +232,7 @@ int main()
 				}
 				else
 					lerr = "Couldn't initialize SWKBD!";
+				deinitDownloader();
 			}
 			else
 				lerr = "Couldn't initialize downloader!";

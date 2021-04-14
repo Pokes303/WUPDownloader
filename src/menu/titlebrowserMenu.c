@@ -290,6 +290,7 @@ void titleBrowserMenu()
 	if(!AppRunning())
 		return;
 	
+	debugPrintf("tbm: mount");
 	bool usbMounted = mountUSB();
 	bool dlToUSB = usbMounted;
 	bool keepFiles = true;
@@ -317,6 +318,7 @@ void titleBrowserMenu()
 		{
 			inst = toUSB = true;
 			loop = false;
+			debugPrintf("A");
 		}
 		else if(vpad.trigger & VPAD_BUTTON_Y)
 			inst = toUSB = loop = false;
@@ -365,6 +367,7 @@ void titleBrowserMenu()
 	char *tid = hex(entry->tid, 16);
 	if(tid != NULL)
 	{
+		debugPrintf("DLS");
 		downloadTitle(tid, "\0", folderName, inst, dlToUSB, toUSB, keepFiles);
 		MEMFreeToDefaultHeap(tid);
 	}
