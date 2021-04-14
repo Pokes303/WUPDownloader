@@ -101,6 +101,7 @@ cp meta/menu/iconTex.tga NUStmp/meta/iconTex.tga
 cp meta/menu/meta.xml NUStmp/meta/meta.xml
 cp meta/menu/title.cert NUStmp/meta/title.cert
 cp meta/menu/title.tik NUStmp/meta/title.tik
+touch NUStmp/content/dummy
 java -jar "${NUSPACKER}" -in NUStmp -out NUSspli
 zip -9 -r zips/NUSspli-${NUSSPLI_VERSION}-Channel-DEBUG.zip NUSspli
 rm -rf NUSspli/*
