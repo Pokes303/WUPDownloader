@@ -72,7 +72,7 @@ int main()
 	OSSetThreadName(mainThread, "NUSspli");
 	
 	debugInit();
-	debugPrintf("main()");
+	debugPrintf("NUSspli " NUSSPLI_VERSION);
 #ifdef NUSSPLI_DEBUG
 	WHBInitCrashHandler();
 	OSCheckActiveThreads();

@@ -41,11 +41,7 @@ void drawMainMenuFrame()
 	startNewFrame();
 	boxToFrame(0, 5);
 	textToFrame(1, ALIGNED_CENTER, "NUSspli");
-	char toScreen[256];
-	strcpy(toScreen, "NUS simple packet loader/installer [");
-	strcat(toScreen, NUSSPLI_VERSION);
-	strcat(toScreen, "]");
-	textToFrame(3, ALIGNED_CENTER, toScreen);
+	textToFrame(3, ALIGNED_CENTER, "NUS simple packet loader/installer [" NUSSPLI_VERSION "]");
 	
 	textToFrame(4, ALIGNED_CENTER, "© 2020-2021 V10lator <v10lator@myway.de>");
 	
