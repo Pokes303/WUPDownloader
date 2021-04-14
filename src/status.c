@@ -82,7 +82,7 @@ void initStatus()
 	aroma = OSDynLoad_Acquire("homebrew_kernel", &mod) == OS_DYNLOAD_OK;
 	if(aroma)
 		OSDynLoad_Release(mod);
-	channel = OSGetTitleID() == 0x000500004E555373;
+	channel = OSGetTitleID() == 0x0005000010155373;
 	
 }
 
