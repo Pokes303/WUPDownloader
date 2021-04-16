@@ -244,7 +244,7 @@ int dlbgThreadMain(int argc, const char **argv)
 	}
 	
 	MEMFreeToDefaultHeap(buf);
-	debugPrintf("Socket optimizer finished!");
+	// debugPrintf("Socket optimizer finished!"); // We have no network at this point in time, so we can't use the UDP log.
 	return 0;
 }
 
@@ -265,6 +265,7 @@ void deinitDownloader()
 	debugInit();
 	int ret;
 	OSJoinThread(&dlbgThread, &ret);
+	debugPrintf("Socket optimizer returned: %d", ret);
 }
 
 static size_t initSocket(void *ptr, curl_socket_t socket, curlsocktype type)

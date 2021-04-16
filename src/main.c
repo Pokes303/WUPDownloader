@@ -67,6 +67,7 @@
 int main()
 {
 	initStatus();
+	initASAN();
 	
 	OSThread *mainThread = OSGetCurrentThread();
 	OSSetThreadName(mainThread, "NUSspli");
@@ -273,15 +274,7 @@ int main()
 			;
 	}
 	
-	ProcUIShutdown();
 	deinitASAN();
+	ProcUIShutdown();
 	return 0;
-}
-
-void __preinit_user(MEMHeapHandle *mem1, MEMHeapHandle *fg, MEMHeapHandle *mem2)
-{
-	debugInit();
-	debugPrintf("__preinit_user()");
-	initASAN(*mem2);
-	shutdownDebug();
 }

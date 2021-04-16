@@ -23,7 +23,7 @@
 // Copyright of Quarky applies to this file, too.
 
 // The ASAN isn't ready for multitasking, so we disable it completely for now.
-#ifdef SOME_STUPID_NEVER_EVER_DEFINED_VARIABLE // NUSSPLI_DEBUG
+#ifdef SOME_NEVER_DEFINED_THING // NUSSPLI_DEBUG
 
 #include <wut-fixups.h>
 
@@ -37,6 +37,7 @@
 #include <coreinit/fastmutex.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memexpheap.h>
+#include <coreinit/memheap.h>
 #include <coreinit/memory.h>
 
 typedef struct
@@ -286,7 +287,7 @@ MEMAllocFromDefaultHeapFn defaultAllocFn;
 MEMAllocFromDefaultHeapExFn defaultAllocAlignedFn;
 MEMFreeToDefaultHeapFn defaultFreeFn;
 
-void initASAN(MEMHeapHandle mem2)
+void initASAN()
 {
 	OSDynLoad_NotifyData rpxInfo[1];
 	OSDynLoad_GetRPLInfo(0, 1, rpxInfo);
@@ -301,6 +302,7 @@ void initASAN(MEMHeapHandle mem2)
     
 	debugPrintf("[LSAN] LSAN initialized. Stack from 0x%08X to 0x%08X.", codeStart, codeEnd);
 	
+	MEMHeapHandle mem2 = MEMGetBaseHeapHandle (MEM_BASE_HEAP_MEM2);
 	asan_sz = (MEMGetAllocatableSizeForExpHeapEx(mem2, 4) >> 2) & ~0x3;
 	asan_heap_mem = MEMAllocFromDefaultHeap(asan_sz << 1);
 	

@@ -98,6 +98,11 @@ cp NUSspli-${NUSSPLI_VERSION}-DEBUG.rpx NUStmp/code/NUSspli.rpx
 cp meta/menu/app.xml NUStmp/code/app.xml
 cp meta/menu/cos.xml NUStmp/code/cos.xml
 cp meta/menu/iconTex.tga NUStmp/meta/iconTex.tga
+cp meta/menu/bootDrcTex.tga NUStmp/meta/bootDrcTex.tga
+cp meta/menu/bootTvTex.tga NUStmp/meta/bootTvTex.tga
+cp meta/menu/bootLogoTex.tga NUStmp/meta/bootLogoTex.tga
+cp meta/menu/bootMovie.h264 NUStmp/meta/bootMovie.h264
+cp meta/menu/bootSound.btsnd NUStmp/meta/bootSound.btsnd
 cp meta/menu/meta.xml NUStmp/meta/meta.xml
 cp meta/menu/title.cert NUStmp/meta/title.cert
 cp meta/menu/title.tik NUStmp/meta/title.tik

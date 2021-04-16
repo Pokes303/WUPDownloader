@@ -20,14 +20,14 @@
 #ifndef NUSSPLI_MEMDEBUG_H
 #define NUSSPLI_MEMDEBUG_H
 
-#ifdef SOME_STUPID_NEVER_EVER_DEFINED_VARIABLE // NUSSPLI_DEBUG
+#ifdef SOME_NEVER_DEFINED_THING // NUSSPLI_DEBUG
 
 	#include <coreinit/memheap.h>
 
 	#ifdef __cplusplus
 		extern "C" {
 	#endif
-	void initASAN(MEMHeapHandle mem2);
+	void initASAN();
 	void deinitASAN();
 	#ifdef __cplusplus
 		}
