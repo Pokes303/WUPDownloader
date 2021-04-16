@@ -295,7 +295,6 @@ void initASAN()
 	codeEnd = codeStart + rpxInfo[0].textSize;
 	
 	OSFastMutex_Init(&asanMutex, "NUSspli ASAN");
-	OSFastMutex_Unlock(&asanMutex);
 	
 	for(uint32_t i = 0; i < LSAN_ALLOCS_SZ; i++)
 		lsan_allocs[i].allocated = false;

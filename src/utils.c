@@ -167,7 +167,6 @@ OSFastMutex debugMutex;
 void debugInit()
 {
 	OSFastMutex_Init(&debugMutex, "NUSspli debug");
-	OSFastMutex_Unlock(&debugMutex);
 	WHBLogUdpInit();
 }
 
