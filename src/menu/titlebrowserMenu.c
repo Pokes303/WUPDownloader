@@ -133,18 +133,14 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor, const char* search)
 		lowerSearch[ts] = '\0';
 		
 		ts = 0;
-		char tmpName[1024];
 		for(size_t i = 0 ; i < filteredTitleEntrySize; i++)
 		{
-			for(size_t j = 0; j < 1024; j++)
-			{
-				if(filteredTitleEntries[i].name[j] == '\0')
-				{
-					tmpName[j] = '\0';
-					break;
-				}
+			ts = strlen(filteredTitleEntries[i].name);
+			char tmpName[ts + 1];
+			for(size_t j = 0; j < ts; j++)
 				tmpName[j] = tolower(filteredTitleEntries[i].name[j]);
-			}
+			tmpName[ts] = '\0';
+			
 			if(strstr(tmpName, lowerSearch) == NULL)
 				continue;
 			
@@ -191,7 +187,8 @@ void titleBrowserMenu()
 	
 	drawTBMenuFrame(pos, cursor, search);
 	
-	debugPrintf("getTitleEntriesSize(): %i", getTitleEntriesSize());
+	filteredTitleEntrySize = getTitleEntriesSize();
+	debugPrintf("getTitleEntriesSize(): %i", filteredTitleEntrySize);
 	bool mov = filteredTitleEntrySize >= MAX_TITLEBROWSER_LINES;
 	bool redraw = false;
 	TitleEntry *entry;
