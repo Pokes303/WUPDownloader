@@ -55,7 +55,7 @@ test  "${NUSPACKER_DL}" = "true" && rm $NUSPACKER
 make -j8 debug
 
 # Build debug Aroma wuhb
-$WUHBTOOL NUSspli.rpx NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga #--tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga
+$WUHBTOOL NUSspli.rpx NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga --tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga
 mkdir zips
 zip -9 zips/NUSspli-${NUSSPLI_VERSION}-Aroma-DEBUG.zip NUSspli.wuhb
 mv NUSspli.wuhb NUSspli-${NUSSPLI_VERSION}-DEBUG.wuhb
@@ -68,7 +68,7 @@ if [ $NUSSPLI_BETA -ne 0 ]; then
 	make -j8 release
 	
 	# Build release Aroma wuhb
-	$WUHBTOOL NUSspli.rpx NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga #--tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga
+	$WUHBTOOL NUSspli.rpx NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga --tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga
 	zip -9 zips/NUSspli-${NUSSPLI_VERSION}-Aroma.zip NUSspli.wuhb
 	mv NUSspli.wuhb NUSspli-${NUSSPLI_VERSION}.wuhb
 fi
