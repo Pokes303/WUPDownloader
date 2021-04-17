@@ -51,8 +51,12 @@ static inline void IOSUHAXHookClose()
 	IOSUHAX_Close();
 	//wait for mcp to return
 	if(haxchi)
+	{
 		while(fsaHandle >= 0)
 			OSSleepTicks(1024 << 10); //TODO: What's a good value here?
+	}
+	else
+		fsaHandle = -1;
 }
 
 bool isUSB01()
