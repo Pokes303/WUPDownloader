@@ -42,6 +42,7 @@
 #define MAX_TITLEBROWSER_LINES (MAX_LINES - 4)
 
 bool vibrateWhenFinished2; // TODO
+TitleEntry *titleEntrys;
 TitleEntry *filteredTitleEntries;
 size_t filteredTitleEntrySize;
 
@@ -120,10 +121,8 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor, const char* search)
 	
 	textToFrame(MAX_LINES - 1, ALIGNED_CENTER, "Press \uE000 to select || \uE001 to return || \uE002 to enter a title ID || \uE003 to search");
 	
-	filteredTitleEntries = getTitleEntries();
 	filteredTitleEntrySize = getTitleEntriesSize();
 	
-	TitleEntry tent[filteredTitleEntrySize];
 	if(search[0] != '\0')
 	{
 		size_t ts = strlen(search);
@@ -136,21 +135,23 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor, const char* search)
 		size_t ss;
 		for(size_t i = 0 ; i < filteredTitleEntrySize; i++)
 		{
-			ss = strlen(filteredTitleEntries[i].name);
+			ss = strlen(titleEntrys[i].name);
 			char tmpName[ss + 1];
 			for(size_t j = 0; j < ss; j++)
-				tmpName[j] = tolower(filteredTitleEntries[i].name[j]);
+				tmpName[j] = tolower(titleEntrys[i].name[j]);
 			tmpName[ss] = '\0';
 			
 			if(strstr(tmpName, lowerSearch) == NULL)
 				continue;
 			
-			tent[ts++] = filteredTitleEntries[i];
+			filteredTitleEntries[ts++] = titleEntrys[i];
 		}
 		
-		filteredTitleEntries = tent;
 		filteredTitleEntrySize = ts;
 	}
+	else
+		for(size_t i = 0; i < filteredTitleEntrySize; i++)
+			filteredTitleEntries[i] = titleEntrys[i];
 	
 	size_t max = MAX_TITLEBROWSER_LINES < filteredTitleEntrySize ? MAX_TITLEBROWSER_LINES : filteredTitleEntrySize;
 	char *toFrame = getToFrameBuffer();
@@ -185,11 +186,13 @@ void titleBrowserMenu()
 	size_t cursor = 0;
 	size_t pos = 0;
 	char search[129];
-	search[0] = '\0';
+	search[0] = '\0';titleEntrys = getTitleEntries();
+	filteredTitleEntrySize = getTitleEntriesSize();
+	TitleEntry entryArray[filteredTitleEntrySize];
+	filteredTitleEntries = entryArray;
 	
 	drawTBMenuFrame(pos, cursor, search);
 	
-	filteredTitleEntrySize = getTitleEntriesSize();
 	bool mov = filteredTitleEntrySize >= MAX_TITLEBROWSER_LINES;
 	bool redraw = false;
 	TitleEntry *entry;
