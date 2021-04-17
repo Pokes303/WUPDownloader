@@ -133,13 +133,14 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor, const char* search)
 		lowerSearch[ts] = '\0';
 		
 		ts = 0;
+		size_t ss;
 		for(size_t i = 0 ; i < filteredTitleEntrySize; i++)
 		{
-			ts = strlen(filteredTitleEntries[i].name);
-			char tmpName[ts + 1];
-			for(size_t j = 0; j < ts; j++)
+			ss = strlen(filteredTitleEntries[i].name);
+			char tmpName[ss + 1];
+			for(size_t j = 0; j < ss; j++)
 				tmpName[j] = tolower(filteredTitleEntries[i].name[j]);
-			tmpName[ts] = '\0';
+			tmpName[ss] = '\0';
 			
 			if(strstr(tmpName, lowerSearch) == NULL)
 				continue;
@@ -151,10 +152,7 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor, const char* search)
 		filteredTitleEntrySize = ts;
 	}
 	
-	size_t max = filteredTitleEntrySize - pos;
-	if(MAX_TITLEBROWSER_LINES < max)
-		max = MAX_TITLEBROWSER_LINES;
-	
+	size_t max = MAX_TITLEBROWSER_LINES < filteredTitleEntrySize ? MAX_TITLEBROWSER_LINES : filteredTitleEntrySize;
 	char *toFrame = getToFrameBuffer();
 	size_t j;
 	MCPTitleListType titleList;
@@ -187,6 +185,7 @@ void titleBrowserMenu()
 	size_t cursor = 0;
 	size_t pos = 0;
 	char search[129];
+	search[0] = '\0';
 	
 	drawTBMenuFrame(pos, cursor, search);
 	
@@ -194,7 +193,6 @@ void titleBrowserMenu()
 	bool mov = filteredTitleEntrySize >= MAX_TITLEBROWSER_LINES;
 	bool redraw = false;
 	TitleEntry *entry;
-	search[0] = '\0';
 	while(AppRunning())
 	{
 		if(app == APP_STATE_BACKGROUND)
