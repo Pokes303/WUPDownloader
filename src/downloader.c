@@ -883,7 +883,6 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 	
 	char tmpFileName[FILENAME_MAX + 37];
 	dcontent = 0;
-	flushIOQueue();
 	for(int i = 0; i < conts && AppRunning(); i++)
 	{
 		strcpy(tDownloadUrl, downloadUrl);
