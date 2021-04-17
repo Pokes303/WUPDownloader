@@ -121,7 +121,7 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor, const char* search)
 	textToFrame(MAX_LINES - 1, ALIGNED_CENTER, "Press \uE000 to select || \uE001 to return || \uE002 to enter a title ID || \uE003 to search");
 	
 	filteredTitleEntries = getTitleEntries();
-	filteredTitleEntrySize = getTitleEntriesSize() - pos;
+	filteredTitleEntrySize = getTitleEntriesSize();
 	
 	TitleEntry tent[filteredTitleEntrySize];
 	if(search[0] != '\0')
@@ -151,7 +151,10 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor, const char* search)
 		filteredTitleEntrySize = ts;
 	}
 	
-	size_t max = MAX_TITLEBROWSER_LINES < filteredTitleEntrySize ? MAX_TITLEBROWSER_LINES : filteredTitleEntrySize;
+	size_t max = filteredTitleEntrySize - pos;
+	if(MAX_TITLEBROWSER_LINES < max)
+		max = MAX_TITLEBROWSER_LINES;
+	
 	char *toFrame = getToFrameBuffer();
 	size_t j;
 	MCPTitleListType titleList;
@@ -188,7 +191,6 @@ void titleBrowserMenu()
 	drawTBMenuFrame(pos, cursor, search);
 	
 	filteredTitleEntrySize = getTitleEntriesSize();
-	debugPrintf("getTitleEntriesSize(): %i", filteredTitleEntrySize);
 	bool mov = filteredTitleEntrySize >= MAX_TITLEBROWSER_LINES;
 	bool redraw = false;
 	TitleEntry *entry;
