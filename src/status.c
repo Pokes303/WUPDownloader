@@ -110,9 +110,7 @@ bool AppRunning()
 					break;
 				case PROCUI_STATUS_RELEASE_FOREGROUND:
 					// Free up MEM1 to next foreground app, deinit screen, etc.
-					if(app == APP_STATE_RUNNING || app == APP_STATE_RETURNING)
-						shutdownRenderer();
-					
+					shutdownRenderer();
 					app = APP_STATE_BACKGROUND;
 					ProcUIDrawDoneRelease();
 					break;
