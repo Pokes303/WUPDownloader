@@ -309,6 +309,15 @@ void update(char *newVersion)
 				needle = strchr(lspp, '/');
 			}
 			
+			if(lastSlash[1] == '\0')
+			{
+				unzCloseCurrentFile(zip);
+				if(unzGoToNextFile(zip) != UNZ_OK)
+					break;
+				
+				continue;
+			}
+			
 			lastSlash[0] = '\0';
 			strcpy(path, zipFileName);
 			strcat(path, "/");
