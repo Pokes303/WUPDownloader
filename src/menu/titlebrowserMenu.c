@@ -186,10 +186,15 @@ void titleBrowserMenu()
 	size_t cursor = 0;
 	size_t pos = 0;
 	char search[129];
-	search[0] = '\0';titleEntrys = getTitleEntries();
+	search[0] = '\0';
+	titleEntrys = getTitleEntries();
 	filteredTitleEntrySize = getTitleEntriesSize();
-	TitleEntry entryArray[filteredTitleEntrySize];
-	filteredTitleEntries = entryArray;
+	filteredTitleEntries = MEMAllocFromDefaultHeap(filteredTitleEntrySize * sizeof(TitleEntry));
+	if(filteredTitleEntries == NULL)
+	{
+		debugPrintf("Titlebrowser: OUT OF MEMORY!");
+		return;
+	}
 	
 	drawTBMenuFrame(pos, cursor, search);
 	
@@ -211,7 +216,10 @@ void titleBrowserMenu()
 		}
 		
 		if(vpad.trigger & VPAD_BUTTON_B)
+		{
+			MEMFreeToDefaultHeap(filteredTitleEntries);
 			return;
+		}
 		
 		if(vpad.trigger & VPAD_BUTTON_UP)
 		{
@@ -269,6 +277,7 @@ void titleBrowserMenu()
 		
 		if(vpad.trigger & VPAD_BUTTON_X)
 		{
+			MEMFreeToDefaultHeap(filteredTitleEntries);
 			downloadMenu();
 			return;
 		}
@@ -288,7 +297,10 @@ void titleBrowserMenu()
 		}
 	}
 	if(!AppRunning())
+	{
+		MEMFreeToDefaultHeap(filteredTitleEntries);
 		return;
+	}
 	
 	debugPrintf("tbm: mount");
 	bool usbMounted = mountUSB();
@@ -312,13 +324,15 @@ void titleBrowserMenu()
 		showFrame();
 		
 		if(vpad.trigger & VPAD_BUTTON_B)
+		{
+			MEMFreeToDefaultHeap(filteredTitleEntries);
 			return;
+		}
 		
 		if(usbMounted && vpad.trigger & VPAD_BUTTON_A)
 		{
 			inst = toUSB = true;
 			loop = false;
-			debugPrintf("A");
 		}
 		else if(vpad.trigger & VPAD_BUTTON_Y)
 			inst = toUSB = loop = false;
@@ -362,9 +376,13 @@ void titleBrowserMenu()
 		}
 	}
 	if(!AppRunning())
+	{
+		MEMFreeToDefaultHeap(filteredTitleEntries);
 		return;
+	}
 	
 	char *tid = hex(entry->tid, 16);
+	MEMFreeToDefaultHeap(filteredTitleEntries);
 	if(tid != NULL)
 	{
 		debugPrintf("DLS");

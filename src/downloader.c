@@ -433,7 +433,7 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 		debugPrintf("curl_easy_perform returned an error: %s (%d)\nFile: %s\n\n", curlError, ret, toRam ? "<RAM>" : file);
 		curl_easy_cleanup(curl);
 		
-		char toScreen[1024];
+		char *toScreen = getToFrameBuffer();
 		sprintf(toScreen, "curl_easy_perform returned a non-valid value: %d\n\n", ret);
 		if(ret == CURLE_ABORTED_BY_CALLBACK)
 		{
@@ -551,7 +551,7 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 		}
 		else
 		{
-			char toScreen[1024];
+			char *toScreen = getToFrameBuffer();
 			sprintf(toScreen, "The download returned a result different to 200 (OK): %ld\nFile: %s\n\n", resp, file);
 			if(resp == 400)
 				strcat(toScreen, "Request failed. Try again\n\n");
@@ -660,7 +660,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 		if(mkdir(installDir, 777) == -1)
 		{
 			int ie = errno;
-			char toScreen[1024];
+			char *toScreen = getToFrameBuffer();
 			switch(ie)
 			{
 				case EROFS:
@@ -722,7 +722,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 	flushIOQueue();
 	addToScreenLog("TMD Downloaded");
 	
-	char toScreen[128];
+	char *toScreen = getToFrameBuffer();
 	strcpy(toScreen, "=>Title type: ");
 	bool hasDependencies;
 	switch(readUInt32(tmd, 0x18C)) //Title type
