@@ -362,7 +362,7 @@ void update(char *newVersion)
 			
 			if(extracted != 0)
 			{
-				if(addToIOQueue(buf, extracted, 1, file) != extracted)
+				if(addToIOQueue(buf, 1, extracted, file) != extracted)
 				{
 					addToIOQueue(NULL, 0, 0, file);
 					unzCloseCurrentFile(zip);
