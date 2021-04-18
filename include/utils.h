@@ -27,7 +27,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define NAPI_URL "http://napi.nbg01.v10lator.de/"
+#define NAPI_URL		"http://napi.nbg01.v10lator.de/"
+#define NUSSPLI_COPYRIGHT	"© 2020-2021 V10lator <v10lator@myway.de>"
 
 #ifdef NUSSPLI_DEBUG
 	#include <whb/log.h>

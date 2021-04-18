@@ -22,6 +22,7 @@
 #include <input.h>
 #include <renderer.h>
 #include <status.h>
+#include <utils.h>
 #include <updater.h>
 #include <menu/utils.h>
 
@@ -38,7 +39,7 @@ void drawUpdateMenuFrame(char *newVersion)
 	strcat(toScreen, "]");
 	textToFrame(3, ALIGNED_CENTER, toScreen);
 	
-	textToFrame(4, ALIGNED_CENTER, "© 2020-2021 V10lator <v10lator@myway.de>");
+	textToFrame(4, ALIGNED_CENTER, NUSSPLI_COPYRIGHT);
 	
 	textToFrame(7, 0, "Update available!");
 	lineToFrame(MAX_LINES - 3, SCREEN_COLOR_WHITE);

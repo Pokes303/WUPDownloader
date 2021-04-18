@@ -25,6 +25,7 @@
 #include <renderer.h>
 #include <status.h>
 #include <ticket.h>
+#include <utils.h>
 #include <menu/config.h>
 #include <menu/filebrowser.h>
 #include <menu/installer.h>
@@ -43,7 +44,7 @@ void drawMainMenuFrame()
 	textToFrame(1, ALIGNED_CENTER, "NUSspli");
 	textToFrame(3, ALIGNED_CENTER, "NUS simple packet loader/installer [" NUSSPLI_VERSION "]");
 	
-	textToFrame(4, ALIGNED_CENTER, "© 2020-2021 V10lator <v10lator@myway.de>");
+	textToFrame(4, ALIGNED_CENTER, NUSSPLI_COPYRIGHT);
 	
 	textToFrame(13, 0, "Press \uE000 to download content");
 	textToFrame(14, 0, "Press \uE002 to install content");
