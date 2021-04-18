@@ -38,7 +38,7 @@ void drawUpdateMenuFrame(char *newVersion)
 	strcat(toScreen, "]");
 	textToFrame(3, ALIGNED_CENTER, toScreen);
 	
-	textToFrame(4, ALIGNED_CENTER, "© 2020 V10lator <v10lator@myway.de>");
+	textToFrame(4, ALIGNED_CENTER, "© 2020-2021 V10lator <v10lator@myway.de>");
 	
 	textToFrame(7, 0, "Update available!");
 	lineToFrame(MAX_LINES - 3, SCREEN_COLOR_WHITE);
