@@ -74,10 +74,7 @@ int main()
 	
 	debugInit();
 	debugPrintf("NUSspli " NUSSPLI_VERSION);
-#ifdef NUSSPLI_DEBUG
-	WHBInitCrashHandler();
-	OSCheckActiveThreads();
-#endif
+	checkStacks("main");
 	
 	getCommonKey(); // We do this exploit as soon as possible
 	
@@ -182,10 +179,7 @@ int main()
 							KPADInit();
 							WPADEnableURCC(true);
 							
-							#ifdef NUSSPLI_DEBUG
-							debugPrintf("Checking thread stacks...");
-							OSCheckActiveThreads();
-							#endif
+							checkStacks("main()");
 							
 							if(initConfig())
 							{
@@ -194,10 +188,7 @@ int main()
 								{
 									initTitles();
 									
-									#ifdef NUSSPLI_DEBUG
-									debugPrintf("Checking thread stacks...");
-									OSCheckActiveThreads();
-									#endif
+									checkStacks("main");
 									
 									mainMenu(); // main loop
 									
@@ -205,10 +196,7 @@ int main()
 									clearTitles();
 									saveConfig();
 									
-									#ifdef NUSSPLI_DEBUG
-									debugPrintf("Checking thread stacks...");
-									OSCheckActiveThreads();
-									#endif
+									checkStacks("main");
 								}
 							}
 							else
@@ -261,8 +249,7 @@ int main()
 	debugPrintf("libgui closed");
 	
 #ifdef NUSSPLI_DEBUG
-	debugPrintf("Checking thread stacks...");
-	OSCheckActiveThreads();
+	checkStacks("main");
 	debugPrintf("Bye!");
 	shutdownDebug();
 #endif

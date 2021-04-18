@@ -191,4 +191,11 @@ void debugPrintf(const char *str, ...)
 	OSFastMutex_Unlock(&debugMutex);
 }
 
+void checkStacks(const char *src)
+{
+	debugPrintf("%s: Checking thread stacks...", src);
+	OSCheckActiveThreads();
+	debugPrintf("%s: Done!", src);
+}
+
 #endif // ifdef NUSSPLI_DEBUG

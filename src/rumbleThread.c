@@ -49,10 +49,7 @@ static int rumbleThreadMain(int argc, const char **argv)
 	}
 	
 	VPADStopMotor(VPAD_CHAN_0);
-#ifdef NUSSPLI_DEBUG
-	debugPrintf("Checking thread stacks...");
-	OSCheckActiveThreads();
-#endif
+	checkStacks("Rumble thread");
 	return 0;
 }
 

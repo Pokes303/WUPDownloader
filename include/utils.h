@@ -38,6 +38,7 @@
 	// This is most likely a bug in devkitPPC or WUT.
 	#include <nsysnet/socket.h>
 	#define debugPrintf(...)
+	#define checkStacks(...)
 	#define debugInit socket_lib_init
 	#define shutdownDebug socket_lib_finish
 #endif
@@ -63,6 +64,7 @@ void hexToByte(const char *hex, uint8_t *out);
 #ifdef NUSSPLI_DEBUG
 void debugInit();
 void debugPrintf(const char *str, ...);
+void checkStacks(const char *src);
 #endif
 
 #ifdef __cplusplus
