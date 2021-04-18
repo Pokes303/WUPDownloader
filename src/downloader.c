@@ -271,7 +271,7 @@ void deinitDownloader()
 	debugPrintf("Socket optimizer returned: %d", ret);
 }
 
-static size_t initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
+static curl_off_t initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 {
 	int o = 1;
 	// Activate WinScale
@@ -365,7 +365,7 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 		return 1;
 	}
 	
-	CURLcode ret = curl_easy_setopt(curl, CURLOPT_SOCKOPTFUNCTION, initSocket);
+	CURLcode ret = curl_easy_setopt(curl, CURLOPT_SOCKOPTFUNCTION, (curl_sockopt_callback)initSocket);
 	
 	ret |= curl_easy_setopt(curl, CURLOPT_URL, url);
 	
@@ -402,7 +402,7 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 	if(!toRam && (type & FILE_TYPE_TOUSB) != FILE_TYPE_TOUSB)
 	{
 		debugPrintf("Limiting DL speed");
-		ret |= curl_easy_setopt(curl, CURLOPT_MAX_RECV_SPEED_LARGE, SPEED_LIMIT_USB);
+		ret |= curl_easy_setopt(curl, CURLOPT_MAX_RECV_SPEED_LARGE, (curl_off_t)SPEED_LIMIT_USB);
 	}
 	else
 		debugPrintf("Not to SD, no limit");
