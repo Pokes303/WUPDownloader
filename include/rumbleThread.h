@@ -26,6 +26,8 @@
 	extern "C" {
 #endif
 
+bool initRumble();
+void deinitRumble();
 void startRumble();
 
 #ifdef __cplusplus

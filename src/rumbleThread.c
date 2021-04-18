@@ -21,6 +21,7 @@
 
 #include <stdlib.h>
 
+#include <coreinit/memdefaultheap.h>
 #include <coreinit/thread.h>
 #include <padscore/wpad.h>
 #include <vpad/input.h>
@@ -28,10 +29,10 @@
 #include <osdefs.h>
 #include <utils.h>
 
-#define RUMBLE_STACK_SIZE 0x200
+#define RUMBLE_STACK_SIZE 0x2000
 
 static OSThread rumbleThread;
-static uint8_t rumbleThreadStack[RUMBLE_STACK_SIZE];
+static uint8_t *rumbleThreadStack;
 static uint8_t pattern[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
 static int rumbleThreadMain(int argc, const char **argv)
@@ -51,6 +52,17 @@ static int rumbleThreadMain(int argc, const char **argv)
 	VPADStopMotor(VPAD_CHAN_0);
 	checkStacks("Rumble thread");
 	return 0;
+}
+
+bool initRumble()
+{
+	rumbleThreadStack = MEMAllocFromDefaultHeapEx(RUMBLE_STACK_SIZE, 8);
+	return rumbleThreadStack != NULL;
+}
+
+void deinitRumble()
+{
+	MEMFreeToDefaultHeap(rumbleThreadStack);
 }
 
 void startRumble()

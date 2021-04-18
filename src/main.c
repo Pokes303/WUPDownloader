@@ -30,6 +30,7 @@
 #include <osdefs.h>
 #include <otp.h>
 #include <renderer.h>
+#include <rumbleThread.h>
 #include <status.h>
 #include <ticket.h>
 #include <titles.h>
@@ -104,7 +105,7 @@ int main()
 	
 	addToScreenLog("RNG seeded!");
 	startNewFrame();
-	textToFrame(0, 0, "Initializing network...");
+	textToFrame(0, 0, "Initializing rumble...");
 	writeScreenLog();
 	drawFrame();
 	showFrame();
@@ -112,128 +113,143 @@ int main()
 	char *lerr = NULL;
 	
 	FSInit();
-	if(NNResult_IsSuccess(ACInitialize()))
+	if(initRumble())
 	{
-		ACConfigId networkID;
-		if(NNResult_IsSuccess(ACGetStartupId(&networkID)))
+		addToScreenLog("Rumble initialized!");
+		
+		startNewFrame();
+		textToFrame(0, 0, "Initializing network...");
+		writeScreenLog();
+		drawFrame();
+		showFrame();
+		if(NNResult_IsSuccess(ACInitialize()))
 		{
-			ACConnectWithConfigId(networkID);
-			addToScreenLog("Network initialized!");
-			
-			startNewFrame();
-			textToFrame(0, 0, "Loading downloader...");
-			writeScreenLog();
-			drawFrame();
-			showFrame();
-			
-			if(initDownloader())
+			ACConfigId networkID;
+			if(NNResult_IsSuccess(ACGetStartupId(&networkID)))
 			{
-				addToScreenLog("Downloader initialized!");
+				ACConnectWithConfigId(networkID);
+				addToScreenLog("Network initialized!");
 				
 				startNewFrame();
-				textToFrame(0, 0, "Loading cJSON...");
+				textToFrame(0, 0, "Loading downloader...");
 				writeScreenLog();
 				drawFrame();
 				showFrame();
 				
-				cJSON_Hooks ch;
-				ch.malloc_fn = MEMAllocFromDefaultHeap;
-				ch.free_fn = MEMFreeToDefaultHeap;
-				cJSON_InitHooks(&ch);
-				
-				addToScreenLog("cJSON initialized!");
-				startNewFrame();
-				textToFrame(0, 0, "Loading SWKBD...");
-				writeScreenLog();
-				drawFrame();
-				showFrame();
-				
-				if(SWKBD_Init())
+				if(initDownloader())
 				{
-					addToScreenLog("SWKBD initialized!");
+					addToScreenLog("Downloader initialized!");
+					
 					startNewFrame();
-					textToFrame(0, 0, "Loading MCP...");
+					textToFrame(0, 0, "Loading cJSON...");
 					writeScreenLog();
 					drawFrame();
 					showFrame();
 					
-					mcpHandle = MCP_Open();
-					if(mcpHandle != 0)
+					cJSON_Hooks ch;
+					ch.malloc_fn = MEMAllocFromDefaultHeap;
+					ch.free_fn = MEMFreeToDefaultHeap;
+					cJSON_InitHooks(&ch);
+					
+					addToScreenLog("cJSON initialized!");
+					startNewFrame();
+					textToFrame(0, 0, "Loading SWKBD...");
+					writeScreenLog();
+					drawFrame();
+					showFrame();
+					
+					if(SWKBD_Init())
 					{
-						addToScreenLog("MCP initialized!");
+						addToScreenLog("SWKBD initialized!");
 						startNewFrame();
-						textToFrame(0, 0, "Loading I/O thread...");
+						textToFrame(0, 0, "Loading MCP...");
 						writeScreenLog();
 						drawFrame();
 						showFrame();
 						
-						if(initIOThread())
+						mcpHandle = MCP_Open();
+						if(mcpHandle != 0)
 						{
-							addToScreenLog("I/O thread initialized!");
+							addToScreenLog("MCP initialized!");
 							startNewFrame();
-							textToFrame(0, 0, "Loading config file...");
+							textToFrame(0, 0, "Loading I/O thread...");
 							writeScreenLog();
 							drawFrame();
 							showFrame();
 							
-							KPADInit();
-							WPADEnableURCC(true);
-							
-							checkStacks("main()");
-							
-							if(initConfig())
+							if(initIOThread())
 							{
+								addToScreenLog("I/O thread initialized!");
+								startNewFrame();
+								textToFrame(0, 0, "Loading config file...");
+								writeScreenLog();
+								drawFrame();
+								showFrame();
 								
-								if(!updateCheck())
+								KPADInit();
+								WPADEnableURCC(true);
+								
+								checkStacks("main()");
+								
+								if(initConfig())
 								{
-									initTitles();
 									
-									checkStacks("main");
-									
-									mainMenu(); // main loop
-									
-									debugPrintf("Deinitializing libraries...");
-									clearTitles();
-									saveConfig();
-									
-									checkStacks("main");
+									if(!updateCheck())
+									{
+										initTitles();
+										
+										checkStacks("main");
+										
+										mainMenu(); // main loop
+										
+										debugPrintf("Deinitializing libraries...");
+										clearTitles();
+										saveConfig();
+										
+										checkStacks("main");
+									}
 								}
+								else
+									lerr = "Couldn't load config file!";
+								
+								KPADShutdown();
+								shutdownIOThread();
+								debugPrintf("I/O thread closed");
 							}
 							else
-								lerr = "Couldn't load config file!";
+								lerr = "Couldn't load I/O thread!";
 							
-							KPADShutdown();
-							shutdownIOThread();
-							debugPrintf("I/O thread closed");
+							unmountUSB();
+							MCP_Close(mcpHandle);
+							debugPrintf("MCP closed");
 						}
 						else
-							lerr = "Couldn't load I/O thread!";
+							lerr = "Couldn't initialize MCP!";
 						
-						unmountUSB();
-						MCP_Close(mcpHandle);
-						debugPrintf("MCP closed");
+						SWKBD_Shutdown();
+						debugPrintf("SWKBD closed");
 					}
 					else
-						lerr = "Couldn't initialize MCP!";
-					
-					SWKBD_Shutdown();
-					debugPrintf("SWKBD closed");
+						lerr = "Couldn't initialize SWKBD!";
+					deinitDownloader();
 				}
 				else
-					lerr = "Couldn't initialize SWKBD!";
-				deinitDownloader();
+					lerr = "Couldn't initialize downloader!";
 			}
 			else
-				lerr = "Couldn't initialize downloader!";
+				lerr = "Couldn't get default network connection!";
+			
+			ACFinalize();
+			debugPrintf("Network closed");
 		}
 		else
-			lerr = "Couldn't get default network connection!";
+			lerr = "Couldn't inititalize network!";
 		
-		ACFinalize();
-		debugPrintf("Network closed");
+		deinitRumble();
+		debugPrintf("Rumble closed");
 	}
 	else
-		lerr = "Couldn't inititalize network!";
+		lerr = "Couldn't initialize rumble!";
 	
 	if(lerr != NULL)
 	{
