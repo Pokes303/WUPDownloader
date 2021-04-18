@@ -68,7 +68,7 @@ OSTime lastDraw = 0;
 OSTime lastTransfair;
 
 static OSThread dlbgThread;
-static uint8_t dlbgThreadStack[DLBGT_STACK_SIZE];
+static uint8_t *dlbgThreadStack;
 
 static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData)
 {
@@ -250,7 +250,9 @@ int dlbgThreadMain(int argc, const char **argv)
 
 bool initDownloader()
 {
-	if(!OSCreateThread(&dlbgThread, dlbgThreadMain, 0, NULL, dlbgThreadStack + DLBGT_STACK_SIZE, DLBGT_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_ANY))
+	dlbgThreadStack = MEMAllocFromDefaultHeapEx(DLBGT_STACK_SIZE, 8);
+	
+	if(dlbgThreadStack == NULL || !OSCreateThread(&dlbgThread, dlbgThreadMain, 0, NULL, dlbgThreadStack + DLBGT_STACK_SIZE, DLBGT_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_ANY))
 		return false;
 	
 	OSSetThreadName(&dlbgThread, "NUSspli socket optimizer");
@@ -265,6 +267,7 @@ void deinitDownloader()
 	debugInit();
 	int ret;
 	OSJoinThread(&dlbgThread, &ret);
+	MEMFreeToDefaultHeap(dlbgThreadStack);
 	debugPrintf("Socket optimizer returned: %d", ret);
 }
 

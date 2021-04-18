@@ -54,7 +54,7 @@ typedef struct
 } OpenFile;
 
 static OSThread ioThread;
-static uint8_t ioThreadStack[IOT_STACK_SIZE];
+static uint8_t *ioThreadStack;
 static volatile bool ioRunning = false;
 static volatile uint32_t ioWriteLock = true;
 static volatile uint32_t *ioWriteLockPtr = &ioWriteLock;
@@ -160,7 +160,8 @@ int ioThreadMain(int argc, const char **argv)
 
 bool initIOThread()
 {
-	if(!OSCreateThread(&ioThread, ioThreadMain, 0, NULL, ioThreadStack + IOT_STACK_SIZE, IOT_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_CPU0)) // We move this to core 0 for maximum performance. Later on move it back to core 1 as we want download threads on core 0 and 2.
+	ioThreadStack = MEMAllocFromDefaultHeapEx(IOT_STACK_SIZE, 8);
+	if(ioThreadStack == NULL || !OSCreateThread(&ioThread, ioThreadMain, 0, NULL, ioThreadStack + IOT_STACK_SIZE, IOT_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_CPU0)) // We move this to core 0 for maximum performance. Later on move it back to core 1 as we want download threads on core 0 and 2.
 		return false;
 	
 	OSSetThreadName(&ioThread, "NUSspli I/O");
@@ -214,6 +215,7 @@ void shutdownIOThread()
 	ioRunning = false;
 	int ret;
 	OSJoinThread(&ioThread, &ret);
+	MEMFreeToDefaultHeap(ioThreadStack);
 	debugPrintf("I/O thread returned: %d", ret);
 }
 
