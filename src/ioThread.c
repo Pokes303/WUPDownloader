@@ -252,7 +252,6 @@ retryAddingToQueue:
 		}
 		
 		if(size > MAX_IO_BUFFER_SIZE)
-		if(size < 1)
 		{
 			debugPrintf("size > %i (%i)", MAX_IO_BUFFER_SIZE, size);
 			ioWriteLock = false;
