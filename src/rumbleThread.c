@@ -34,6 +34,7 @@
 static OSThread rumbleThread;
 static uint8_t *rumbleThreadStack;
 static uint8_t pattern[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+static volatile bool isRumbling;
 
 static int rumbleThreadMain(int argc, const char **argv)
 {
@@ -51,12 +52,14 @@ static int rumbleThreadMain(int argc, const char **argv)
 	
 	VPADStopMotor(VPAD_CHAN_0);
 	checkStacks("Rumble thread");
+	isRumbling = false;
 	return 0;
 }
 
 bool initRumble()
 {
 	rumbleThreadStack = MEMAllocFromDefaultHeapEx(RUMBLE_STACK_SIZE, 8);
+	isRumbling = false;
 	return rumbleThreadStack != NULL;
 }
 
@@ -67,9 +70,10 @@ void deinitRumble()
 
 void startRumble()
 {
-	if(!OSCreateThread(&rumbleThread, rumbleThreadMain, 0, NULL, rumbleThreadStack + RUMBLE_STACK_SIZE, RUMBLE_STACK_SIZE, 0, OS_THREAD_ATTRIB_DETACHED | OS_THREAD_ATTRIB_AFFINITY_ANY))
+	if(isRumbling || !OSCreateThread(&rumbleThread, rumbleThreadMain, 0, NULL, rumbleThreadStack + RUMBLE_STACK_SIZE, RUMBLE_STACK_SIZE, 0, OS_THREAD_ATTRIB_DETACHED | OS_THREAD_ATTRIB_AFFINITY_ANY))
 		return;
 	
+	isRumbling = true;
 	OSSetThreadName(&rumbleThread, "NUSspli Rumble");
 	OSResumeThread(&rumbleThread);
 }
