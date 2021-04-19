@@ -170,7 +170,10 @@ void removeDirectory(const char *path)
 	strcpy(newPath, path);
 	
 	if(newPath[len - 1] != '/')
+	{
 		newPath[len++] = '/';
+		newPath[len] = '\0';
+	}
 	
 	char *inSentence = newPath + len;
 	DIR *dir = opendir(newPath);
@@ -188,8 +191,9 @@ void removeDirectory(const char *path)
 			}
 		}
 		closedir(dir);
-		debugPrintf("Removing %s", path);
-		remove(path);
+		newPath[len  -  1] = '\0';
+		debugPrintf("Removing %s", newPath);
+		remove(newPath);
 	}
 	else
 		debugPrintf("Path \"%s\" not found!", newPath);
