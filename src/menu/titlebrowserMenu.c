@@ -302,7 +302,6 @@ void titleBrowserMenu()
 		return;
 	}
 	
-	debugPrintf("tbm: mount");
 	bool usbMounted = mountUSB();
 	bool dlToUSB = usbMounted;
 	bool keepFiles = true;
@@ -385,7 +384,6 @@ void titleBrowserMenu()
 	MEMFreeToDefaultHeap(filteredTitleEntries);
 	if(tid != NULL)
 	{
-		debugPrintf("DLS");
 		downloadTitle(tid, "\0", folderName, inst, dlToUSB, toUSB, keepFiles);
 		MEMFreeToDefaultHeap(tid);
 	}
