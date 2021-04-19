@@ -84,13 +84,6 @@ void executeIOQueue()
 			{
 				if(files[openFile].file == NULL)
 				{
-					files[openFile].buf = MEMAllocFromDefaultHeap(IO_MAX_FILE_BUFFER);
-					if(files[openFile].buf == NULL)
-					{
-						debugPrintf("I/O File open: OUT OF MEMORY!");
-						OSSleepTicks(OSMillisecondsToTicks(10));
-						return;
-					}
 					files[openFile].file = queueEntries[asl].file;
 					break;
 				}
@@ -134,7 +127,6 @@ void executeIOQueue()
 		}
 		fflush(files[openFile].file);
 		fclose(files[openFile].file);
-		MEMFreeToDefaultHeap(files[openFile].buf);
 		files[openFile].file = NULL;
 	}
 	
@@ -177,19 +169,30 @@ bool initIOThread()
 	if(ptr == NULL)
 	{
 		MEMFreeToDefaultHeap(queueEntries);
-		debugPrintf("OUT OF MEMORY (ptr)!");
+		debugPrintf("OUT OF MEMORY (ptr1)!");
 		return false;
 	}
+	
 	for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; i++, ptr += MAX_IO_BUFFER_SIZE)
 	{
 		queueEntries[i].buf = ptr;
 		queueEntries[i].inUse = false;
 	}
 	
-	for(int i = 0; i < IO_MAX_OPEN_FILES; i++)
+	ptr = MEMAllocFromDefaultHeap(IO_MAX_OPEN_FILES * IO_MAX_FILE_BUFFER);
+	if(ptr == NULL)
 	{
-		files[i].i = 0;
+		MEMFreeToDefaultHeap(queueEntries[0].buf);
+		MEMFreeToDefaultHeap(queueEntries);
+		debugPrintf("OUT OF MEMORY (ptr2)!");
+		return false;
+	}
+	
+	for(int i = 0; i < IO_MAX_OPEN_FILES; i++, ptr += IO_MAX_FILE_BUFFER)
+	{
 		files[i].file = NULL;
+		files[i].buf = ptr;
+		files[i].i = 0;
 	}
 	
 	activeReadBuffer = activeWriteBuffer = 0;
@@ -211,6 +214,7 @@ void shutdownIOThread()
 	
 	MEMFreeToDefaultHeap(queueEntries[0].buf);
 	MEMFreeToDefaultHeap(queueEntries);
+	MEMFreeToDefaultHeap(files[0].buf);
 	
 	ioRunning = false;
 	int ret;
