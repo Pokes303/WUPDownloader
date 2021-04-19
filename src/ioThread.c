@@ -125,7 +125,6 @@ void executeIOQueue()
 			fwrite(files[openFile].buf, files[openFile].i, 1, files[openFile].file);
 			files[openFile].i = 0;
 		}
-		fflush(files[openFile].file);
 		fclose(files[openFile].file);
 		files[openFile].file = NULL;
 	}
