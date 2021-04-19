@@ -67,7 +67,7 @@ void deinitRumble()
 
 void startRumble()
 {
-	if(!OSCreateThread(&rumbleThread, rumbleThreadMain, 0, NULL, rumbleThreadStack + RUMBLE_STACK_SIZE, RUMBLE_STACK_SIZE, 0, OS_THREAD_ATTRIB_DETACHED | OS_THREAD_ATTRIB_AFFINITY_CPU1))
+	if(!OSCreateThread(&rumbleThread, rumbleThreadMain, 0, NULL, rumbleThreadStack + RUMBLE_STACK_SIZE, RUMBLE_STACK_SIZE, 0, OS_THREAD_ATTRIB_DETACHED | OS_THREAD_ATTRIB_AFFINITY_ANY))
 		return;
 	
 	OSSetThreadName(&rumbleThread, "NUSspli Rumble");
