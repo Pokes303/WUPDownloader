@@ -34,7 +34,7 @@
 static OSThread rumbleThread;
 static uint8_t *rumbleThreadStack;
 static uint8_t pattern[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-static volatile bool isRumbling;
+static volatile bool isRumbling = true;
 
 static int rumbleThreadMain(int argc, const char **argv)
 {
@@ -59,12 +59,18 @@ static int rumbleThreadMain(int argc, const char **argv)
 bool initRumble()
 {
 	rumbleThreadStack = MEMAllocFromDefaultHeapEx(RUMBLE_STACK_SIZE, 8);
+	if(rumbleThreadStack == NULL)
+		return false;
 	isRumbling = false;
-	return rumbleThreadStack != NULL;
+	return true;
 }
 
 void deinitRumble()
 {
+	while(isRumbling)
+		;
+	
+	isRumbling = true;
 	MEMFreeToDefaultHeap(rumbleThreadStack);
 }
 
