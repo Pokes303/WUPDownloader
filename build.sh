@@ -1,7 +1,7 @@
 #!/bin/sh
 
 NUSPACKER="../nuspacker/NUSPacker.jar" # Set path to NUSPacker.jar here. will be downloaded if empty
-WUHBTOOL="../wut-tools/install/bin/wuhbtool" # Set path to wuhbtool. Will use the one from PATH if empty
+WUHBTOOL="" # Set path to wuhbtool. Will use the one from PATH if empty
 
 # Don't edit below this line
 
