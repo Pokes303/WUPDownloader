@@ -211,14 +211,13 @@ void shutdownIOThread()
 	while(queueEntries[activeWriteBuffer].inUse)
 		;
 	
-	MEMFreeToDefaultHeap(queueEntries[0].buf);
-	MEMFreeToDefaultHeap(queueEntries);
-	MEMFreeToDefaultHeap(files[0].buf);
-	
 	ioRunning = false;
 	int ret;
 	OSJoinThread(&ioThread, &ret);
 	MEMFreeToDefaultHeap(ioThreadStack);
+	MEMFreeToDefaultHeap(queueEntries[0].buf);
+	MEMFreeToDefaultHeap(queueEntries);
+	MEMFreeToDefaultHeap(files[0].buf);
 	debugPrintf("I/O thread returned: %d", ret);
 }
 
