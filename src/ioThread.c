@@ -160,6 +160,7 @@ bool initIOThread()
 	queueEntries = MEMAllocFromDefaultHeap(MAX_IO_QUEUE_ENTRIES * sizeof(WriteQueueEntry));
 	if(queueEntries == NULL)
 	{
+		MEMFreeToDefaultHeap(ioThreadStack);
 		debugPrintf("OUT OF MEMORY (queueEntries)!");
 		return false;
 	}
@@ -167,6 +168,7 @@ bool initIOThread()
 	uint8_t *ptr = MEMAllocFromDefaultHeap(MAX_IO_QUEUE_ENTRIES * MAX_IO_BUFFER_SIZE);
 	if(ptr == NULL)
 	{
+		MEMFreeToDefaultHeap(ioThreadStack);
 		MEMFreeToDefaultHeap(queueEntries);
 		debugPrintf("OUT OF MEMORY (ptr1)!");
 		return false;
@@ -181,6 +183,7 @@ bool initIOThread()
 	ptr = MEMAllocFromDefaultHeap(IO_MAX_OPEN_FILES * IO_MAX_FILE_BUFFER);
 	if(ptr == NULL)
 	{
+		MEMFreeToDefaultHeap(ioThreadStack);
 		MEMFreeToDefaultHeap(queueEntries[0].buf);
 		MEMFreeToDefaultHeap(queueEntries);
 		debugPrintf("OUT OF MEMORY (ptr2)!");
