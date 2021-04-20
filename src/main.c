@@ -63,6 +63,7 @@
 #include <padscore/kpad.h>
 #include <padscore/wpad.h>
 #include <proc_ui/procui.h>
+#include <sysapp/launch.h>
 #include <whb/crash.h>
 
 int main()
@@ -270,12 +271,14 @@ int main()
 	shutdownDebug();
 #endif
 	
-	if(AppRunning())
-	{
-		homeButtonCallback(NULL);
-		while(AppRunning())
-			;
-	}
+	if(isAroma() || isChannel())
+		SYSLaunchMenu();
+	else
+		SYSRelaunchTitle(0, NULL);
+	
+	do
+		AppRunning();
+	while(app != APP_STATE_STOPPED)
 	
 	deinitASAN();
 	ProcUIShutdown();

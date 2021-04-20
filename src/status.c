@@ -33,13 +33,11 @@
 #include <coreinit/systeminfo.h>
 #include <coreinit/title.h>
 #include <proc_ui/procui.h>
-#include <sysapp/launch.h>
 
 #include <stdbool.h>
 
 volatile APP_STATE app = APP_STATE_RUNNING;
 volatile bool shutdownEnabled = true;
-volatile bool shutdownRequested = false;
 bool channel;
 bool aroma;
 
@@ -67,7 +65,10 @@ bool isChannel()
 uint32_t homeButtonCallback(void *dummy)
 {
 	if(shutdownEnabled)
-		shutdownRequested = true;
+	{
+		shutdownEnabled = false;
+		app = APP_STATE_STOPPING;
+	}
 	
 	return 0;
 }
@@ -88,47 +89,38 @@ void initStatus()
 
 bool AppRunning()
 {
-	if(OSIsMainCore())
+	if(OSIsMainCore() && app != APP_STATE_STOPPED)
 	{
-		if(shutdownRequested)
+		switch(ProcUIProcessMessages(true))
 		{
-			if(isAroma() || isChannel())
-				SYSLaunchMenu();
-			else
-				SYSRelaunchTitle(0, NULL);
-			
-			shutdownRequested = false;
-		}
-		
-		if(app)
-		{
-			switch(ProcUIProcessMessages(true))
-			{
-				case PROCUI_STATUS_EXITING:
-					// Being closed, deinit, free, and prepare to exit
-					app = APP_STATE_STOPPED;
-					break;
-				case PROCUI_STATUS_RELEASE_FOREGROUND:
-					// Free up MEM1 to next foreground app, deinit screen, etc.
-					shutdownRenderer();
+			case PROCUI_STATUS_EXITING:
+				// Being closed, deinit, free, and prepare to exit
+				app = APP_STATE_STOPPED;
+				break;
+			case PROCUI_STATUS_RELEASE_FOREGROUND:
+				// Free up MEM1 to next foreground app, deinit screen, etc.
+				shutdownRenderer();
+				ProcUIDrawDoneRelease();
+				if(app != APP_STATE_STOPPING)
 					app = APP_STATE_BACKGROUND;
-					ProcUIDrawDoneRelease();
+				break;
+			case PROCUI_STATUS_IN_FOREGROUND:
+				// Executed while app is in foreground
+				if(app == APP_STATE_STOPPING)
 					break;
-				case PROCUI_STATUS_IN_FOREGROUND:
-					// Executed while app is in foreground
-					if(app == APP_STATE_BACKGROUND)
-					{
-						initRenderer();
-						app = APP_STATE_RETURNING;
-					}
-					else
-						app = APP_STATE_RUNNING;
-					
-					break;
-				case PROCUI_STATUS_IN_BACKGROUND:
+				if(app == APP_STATE_BACKGROUND)
+				{
+					initRenderer();
+					app = APP_STATE_RETURNING;
+				}
+				else
+					app = APP_STATE_RUNNING;
+				
+				break;
+			case PROCUI_STATUS_IN_BACKGROUND:
+				if(app != APP_STATE_STOPPING)
 					app = APP_STATE_BACKGROUND;
-					break;
-			}
+				break;
 		}
 	}
 	

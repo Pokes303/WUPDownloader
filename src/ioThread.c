@@ -257,7 +257,7 @@ retryAddingToQueue:
 			ioWriteLock = false;
 			addToIOQueue(buf, 1, MAX_IO_BUFFER_SIZE, file);
 			size_t newSize = size - MAX_IO_BUFFER_SIZE;
-			uint8_t *newPtr = buf;
+			const uint8_t *newPtr = buf;
 			newPtr += newSize;
 			addToIOQueue(newPtr, 1, newSize, file);
 			return n;
