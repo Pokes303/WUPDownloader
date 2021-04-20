@@ -255,7 +255,12 @@ retryAddingToQueue:
 		{
 			debugPrintf("size > %i (%i)", MAX_IO_BUFFER_SIZE, size);
 			ioWriteLock = false;
-			return 0;
+			addToIOQueue(buf, 1, MAX_IO_BUFFER_SIZE, file);
+			size_t newSize = size - MAX_IO_BUFFER_SIZE;
+			uint8_t *newPtr = buf;
+			newPtr += newSize;
+			addToIOQueue(newPtr, 1, newSize, file);
+			return n;
 		}
 		
 		OSBlockMove(queueEntries[asl].buf, buf, size, false);
