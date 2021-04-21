@@ -123,7 +123,7 @@ bool updateCheck()
 	cJSON_Delete(json);
 	clearRamBuf();
 	
-	char cv[8];
+	char cv[32];
 	char *curVer = cv;
 	strcpy(curVer, NUSSPLI_VERSION);
 	char *needle = strchr(curVer, '.');
