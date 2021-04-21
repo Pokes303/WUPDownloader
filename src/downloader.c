@@ -51,7 +51,7 @@
 #define USERAGENT		"NUSspli/"NUSSPLI_VERSION" (WarezLoader, like WUPDownloader)" // TODO: Spoof eShop here?
 #define DLBGT_STACK_SIZE	0x2000
 #define SOCKLIB_BUFSIZE		(SOCKET_BUFSIZE * 4) // For send & receive + double buffering
-#define SPEED_LIMIT_USB		512 // B/s
+#define SPEED_LIMIT_USB		(512 * 1024) // B/s
 
 uint16_t contents = 0xFFFF; //Contents count
 uint16_t dcontent = 0xFFFF; //Actual content number
