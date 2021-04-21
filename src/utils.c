@@ -38,7 +38,7 @@ char* hex(uint64_t i, int digits) {
 		return NULL;
 	
 	char x[16];
-	sprintf(x, "%%ll0%ix", digits);
+	sprintf(x, "%%0%illx", digits);
 	char *result = MEMAllocFromDefaultHeap(sizeof(char) * (digits + 1));
 	if(result == NULL)
 		return NULL;

@@ -53,7 +53,7 @@ void drawInstallerMenuFrame(bool fromUSB, bool keepFiles)
 
 void installerMenu(const char *dir)
 {
-	bool fromUSB = dir[4] == ':';
+	bool fromUSB = dir[3] == ':';
 	bool keepFiles = !fromUSB;
 	bool toUSB = true;
 	char name[strlen(dir) + 1];

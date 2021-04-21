@@ -30,6 +30,7 @@
 #include <cJSON.h>
 
 #include <limits.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -155,7 +156,7 @@ char *name2tid(const char *name)
 		*/
 		current = ((upper - lower) / 2) + lower;
 	}
-	return 0;
+	return NULL;
 }
 
 bool initTitles()

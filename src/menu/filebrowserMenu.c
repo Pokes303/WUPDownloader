@@ -75,8 +75,9 @@ char *fileBrowserMenu()
 	
 	size_t foldersSize = 1;
 	size_t cursor, pos;
-	bool onUSB = false;
-	bool usbMounted, mov;
+	bool usbMounted = mountUSB();
+	bool onUSB = usbMounted;
+	bool mov;
 	DIR *dir;
 	
 refreshDirList:
@@ -126,12 +127,11 @@ refreshDirList:
 			if(dir != NULL)
 			{
 				size_t len = strlen(onUSB ? INSTALL_DIR_USB : INSTALL_DIR_SD) + strlen(folders[cursor + pos]) + 1;
-				ret = MEMAllocFromDefaultHeap(len);
+				ret = MEMAllocFromDefaultHeap(len); //TODO: Free
 				if(ret != NULL)
 				{
 					strcpy(ret, onUSB ? INSTALL_DIR_USB : INSTALL_DIR_SD);
 					strcat(ret, folders[cursor + pos]);
-					ret[len] = '\0';
 				}
 				goto exitFileBrowserMenu;
 			}
