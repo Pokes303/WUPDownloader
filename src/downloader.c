@@ -467,7 +467,7 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 			case CURLE_SEND_ERROR:
 			case CURLE_RECV_ERROR:
 			case CURLE_PARTIAL_FILE:
-				strcat(toScreen, "---> Network error\nFailed while trying to download data, probably your router was turned off,\ncheck the internet connecition and try again");
+				strcat(toScreen, "---> Network error\nFailed while trying to download data, probably your router was turned off,\ncheck the internet connection and try again");
 				break;
 			case CURLE_ABORTED_BY_CALLBACK:
 				debugPrintf("CURLE_ABORTED_BY_CALLBACK");
