@@ -2,15 +2,21 @@
 
 NUSPACKER="../nuspacker/NUSPacker.jar" # Set path to NUSPacker.jar here. will be downloaded if empty
 WUHBTOOL="" # Set path to wuhbtool. Will use the one from PATH if empty
+FORCE_RELEASE=0 # set to 1 to force release builds even if we'e building ALPHA/BETA
 
 # Don't edit below this line
 
 NUSSPLI_VERSION="$(xmllint --xpath 'app/version/text()' meta/hbl/meta.xml)"
-grep -q "BETA" <<< "${NUSSPLI_VERSION}" > /dev/null 2>&1
-NUSSPLI_BETA=$?
-if [ $NUSSPLI_BETA -ne 0 ]; then
-	grep -q "ALPHA" <<< "${NUSSPLI_VERSION}" > /dev/null 2>&1
+
+if [ $FORCE_RELEASE -eq 1 ]; then
+	NUSSPLI_BETA=1
+else
+	grep -q "BETA" <<< "${NUSSPLI_VERSION}" > /dev/null 2>&1
 	NUSSPLI_BETA=$?
+	if [ $NUSSPLI_BETA -ne 0 ]; then
+		grep -q "ALPHA" <<< "${NUSSPLI_VERSION}" > /dev/null 2>&1
+		NUSSPLI_BETA=$?
+	fi
 fi
 
 if [ "x${NUSPACKER}" = "x" ]; then
