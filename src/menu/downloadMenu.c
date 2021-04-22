@@ -41,17 +41,7 @@
 
 bool vibrateWhenFinished = true;
 
-void drawDownloadFrame1()
-{
-	startNewFrame();
-	textToFrame(0, 0, "Input a title ID to download its content [Ex: 000500001234abcd]");
-	lineToFrame(MAX_LINES - 3, SCREEN_COLOR_WHITE);
-	textToFrame(MAX_LINES - 2, 0, "Press \uE000 to show the keyboard [Only input hexadecimal numbers]");
-	textToFrame(MAX_LINES - 1, 0, "Press \uE001 to return");
-	drawFrame();
-}
-
-void drawDownloadFrame2(const char *titleID, const char *titleVer, const char *folderName, bool usbMounted, bool dlToUSB, bool keepFiles)
+void drawDownloadFrame(const char *titleID, const char *titleVer, const char *folderName, bool usbMounted, bool dlToUSB, bool keepFiles)
 {
 	startNewFrame();
 	textToFrame(0, 0, "Provided title ID [Only 16 digit hexadecimal]:");
@@ -120,42 +110,25 @@ void drawDownloadFrame2(const char *titleID, const char *titleVer, const char *f
 	drawFrame();
 }
 
-void downloadMenu()
+bool  downloadMenu()
 {
 	char titleID[17];
 	char titleVer[33];
 	char folderName[FILENAME_MAX - 11];
 	titleID[0] = titleVer[0] = folderName[0] = '\0';
 	
-	drawDownloadFrame1();
+	if(!showKeyboard(KEYBOARD_TYPE_RESTRICTED, titleID, CHECK_HEXADECIMAL, 16, true, "00050000101", NULL))
+		return false;
 	
-	while(AppRunning())
-	{
-		if(app == APP_STATE_BACKGROUND)
-			continue;
-		if(app == APP_STATE_RETURNING)
-			drawDownloadFrame1();
-		
-		showFrame();
-		
-		if(vpad.trigger & VPAD_BUTTON_A)
-		{
-			if(showKeyboard(KEYBOARD_TYPE_RESTRICTED, titleID, CHECK_HEXADECIMAL, 16, true, "00050000101", NULL))
-				 break;
-			 drawDownloadFrame1();
-		}
-		else if(vpad.trigger & VPAD_BUTTON_B)
-			return;
-	}
 	if(!AppRunning())
-		return;
+		return true;
 	
 	toLowercase(titleID);
 	
 	bool usbMounted = mountUSB();
 	bool dlToUSB = usbMounted;
 	bool keepFiles = true;
-	drawDownloadFrame2(titleID, titleVer, folderName, usbMounted, dlToUSB, keepFiles);
+	drawDownloadFrame(titleID, titleVer, folderName, usbMounted, dlToUSB, keepFiles);
 	
 	bool loop = true;
 	bool inst, toUSB;
@@ -165,12 +138,12 @@ void downloadMenu()
 		if(app == APP_STATE_BACKGROUND)
 			continue;
 		if(app == APP_STATE_RETURNING)
-			drawDownloadFrame2(titleID, titleVer, folderName, usbMounted, dlToUSB, keepFiles);
+			drawDownloadFrame(titleID, titleVer, folderName, usbMounted, dlToUSB, keepFiles);
 		
 		showFrame();
 		
 		if(vpad.trigger & VPAD_BUTTON_B)
-			return;
+			return false;
 		
 		if(usbMounted && vpad.trigger & VPAD_BUTTON_A)
 		{
@@ -230,13 +203,14 @@ void downloadMenu()
 		
 		if(redraw)
 		{
-			drawDownloadFrame2(titleID, titleVer, folderName, usbMounted, dlToUSB, keepFiles);
+			drawDownloadFrame(titleID, titleVer, folderName, usbMounted, dlToUSB, keepFiles);
 			redraw = false;
 		}
 	}
 	
 	if(!AppRunning())
-		return;
+		return true;
 	
 	downloadTitle(titleID, titleVer, folderName, inst, dlToUSB, toUSB, keepFiles);
+	return true;
 }

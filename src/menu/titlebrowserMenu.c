@@ -278,8 +278,9 @@ void titleBrowserMenu()
 		if(vpad.trigger & VPAD_BUTTON_X)
 		{
 			MEMFreeToDefaultHeap(filteredTitleEntries);
-			downloadMenu();
-			return;
+			if(downloadMenu())
+				return;
+			titleBrowserMenu();
 		}
 		if(vpad.trigger & VPAD_BUTTON_Y)
 		{
