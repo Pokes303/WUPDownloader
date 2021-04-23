@@ -24,7 +24,7 @@
 
 #include <stdbool.h>
 
-#define CONFIG_PATH "/vol/external01/NUSspli.txt"
+#define CONFIG_PATH "fs:/vol/external01/NUSspli.txt"
 #define TITLE_KEY_URL_MAX_SIZE 1024
 
 #ifdef __cplusplus

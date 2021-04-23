@@ -51,10 +51,10 @@
 
 #define UPDATE_CHECK_URL NAPI_URL "versioncheck.php"
 #define UPDATE_DL_URL NAPI_URL "dl.php?t="
-#define UPDATE_TEMP_FOLDER "/vol/external01/NUSspli_temp/"
-#define UPDATE_AROMA_FOLDER "/vol/external01/wiiu/apps/"
+#define UPDATE_TEMP_FOLDER "fs:/vol/external01/NUSspli_temp/"
+#define UPDATE_AROMA_FOLDER "fs:/vol/external01/wiiu/apps/"
 #define UPDATE_AROMA_FILE "NUSspli.wuhb"
-#define UPDATE_HBL_FOLDER "/vol/external01/wiiu/apps/NUSspli"
+#define UPDATE_HBL_FOLDER "fs:/vol/external01/wiiu/apps/NUSspli"
 #define UPDATE_ZIP_BUF (2048 << 10) // 2 MB
 
 bool updateCheck()

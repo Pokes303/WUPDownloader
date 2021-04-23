@@ -78,7 +78,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	else
 	{
 		strcpy(newPath, "/vol/app_sd");
-		strcat(newPath, path + 15);
+		strcat(newPath, path + 18);
 	}
 	
 	uint32_t info[80]; // WUT doesn't define MCPInstallInfo, so we define it like WUP Installer does, just without the malloc() nonsense. TDOD: Does it really have to be that big?

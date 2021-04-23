@@ -26,7 +26,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#define INSTALL_DIR_SD "/vol/external01/install/"
+#define INSTALL_DIR_SD "fs:/vol/external01/install/"
 #define INSTALL_DIR_USB "usb:/install/"
 
 #ifdef __cplusplus
