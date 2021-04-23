@@ -97,34 +97,39 @@ void executeIOQueue()
 		}
 	}
 	
-	if(queueEntries[asl].size != 0)
+	if(queueEntries[asl].size != 0) // WRITE command
 	{
 		size_t r = 0;
-		if(files[openFile].i + queueEntries[asl].size >= IO_MAX_FILE_BUFFER)
+		if(files[openFile].i + queueEntries[asl].size >= IO_MAX_FILE_BUFFER) // small buffer don't fit into the large buffer anymore
 		{
-			r = IO_MAX_FILE_BUFFER - files[openFile].i;
+			r = IO_MAX_FILE_BUFFER - files[openFile].i; // get free space of large buffer
 			if(r != 0)
-				OSBlockMove(files[openFile].buf + files[openFile].i, queueEntries[asl].buf, r, false);
+			{
+				OSBlockMove(files[openFile].buf + files[openFile].i, queueEntries[asl].buf, r, false); // make the large buffer full
+				queueEntries[asl].size -= r; // adjust small buffers size
+			}
 			
-			fwrite(files[openFile].buf, IO_MAX_FILE_BUFFER, 1, files[openFile].file);
-			
-			queueEntries[asl].size -= r;
-			files[openFile].i = 0;
+			fwrite(files[openFile].buf, IO_MAX_FILE_BUFFER, 1, files[openFile].file); // Write large buffer to disc
+			files[openFile].i = 0; // set large buffer as empty
 			
 			if(queueEntries[asl].size == 0)
 				goto ioQueueExitPoint;
 		}
 		
+		// Copy small buffer into large buffer but do not copy what might have been written to disc already (that's the + r)
 		OSBlockMove(files[openFile].buf + files[openFile].i, queueEntries[asl].buf + r, queueEntries[asl].size, false);
 		files[openFile].i += queueEntries[asl].size;
 	}
-	else
+	else // Close command
 	{
+		// In case there's something which needs to go to disc: Write it
 		if(files[openFile].i != 0)
 		{
 			fwrite(files[openFile].buf, files[openFile].i, 1, files[openFile].file);
 			files[openFile].i = 0;
 		}
+		
+		// Close the file
 		fclose(files[openFile].file);
 		files[openFile].file = NULL;
 	}
