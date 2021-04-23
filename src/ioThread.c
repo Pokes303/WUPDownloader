@@ -104,11 +104,14 @@ void executeIOQueue()
 		{
 			r = IO_MAX_FILE_BUFFER - files[openFile].i;
 			if(r != 0)
+			{
 				OSBlockMove(files[openFile].buf + files[openFile].i, queueEntries[asl].buf, r, false);
+				queueEntries[asl].size -= r;
+				if(queueEntries[asl].size != 0)
+					OSBlockMove(queueEntries[asl].buf, queueEntries[asl].buf + r, queueEntries[asl].size);
+			}
 			
 			fwrite(files[openFile].buf, IO_MAX_FILE_BUFFER, 1, files[openFile].file);
-			
-			queueEntries[asl].size -= r;
 			files[openFile].i = 0;
 			
 			if(queueEntries[asl].size == 0)
