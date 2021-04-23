@@ -228,9 +228,25 @@ void update(char *newVersion)
 {
 	disableShutdown();
 	removeDirectory(UPDATE_TEMP_FOLDER);
-	if(mkdir(UPDATE_TEMP_FOLDER, 777) != 0)
+	if(mkdir(UPDATE_TEMP_FOLDER, 777) == -1)
 	{
-		showUpdateError("Error creating temporary directory!");
+		int ie = errno;
+		char *toScreen = getToFrameBuffer();
+		strcpy(toScreen, "Error creating temporary directory!\n\n");
+		switch(ie)
+		{
+			case EROFS:
+				strcat(toScreen, "SD card write locked!");
+				break;
+			case FS_ERROR_MAX_FILES:
+			case FS_ERROR_MAX_DIRS:
+			case ENOSPC:
+				strcat(toScreen, "Filesystem limits reached!");
+				break;
+			default:
+				sprintf(toScreen + strlen(toScreen), "%d %s", ie, strerror(ie));
+		}
+		showUpdateError(toScreen);
 		return;
 	}
 	
