@@ -34,6 +34,7 @@
 #include <menu/update.h>
 #include <menu/utils.h>
 
+#include <coreinit/filesystem.h>
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
@@ -41,6 +42,8 @@
 
 #include <unzip.h>
 
+#include <errno.h>
+#include <file.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
