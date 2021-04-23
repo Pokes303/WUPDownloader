@@ -69,7 +69,10 @@ void executeIOQueue()
 {
 	uint32_t asl = activeWriteBuffer;
 	if(!queueEntries[asl].inUse)
+	{
+		OSSleepTicks(256);
 		return;
+	}
 	
 	int openFile = 0;
 	while(true)
