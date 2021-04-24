@@ -40,9 +40,9 @@
 
 typedef struct
 {
-	FILE *file;
-	uint8_t *buf;
-	size_t size;
+	volatile FILE *file;
+	volatile uint8_t *buf;
+	volatile size_t size;
 	volatile bool inUse;
 } WriteQueueEntry;
 
@@ -112,7 +112,7 @@ void executeIOQueue()
 				queueEntries[asl].size -= r; // adjust small buffers size
 			}
 			
-			fwrite(files[openFile].buf, IO_MAX_FILE_BUFFER, 1, files[openFile].file); // Write large buffer to disc
+			fwrite(files[openFile].buf, 1, IO_MAX_FILE_BUFFER, files[openFile].file); // Write large buffer to disc
 			files[openFile].i = 0; // set large buffer as empty
 			
 			if(queueEntries[asl].size == 0)
@@ -128,11 +128,12 @@ void executeIOQueue()
 		// In case there's something which needs to go to disc: Write it
 		if(files[openFile].i != 0)
 		{
-			fwrite(files[openFile].buf, files[openFile].i, 1, files[openFile].file);
+			fwrite(files[openFile].buf, 1, files[openFile].i, files[openFile].file);
 			files[openFile].i = 0;
 		}
 		
 		// Close the file
+		fflush(files[openFile].file);
 		fclose(files[openFile].file);
 		files[openFile].file = NULL;
 	}
@@ -266,10 +267,9 @@ retryAddingToQueue:
 			debugPrintf("size > %i (%i)", MAX_IO_BUFFER_SIZE, size);
 			ioWriteLock = false;
 			addToIOQueue(buf, 1, MAX_IO_BUFFER_SIZE, file);
-			size_t newSize = size - MAX_IO_BUFFER_SIZE;
 			const uint8_t *newPtr = buf;
-			newPtr += newSize;
-			addToIOQueue(newPtr, 1, newSize, file);
+			newPtr += MAX_IO_BUFFER_SIZE;
+			addToIOQueue((const void *)newPtr, 1, size - MAX_IO_BUFFER_SIZE, file);
 			return n;
 		}
 		
