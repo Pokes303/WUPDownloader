@@ -307,7 +307,8 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 				strcat(toScreen, "Possible not enough memory on target device");
 				break;
 			case 0xFFFFF825:
-				strcat(toScreen, "Possible bad SD card.  Reformat (32k blocks) or replace");
+			case 0xFFFFF82E:
+				strcat(toScreen, "Possible corrupted files or bad storage medium.\nTry redownloading files or reformat/replace target device");
 				break;
 			default:
 				if ((data.err & 0xFFFF0000) == 0xFFFB0000)
