@@ -46,6 +46,7 @@
 #include <backgroundMusic_mp3.h>
 #include <checkmarkTex_png.h>
 #include <flagEurTex_png.h>
+#include <flagEurUsaTex_png.h>
 #include <flagJapTex_png.h>
 #include <flagUnkTex_png.h>
 #include <flagUsaTex_png.h>
@@ -69,7 +70,7 @@ int32_t spaceWidth;
 
 GuiFrame *errorOverlay = NULL;
 GuiImageData *checkmarkData;
-GuiImageData *flagData[5];
+GuiImageData *flagData[6];
 
 #define SSAA 8
 
@@ -255,8 +256,10 @@ GuiImageData *getFlagData(TITLE_REGION flag)
 			return flagData[2];
 		case TITLE_REGION_JAP:
 			return flagData[3];
-		default:
+		case TITLE_REGION_EUR | TITLE_REGION_USA:
 			return flagData[4];
+		default:
+			return flagData[5];
 	}
 }
 
@@ -385,6 +388,10 @@ void initRenderer()
 				size = flagJapTex_png_size;
 				break;
 			case 4:
+				tex = flagEurUsaTex_png;
+				size = flagEurUsaTex_png_size;
+				break;
+			case 5:
 				tex = flagUnkTex_png;
 				size = flagUnkTex_png_size;
 				break;
@@ -438,7 +445,7 @@ void shutdownRenderer()
 	delete bye;
 	delete byeData;
 	delete checkmarkData;
-	for(int i = 0; i < 5; i++)
+	for(int i = 0; i < 6; i++)
 		delete flagData[i];
 	
 	libgui_memoryRelease();

@@ -265,6 +265,7 @@ bool initTitles()
 	titleEntries = 0;
 	uint64_t tid;
 	char *rgn;
+	bool cont;
 	cJSON_ArrayForEach(curr[0], json)
 	{
 		i = atoi(curr[0]->string);
@@ -296,12 +297,26 @@ bool initTitles()
 			{
 				titleEntry[titleEntries].region = TITLE_REGION_UNKNOWN;
 				
-				if(strcmp(rgn, "EUR") == 0)
-					titleEntry[titleEntries].region |= TITLE_REGION_EUR;
-				if(strcmp(rgn, "USA") == 0)
-					titleEntry[titleEntries].region |= TITLE_REGION_USA;
-				if(strcmp(rgn, "JPN") == 0)
-					titleEntry[titleEntries].region |= TITLE_REGION_JAP;
+				cont = true;
+				while(strlen(rgn) > 2)
+				{
+					if(rgn[3] != '\0')
+						rgn[3] = '\0';
+					else
+						cont = false;
+					
+					if(strcmp(rgn, "EUR") == 0)
+						titleEntry[titleEntries].region |= TITLE_REGION_EUR;
+					if(strcmp(rgn, "USA") == 0)
+						titleEntry[titleEntries].region |= TITLE_REGION_USA;
+					if(strcmp(rgn, "JPN") == 0)
+						titleEntry[titleEntries].region |= TITLE_REGION_JAP;
+					
+					if(cont)
+						rgn += 4;
+					else
+						break;
+				}
 			}
 			
 			tid = retransformTidHigh(i);
