@@ -20,6 +20,7 @@
 
 #include <wut-fixups.h>
 
+#include <deinstaller.h>
 #include <downloader.h>
 #include <input.h>
 #include <renderer.h>
@@ -46,7 +47,7 @@ TitleEntry *titleEntrys;
 TitleEntry *filteredTitleEntries;
 size_t filteredTitleEntrySize;
 
-void drawTBMenuFrame2(const TitleEntry *entry, const char *folderName, bool usbMounted, bool dlToUSB, bool keepFiles)
+void drawTBMenuFrame2(const TitleEntry *entry, bool installed, const char *folderName, bool usbMounted, bool dlToUSB, bool keepFiles)
 {
 	startNewFrame();
 	textToFrame(0, 0, "Name:");
@@ -103,6 +104,10 @@ void drawTBMenuFrame2(const TitleEntry *entry, const char *folderName, bool usbM
 	textToFrame(line--, 0, "Press \uE002 to install to NAND");
 	if(usbMounted)
 		textToFrame(line--, 0, "Press \uE000 to install to USB");
+	
+	if(installed)
+		textToFrame(line--, 0, "Press \uE07D to uninstall");
+	
 	lineToFrame(line--, SCREEN_COLOR_WHITE);
 	
 	if(!dlToUSB)
@@ -297,23 +302,26 @@ void titleBrowserMenu()
 		return;
 	}
 	
+	MCPTitleListType titleList;
+	bool installed = MCP_GetTitleInfo(mcpHandle, entry->tid, &titleList) == 0;
 	bool usbMounted = mountUSB();
 	bool dlToUSB = usbMounted;
 	bool keepFiles = true;
 	char folderName[FILENAME_MAX - 11];
 	folderName[0] = '\0';
 	
-	drawTBMenuFrame2(entry, folderName, usbMounted, dlToUSB, keepFiles);
+	drawTBMenuFrame2(entry, installed, folderName, usbMounted, dlToUSB, keepFiles);
 	
 	bool loop = true;
 	bool inst, toUSB;
+	bool uninstall = false;
 	redraw = false;
 	while(loop && AppRunning())
 	{
 		if(app == APP_STATE_BACKGROUND)
 			continue;
 		if(app == APP_STATE_RETURNING)
-			drawTBMenuFrame2(entry, folderName, usbMounted, dlToUSB, keepFiles);
+			drawTBMenuFrame2(entry, installed, folderName, usbMounted, dlToUSB, keepFiles);
 		
 		showFrame();
 		
@@ -354,29 +362,35 @@ void titleBrowserMenu()
 			vibrateWhenFinished2 = !vibrateWhenFinished2;
 			redraw = true;
 		}
-		if(vpad.trigger & VPAD_BUTTON_LEFT)
+		if(!dlToUSB && vpad.trigger & VPAD_BUTTON_LEFT)
 		{
-			if(!dlToUSB)
-			{
-				keepFiles = !keepFiles;
-				redraw = true;
-			}
+			keepFiles = !keepFiles;
+			redraw = true;
+		}
+		if(installed && vpad.trigger & VPAD_BUTTON_UP)
+		{
+			uninstall = true;
+			redraw = loop = false;
 		}
 		
 		if(redraw)
 		{
-			drawTBMenuFrame2(entry, folderName, usbMounted, dlToUSB, keepFiles);
+			drawTBMenuFrame2(entry, installed, folderName, usbMounted, dlToUSB, keepFiles);
 			redraw = false;
 		}
 	}
+	
+	MEMFreeToDefaultHeap(filteredTitleEntries);
 	if(!AppRunning())
+		return;
+	
+	if(uninstall)
 	{
-		MEMFreeToDefaultHeap(filteredTitleEntries);
+		deinstall(titleList);
 		return;
 	}
 	
-	char *tid = hex(entry->tid, 16);
-	MEMFreeToDefaultHeap(filteredTitleEntries);
+	char *tid = hex(titleList.titleId, 16);
 	if(tid != NULL)
 	{
 		downloadTitle(tid, "\0", folderName, inst, dlToUSB, toUSB, keepFiles);
