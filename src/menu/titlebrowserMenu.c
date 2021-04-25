@@ -254,15 +254,18 @@ void titleBrowserMenu()
 			if(vpad.trigger & VPAD_BUTTON_RIGHT)
 			{
 				pos += MAX_TITLEBROWSER_LINES;
-				if(pos > filteredTitleEntrySize - MAX_TITLEBROWSER_LINES)
+				if(pos >= filteredTitleEntrySize - MAX_TITLEBROWSER_LINES)
 					pos = 0;
+				cursor = 0;
 				redraw = true;
 			}
 			else if(vpad.trigger & VPAD_BUTTON_LEFT)
 			{
-				pos -= MAX_TITLEBROWSER_LINES;
-				if(pos > filteredTitleEntrySize - MAX_TITLEBROWSER_LINES) //TODO
+				if(pos >= MAX_TITLEBROWSER_LINES)
+					pos -= MAX_TITLEBROWSER_LINES;
+				else
 					pos = filteredTitleEntrySize - MAX_TITLEBROWSER_LINES;
+				cursor = 0;
 				redraw = true;
 			}
 		}
