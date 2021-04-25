@@ -154,21 +154,20 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor, const char* search)
 			filteredTitleEntries[i] = titleEntrys[i];
 	
 	size_t max = MAX_TITLEBROWSER_LINES < filteredTitleEntrySize ? MAX_TITLEBROWSER_LINES : filteredTitleEntrySize;
-	char *toFrame = getToFrameBuffer();
-	size_t j;
+	size_t j, l;
 	MCPTitleListType titleList;
 	for(size_t i = 0; i < max; i++)
 	{
-		j = i + pos;
-		
-		flagToFrame(i + 2, 11, filteredTitleEntries[j].region);
-		textToFrame(i + 2, 15, filteredTitleEntries[j].name);
-		
+		l = i + 2;
 		if(cursor == i)
-			arrowToFrame(i + 2, 1);
+			arrowToFrame(l, 1);
 		
+		j = i + pos;
 		if(MCP_GetTitleInfo(mcpHandle, filteredTitleEntries[j].tid, &titleList) == 0)
-			checkmarkToFrame(i + 2, 7);
+			checkmarkToFrame(l, 7);
+		
+		flagToFrame(l, 11, filteredTitleEntries[j].region);
+		textToFrame(l, 15, filteredTitleEntries[j].name);
 	}
 	drawFrame();
 }
