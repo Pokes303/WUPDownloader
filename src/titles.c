@@ -213,7 +213,7 @@ bool initTitles()
 				continue;
 			
 			curr[2] = cJSON_GetArrayItem(curr[1], 0);
-			size = strlen(curr[2]->valuestring) + 1;
+			size = strlen(curr[2]->valuestring) + strlen(cJSON_GetArrayItem(curr[1], 1)->valuestring) + 2;
 			if(size > 128)
 			{
 				debugPrintf("Too long title name detected!");
@@ -227,7 +227,7 @@ bool initTitles()
 			if(j > titleSizes[i])
 				titleSizes[i] = j;
 			
-			ma += size + 32;
+			ma += size;
 			titleEntries++;
 		}
 		
@@ -264,6 +264,7 @@ bool initTitles()
 	char *ptr = titleMemArea;
 	titleEntries = 0;
 	uint64_t tid;
+	char *rgn;
 	cJSON_ArrayForEach(curr[0], json)
 	{
 		i = atoi(curr[0]->string);
@@ -288,9 +289,10 @@ bool initTitles()
 			titleNames[i][j] = titleEntry[titleEntries].name = ptr;
 			ptr += size;
 			
-			strcpy(ptr, cJSON_GetArrayItem(curr[1], 1)->valuestring);
+			rgn = cJSON_GetArrayItem(curr[1], 1)->valuestring;
+			strcpy(ptr, rgn);
 			titleEntry[titleEntries].region = ptr;
-			ptr += 32;
+			ptr += strlen(rgn) + 1;
 			
 			tid = retransformTidHigh(i);
 			tid <<= 32;
