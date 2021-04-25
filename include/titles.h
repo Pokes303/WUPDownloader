@@ -44,11 +44,20 @@ typedef enum
 	TID_HIGH_UPDATE =			0x0005000E,
 } TID_HIGH;
 
+typedef enum
+{
+	TITLE_REGION_UNKNOWN =	0,
+	TITLE_REGION_EUR = 	1,
+	TITLE_REGION_USA = 	1 << 1,
+	TITLE_REGION_JAP = 	1 << 2,
+	TITLE_REGION_ALL =	TITLE_REGION_EUR | TITLE_REGION_USA | TITLE_REGION_JAP,
+} TITLE_REGION;
+
 typedef struct
 {
 	char *name;
 	uint64_t tid;
-	char *region;
+	TITLE_REGION region;
 } TitleEntry;
 
 TitleEntry *getTitleEntries();

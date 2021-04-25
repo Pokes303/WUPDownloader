@@ -45,6 +45,10 @@
 
 #include <backgroundMusic_mp3.h>
 #include <checkmarkTex_png.h>
+#include <flagEurTex_png.h>
+#include <flagJapTex_png.h>
+#include <flagUnkTex_png.h>
+#include <flagUsaTex_png.h>
 #include <goodbyeTex_png.h>
 #include <input.h>
 #include <renderer.h>
@@ -65,6 +69,7 @@ int32_t spaceWidth;
 
 GuiFrame *errorOverlay = NULL;
 GuiImageData *checkmarkData;
+GuiImageData *flagData[5];
 
 #define SSAA 8
 
@@ -238,6 +243,36 @@ void checkmarkToFrame(int line, int column)
 	window->append(checkmark);
 }
 
+GuiImageData *getFlagData(TITLE_REGION flag)
+{
+	switch(flag)
+	{
+		case TITLE_REGION_ALL:
+			return flagData[0];
+		case TITLE_REGION_EUR:
+			return flagData[1];
+		case TITLE_REGION_USA:
+			return flagData[2];
+		case TITLE_REGION_JAP:
+			return flagData[3];
+		default:
+			return flagData[4];
+	}
+}
+
+void flagToFrame(int line, int column, TITLE_REGION flag)
+{
+	line += 1;
+	line *= -FONT_SIZE;
+	column *= spaceWidth;
+	column += spaceWidth >> 1;
+	
+	GuiImage *image = new GuiImage(getFlagData(flag));
+	image->setAlignment(ALIGN_TOP_LEFT);
+	image->setPosition(column + FONT_SIZE, line);
+	window->append(image);
+}
+
 void addErrorOverlay(const char *err)
 {
 	if(!rendererRunning)
@@ -316,18 +351,48 @@ void initRenderer()
 	window = new GuiFrame(width, height);
 	
 	FT_Bytes ttf;
-	size_t ttfSize;
-	OSGetSharedData(OS_SHAREDDATATYPE_FONT_STANDARD, 0, (void **)&ttf, &ttfSize);
-	font = new FreeTypeGX(ttf, ttfSize);
+	size_t size;
+	OSGetSharedData(OS_SHAREDDATATYPE_FONT_STANDARD, 0, (void **)&ttf, &size);
+	font = new FreeTypeGX(ttf, size);
 	spaceWidth = font->getCharWidth(L' ', FONT_SIZE);
 	
 	GuiText::setPresets(FONT_SIZE, glm::vec4({1.0f}), width - (FONT_SIZE << 1), ALIGN_TOP_LEFT, SSAA);
 	GuiText::setPresetFont(font);
 	
 	background = new GuiImage(width, height, screenColorToGX2color(bgColor), GuiImage::IMAGE_COLOR);
-	rendererRunning = true;
 	
 	checkmarkData = new GuiImageData(checkmarkTex_png, checkmarkTex_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
+	
+	const uint8_t *tex;
+	for(int i = 0; i < 5; i++)
+	{
+		switch(i)
+		{
+			case 0:
+				tex = checkmarkTex_png;
+				size = checkmarkTex_png_size;
+				break;
+			case 1:
+				tex = flagEurTex_png;
+				size = flagEurTex_png_size;
+				break;
+			case 2:
+				tex = flagUsaTex_png;
+				size = flagUsaTex_png_size;
+				break;
+			case 3:
+				tex = flagJapTex_png;
+				size = flagJapTex_png_size;
+				break;
+			case 4:
+				tex = flagUnkTex_png;
+				size = flagUnkTex_png_size;
+				break;
+		}
+		flagData[i] = new GuiImageData(tex, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
+	}
+	
+	rendererRunning = true;
 	
 	addToScreenLog("libgui initialized!");
 	startNewFrame();
@@ -373,6 +438,8 @@ void shutdownRenderer()
 	delete bye;
 	delete byeData;
 	delete checkmarkData;
+	for(int i = 0; i < 5; i++)
+		delete flagData[i];
 	
 	libgui_memoryRelease();
 	bgColor = SCREEN_COLOR_BLACK;

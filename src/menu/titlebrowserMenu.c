@@ -161,17 +161,9 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor, const char* search)
 	{
 		j = i + pos;
 		
-		if(filteredTitleEntries[j].region != NULL)
-		{
-			toFrame[0] = '[';
-			strcpy(toFrame + 1, filteredTitleEntries[j].region);
-			strcat(toFrame, "] ");
-			strcat(toFrame, filteredTitleEntries[j].name);
-		}
-		else
-			strcpy(toFrame, filteredTitleEntries[j].name);
+		flagToFrame(i + 2, 11, filteredTitleEntries[j].region);
+		textToFrame(i + 2, 15, filteredTitleEntries[j].name);
 		
-		textToFrame(i + 2, 11, toFrame);
 		if(cursor == i)
 			arrowToFrame(i + 2, 1);
 		

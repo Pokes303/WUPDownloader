@@ -213,7 +213,7 @@ bool initTitles()
 				continue;
 			
 			curr[2] = cJSON_GetArrayItem(curr[1], 0);
-			size = strlen(curr[2]->valuestring) + strlen(cJSON_GetArrayItem(curr[1], 1)->valuestring) + 2;
+			size = strlen(curr[2]->valuestring) + 1;
 			if(size > 128)
 			{
 				debugPrintf("Too long title name detected!");
@@ -290,9 +290,19 @@ bool initTitles()
 			ptr += size;
 			
 			rgn = cJSON_GetArrayItem(curr[1], 1)->valuestring;
-			strcpy(ptr, rgn);
-			titleEntry[titleEntries].region = ptr;
-			ptr += strlen(rgn) + 1;
+			if(strcmp(rgn, "ALL") == 0)
+				titleEntry[titleEntries].region = TITLE_REGION_ALL;
+			else
+			{
+				titleEntry[titleEntries].region = TITLE_REGION_UNKNOWN;
+				
+				if(strcmp(rgn, "EUR") == 0)
+					titleEntry[titleEntries].region |= TITLE_REGION_EUR;
+				if(strcmp(rgn, "USA") == 0)
+					titleEntry[titleEntries].region |= TITLE_REGION_USA;
+				if(strcmp(rgn, "JPN") == 0)
+					titleEntry[titleEntries].region |= TITLE_REGION_JAP;
+			}
 			
 			tid = retransformTidHigh(i);
 			tid <<= 32;
