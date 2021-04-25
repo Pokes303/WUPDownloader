@@ -105,7 +105,7 @@ void drawDownloadFrame(const char *titleID, const char *titleVer, const char *fo
 	lineToFrame(line--, SCREEN_COLOR_WHITE);
 	
 	if(!dlToUSB)
-		textToFrame(--line, 0, "WARNING: Downloading to SD is so slow that it's able to trigger network timeouts!");
+		textToFrame(--line, 0, "WARNING: Downloading to SD is slow!");
 	
 	drawFrame();
 }
