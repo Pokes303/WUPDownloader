@@ -43,6 +43,13 @@
 #include <utils.h>
 #include <menu/utils.h>
 
+static volatile bool deinstallFinished;
+
+static void deinstallerCallback(IOSError err, void *rawData)
+{
+	deinstallFinished = true;
+}
+
 bool deinstall(MCPTitleListType title)
 {
 	char *tids = hex(title.titleId, 16);
@@ -61,11 +68,14 @@ bool deinstall(MCPTitleListType title)
 	showFrame();
 	
 	MCPInstallTitleInfo info;
+	*(uint32_t *)&info = (uint32_t)deinstallerCallback;
+	
 	unmountUSB();
 	disableShutdown();
 	//err = MCP_UninstallTitleAsync(mcpHandle, title.path, &info);
 	// The above crashes MCP, so let's leave WUT:
 	debugPrintf("Deleting %s", title.path);
+	deinstallFinished = false;
 	MCPError err = MCP_DeleteTitleAsync(mcpHandle, title.path, &info);
 	if(err != 0)
 	{
@@ -73,9 +83,8 @@ bool deinstall(MCPTitleListType title)
 		return false;
 	}
 	
-	bool a, b;
 	char wait[] = "Please wait...";
-	do
+	while(!deinstallFinished)
 	{
 		startNewFrame();
 		textToFrame(0, 0, "Uninstalling");
@@ -84,8 +93,6 @@ bool deinstall(MCPTitleListType title)
 		writeScreenLog();
 		drawFrame();
 		showFrame();
-		
-	//	OSSleepTicks(OSSecondsToTicks(2));
 		
 		switch(strlen(wait))
 		{
@@ -103,11 +110,9 @@ bool deinstall(MCPTitleListType title)
 				break;
 		}
 		
-		a = MCP_DeleteTitleDoneAsync(mcpHandle, &b);
-		debugPrintf("MCP_DeleteTitleDoneAsync: %s / %s", a ? "true" : "false", b ? "true" : "false");
+		OSSleepTicks(OSSecondsToTicks(1));
 	}
-	while(!a || !b);
-	debugPrintf("Dpne!");
+	debugPrintf("Done!");
 	
 	enableShutdown();
 	startRumble();
