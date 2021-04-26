@@ -66,13 +66,13 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		strcat(newPath, path + 18);
 	}
 	
-	uint32_t info[80]; // WUT doesn't define MCPInstallInfo, so we define it like WUP Installer does, just without the malloc() nonsense. TDOD: Does it really have to be that big?
+	MCPInstallTitleInfo info;
 	McpData data;
 	
 	unmountUSB(); // Get MCP ready
 	
 	// Let's see if MCP is able to parse the TMD...
-	data.err = MCP_InstallGetInfo(mcpHandle, newPath, (MCPInstallInfo *)info);
+	data.err = MCP_InstallGetInfo(mcpHandle, newPath, (MCPInstallInfo *)&info);
 	if(data.err != 0)
 	{
 		char toScreen[2048];
@@ -137,8 +137,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	
 	// Last prepairing step...
 	disableShutdown();
-	MCPInstallTitleInfo inf;
-	initMCPInstallTitleInfo(&inf, &data);
+	initMCPInstallTitleInfo(&info, &data);
 	MCPInstallProgress *progress = MEMAllocFromDefaultHeapEx(sizeof(MCPInstallProgress), 0x40);
 	if(progress == NULL)
 	{
@@ -161,7 +160,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	flushIOQueue(); // Make sure all game files are on disc
 	
 	// Start the installation process
-	err = MCP_InstallTitleAsync(mcpHandle, newPath, &inf);
+	err = MCP_InstallTitleAsync(mcpHandle, newPath, &info);
 	
 	if(err != 0)
 	{
