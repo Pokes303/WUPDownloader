@@ -140,7 +140,6 @@ static void mcpCallback(MCPError err, void *rawData)
 void initMCPInstallTitleInfo(MCPInstallTitleInfo *info, McpData *data)
 {
 	data->processing = true;
-	OSBlockSet(info, 0, sizeof(MCPInstallTitleInfo));
 	uint32_t *ptr = (uint32_t *)info;
 	*ptr = (uint32_t)mcpCallback;
 	ptr++;
