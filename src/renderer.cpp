@@ -43,16 +43,16 @@
 #include <string>
 #include <wchar.h>
 
-#include <arrowTex_png.h>
+#include <arrow_png.h>
 #include <backgroundMusic_mp3.h>
-#include <checkmarkTex_png.h>
-#include <flagEurTex_png.h>
-#include <flagEurUsaTex_png.h>
-#include <flagJapTex_png.h>
-#include <flagMultiTex_png.h>
-#include <flagUnkTex_png.h>
-#include <flagUsaTex_png.h>
-#include <goodbyeTex_png.h>
+#include <checkmark_png.h>
+#include <flagEur_png.h>
+#include <flagEurUsa_png.h>
+#include <flagJap_png.h>
+#include <flagMulti_png.h>
+#include <flagUnk_png.h>
+#include <flagUsa_png.h>
+#include <goodbye_png.h>
 #include <input.h>
 #include <renderer.h>
 #include <swkbd_wrapper.h>
@@ -361,8 +361,8 @@ void initRenderer()
 	
 	background = new GuiImage(width, height, screenColorToGX2color(bgColor), GuiImage::IMAGE_COLOR);
 	
-	arrowData = new GuiImageData(arrowTex_png, arrowTex_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
-	checkmarkData = new GuiImageData(checkmarkTex_png, checkmarkTex_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
+	arrowData = new GuiImageData(arrow_png, arrow_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
+	checkmarkData = new GuiImageData(checkmark_png, checkmark_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
 	
 	const uint8_t *tex;
 	for(int i = 0; i < 5; i++)
@@ -370,28 +370,28 @@ void initRenderer()
 		switch(i)
 		{
 			case 0:
-				tex = flagMultiTex_png;
-				size = flagMultiTex_png_size;
+				tex = flagMulti_png;
+				size = flagMulti_png_size;
 				break;
 			case 1:
-				tex = flagEurTex_png;
-				size = flagEurTex_png_size;
+				tex = flagEur_png;
+				size = flagEur_png_size;
 				break;
 			case 2:
-				tex = flagUsaTex_png;
-				size = flagUsaTex_png_size;
+				tex = flagUsa_png;
+				size = flagUsa_png_size;
 				break;
 			case 3:
-				tex = flagJapTex_png;
-				size = flagJapTex_png_size;
+				tex = flagJap_png;
+				size = flagJap_png_size;
 				break;
 			case 4:
-				tex = flagEurUsaTex_png;
-				size = flagEurUsaTex_png_size;
+				tex = flagEurUsa_png;
+				size = flagEurUsa_png_size;
 				break;
 			case 5:
-				tex = flagUnkTex_png;
-				size = flagUnkTex_png_size;
+				tex = flagUnk_png;
+				size = flagUnk_png_size;
 				break;
 		}
 		flagData[i] = new GuiImageData(tex, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
@@ -426,7 +426,7 @@ void shutdownRenderer()
 	
 	colorStartNewFrame(SCREEN_COLOR_BLUE);
 	
-	GuiImageData *byeData = new GuiImageData(goodbyeTex_png, goodbyeTex_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
+	GuiImageData *byeData = new GuiImageData(goodbye_png, goodbye_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
 	GuiImage *bye = new GuiImage(byeData);
 	window->append(bye);
 	
