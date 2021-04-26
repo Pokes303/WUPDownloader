@@ -31,10 +31,11 @@
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
 
+#include <deinstaller.h>
 #include <file.h>
 #include <input.h>
-#include <installer.h>
 #include <ioThread.h>
+#include <osdefs.h>
 #include <renderer.h>
 #include <rumbleThread.h>
 #include <status.h>
@@ -42,24 +43,9 @@
 #include <utils.h>
 #include <menu/utils.h>
 
-// A struct to pass data between the install function and the callback
-typedef struct
-{
-	bool processing;
-	MCPError err;
-} McpInstallationData;
-
-// The callback function. It tells the install function that installation finished and passes the error code (if any)
-static void mcpCallback(IOSError err, void *rawData)
-{
-	McpInstallationData *data = (McpInstallationData *)rawData;
-    data->err = (MCPError)err;
-    data->processing = false;
-}
-
 bool deinstall(MCPTitleListType title)
 {
-	char *tids = hex(title->titleId, 64);
+	char *tids = hex(title.titleId, 16);
 	if(tids == NULL)
 		return false;
 	
@@ -68,17 +54,18 @@ bool deinstall(MCPTitleListType title)
 	
 	startNewFrame();
 	textToFrame(0, 0, "Uninstalling");
-	textToFrame(0, 11, game);
-	barToFrame(1, 0, 40, 0);
-	textToFrame(1, 41, "Preparing...");
+	textToFrame(0, 19, game);
+	textToFrame(1, 0, "Preparing...");
 	writeScreenLog();
 	drawFrame();
 	showFrame();
 	
 	MCPInstallTitleInfo info;
 	unmountUSB();
+	disableShutdown();
 	//err = MCP_UninstallTitleAsync(mcpHandle, title.path, &info);
 	// The above crashes MCP, so let's leave WUT:
+	debugPrintf("Deleting %s", title.path);
 	MCPError err = MCP_DeleteTitleAsync(mcpHandle, title.path, &info);
 	if(err != 0)
 	{
@@ -86,14 +73,43 @@ bool deinstall(MCPTitleListType title)
 		return false;
 	}
 	
+	bool a, b;
+	char wait[] = "Please wait...";
 	do
 	{
-		OSSleepTicks(OSMillisecondsToTicks(100));
-		err = MCP_DeleteTitleDoneAsync(mcpHandle, &info);
-		debugPrintf("Err2: %#010x (%d)", err, err);
+		startNewFrame();
+		textToFrame(0, 0, "Uninstalling");
+		textToFrame(0, 19, game);
+		textToFrame(1, 0, wait);
+		writeScreenLog();
+		drawFrame();
+		showFrame();
+		
+	//	OSSleepTicks(OSSecondsToTicks(2));
+		
+		switch(strlen(wait))
+		{
+			case 11:
+				wait[11] = '.';
+				break;
+			case 12:
+				wait[12] = '.';
+				break;
+			case 13:
+				wait[13] = '.';
+				break;
+			case 14:
+				wait[11] = wait[12] = wait[13] = '\0';
+				break;
+		}
+		
+		a = MCP_DeleteTitleDoneAsync(mcpHandle, &b);
+		debugPrintf("MCP_DeleteTitleDoneAsync: %s / %s", a ? "true" : "false", b ? "true" : "false");
 	}
-	while(err != 0)
+	while(!a || !b);
+	debugPrintf("Dpne!");
 	
+	enableShutdown();
 	startRumble();
 	
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
@@ -110,7 +126,7 @@ bool deinstall(MCPTitleListType title)
 		{
 			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 			textToFrame(0, 0, game);
-			textToFrame(1, 0, "Installed successfully!");
+			textToFrame(1, 0, "Uninstalled successfully!");
 			writeScreenLog();
 			drawFrame();
 		}

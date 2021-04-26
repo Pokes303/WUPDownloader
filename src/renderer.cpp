@@ -43,6 +43,7 @@
 #include <string>
 #include <wchar.h>
 
+#include <arrowTex_png.h>
 #include <backgroundMusic_mp3.h>
 #include <checkmarkTex_png.h>
 #include <flagEurTex_png.h>
@@ -70,6 +71,7 @@ bool rendererRunning = false;
 int32_t spaceWidth;
 
 GuiFrame *errorOverlay = NULL;
+GuiImageData *arrowData;
 GuiImageData *checkmarkData;
 GuiImageData *flagData[6];
 
@@ -215,20 +217,14 @@ void barToFrame(int line, int column, uint32_t width, float progress)
 
 void arrowToFrame(int line, int column)
 {
-	if(!rendererRunning)
-		return;
-	
-	line += 3;
+	line += 1;
 	line *= -FONT_SIZE;
-	line += 0.25F * FONT_SIZE;
-	
-	GuiText *arrow = new GuiText("\u261E");
-	
 	column *= spaceWidth;
-	arrow->setFontSize(FONT_SIZE << 1);
-	arrow->setPosition(column + FONT_SIZE, line);
-	arrow->setMaxWidth(width - column, GuiText::DOTTED);
+	column += spaceWidth;
 	
+	GuiImage *arrow = new GuiImage(arrowData);
+	arrow->setAlignment(ALIGN_TOP_LEFT);
+	arrow->setPosition(column + FONT_SIZE, line);
 	window->append(arrow);
 }
 
@@ -365,6 +361,7 @@ void initRenderer()
 	
 	background = new GuiImage(width, height, screenColorToGX2color(bgColor), GuiImage::IMAGE_COLOR);
 	
+	arrowData = new GuiImageData(arrowTex_png, arrowTex_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
 	checkmarkData = new GuiImageData(checkmarkTex_png, checkmarkTex_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
 	
 	const uint8_t *tex;
@@ -445,6 +442,7 @@ void shutdownRenderer()
 	delete font;
 	delete bye;
 	delete byeData;
+	delete arrowData;
 	delete checkmarkData;
 	for(int i = 0; i < 6; i++)
 		delete flagData[i];

@@ -106,7 +106,7 @@ void drawTBMenuFrame2(const TitleEntry *entry, bool installed, const char *folde
 		textToFrame(line--, 0, "Press \uE000 to install to USB");
 	
 	if(installed)
-		textToFrame(line--, 0, "Press \uE07D to uninstall");
+		textToFrame(line--, 0, "Press \uE079 to uninstall");
 	
 	lineToFrame(line--, SCREEN_COLOR_WHITE);
 	
@@ -169,10 +169,10 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor, const char* search)
 		
 		j = i + pos;
 		if(MCP_GetTitleInfo(mcpHandle, filteredTitleEntries[j].tid, &titleList) == 0)
-			checkmarkToFrame(l, 7);
+			checkmarkToFrame(l, 5);
 		
-		flagToFrame(l, 11, filteredTitleEntries[j].region);
-		textToFrame(l, 15, filteredTitleEntries[j].name);
+		flagToFrame(l, 9, filteredTitleEntries[j].region);
+		textToFrame(l, 13, filteredTitleEntries[j].name);
 	}
 	drawFrame();
 }
@@ -304,6 +304,9 @@ void titleBrowserMenu()
 	
 	MCPTitleListType titleList;
 	bool installed = MCP_GetTitleInfo(mcpHandle, entry->tid, &titleList) == 0;
+	if(!installed)
+		titleList.titleId = entry->tid;
+	
 	bool usbMounted = mountUSB();
 	bool dlToUSB = usbMounted;
 	bool keepFiles = true;
