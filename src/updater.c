@@ -20,6 +20,7 @@
 #include <wut-fixups.h>
 
 #include <config.h>
+#include <deinstaller.h>
 #include <downloader.h>
 #include <file.h>
 #include <input.h>
@@ -413,15 +414,7 @@ void update(char *newVersion)
 			return;
 		}
 		
-		MCPInstallTitleInfo info;
-		//err = MCP_UninstallTitleAsync(mcpHandle, ownInfo.path, &info);
-		// The above crashes MCP, so let's leave WUT:
-		err = MCP_DeleteTitleAsync(mcpHandle, ownInfo.path, &info);
-		if(err != 0)
-		{
-			showUpdateErrorf("Error uninstalling: %#010x", err);
-			return;
-		}
+		deinstall(ownInfo, false);
 		
 		if(isAroma())
 			goto aromaInstallation;

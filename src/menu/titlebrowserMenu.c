@@ -389,7 +389,7 @@ void titleBrowserMenu()
 	
 	if(uninstall)
 	{
-		deinstall(titleList);
+		deinstall(titleList, true);
 		return;
 	}
 	

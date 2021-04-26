@@ -50,7 +50,7 @@ static void deinstallerCallback(IOSError err, void *rawData)
 	deinstallFinished = true;
 }
 
-bool deinstall(MCPTitleListType title)
+bool deinstall(MCPTitleListType title, bool showFinishScreen)
 {
 	char *tids = hex(title.titleId, 16);
 	if(tids == NULL)
@@ -71,7 +71,8 @@ bool deinstall(MCPTitleListType title)
 	*(uint32_t *)&info = (uint32_t)deinstallerCallback;
 	
 	unmountUSB();
-	disableShutdown();
+	if(showFinishScreen)
+		disableShutdown();
 	//err = MCP_UninstallTitleAsync(mcpHandle, title.path, &info);
 	// The above crashes MCP, so let's leave WUT:
 	debugPrintf("Deleting %s", title.path);
@@ -80,6 +81,8 @@ bool deinstall(MCPTitleListType title)
 	if(err != 0)
 	{
 		debugPrintf("Err1: %#010x (%d)", err, err);
+		if(showFinishScreen)
+			enableShutdown();
 		return false;
 	}
 	
@@ -122,6 +125,9 @@ bool deinstall(MCPTitleListType title)
 	textToFrame(1, 0, "Uninstalled successfully!");
 	writeScreenLog();
 	drawFrame();
+	
+	if(!showFinishScreen)
+		return true;
 	
 	while(AppRunning())
 	{
