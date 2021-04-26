@@ -43,13 +43,6 @@
 #include <utils.h>
 #include <menu/utils.h>
 
-static volatile bool deinstallFinished;
-
-static void deinstallerCallback(IOSError err, void *rawData)
-{
-	deinstallFinished = true;
-}
-
 bool deinstall(MCPTitleListType title, bool showFinishScreen)
 {
 	char *tids = hex(title.titleId, 16);
@@ -67,8 +60,9 @@ bool deinstall(MCPTitleListType title, bool showFinishScreen)
 	drawFrame();
 	showFrame();
 	
+	McpData data;
 	MCPInstallTitleInfo info;
-	*(uint32_t *)&info = (uint32_t)deinstallerCallback;
+	initMCPInstallTitleInfo(&info, &data);
 	
 	unmountUSB();
 	if(showFinishScreen)
@@ -76,7 +70,6 @@ bool deinstall(MCPTitleListType title, bool showFinishScreen)
 	//err = MCP_UninstallTitleAsync(mcpHandle, title.path, &info);
 	// The above crashes MCP, so let's leave WUT:
 	debugPrintf("Deleting %s", title.path);
-	deinstallFinished = false;
 	MCPError err = MCP_DeleteTitleAsync(mcpHandle, title.path, &info);
 	if(err != 0)
 	{
@@ -87,7 +80,7 @@ bool deinstall(MCPTitleListType title, bool showFinishScreen)
 	}
 	
 	char wait[] = "Please wait...";
-	while(!deinstallFinished)
+	while(data.processing)
 	{
 		startNewFrame();
 		textToFrame(0, 0, "Uninstalling");

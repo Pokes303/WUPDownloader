@@ -130,6 +130,23 @@ void hexToByte(const char *hex, uint8_t *out)
 		out[i] = charToByte(*hex++) << 4;
 }
 
+static void mcpCallback(MCPError err, void *rawData)
+{
+	McpData *data = (McpData *)rawData;
+	data->err = err;
+	data->processing = false;
+}
+
+void initMCPInstallTitleInfo(MCPInstallTitleInfo *info, McpData *data)
+{
+	data->processing = true;
+	OSBlockSet(info, 0, sizeof(MCPInstallTitleInfo));
+	uint32_t *ptr = (uint32_t *)info;
+	*ptr = (uint32_t)mcpCallback;
+	ptr++;
+	*ptr = (uint32_t)data;
+}
+
 #ifdef NUSSPLI_DEBUG
 
 #include <stdarg.h>

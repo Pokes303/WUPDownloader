@@ -42,21 +42,6 @@
 #include <utils.h>
 #include <menu/utils.h>
 
-// A struct to pass data between the install function and the callback
-typedef struct
-{
-	bool processing;
-	MCPError err;
-} McpInstallationData;
-
-// The callback function. It tells the install function that installation finished and passes the error code (if any)
-static void mcpCallback(IOSError err, void *rawData)
-{
-	McpInstallationData *data = (McpInstallationData *)rawData;
-    data->err = (MCPError)err;
-    data->processing = false;
-}
-
 bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, bool toUsb, bool keepFiles)
 {
 	startNewFrame();
@@ -82,7 +67,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	}
 	
 	uint32_t info[80]; // WUT doesn't define MCPInstallInfo, so we define it like WUP Installer does, just without the malloc() nonsense. TDOD: Does it really have to be that big?
-	McpInstallationData data;
+	McpData data;
 	
 	unmountUSB(); // Get MCP ready
 	
@@ -146,18 +131,14 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		return false;
 	}
 	
-	// This vector holds the path to the installation files
-	IOSVec vec;
-	vec.vaddr = (void *)newPath;
-	vec.len = 0x27F;
-	vec.paddr = NULL;
-	
 	// Just some debugging stuff
 	debugPrintf("NUSspli path:  %s (%d)", path, strlen(path));
 	debugPrintf("MCP Path:      %s (%d)", newPath, strlen(newPath));
 	
 	// Last prepairing step...
 	disableShutdown();
+	MCPInstallTitleInfo inf;
+	initMCPInstallTitleInfo(&inf, &data);
 	MCPInstallProgress *progress = MEMAllocFromDefaultHeapEx(sizeof(MCPInstallProgress), 0x40);
 	if(progress == NULL)
 	{
@@ -167,7 +148,6 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	}
 	
 	progress->inProgress = 0;
-	data.processing = true;
 	char multiplierName[3];
 	int multiplier = 12 + strlen(game);
 	char toScreen[multiplier > 256 ? multiplier : 256];
@@ -181,9 +161,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	flushIOQueue(); // Make sure all game files are on disc
 	
 	// Start the installation process
-	// err = MCP_InstallTitleAsync(mcpHandle, newPath, (MCPInstallTitleInfo *)info);
-	// We don't know how to give a callback function to the above but that is needed for propper error handling, so let's do the IOCTL directly:
-	err = (MCPError)IOS_IoctlvAsync(mcpHandle, 0x81, 1, 0, &vec, mcpCallback, &data);
+	err = MCP_InstallTitleAsync(mcpHandle, newPath, &inf);
 	
 	if(err != 0)
 	{

@@ -27,6 +27,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <coreinit/mcp.h>
+
 #define NAPI_URL		"http://napi.nbg01.v10lator.de/"
 #define NUSSPLI_COPYRIGHT	"© 2020-2021 V10lator <v10lator@myway.de>"
 
@@ -48,6 +50,12 @@
 	extern "C" {
 #endif
 
+typedef struct
+{
+	bool processing;
+	MCPError err;
+} McpData;
+
 extern int mcpHandle;
 
 char* b_tostring(bool b);
@@ -62,6 +70,7 @@ bool isHexa(char c);
 void toLowercase(char *inOut);
 void getSpeedString(float bytePerSecond, char *out);
 void hexToByte(const char *hex, uint8_t *out);
+void initMCPInstallTitleInfo(MCPInstallTitleInfo *info, McpData *data);
 #ifdef NUSSPLI_DEBUG
 void debugInit();
 void debugPrintf(const char *str, ...);
