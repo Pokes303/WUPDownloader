@@ -48,6 +48,7 @@
 #include <flagEurTex_png.h>
 #include <flagEurUsaTex_png.h>
 #include <flagJapTex_png.h>
+#include <flagMultiTex_png.h>
 #include <flagUnkTex_png.h>
 #include <flagUsaTex_png.h>
 #include <goodbyeTex_png.h>
@@ -372,8 +373,8 @@ void initRenderer()
 		switch(i)
 		{
 			case 0:
-				tex = checkmarkTex_png;
-				size = checkmarkTex_png_size;
+				tex = flagMultiTex_png;
+				size = flagMultiTex_png_size;
 				break;
 			case 1:
 				tex = flagEurTex_png;
