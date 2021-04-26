@@ -416,10 +416,14 @@ void update(char *newVersion)
 		
 		deinstall(ownInfo, false);
 		
+		startNewFrame();
+		textToFrame(0, 0, "Updating, please wait...");
+		writeScreenLog();
+		drawFrame();
+		showFrame();
+		
 		if(isAroma())
 			goto aromaInstallation;
-		
-		OSSleepTicks(OSSecondsToTicks(10)); // TODO: Check if MCP finished in a loop
 		
 		char installPath[strlen(UPDATE_TEMP_FOLDER) + 8];
 		strcpy(installPath, UPDATE_TEMP_FOLDER);
