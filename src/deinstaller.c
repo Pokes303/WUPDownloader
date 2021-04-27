@@ -83,10 +83,10 @@ bool deinstall(MCPTitleListType title, bool showFinishScreen)
 	showMcpProgress(&data, game, false);
 	debugPrintf("Done!");
 	
-	enableShutdown();
 	if(!showFinishScreen)
 		return true;
 	
+	enableShutdown();
 	startRumble();
 	
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
