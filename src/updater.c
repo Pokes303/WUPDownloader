@@ -169,13 +169,13 @@ bool updateCheck()
 	return updateAvailable && updateMenu(versionString);
 }
 
-//TODO: Quick & dirty, supports absolute paths on /vol/external01 only.
+//TODO: Quick & dirty, supports absolute paths on fs:/vol/external01 only.
 bool createDirRecursive(char *dir)
 {
-	if(strlen(dir) < 17 || dir[15] != '/')
+	if(strlen(dir) < 20 || dir[18] != '/')
 		return false;
 	
-	char *ptr = dir + 16;
+	char *ptr = dir + 19;
 	char *needle;
 	do
 	{
