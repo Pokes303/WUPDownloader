@@ -154,7 +154,7 @@ bool SWKBD_Show(KeyboardType type, int maxlength, bool limit, const char *okStr)
 	appearArg.keyboardArg.configArg.unk_0x10 = 2;
 	appearArg.keyboardArg.configArg.unk_0x14 = -1;
 	appearArg.keyboardArg.configArg.str = okStrL;
-	appearArg.keyboardArg.configArg.framerate = FRAMERATE_30FPS;
+	appearArg.keyboardArg.configArg.framerate = FRAMERATE_60FPS;
 	appearArg.keyboardArg.configArg.showCursor = true;
 	appearArg.keyboardArg.configArg.unk_0xA4 = -1;
 	

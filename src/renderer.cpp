@@ -343,7 +343,7 @@ void initRenderer()
 	backgroundMusic->Play();
 	
 	renderer = new CVideo(GX2_TV_SCAN_MODE_720P, GX2_DRC_RENDER_MODE_SINGLE);
-	GX2SetSwapInterval(FRAMERATE_30FPS);
+	GX2SetSwapInterval(FRAMERATE_60FPS);
 	
 	width = renderer->getTvWidth();
 	height = renderer->getTvHeight();
@@ -488,7 +488,7 @@ void showFrame()
 	if(!rendererRunning)
 		return;
 	
-	GX2WaitForFlip();
+	GX2WaitForVsync();
 	readInput();
 }
 

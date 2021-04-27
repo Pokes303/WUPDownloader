@@ -26,6 +26,7 @@
 #include <titles.h>
 #include <menu/download.h>
 #include <menu/main.h>
+#include <menu/utils.h>
 
 #include <string.h>
 
@@ -35,7 +36,7 @@ void drawConfigMenu()
 //	textToFrame(0, 0, "That Title Key Site:");
 //	textToFrame(1, 0, getTitleKeySite());
 //	textToFrame(4, 0, "Press \uE000 to change");
-	char toScreen[64];
+	char *toScreen = getToFrameBuffer();
 	strcpy(toScreen, "Press \uE000 to ");
 	strcat(toScreen, useOnlineTitleDB() ? "disable" : "enable");
 	strcat(toScreen, " the online title database");
@@ -46,7 +47,12 @@ void drawConfigMenu()
 	strcat(toScreen, " online updates");
 	textToFrame(1, 0, toScreen);
 	
-	textToFrame(3, 0, "Press \uE001 to go back");
+	strcpy(toScreen, "Press \uE003 to ");
+	strcat(toScreen, autoResumeEnabled() ? "disable" : "enable");
+	strcat(toScreen, " auto resuming of failed downloads");
+	textToFrame(2, 0, toScreen);
+	
+	textToFrame(4, 0, "Press \uE001 to go back");
 	drawFrame();
 }
 
@@ -72,6 +78,11 @@ void configMenu()
 		if(vpad.trigger & VPAD_BUTTON_X)
 		{
 			setUpdateCheck(!updateCheckEnabled());
+			redraw = true;
+		}
+		if(vpad.trigger & VPAD_BUTTON_Y)
+		{
+			setAutoResume(!autoResumeEnabled());
 			redraw = true;
 		}
 		if(vpad.trigger & VPAD_BUTTON_B)
