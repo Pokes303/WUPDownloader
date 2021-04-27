@@ -56,7 +56,7 @@
 #define UPDATE_AROMA_FOLDER "fs:/vol/external01/wiiu/apps/"
 #define UPDATE_AROMA_FILE "NUSspli.wuhb"
 #define UPDATE_HBL_FOLDER "fs:/vol/external01/wiiu/apps/NUSspli"
-#define UPDATE_ZIP_BUF (2048 << 10) // 2 MB
+#define UPDATE_ZIP_BUF SOCKET_BUFSIZE
 
 bool updateCheck()
 {
@@ -332,9 +332,6 @@ void update(char *newVersion)
 			if(lastSlash[1] == '\0')
 			{
 				unzCloseCurrentFile(zip);
-				if(unzGoToNextFile(zip) != UNZ_OK)
-					break;
-				
 				continue;
 			}
 			
@@ -367,7 +364,7 @@ void update(char *newVersion)
 			return;
 		}
 		
-		do
+		while(true)
 		{
 			extracted = unzReadCurrentFile(zip, buf, UPDATE_ZIP_BUF);
 			if(extracted < 0)
@@ -392,8 +389,9 @@ void update(char *newVersion)
 					return;
 				}
 			}
+			else
+				break;
 		}
-		while(extracted != 0);
 		
 		unzCloseCurrentFile(zip);
 		addToIOQueue(NULL, 0, 0, file);
