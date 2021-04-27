@@ -81,7 +81,7 @@ bool deinstall(MCPTitleListType title, bool showFinishScreen)
 	}
 	
 	showMcpProgress(&data, game, false);
-	debugPrintf("Done!");
+	addToScreenLog("Deinstallation finished!");
 	
 	if(!showFinishScreen)
 		return true;
