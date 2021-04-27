@@ -610,7 +610,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 		if(gameName != NULL)
 		{
 			for(int i = 0; i < strlen(gameName); i++)
-				folderName[i] = isAlphanumerical(gameName[i]) ? gameName[i] : '_';
+				folderName[i] = isAllowedInFilename(gameName[i]) ? gameName[i] : '_';
 			
 			strcpy(folderName + strlen(gameName), " [");
 			strcat(folderName, tid);

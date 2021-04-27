@@ -64,6 +64,7 @@ bool isNumber(char c);
 bool isLowercase(char c);
 bool isUppercase(char c);
 bool isAlphanumerical(char c);
+bool isAllowedInFilename(char c);
 bool isLowercaseHexa(char c);
 bool isUppercaseHexa(char c);
 bool isHexa(char c);

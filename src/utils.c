@@ -71,6 +71,12 @@ bool isAlphanumerical(char c)
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || isNumber(c);
 }
 
+// Keep it to ASCII for FTPiiU compat.
+bool isAllowedInFilename(char c)
+{
+	return c >= ' ' && c <= '~' && c != '/' && c != '\\' && c != '"' && c != '*' && c != ':' && c != '<' && c != '>' && c != '?' && c != '|';
+}
+
 bool isLowercaseHexa(char c)
 {
 	return isNumber(c) || (c >= 'a' && c <= 'f');
