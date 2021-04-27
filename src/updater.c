@@ -349,7 +349,7 @@ void update(char *newVersion)
 				unzCloseCurrentFile(zip);
 				MEMFreeToDefaultHeap(buf);
 				clearRamBuf();
-				showUpdateErrorf("Error creating directory: %s", path);
+				showUpdateErrorf("Error creating directory: %s", fileName);
 				return;
 			}
 		}
