@@ -20,13 +20,17 @@
 
 #include <wut-fixups.h>
 
+#include <renderer.h>
+#include <status.h>
 #include <utils.h>
+#include <menu/utils.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 
+#include <coreinit/ios.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
@@ -144,6 +148,92 @@ void initMCPInstallTitleInfo(MCPInstallTitleInfo *info, McpData *data)
 	*ptr = (uint32_t)mcpCallback;
 	ptr++;
 	*ptr = (uint32_t)data;
+}
+
+void showMcpProgress(McpData *data, const char *game, const bool inst)
+{
+	MCPInstallProgress *progress = MEMAllocFromDefaultHeapEx(sizeof(MCPInstallProgress), 0x40);
+	if(progress == NULL)
+	{
+		debugPrintf("Error allocating memory!");
+		enableShutdown();
+		return;
+	}
+	
+	progress->inProgress = 0;
+	char multiplierName[3];
+	int multiplier = 0;
+	char *toScreen = getToFrameBuffer();
+	MCPError err;
+	OSTime lastSpeedCalc = 0;
+	OSTime now;
+	uint64_t lsp = 0;
+	char speedBuf[32];
+	
+	while(data->processing)
+	{
+		err = MCP_InstallGetProgress(mcpHandle, progress);
+		if(err == IOS_ERROR_OK)
+		{
+			if(progress->inProgress == 1)
+			{
+				if(multiplier == 0)
+				{
+					if(progress->sizeTotal == 0) // TODO
+					{
+						strcpy(multiplierName, "B");
+						progress->sizeTotal = 9999999;
+					}
+					else if(progress->sizeTotal < 1 << 10)
+					{
+						multiplier = 1;
+						strcpy(multiplierName, "B");
+					}
+					else if(progress->sizeTotal < 1 << 20)
+					{
+						multiplier = 1 << 10;
+						strcpy(multiplierName, "KB");
+					}
+					else if(progress->sizeTotal < 1 << 30)
+					{
+						multiplier = 1 << 20;
+						strcpy(multiplierName, "MB");
+					}
+					else
+					{
+						multiplier = 1 << 30;
+						strcpy(multiplierName, "GB");
+					}
+				}
+				startNewFrame();
+				strcpy(toScreen, inst ? "Installing " : "Uninstalling ");
+				strcat(toScreen, game);
+				textToFrame(0, 0, toScreen);
+				barToFrame(1, 0, 40, progress->sizeProgress * 100.0f / progress->sizeTotal);
+				sprintf(toScreen, "%.2f / %.2f %s", ((float)progress->sizeProgress) / multiplier, ((float)progress->sizeTotal) / multiplier, multiplierName);
+				textToFrame(1, 41, toScreen);
+				
+				if(progress->sizeProgress != 0)
+				{
+					now = OSGetSystemTime();
+					if(OSTicksToMilliseconds(now - lastSpeedCalc) > 333)
+					{
+						getSpeedString(progress->sizeProgress - lsp, speedBuf);
+						lsp = progress->sizeProgress;
+						lastSpeedCalc = now;
+					}
+					textToFrame(1, ALIGNED_RIGHT, speedBuf);
+				}
+				
+				writeScreenLog();
+				drawFrame();
+			}
+		}
+		else
+			debugPrintf("MCP_InstallGetProgress() returned %#010x", err);
+		
+		showFrame();
+	}
 }
 
 #ifdef NUSSPLI_DEBUG
