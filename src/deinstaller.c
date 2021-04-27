@@ -62,7 +62,7 @@ bool deinstall(MCPTitleListType title, bool showFinishScreen)
 	
 	McpData data;
 	MCPInstallTitleInfo info;
-	initMCPInstallTitleInfo(&info, &data);
+	glueMcpData(&info, &data);
 	
 	unmountUSB();
 	if(showFinishScreen)

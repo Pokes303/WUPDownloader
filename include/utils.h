@@ -71,7 +71,7 @@ void toLowercase(char *inOut);
 void getSpeedString(float bytePerSecond, char *out);
 void hexToByte(const char *hex, uint8_t *out);
 void initMCPInstallTitleInfo(MCPInstallTitleInfo *info, McpData *data);
-void showMcpProgress(McpData *data, const char *game, const bool inst);
+void glueMcpData(McpData *data, const char *game, const bool inst);
 #ifdef NUSSPLI_DEBUG
 void debugInit();
 void debugPrintf(const char *str, ...);

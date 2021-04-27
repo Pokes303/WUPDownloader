@@ -137,7 +137,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	
 	// Last prepairing step...
 	disableShutdown();
-	initMCPInstallTitleInfo(&info, &data);
+	glueMcpData(&info, &data);
 	flushIOQueue(); // Make sure all game files are on disc
 	
 	// Start the installation process

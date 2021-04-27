@@ -141,7 +141,7 @@ static void mcpCallback(MCPError err, void *rawData)
 	data->processing = false;
 }
 
-void initMCPInstallTitleInfo(MCPInstallTitleInfo *info, McpData *data)
+void glueMcpData(MCPInstallTitleInfo *info, McpData *data)
 {
 	data->processing = true;
 	uint32_t *ptr = (uint32_t *)info;
