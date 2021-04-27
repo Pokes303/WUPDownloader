@@ -32,7 +32,7 @@
 	extern "C" {
 #endif
 
-bool deinstall(MCPTitleListType title, bool showFinishScreen);
+bool deinstall(MCPTitleListType title, bool showFinishScreen, bool channelHaxx);
 
 #ifdef __cplusplus
 	}

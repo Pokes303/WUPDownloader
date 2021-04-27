@@ -43,7 +43,7 @@
 #include <utils.h>
 #include <menu/utils.h>
 
-bool deinstall(MCPTitleListType title, bool showFinishScreen)
+bool deinstall(MCPTitleListType title, bool showFinishScreen, bool channelHaxx)
 {
 	char *tids = hex(title.titleId, 16);
 	if(tids == NULL)
@@ -80,10 +80,11 @@ bool deinstall(MCPTitleListType title, bool showFinishScreen)
 		return false;
 	}
 	
-	showMcpProgress(&data, game, false);
+	if(!channelHaxx)
+		showMcpProgress(&data, game, false);
 	addToScreenLog("Deinstallation finished!");
 	
-	if(!showFinishScreen)
+	if(channelHaxx || !showFinishScreen)
 		return true;
 	
 	enableShutdown();

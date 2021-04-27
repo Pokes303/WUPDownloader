@@ -412,13 +412,8 @@ void update(char *newVersion)
 			return;
 		}
 		
-		deinstall(ownInfo, false);
-		
-		startNewFrame();
-		textToFrame(0, 0, "Updating, please wait...");
-		writeScreenLog();
-		drawFrame();
-		showFrame();
+		deinstall(ownInfo, false, true);
+		OSSleepTicks(OSSecondsToTicks(10)); // channelHaxx...
 		
 		if(isAroma())
 			goto aromaInstallation;
