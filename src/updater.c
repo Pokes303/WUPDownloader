@@ -412,7 +412,7 @@ void update(char *newVersion)
 			return;
 		}
 		
-		deinstall(ownInfo, false, true);
+		deinstall(ownInfo, true);
 		OSSleepTicks(OSSecondsToTicks(10)); // channelHaxx...
 		
 		if(isAroma())

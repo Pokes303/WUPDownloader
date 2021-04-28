@@ -43,7 +43,7 @@
 #include <utils.h>
 #include <menu/utils.h>
 
-bool deinstall(MCPTitleListType title, bool showFinishScreen, bool channelHaxx)
+bool deinstall(MCPTitleListType title, bool channelHaxx)
 {
 	char *tids = hex(title.titleId, 16);
 	if(tids == NULL)
@@ -65,7 +65,7 @@ bool deinstall(MCPTitleListType title, bool showFinishScreen, bool channelHaxx)
 	glueMcpData(&info, &data);
 	
 	unmountUSB();
-	if(showFinishScreen)
+	if(!channelHaxx)
 		disableShutdown();
 	
 	//err = MCP_UninstallTitleAsync(mcpHandle, title.path, &info);
@@ -75,7 +75,7 @@ bool deinstall(MCPTitleListType title, bool showFinishScreen, bool channelHaxx)
 	if(err != 0)
 	{
 		debugPrintf("Err1: %#010x (%d)", err, err);
-		if(showFinishScreen)
+		if(!channelHaxx)
 			enableShutdown();
 		return false;
 	}
@@ -84,7 +84,7 @@ bool deinstall(MCPTitleListType title, bool showFinishScreen, bool channelHaxx)
 		showMcpProgress(&data, game, false);
 	addToScreenLog("Deinstallation finished!");
 	
-	if(channelHaxx || !showFinishScreen)
+	if(channelHaxx)
 		return true;
 	
 	enableShutdown();
