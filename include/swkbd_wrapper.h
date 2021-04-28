@@ -35,8 +35,19 @@
 // Enums copied from https://github.com/devkitPro/wut/blob/master/include/nn/swkbd/swkbd_cpp.h
 typedef enum
 {
-   Swkbd_LanguageType__Japanese = 0,
-   Swkbd_LanguageType__English  = 1,
+   Swkbd_LanguageType__Japanese  = 0,
+   Swkbd_LanguageType__English   = 1,
+   Swkbd_LanguageType__French    = 2,
+   Swkbd_LanguageType__German    = 3,
+   Swkbd_LanguageType__Italian   = 4,
+   Swkbd_LanguageType__Spanish   = 5,
+   Swkbd_LanguageType__Chinese1  = 6,
+   Swkbd_LanguageType__Korean    = 7,
+   Swkbd_LanguageType__Dutch     = 8,
+   Swkbd_LanguageType__Potuguese = 9,
+   Swkbd_LanguageType__Russian   = 10,
+   Swkbd_LanguageType__Chinese2  = 11,
+   Swkbd_LanguageType__Invalid   = 12
 } Swkbd_LanguageType;
 
 typedef enum
@@ -44,6 +55,9 @@ typedef enum
 	Swkbd_RegionType__Japan    = 0,
 	Swkbd_RegionType__USA      = 1,
 	Swkbd_RegionType__Europe   = 2,
+   Swkbd_RegionType__China    = 3,
+   Swkbd_RegionType__Korea    = 4,
+   Swkbd_RegionType__Taiwan   = 5,
 } Swkbd_RegionType;
 
 //Structs also from the link above

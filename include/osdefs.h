@@ -21,9 +21,11 @@
 #define NUSSPLI_OSDEFS_H
 
 #include <wut-fixups.h>
+#include <wut_structsize.h>
 
 #include <stdbool.h>
 
+#include <coreinit/ios.h>
 #include <coreinit/mcp.h>
 
 #ifdef __cplusplus
@@ -42,6 +44,44 @@ extern void WPADControlMotor(int controller, int onOff);
 
 // SO
 extern int somemopt (int type, void *buf, size_t bufsize, int unk);
+
+// UC - From:
+// https://github.com/decaf-emu/decaf-emu/blob/master/src/libdecaf/src/cafe/libraries/coreinit/coreinit_userconfig.h
+// https://github.com/decaf-emu/decaf-emu/blob/master/src/libdecaf/src/cafe/libraries/coreinit/coreinit_userconfig.cpp
+typedef enum
+{
+	UCDataType_Undefined		= 0x00,
+	UCDataType_UnsignedByte		= 0x01,
+	UCDataType_UnsignedShort	= 0x02,
+	UCDataType_UnsignedInt		= 0x03,
+	UCDataType_SignedInt		= 0x04,
+	UCDataType_Float		= 0x05,
+	UCDataType_String		= 0x06,
+	UCDataType_HexBinary		= 0x07,
+	UCDataType_Complex		= 0x08,
+	UCDataType_Invalid		= 0xFF
+} UCDataType;
+
+typedef struct WUT_PACKED
+{
+	char name[64];
+	uint32_t access;
+	UCDataType dataType;
+	IOSError error;
+	size_t dataSize;
+	void *data;
+} UCSysConfig;
+WUT_CHECK_OFFSET(UCSysConfig, 0x00, name);
+WUT_CHECK_OFFSET(UCSysConfig, 0x40, access);
+WUT_CHECK_OFFSET(UCSysConfig, 0x44, dataType);
+WUT_CHECK_OFFSET(UCSysConfig, 0x48, error);
+WUT_CHECK_OFFSET(UCSysConfig, 0x4C, dataSize);
+WUT_CHECK_OFFSET(UCSysConfig, 0x50, data);
+WUT_CHECK_SIZE(UCSysConfig, 0x54);
+
+extern IOSHandle UCOpen();
+extern void UCClose(IOSHandle handle);
+extern IOSError UCReadSysConfig(IOSHandle handle, size_t count, UCSysConfig *settings);
 
 #ifdef __cplusplus
 	}

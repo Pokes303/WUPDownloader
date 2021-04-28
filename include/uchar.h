@@ -33,36 +33,10 @@
 	typedef __uint_least32_t char32_t;
 	
 	// These function are a WIP. Don't use them yet.
-	size_t mbrtoc16(char16_t *out, const char *in, size_t size, mbstate_t *mbs)
-	{
-		//TODO
-		if(out == NULL || in == NULL)
-			return 0;
-		
-		for(size_t i = 0; i < size; i++)
-			out[i] = in[i];
-		
-		return size;
-	}
-	size_t c16rtomb(char *out, char16_t in, mbstate_t *mbs)
-	{
-		//TODO
-		if(out == NULL)
-			return 0;
-		
-		out[0] = in > 0x7F ? '?' : (char)in;
-		return 1;
-	}
-	size_t mbrtoc32(char32_t *out, const char *in, size_t size, mbstate_t *mbs)
-	{
-		//TODO
-		return 0;
-	}
-	size_t c32rtomb(char *out, char32_t in, mbstate_t *mbs)
-	{
-		//TODO
-		return 0;
-	}
+	size_t mbrtoc16(char16_t *out, const char *in, size_t size, mbstate_t *mbs);
+	size_t c16rtomb(char *out, char16_t in, mbstate_t *mbs);
+	size_t mbrtoc32(char32_t *out, const char *in, size_t size, mbstate_t *mbs);
+	size_t c32rtomb(char *out, char32_t in, mbstate_t *mbs);
 #endif // ifndef __cplusplus
 
 #endif // ifndef UCHAR_H

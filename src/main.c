@@ -159,41 +159,40 @@ int main()
 					drawFrame();
 					showFrame();
 					
-					if(SWKBD_Init())
+					if(initConfig())
 					{
-						addToScreenLog("SWKBD initialized!");
-						startNewFrame();
-						textToFrame(0, 0, "Loading MCP...");
-						writeScreenLog();
-						drawFrame();
-						showFrame();
-						
-						mcpHandle = MCP_Open();
-						if(mcpHandle != 0)
+						if(SWKBD_Init())
 						{
-							addToScreenLog("MCP initialized!");
+							addToScreenLog("SWKBD initialized!");
 							startNewFrame();
-							textToFrame(0, 0, "Loading I/O thread...");
+							textToFrame(0, 0, "Loading MCP...");
 							writeScreenLog();
 							drawFrame();
 							showFrame();
 							
-							if(initIOThread())
+							mcpHandle = MCP_Open();
+							if(mcpHandle != 0)
 							{
-								addToScreenLog("I/O thread initialized!");
+								addToScreenLog("MCP initialized!");
 								startNewFrame();
-								textToFrame(0, 0, "Loading config file...");
+								textToFrame(0, 0, "Loading I/O thread...");
 								writeScreenLog();
 								drawFrame();
 								showFrame();
 								
-								KPADInit();
-								WPADEnableURCC(true);
-								
-								checkStacks("main()");
-								
-								if(initConfig())
+								if(initIOThread())
 								{
+									addToScreenLog("I/O thread initialized!");
+									startNewFrame();
+									textToFrame(0, 0, "Loading config file...");
+									writeScreenLog();
+									drawFrame();
+									showFrame();
+									
+									KPADInit();
+									WPADEnableURCC(true);
+									
+									checkStacks("main()");
 									
 									if(!updateCheck())
 									{
@@ -209,29 +208,30 @@ int main()
 										
 										checkStacks("main");
 									}
+									
+									KPADShutdown();
+									shutdownIOThread();
+									debugPrintf("I/O thread closed");
 								}
 								else
-									lerr = "Couldn't load config file!";
+									lerr = "Couldn't load I/O thread!";
 								
-								KPADShutdown();
-								shutdownIOThread();
-								debugPrintf("I/O thread closed");
+								unmountUSB();
+								MCP_Close(mcpHandle);
+								debugPrintf("MCP closed");
 							}
 							else
-								lerr = "Couldn't load I/O thread!";
+								lerr = "Couldn't initialize MCP!";
 							
-							unmountUSB();
-							MCP_Close(mcpHandle);
-							debugPrintf("MCP closed");
+							SWKBD_Shutdown();
+							debugPrintf("SWKBD closed");
 						}
 						else
-							lerr = "Couldn't initialize MCP!";
-						
-						SWKBD_Shutdown();
-						debugPrintf("SWKBD closed");
+							lerr = "Couldn't initialize SWKBD!";
 					}
 					else
-						lerr = "Couldn't initialize SWKBD!";
+						lerr = "Couldn't load config file!";
+					
 					deinitDownloader();
 				}
 				else

@@ -20,6 +20,7 @@
 
 #include <wut-fixups.h>
 
+#include <config.h>
 #include <input.h>
 #include <renderer.h>
 #include <status.h>
@@ -31,6 +32,7 @@
 #include <uchar.h>
 
 #include <vpad/input.h>
+#include <coreinit/dynload.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memfrmheap.h>
 #include <coreinit/memory.h>
@@ -147,7 +149,7 @@ bool SWKBD_Show(KeyboardType type, int maxlength, bool limit, const char *okStr)
 	OSBlockSet(&appearArg.keyboardArg.configArg, 0, sizeof(Swkbd_ConfigArg));
 	OSBlockSet(&appearArg.keyboardArg.receiverArg, 0, sizeof(Swkbd_ReceiverArg));
 	
-	appearArg.keyboardArg.configArg.languageType = Swkbd_LanguageType__English;
+	appearArg.keyboardArg.configArg.languageType = getKeyboardLanguage();
 	appearArg.keyboardArg.configArg.unk_0x04 = lastUsedController;
 	appearArg.keyboardArg.configArg.unk_0x08 = 2;
 	appearArg.keyboardArg.configArg.unk_0x0C = 2;
@@ -210,7 +212,16 @@ void SWKBD_Hide()
 bool SWKBD_Init()
 {
 	debugPrintf("SWKBD_Init()");
+	
+	OSDynLoadAllocFn oAlloc;
+	OSDynLoadFreeFn oFree;
+	OSDynLoad_GetAllocator(&pfAlloc, &pfFree);
+	
+	OSBlockSet(&createArg, 0, sizeof(Swkbd_CreateArg));
 	createArg.fsClient = MEMAllocFromDefaultHeap(sizeof(FSClient));
+	if(createArg.fsClient != NULL)
+		FSAddClient(createArg.fsClient, 0);
+	
 	createArg.workMemory = MEMAllocFromDefaultHeap(Swkbd_GetWorkMemorySize(0));
 	if(createArg.fsClient == NULL || createArg.workMemory == NULL)
 	{
@@ -218,12 +229,34 @@ bool SWKBD_Init()
 		return false;
 	}
 	
-	FSAddClient(createArg.fsClient, 0);
-	
+/*	switch(getKeyboardLanguage())
+	{
+		case Swkbd_LanguageType__Japanese:
+			createArg.regionType = Swkbd_RegionType__Japan;
+			break;
+		case Swkbd_LanguageType__English:
+			createArg.regionType = Swkbd_RegionType__USA;
+			break;
+		case Swkbd_LanguageType__Chinese1:
+			createArg.regionType = Swkbd_RegionType__China;
+			break;
+		case Swkbd_LanguageType__Korean:
+			createArg.regionType = Swkbd_RegionType__Korea;
+			break;
+		case  Swkbd_LanguageType__Chinese2:
+			createArg.regionType = Swkbd_RegionType__Taiwan;
+			break;
+		default:
+			createArg.regionType = Swkbd_RegionType__Europe;
+			break;
+	}*/
 	createArg.regionType = Swkbd_RegionType__Europe;
-	createArg.unk_0x08 = 0;
-	
-	return Swkbd_Create(createArg);
+	debugPrintf("A");
+	bool ret = Swkbd_Create(createArg);
+	debugPrintf("B");
+	OSDynLoad_SetAllocator(pfAlloc, pfFree);
+	debugPrintf("C");
+	return ret;
 }
 
 void SWKBD_Shutdown()

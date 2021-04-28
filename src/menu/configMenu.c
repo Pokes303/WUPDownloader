@@ -37,22 +37,28 @@ void drawConfigMenu()
 //	textToFrame(1, 0, getTitleKeySite());
 //	textToFrame(4, 0, "Press \uE000 to change");
 	char *toScreen = getToFrameBuffer();
+	int i = 0;
 	strcpy(toScreen, "Press \uE000 to ");
 	strcat(toScreen, useOnlineTitleDB() ? "disable" : "enable");
 	strcat(toScreen, " the online title database");
-	textToFrame(0, 0, toScreen);
+	textToFrame(i++, 0, toScreen);
 	
 	strcpy(toScreen, "Press \uE002 to ");
 	strcat(toScreen, updateCheckEnabled() ? "disable" : "enable");
 	strcat(toScreen, " online updates");
-	textToFrame(1, 0, toScreen);
+	textToFrame(i++, 0, toScreen);
 	
 	strcpy(toScreen, "Press \uE003 to ");
 	strcat(toScreen, autoResumeEnabled() ? "disable" : "enable");
 	strcat(toScreen, " auto resuming of failed downloads");
-	textToFrame(2, 0, toScreen);
+	textToFrame(i++, 0, toScreen);
 	
-	textToFrame(4, 0, "Press \uE001 to go back");
+	strcpy(toScreen, "Press LEFT/RIGHT to change the language (curently ");
+	strcat(toScreen, getLanguageString(getUnfilteredLanguage()));
+	strcat(toScreen, ")");
+	textToFrame(i++, 0, toScreen);
+	
+	textToFrame(++i, 0, "Press \uE001 to go back");
 	drawFrame();
 }
 
@@ -83,6 +89,24 @@ void configMenu()
 		if(vpad.trigger & VPAD_BUTTON_Y)
 		{
 			setAutoResume(!autoResumeEnabled());
+			redraw = true;
+		}
+		if(vpad.trigger & VPAD_BUTTON_LEFT)
+		{
+			int l = getUnfilteredLanguage();
+			if(--l < Swkbd_LanguageType__Japanese)
+				l = Swkbd_LanguageType__Invalid;
+			
+			setKeyboardLanguage(l);
+			redraw = true;
+		}
+		else if(vpad.trigger & VPAD_BUTTON_RIGHT)
+		{
+			int l = getUnfilteredLanguage();
+			if(++l > Swkbd_LanguageType__Invalid)
+				l = Swkbd_LanguageType__Japanese;
+			
+			setKeyboardLanguage(l);
 			redraw = true;
 		}
 		if(vpad.trigger & VPAD_BUTTON_B)

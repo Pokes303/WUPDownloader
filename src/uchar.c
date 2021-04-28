@@ -17,37 +17,45 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_CONFIG_H
-#define NUSSPLI_CONFIG_H
+// This is a uchar.h implementation as required by C11.
+// It's missing in newlib as newlib is ANSI C only.
 
 #include <wut-fixups.h>
 
-#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <wchar.h>
 
-#include <swkbd_wrapper.h>
+#include <uchar.h>
 
-#define CONFIG_PATH "fs:/vol/external01/NUSspli.txt"
-#define TITLE_KEY_URL_MAX_SIZE 1024
-
-#ifdef __cplusplus
-	extern "C" {
-#endif
-
-bool initConfig();
-bool saveConfig();
-bool useOnlineTitleDB();
-void setUseOnlineTitleDB(bool use);
-bool updateCheckEnabled();
-void setUpdateCheck(bool enabled);
-bool autoResumeEnabled();
-void setAutoResume(bool enabled);
-Swkbd_LanguageType getKeyboardLanguage();
-Swkbd_LanguageType getUnfilteredLanguage();
-void setKeyboardLanguage(Swkbd_LanguageType language);
-char *getLanguageString(Swkbd_LanguageType language);
-
-#ifdef __cplusplus
-	}
-#endif
-
-#endif // ifndef NUSSPLI_CONFIG_H
+// These function are a WIP. Don't use them yet.
+size_t mbrtoc16(char16_t *out, const char *in, size_t size, mbstate_t *mbs)
+{
+	//TODO
+	if(out == NULL || in == NULL)
+		return 0;
+	
+	for(size_t i = 0; i < size; i++)
+		out[i] = in[i];
+	
+	return size;
+}
+size_t c16rtomb(char *out, char16_t in, mbstate_t *mbs)
+{
+	//TODO
+	if(out == NULL)
+		return 0;
+	
+	out[0] = in > 0x7F ? '?' : (char)in;
+	return 1;
+}
+size_t mbrtoc32(char32_t *out, const char *in, size_t size, mbstate_t *mbs)
+{
+	//TODO
+	return 0;
+}
+size_t c32rtomb(char *out, char32_t in, mbstate_t *mbs)
+{
+	//TODO
+	return 0;
+}
