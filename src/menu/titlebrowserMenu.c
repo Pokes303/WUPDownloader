@@ -108,10 +108,7 @@ void drawTBMenuFrame2(const TitleEntry *entry, bool installed, const char *folde
 	if(installed)
 		textToFrame(line--, 0, "Press \uE079 to uninstall");
 	
-	lineToFrame(line--, SCREEN_COLOR_WHITE);
-	
-	if(!dlToUSB)
-		textToFrame(--line, 0, "WARNING: Downloading to SD is slow!");
+	lineToFrame(line, SCREEN_COLOR_WHITE);
 	
 	drawFrame();
 }
@@ -308,7 +305,7 @@ void titleBrowserMenu()
 		titleList.titleId = entry->tid;
 	
 	bool usbMounted = mountUSB();
-	bool dlToUSB = usbMounted;
+	bool dlToUSB = false;
 	bool keepFiles = true;
 	char folderName[FILENAME_MAX - 11];
 	folderName[0] = '\0';

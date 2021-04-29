@@ -123,7 +123,7 @@ bool  downloadMenu()
 	toLowercase(titleID);
 	
 	bool usbMounted = mountUSB();
-	bool dlToUSB = usbMounted;
+	bool dlToUSB = false;
 	bool keepFiles = true;
 	drawDownloadFrame(titleID, titleVer, folderName, usbMounted, dlToUSB, keepFiles);
 	
