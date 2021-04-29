@@ -75,14 +75,14 @@ uint64_t readUInt64(const char *file, uint32_t pos)
 	return result;
 }
 
-void writeVoidBytes(FILE* fp, uint32_t len)
+void writeVoidBytes(NUSFILE* fp, uint32_t len)
 {
 	uint8_t bytes[len];
 	OSBlockSet(bytes, 0, len);
-	addToIOQueue(bytes, len, 1, fp);
+	addToIOQueue(bytes, 1, len, fp);
 }
 
-void writeCustomBytes(FILE *fp, const char *str)
+void writeCustomBytes(NUSFILE *fp, const char *str)
 {
 	if(str[0] == '0' && str[1] == 'x')
 		str += 2;
@@ -90,16 +90,16 @@ void writeCustomBytes(FILE *fp, const char *str)
 	size_t size = strlen(str) >> 1;
 	uint8_t bytes[size];
 	hexToByte(str, bytes);
-	addToIOQueue(bytes, size, 1, fp);
+	addToIOQueue(bytes, 1, size, fp);
 }
 
-void writeRandomBytes(FILE* fp, uint32_t len)
+void writeRandomBytes(NUSFILE* fp, uint32_t len)
 {
 	uint32_t len32 = len < 9 ? 1 : len >> 2;
 	uint32_t bytes[len32];
 	for(int i = 0; i < len32; i++)
 		bytes[i] = rand();
-	addToIOQueue(bytes, len, 1, fp);
+	addToIOQueue(bytes, 1, len, fp);
 }
 
 /*
@@ -118,13 +118,13 @@ void writeRandomBytes(FILE* fp, uint32_t len)
  *  - 128 + 32 random bits marking the end of the header usable area
  *  - 256 + 128 + 64 + 32 bit padding (defined by Nintendo / end of header)
  */
-void writeHeader(FILE *fp, FileType type)
+void writeHeader(NUSFILE *fp, FileType type)
 {
 	writeCustomBytes(fp, "0x00010004000102030405060708090000"); // Magic 32 bit value + our magic value + padding
 	writeCustomBytes(fp, "0x4E555373706C69"); // "NUSspli"
 	writeVoidBytes(fp, 0x9);
 	int vl = strlen(NUSSPLI_VERSION);
-	addToIOQueue(NUSSPLI_VERSION, vl, 1, fp);
+	addToIOQueue(NUSSPLI_VERSION, 1, vl, fp);
 	
 	writeVoidBytes(fp, 0x10 - vl);
 	char *cb;

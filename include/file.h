@@ -23,6 +23,8 @@
 
 #include <wut-fixups.h>
 
+#include <ioThread.h>
+
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -53,10 +55,10 @@ uint16_t readUInt16(const char *file, uint32_t pos);
 uint32_t readUInt32(const char *file, uint32_t pos);
 uint64_t readUInt64(const char *file, uint32_t pos);
 
-void writeVoidBytes(FILE *fp, uint32_t length);
-void writeCustomBytes(FILE *fp, const char *str);
-void writeRandomBytes(FILE *fp, uint32_t length);
-void writeHeader(FILE *fp, FileType type);
+void writeVoidBytes(NUSFILE *fp, uint32_t length);
+void writeCustomBytes(NUSFILE *fp, const char *str);
+void writeRandomBytes(NUSFILE *fp, uint32_t length);
+void writeHeader(NUSFILE *fp, FileType type);
 
 bool fileExists(const char *path);
 bool dirExists(const char *path);

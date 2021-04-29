@@ -29,10 +29,17 @@
 	extern "C" {
 #endif
 
+typedef struct
+{
+	FILE *fd;
+	void *buffer;
+} NUSFILE;
+
 bool initIOThread();
 void shutdownIOThread();
-size_t addToIOQueue(const void *buf, size_t size, size_t n, FILE *file);
+size_t addToIOQueue(const void *buf, size_t size, size_t n, NUSFILE *file);
 void flushIOQueue();
+NUSFILE *openFile(const char *patch, const char *mode);
 
 #ifdef __cplusplus
 	}

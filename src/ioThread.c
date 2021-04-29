@@ -40,7 +40,7 @@
 
 typedef struct
 {
-	volatile FILE *file;
+	volatile NUSFILE *file;
 	volatile uint8_t *buf;
 	volatile size_t size;
 	volatile bool inUse;
@@ -48,7 +48,7 @@ typedef struct
 
 typedef struct
 {
-	FILE *file;
+	NUSFILE *file;
 	uint8_t *buf;
 	size_t i;
 } OpenFile;
@@ -65,7 +65,7 @@ static volatile uint32_t activeWriteBuffer;
 
 static OpenFile files[IO_MAX_OPEN_FILES];
 
-void executeIOQueue()
+static void executeIOQueue()
 {
 	uint32_t asl = activeWriteBuffer;
 	if(!queueEntries[asl].inUse)
@@ -112,7 +112,7 @@ void executeIOQueue()
 				queueEntries[asl].size -= r; // adjust small buffers size
 			}
 			
-			fwrite(files[openFile].buf, 1, IO_MAX_FILE_BUFFER, files[openFile].file); // Write large buffer to disc
+			fwrite(files[openFile].buf, 1, IO_MAX_FILE_BUFFER, files[openFile].file->fd); // Write large buffer to disc
 			files[openFile].i = 0; // set large buffer as empty
 			
 			if(queueEntries[asl].size == 0)
@@ -128,13 +128,15 @@ void executeIOQueue()
 		// In case there's something which needs to go to disc: Write it
 		if(files[openFile].i != 0)
 		{
-			fwrite(files[openFile].buf, 1, files[openFile].i, files[openFile].file);
+			fwrite(files[openFile].buf, 1, files[openFile].i, files[openFile].file->fd);
 			files[openFile].i = 0;
 		}
 		
 		// Close the file
-		fflush(files[openFile].file);
-		fclose(files[openFile].file);
+		fflush(files[openFile].file->fd);
+		fclose(files[openFile].file->fd);
+		MEMFreeToDefaultHeap(files[openFile].file->buffer);
+		MEMFreeToDefaultHeap(files[openFile].file);
 		files[openFile].file = NULL;
 	}
 	
@@ -174,7 +176,7 @@ bool initIOThread()
 		return false;
 	}
 	
-	uint8_t *ptr = MEMAllocFromDefaultHeap(MAX_IO_QUEUE_ENTRIES * MAX_IO_BUFFER_SIZE);
+	uint8_t *ptr = (uint8_t *)MEMAllocFromDefaultHeap(MAX_IO_QUEUE_ENTRIES * MAX_IO_BUFFER_SIZE);
 	if(ptr == NULL)
 	{
 		MEMFreeToDefaultHeap(ioThreadStack);
@@ -193,8 +195,8 @@ bool initIOThread()
 	if(ptr == NULL)
 	{
 		MEMFreeToDefaultHeap(ioThreadStack);
-		MEMFreeToDefaultHeap(queueEntries[0].buf);
-		MEMFreeToDefaultHeap(queueEntries);
+		MEMFreeToDefaultHeap((void *)queueEntries[0].buf);
+		MEMFreeToDefaultHeap((void *)queueEntries);
 		debugPrintf("OUT OF MEMORY (ptr2)!");
 		return false;
 	}
@@ -227,13 +229,13 @@ void shutdownIOThread()
 	int ret;
 	OSJoinThread(&ioThread, &ret);
 	MEMFreeToDefaultHeap(ioThreadStack);
-	MEMFreeToDefaultHeap(queueEntries[0].buf);
-	MEMFreeToDefaultHeap(queueEntries);
+	MEMFreeToDefaultHeap((void *)queueEntries[0].buf);
+	MEMFreeToDefaultHeap((void *)queueEntries);
 	MEMFreeToDefaultHeap(files[0].buf);
 	debugPrintf("I/O thread returned: %d", ret);
 }
 
-size_t addToIOQueue(const void *buf, size_t size, size_t n, FILE *file)
+size_t addToIOQueue(const void *buf, size_t size, size_t n, NUSFILE *file)
 {
 	uint32_t asl;
 		
@@ -301,4 +303,31 @@ void flushIOQueue()
 		OSSleepTicks(1024);
 	
 	ioWriteLock = false;
+}
+
+NUSFILE *openFile(const char *path, const char *mode)
+{
+	NUSFILE *ret = MEMAllocFromDefaultHeap(sizeof(NUSFILE));
+	if(ret == NULL)
+		return NULL;
+	
+	ret->fd = fopen(path, mode);
+	if(ret->fd == NULL)
+	{
+		MEMFreeToDefaultHeap(ret);
+		return NULL;
+	}
+	
+	ret->buffer = MEMAllocFromDefaultHeapEx(IO_MAX_FILE_BUFFER, 0x40);
+	if(ret->buffer == NULL)
+	{
+		fclose(ret->fd);
+		MEMFreeToDefaultHeap(ret);
+		return NULL;
+	}
+	
+	if(setvbuf(ret->fd, ret->buffer, _IOFBF, IO_MAX_FILE_BUFFER) != 0)
+		debugPrintf("Error setting buffer!");
+	
+	return ret;
 }

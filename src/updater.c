@@ -293,7 +293,7 @@ void update(char *newVersion)
 	char fileName[1024];
 	strcpy(fileName, UPDATE_TEMP_FOLDER);
 	char *fnp = fileName + strlen(UPDATE_TEMP_FOLDER);
-	FILE *file;
+	NUSFILE *file;
 	size_t extracted;
 	char *lastSlash;
 	char *lspp;
@@ -354,7 +354,7 @@ void update(char *newVersion)
 			path[0] = '\0';
 		
 		sprintf(fnp, "%s%s", path, zipFileName);
-		file = fopen(fileName, "wb");
+		file = openFile(fileName, "wb");
 		if(file == NULL)
 		{
 			unzCloseCurrentFile(zip);

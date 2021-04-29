@@ -51,9 +51,10 @@ void generateTik(const char *path, const char *titleID)
 	if(encKey == NULL)
 		return;
 	
-	FILE *tik = fopen(path, "wb");
+	NUSFILE *tik = openFile(path, "wb");
 	if(tik == NULL)
 	{
+		MEMFreeToDefaultHeap(encKey);
 		char err[1044];
 		sprintf(err, "Could not open path\n%s", path);
 		drawErrorFrame(err, B_RETURN);

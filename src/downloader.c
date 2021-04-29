@@ -321,21 +321,21 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 	downloaded = onDisc = 0.0D;
 	
 	bool fileExist;
-	FILE *fp;
+	void *fp;
 	uint32_t fileSize;
 	if(toRam)
 	{
 		fileExist = false;
-		fp = open_memstream(&ramBuf, &ramBufSize);
+		fp = (void *)open_memstream(&ramBuf, &ramBufSize);
 	}
 	else
 	{
 		fileExist = resume && fileExists(file);
-		fp = fopen(file, fileExist ? "rb+" : "wb");
+		fp = (void *)openFile(file, fileExist ? "rb+" : "wb");
 		
 		if(fileExist)
 		{
-			fileSize = getFilesize(fp);
+			fileSize = getFilesize(((NUSFILE *)fp)->fd);
 			fileExist = fileSize > 0;
 		}
 		else
@@ -345,7 +345,10 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 	CURL *curl = curl_easy_init();
 	if(curl == NULL)
 	{
-		fclose(fp);
+		if(toRam)
+			fclose((FILE *)fp);
+		else
+			addToIOQueue(NULL, 0, 0, (NUSFILE *)fp);
 		
 		char err[128];
 		sprintf(err, "ERROR: curl_easy_init failed\nFile: %s", file);
@@ -387,8 +390,10 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 		ret |= curl_easy_setopt(curl, CURLOPT_WRITEHEADER, &fileSize);
 	}
 	
-	ret |= curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, toRam ? fwrite : addToIOQueue);
-	ret |= curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+	size_t (*writeFunction)(void *, size_t, size_t, FILE *) = toRam ? fwrite : addToIOQueue;
+	
+	ret |= curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeFunction);
+	ret |= curl_easy_setopt(curl, CURLOPT_WRITEDATA, (FILE *)fp);
 
 	ret |= curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressCallback);
 	curlProgressData data;
@@ -399,17 +404,13 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 	
 	ret |= curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 	
-	if(!toRam && (type & FILE_TYPE_TOUSB) != FILE_TYPE_TOUSB)
-	{
-		debugPrintf("Limiting DL speed");
-		ret |= curl_easy_setopt(curl, CURLOPT_MAX_RECV_SPEED_LARGE, (curl_off_t)SPEED_LIMIT_USB);
-	}
-	else
-		debugPrintf("Not to SD, no limit");
-	
 	if(ret != CURLE_OK)
 	{
-		fclose(fp);
+		if(toRam)
+			fclose((FILE *)fp);
+		else
+			addToIOQueue(NULL, 0, 0, (NUSFILE *)fp);
+		
 		curl_easy_cleanup(curl);
 		debugPrintf("curl_easy_setopt error: %s", curlError);
 		return 1;
@@ -422,11 +423,11 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 	
 	if(toRam)
 	{
-		fflush(fp);
-		fclose(fp);
+		fflush((FILE *)fp);
+		fclose((FILE *)fp);
 	}
 	else
-		addToIOQueue(NULL, 0, 0, fp);
+		addToIOQueue(NULL, 0, 0, (NUSFILE *)fp);
 	
 	if(ret != CURLE_OK && !(fileExist && ret == CURLE_WRITE_ERROR && fileSize == 0))
 	{
@@ -822,7 +823,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 		drawFrame();
 		showFrame();
 		
-		FILE *cert = fopen(tInstallDir, "wb");
+		NUSFILE *cert = openFile(tInstallDir, "wb");
 		
 		// NUSspli adds its own header.
 		writeHeader(cert, FILE_TYPE_CERT);
