@@ -102,10 +102,7 @@ void drawDownloadFrame(const char *titleID, const char *titleVer, const char *fo
 	textToFrame(line--, 0, "Press \uE002 to install to NAND");
 	if(usbMounted)
 		textToFrame(line--, 0, "Press \uE000 to install to USB");
-	lineToFrame(line--, SCREEN_COLOR_WHITE);
-	
-	if(!dlToUSB)
-		textToFrame(--line, 0, "WARNING: Downloading to SD is slow!");
+	lineToFrame(line, SCREEN_COLOR_WHITE);
 	
 	drawFrame();
 }
