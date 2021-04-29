@@ -454,7 +454,6 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 		
 		switch(ret) {
 			case CURLE_RANGE_ERROR:
-				fseek(fp, 0, SEEK_SET);
 				return downloadFile(url, file, type, false);
 			case CURLE_FAILED_INIT:
 			case CURLE_COULDNT_RESOLVE_HOST:
