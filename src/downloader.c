@@ -481,7 +481,6 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 		
 		drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
 		size_t framesLeft = 30 * 60; // 30 seconds with 60 FPS
-		size_t test = 0;
 		
 		while(AppRunning())
 		{
