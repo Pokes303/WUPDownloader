@@ -384,7 +384,7 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 		{
 			onDisc = fileSize;
 			ret |= curl_easy_setopt(curl, CURLOPT_RESUME_FROM, fileSize);
-			fseek(fp, 0, SEEK_END);
+			fseek(((NUSFILE *)fp)->fd, 0, SEEK_END);
 		}
 		ret |= curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerCallback);
 		ret |= curl_easy_setopt(curl, CURLOPT_WRITEHEADER, &fileSize);
