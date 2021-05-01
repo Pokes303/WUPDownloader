@@ -35,7 +35,6 @@
 #define IOT_STACK_SIZE			0x2000
 #define MAX_IO_BUFFER_SIZE	SOCKET_BUFSIZE
 #define MAX_IO_QUEUE_ENTRIES	((128 * 1024 * 1024) / MAX_IO_BUFFER_SIZE) // 128 MB
-#define IO_MAX_OPEN_FILES	8
 #define IO_MAX_FILE_BUFFER	(1 * 1024 * 1024) // 1 MB
 
 typedef struct
@@ -45,13 +44,6 @@ typedef struct
 	volatile size_t size;
 	volatile bool inUse;
 } WriteQueueEntry;
-
-typedef struct
-{
-	NUSFILE *file;
-	uint8_t *buf;
-	size_t i;
-} OpenFile;
 
 static OSThread ioThread;
 static uint8_t *ioThreadStack;
@@ -63,8 +55,6 @@ static WriteQueueEntry *queueEntries;
 static volatile uint32_t activeReadBuffer;
 static volatile uint32_t activeWriteBuffer;
 
-static OpenFile files[IO_MAX_OPEN_FILES];
-
 static void executeIOQueue()
 {
 	uint32_t asl = activeWriteBuffer;
@@ -74,74 +64,16 @@ static void executeIOQueue()
 		return;
 	}
 	
-	int openFile = 0;
-	while(true)
-	{
-		if(files[openFile].file == queueEntries[asl].file)
-			break;
-		
-		if(++openFile == IO_MAX_OPEN_FILES)
-		{
-			openFile = 0;
-			while(true)
-			{
-				if(files[openFile].file == NULL)
-				{
-					files[openFile].file = queueEntries[asl].file;
-					break;
-				}
-				
-				if(++openFile == IO_MAX_OPEN_FILES)
-				{
-					debugPrintf("TOO MANY OPEN FILES!");
-					return;
-				}
-			}
-		}
-	}
-	
 	if(queueEntries[asl].size != 0) // WRITE command
-	{
-		size_t r = 0;
-		if(files[openFile].i + queueEntries[asl].size >= IO_MAX_FILE_BUFFER) // small buffer don't fit into the large buffer anymore
-		{
-			r = IO_MAX_FILE_BUFFER - files[openFile].i; // get free space of large buffer
-			if(r != 0)
-			{
-				OSBlockMove(files[openFile].buf + files[openFile].i, queueEntries[asl].buf, r, false); // make the large buffer full
-				queueEntries[asl].size -= r; // adjust small buffers size
-			}
-			
-			fwrite(files[openFile].buf, 1, IO_MAX_FILE_BUFFER, files[openFile].file->fd); // Write large buffer to disc
-			files[openFile].i = 0; // set large buffer as empty
-			
-			if(queueEntries[asl].size == 0)
-				goto ioQueueExitPoint;
-		}
-		
-		// Copy small buffer into large buffer but do not copy what might have been written to disc already (that's the + r)
-		OSBlockMove(files[openFile].buf + files[openFile].i, queueEntries[asl].buf + r, queueEntries[asl].size, false);
-		files[openFile].i += queueEntries[asl].size;
-	}
+		fwrite(queueEntries[asl].buf, 1, queueEntries[asl].size, queueEntries[asl].file->fd);
 	else // Close command
 	{
-		// In case there's something which needs to go to disc: Write it
-		if(files[openFile].i != 0)
-		{
-			fwrite(files[openFile].buf, 1, files[openFile].i, files[openFile].file->fd);
-			files[openFile].i = 0;
-		}
-		
-		// Close the file
-		fflush(files[openFile].file->fd);
-		fclose(files[openFile].file->fd);
-		MEMFreeToDefaultHeap(files[openFile].file->buffer);
-		MEMFreeToDefaultHeap(files[openFile].file);
-		files[openFile].file = NULL;
+		fflush(queueEntries[asl].file->fd);
+		fclose(queueEntries[asl].file->fd);
+		MEMFreeToDefaultHeap(queueEntries[asl].file->buffer);
+		MEMFreeToDefaultHeap(queueEntries[asl].file);
 	}
 	
-ioQueueExitPoint:
-	;
 	uint32_t osl = asl;
 	if(++asl == MAX_IO_QUEUE_ENTRIES)
 		asl = 0;
@@ -191,23 +123,6 @@ bool initIOThread()
 		queueEntries[i].inUse = false;
 	}
 	
-	ptr = MEMAllocFromDefaultHeap(IO_MAX_OPEN_FILES * IO_MAX_FILE_BUFFER);
-	if(ptr == NULL)
-	{
-		MEMFreeToDefaultHeap(ioThreadStack);
-		MEMFreeToDefaultHeap((void *)queueEntries[0].buf);
-		MEMFreeToDefaultHeap((void *)queueEntries);
-		debugPrintf("OUT OF MEMORY (ptr2)!");
-		return false;
-	}
-	
-	for(int i = 0; i < IO_MAX_OPEN_FILES; i++, ptr += IO_MAX_FILE_BUFFER)
-	{
-		files[i].file = NULL;
-		files[i].buf = ptr;
-		files[i].i = 0;
-	}
-	
 	activeReadBuffer = activeWriteBuffer = 0;
 	
 	ioRunning = true;
@@ -231,7 +146,6 @@ void shutdownIOThread()
 	MEMFreeToDefaultHeap(ioThreadStack);
 	MEMFreeToDefaultHeap((void *)queueEntries[0].buf);
 	MEMFreeToDefaultHeap((void *)queueEntries);
-	MEMFreeToDefaultHeap(files[0].buf);
 	debugPrintf("I/O thread returned: %d", ret);
 }
 
