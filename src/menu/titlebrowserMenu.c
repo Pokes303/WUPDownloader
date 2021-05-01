@@ -108,10 +108,7 @@ void drawTBMenuFrame2(const TitleEntry *entry, bool installed, const char *folde
 	if(installed)
 		textToFrame(line--, 0, "Press \uE079 to uninstall");
 	
-	lineToFrame(line--, SCREEN_COLOR_WHITE);
-	
-	if(!dlToUSB)
-		textToFrame(--line, 0, "WARNING: Downloading to SD is slow!");
+	lineToFrame(line, SCREEN_COLOR_WHITE);
 	
 	drawFrame();
 }
