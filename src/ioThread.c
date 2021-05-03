@@ -39,7 +39,7 @@
 typedef struct
 {
 	volatile NUSFILE *file;
-	volatile uint8_t *buf;
+	void *buf;
 	volatile size_t size;
 	volatile bool inUse;
 } WriteQueueEntry;
@@ -69,8 +69,8 @@ static void executeIOQueue()
 	{
 		fflush(queueEntries[asl].file->fd);
 		fclose(queueEntries[asl].file->fd);
-		MEMFreeToDefaultHeap(queueEntries[asl].file->buffer);
-		MEMFreeToDefaultHeap(queueEntries[asl].file);
+		MEMFreeToDefaultHeap((void *)queueEntries[asl].file->buffer);
+		MEMFreeToDefaultHeap((void *)queueEntries[asl].file);
 	}
 	
 	uint32_t osl = asl;
@@ -118,7 +118,7 @@ bool initIOThread()
 	
 	for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; i++, ptr += IO_BUFSIZE)
 	{
-		queueEntries[i].buf = ptr;
+		queueEntries[i].buf = (void *)ptr;
 		queueEntries[i].inUse = false;
 	}
 	
@@ -143,7 +143,7 @@ void shutdownIOThread()
 	int ret;
 	OSJoinThread(&ioThread, &ret);
 	MEMFreeToDefaultHeap(ioThreadStack);
-	MEMFreeToDefaultHeap((void *)queueEntries[0].buf);
+	MEMFreeToDefaultHeap(queueEntries[0].buf);
 	MEMFreeToDefaultHeap((void *)queueEntries);
 	debugPrintf("I/O thread returned: %d", ret);
 }

@@ -390,9 +390,7 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 		ret |= curl_easy_setopt(curl, CURLOPT_WRITEHEADER, &fileSize);
 	}
 	
-	size_t (*writeFunction)(void *, size_t, size_t, FILE *) = toRam ? fwrite : addToIOQueue;
-	
-	ret |= curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeFunction);
+	ret |= curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, toRam ? fwrite : (size_t (*)(const void *, size_t, size_t, FILE *))addToIOQueue);
 	ret |= curl_easy_setopt(curl, CURLOPT_WRITEDATA, (FILE *)fp);
 
 	ret |= curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressCallback);

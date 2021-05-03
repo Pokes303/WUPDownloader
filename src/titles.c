@@ -184,7 +184,7 @@ bool initTitles()
 	drawFrame();
 	showFrame();
 	
-	cJSON *json = cJSON_ParseWithLength(useOnline ? ramBuf : titleDB_json, useOnline ? ramBufSize : titleDB_json_size);
+	cJSON *json = cJSON_ParseWithLength(useOnline ? ramBuf : (char *)titleDB_json, useOnline ? ramBufSize : titleDB_json_size);
 	if(json == NULL)
 	{
 		clearRamBuf();
