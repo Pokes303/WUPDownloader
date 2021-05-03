@@ -28,6 +28,7 @@
 
 #include <config.h>
 #include <downloader.h>
+#include <file.h>
 #include <input.h>
 #include <installer.h>
 #include <ioThread.h>
@@ -50,8 +51,7 @@
 
 #define USERAGENT		"NUSspli/"NUSSPLI_VERSION" (WarezLoader, like WUPDownloader)" // TODO: Spoof eShop here?
 #define DLBGT_STACK_SIZE	0x2000
-#define SOCKLIB_BUFSIZE		(SOCKET_BUFSIZE * 4) // For send & receive + double buffering
-#define SPEED_LIMIT_USB		(512 * 1024) // B/s
+#define SOCKLIB_BUFSIZE		(IO_BUFSIZE * 4) // For send & receive + double buffering
 
 uint16_t contents = 0xFFFF; //Contents count
 uint16_t dcontent = 0xFFFF; //Actual content number
@@ -286,7 +286,7 @@ static curl_off_t initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 	if(setsockopt(socket, SOL_SOCKET, 0x10000, &o, sizeof(o)) != 0)
 		return 1;
 	
-	o = SOCKET_BUFSIZE;
+	o = IO_BUFSIZE;
 	// Set send buffersize
 	if(setsockopt(socket, SOL_SOCKET, SO_SNDBUF, &o, sizeof(o)) != 0)
 		return 1;

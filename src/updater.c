@@ -56,7 +56,6 @@
 #define UPDATE_AROMA_FOLDER "fs:/vol/external01/wiiu/apps/"
 #define UPDATE_AROMA_FILE "NUSspli.wuhb"
 #define UPDATE_HBL_FOLDER "fs:/vol/external01/wiiu/apps/NUSspli"
-#define UPDATE_ZIP_BUF SOCKET_BUFSIZE
 
 bool updateCheck()
 {
@@ -278,7 +277,7 @@ void update(char *newVersion)
 		return;
 	}
 	
-	uint8_t *buf = MEMAllocFromDefaultHeap(UPDATE_ZIP_BUF);
+	uint8_t *buf = MEMAllocFromDefaultHeap(IO_BUFSIZE);
 	if(buf == NULL)
 	{
 		clearRamBuf();
@@ -366,7 +365,7 @@ void update(char *newVersion)
 		
 		while(true)
 		{
-			extracted = unzReadCurrentFile(zip, buf, UPDATE_ZIP_BUF);
+			extracted = unzReadCurrentFile(zip, buf, IO_BUFSIZE);
 			if(extracted < 0)
 			{
 				addToIOQueue(NULL, 0, 0, file);

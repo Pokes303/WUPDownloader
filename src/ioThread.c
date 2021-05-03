@@ -28,14 +28,13 @@
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
 
-#include <downloader.h>
+#include <file.h>
 #include <ioThread.h>
 #include <utils.h>
 
-#define IOT_STACK_SIZE			0x2000
-#define MAX_IO_BUFFER_SIZE	SOCKET_BUFSIZE
-#define MAX_IO_QUEUE_ENTRIES	((64 * 1024 * 1024) / MAX_IO_BUFFER_SIZE) // 128 MB
-#define IO_MAX_FILE_BUFFER	SOCKET_BUFSIZE // TODO: Look if 1 MB (1 * 1024 * 1024) is better
+#define IOT_STACK_SIZE		0x2000
+#define MAX_IO_QUEUE_ENTRIES	((64 * 1024 * 1024) / IO_BUFSIZE) // 128 MB
+#define IO_MAX_FILE_BUFFER	IO_BUFSIZE // TODO: Look if 1 MB (1 * 1024 * 1024) is better
 
 typedef struct
 {
@@ -108,7 +107,7 @@ bool initIOThread()
 		return false;
 	}
 	
-	uint8_t *ptr = (uint8_t *)MEMAllocFromDefaultHeap(MAX_IO_QUEUE_ENTRIES * MAX_IO_BUFFER_SIZE);
+	uint8_t *ptr = (uint8_t *)MEMAllocFromDefaultHeap(MAX_IO_QUEUE_ENTRIES * IO_BUFSIZE);
 	if(ptr == NULL)
 	{
 		MEMFreeToDefaultHeap(ioThreadStack);
@@ -117,7 +116,7 @@ bool initIOThread()
 		return false;
 	}
 	
-	for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; i++, ptr += MAX_IO_BUFFER_SIZE)
+	for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; i++, ptr += IO_BUFSIZE)
 	{
 		queueEntries[i].buf = ptr;
 		queueEntries[i].inUse = false;
@@ -178,14 +177,14 @@ retryAddingToQueue:
 			return 0;
 		}
 		
-		if(size > MAX_IO_BUFFER_SIZE)
+		if(size > IO_BUFSIZE)
 		{
-			debugPrintf("size > %i (%i)", MAX_IO_BUFFER_SIZE, size);
+			debugPrintf("size > %i (%i)", IO_BUFSIZE, size);
 			ioWriteLock = false;
-			addToIOQueue(buf, 1, MAX_IO_BUFFER_SIZE, file);
+			addToIOQueue(buf, 1, IO_BUFSIZE, file);
 			const uint8_t *newPtr = buf;
-			newPtr += MAX_IO_BUFFER_SIZE;
-			addToIOQueue((const void *)newPtr, 1, size - MAX_IO_BUFFER_SIZE, file);
+			newPtr += IO_BUFSIZE;
+			addToIOQueue((const void *)newPtr, 1, size - IO_BUFSIZE, file);
 			return n;
 		}
 		
