@@ -33,8 +33,8 @@
 #include <utils.h>
 
 #define IOT_STACK_SIZE		0x2000
-#define MAX_IO_QUEUE_ENTRIES	((64 * 1024 * 1024) / IO_BUFSIZE) // 128 MB
-#define IO_MAX_FILE_BUFFER	IO_BUFSIZE // TODO: Look if 1 MB (1 * 1024 * 1024) is better
+#define MAX_IO_QUEUE_ENTRIES	((128 * 1024 * 1024) / IO_BUFSIZE) // 128 MB
+#define IO_MAX_FILE_BUFFER	(1 * 1024 * 1024) // 512 KB
 
 typedef struct
 {
