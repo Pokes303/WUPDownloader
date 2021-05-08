@@ -40,7 +40,7 @@
 
 bool vibrateWhenFinished = true;
 
-void drawPDMenuFrame(const TitleEntry *entry, uint64_t size, bool installed, const char *folderName, bool usbMounted, bool dlToUSB, bool keepFiles)
+void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t size, bool installed, const char *folderName, bool usbMounted, bool dlToUSB, bool keepFiles)
 {
 	startNewFrame();
 	textToFrame(0, 0, "Name:");
@@ -84,8 +84,11 @@ void drawPDMenuFrame(const TitleEntry *entry, uint64_t size, bool installed, con
 	textToFrame(2, 0, "Size:");
 	textToFrame(3, 3, toFrame);
 	
-	textToFrame(4, 0, "Custom folder name [ASCII only]:");
-	textToFrame(5, 3, folderName);
+	textToFrame(4, 0, "Provided title version [Only numbers]:");
+	textToFrame(5, 3, titleVer[0] == '\0' ? "<LATEST>" : titleVer);
+	
+	textToFrame(6, 0, "Custom folder name [ASCII only]:");
+	textToFrame(7, 3, folderName);
 	
 	strcpy(toFrame, "Press \uE045 to ");
 	strcat(toFrame, vibrateWhenFinished ? "deactivate" : "activate");
@@ -112,6 +115,7 @@ void drawPDMenuFrame(const TitleEntry *entry, uint64_t size, bool installed, con
 	lineToFrame(line--, SCREEN_COLOR_WHITE);
 	
 	textToFrame(line--, 0, "Press \uE07A to set a custom name to the download folder");
+	textToFrame(line--, 0, "Press \uE07C to set the title version");
 	lineToFrame(line--, SCREEN_COLOR_WHITE);
 	
 	textToFrame(line--, 0, "Press \uE001 to return");
@@ -146,36 +150,7 @@ void predownloadMenu(const TitleEntry *entry)
 	
 	debugPrintf("Downloading TMD...");
 	
-	char downloadUrl[256];
-	strcpy(downloadUrl, DOWNLOAD_URL);
-	strcat(downloadUrl, tid);
-	strcat(downloadUrl, "/tmd");
-	MEMFreeToDefaultHeap(tid);
-//	if(strlen(titleVer) > 0)
-//	{
-//		strcat(downloadUrl, ".");
-//		strcat(downloadUrl, titleVer);
-//	}
 	
-	if(downloadFile(downloadUrl, "TMD", FILE_TYPE_TMD | FILE_TYPE_TORAM, true))
-	{
-		clearRamBuf();
-		debugPrintf("Error downloading TMD");
-		return;
-	}
-	
-	TMD *tmd = (TMD *)ramBuf;
-	TMD_CONTENT *content;
-	uint64_t dls = 0;
-	for(uint16_t i = 0; i < tmd->num_contents; i++)
-	{
-		content = tmdGetContent(tmd, i);
-		if((content->type & 0x0003) == 0x0003)
-			dls += 20;
-		
-		dls += content->size;
-		debugPrintf("size: %" PRIu64, dls);
-	}
 	
 	MCPTitleListType titleList;
 	bool installed = MCP_GetTitleInfo(mcpHandle, entry->tid, &titleList) == 0;
@@ -184,20 +159,55 @@ void predownloadMenu(const TitleEntry *entry)
 	bool dlToUSB = usbMounted;
 	bool keepFiles = true;
 	char folderName[FILENAME_MAX - 11];
-	folderName[0] = '\0';
-	
-	drawPDMenuFrame(entry, dls, installed, folderName, usbMounted, dlToUSB, keepFiles);
+	char titleVer[33];
+	folderName[0] = titleVer[0] = '\0';
+	TMD *tmd;
+	TMD_CONTENT *content;
+	uint64_t dls;
 	
 	bool loop = true;
 	bool inst, toUSB;
 	bool uninstall = false;
 	bool redraw = false;
+	
+	char downloadUrl[256];
+downloadTMD:
+	strcpy(downloadUrl, DOWNLOAD_URL);
+	strcat(downloadUrl, tid);
+	strcat(downloadUrl, "/tmd");
+	MEMFreeToDefaultHeap(tid);
+	if(strlen(titleVer) > 0)
+	{
+		strcat(downloadUrl, ".");
+		strcat(downloadUrl, titleVer);
+	}
+	
+	if(downloadFile(downloadUrl, "TMD", FILE_TYPE_TMD | FILE_TYPE_TORAM, true))
+	{
+		clearRamBuf();
+		debugPrintf("Error downloading TMD");
+		return;
+	}
+	
+	tmd = (TMD *)ramBuf;
+	dls = 0;
+	for(uint16_t i = 0; i < tmd->num_contents; i++)
+	{
+		content = tmdGetContent(tmd, i);
+		if((content->type & 0x0003) == 0x0003)
+			dls += 20;
+		
+		dls += content->size;
+	}
+	
+	drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlToUSB, keepFiles);
+	
 	while(loop && AppRunning())
 	{
 		if(app == APP_STATE_BACKGROUND)
 			continue;
 		if(app == APP_STATE_RETURNING)
-			drawPDMenuFrame(entry, dls, installed, folderName, usbMounted, dlToUSB, keepFiles);
+			drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlToUSB, keepFiles);
 		
 		showFrame();
 		
@@ -220,6 +230,13 @@ void predownloadMenu(const TitleEntry *entry)
 			toUSB = loop = false;
 		}
 		
+		if(vpad.trigger & VPAD_BUTTON_RIGHT)
+		{
+			if(!showKeyboard(KEYBOARD_TYPE_RESTRICTED, titleVer, CHECK_NUMERICAL, 5, false, titleVer, NULL))
+				titleVer[0] = '\0';
+			clearRamBuf();
+			goto downloadTMD;
+		}
 		if(vpad.trigger & VPAD_BUTTON_DOWN)
 		{
 			if(!showKeyboard(KEYBOARD_TYPE_NORMAL, folderName, CHECK_ALPHANUMERICAL, FILENAME_MAX - 11, false, folderName, NULL))
@@ -251,7 +268,7 @@ void predownloadMenu(const TitleEntry *entry)
 		
 		if(redraw)
 		{
-			drawPDMenuFrame(entry, dls, installed, folderName, usbMounted, dlToUSB, keepFiles);
+			drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlToUSB, keepFiles);
 			redraw = false;
 		}
 	}
@@ -269,6 +286,6 @@ void predownloadMenu(const TitleEntry *entry)
 		return;
 	}
 	
-	downloadTitle(tmd, ramBufSize, "\0", folderName, inst, dlToUSB, toUSB, keepFiles);
+	downloadTitle(tmd, ramBufSize, titleVer, folderName, inst, dlToUSB, toUSB, keepFiles);
 	clearRamBuf();
 }
