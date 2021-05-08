@@ -55,7 +55,10 @@ WUT_CHECK_OFFSET(TMD, 0x018C, tid);
 WUT_CHECK_OFFSET(TMD, 0x01DE, num_contents);
 WUT_CHECK_OFFSET(TMD, 0x0B04, contents);
 
-TMD_CONTENT *tmdGetContent(const TMD *tmd, uint16_t i);
+static inline TMD_CONTENT *tmdGetContent(const TMD *tmd, uint16_t i)
+{
+	return (TMD_CONTENT *)(((uint8_t *)&(tmd->contents)) + (i * 0x30));
+}
 
 #ifdef __cplusplus
 }
