@@ -26,6 +26,7 @@
 #include <renderer.h>
 #include <status.h>
 #include <titles.h>
+#include <tmd.h>
 #include <usb.h>
 #include <utils.h>
 #include <menu/predownload.h>
@@ -39,7 +40,7 @@
 
 bool vibrateWhenFinished = true;
 
-void drawPDMenuFrame(const TitleEntry *entry, bool installed, const char *folderName, bool usbMounted, bool dlToUSB, bool keepFiles)
+void drawPDMenuFrame(const TitleEntry *entry, uint64_t size, bool installed, const char *folderName, bool usbMounted, bool dlToUSB, bool keepFiles)
 {
 	startNewFrame();
 	textToFrame(0, 0, "Name:");
@@ -56,8 +57,35 @@ void drawPDMenuFrame(const TitleEntry *entry, bool installed, const char *folder
 	}
 	textToFrame(1, 3, toFrame);
 	
-	textToFrame(2, 0, "Custom folder name [ASCII only]:");
-	textToFrame(3, 3, folderName);
+	char *bs;
+	float fsize;
+	if(size > 1024 * 1024 * 1024)
+	{
+		bs = "GB";
+		fsize = ((float)(size / 1024 / 1024)) / 1024.0F;
+	}
+	else if(size > 1024 * 1924)
+	{
+		bs = "MB";
+		fsize = ((float)(size / 1024)) / 1024.0F;
+	}
+	else if(size > 1024)
+	{
+		bs = "KB";
+		fsize = ((float)size) / 1024.0F;
+	}
+	else
+	{
+		bs = "B";
+		fsize = (float)size;
+	}
+	
+	sprintf(toFrame, "%.02f %s", fsize, bs);
+	textToFrame(2, 0, "Size:");
+	textToFrame(3, 3, toFrame);
+	
+	textToFrame(4, 0, "Custom folder name [ASCII only]:");
+	textToFrame(5, 3, folderName);
 	
 	strcpy(toFrame, "Press \uE045 to ");
 	strcat(toFrame, vibrateWhenFinished ? "deactivate" : "activate");
@@ -105,8 +133,50 @@ void drawPDMenuFrame(const TitleEntry *entry, bool installed, const char *folder
 	drawFrame();
 }
 
+#include <inttypes.h>
+
 void predownloadMenu(const TitleEntry *entry)
 {
+	char *tid = hex(entry->tid, 16);
+	if(tid == NULL)
+	{
+		debugPrintf("OUT OF MEMORY!");
+		return;
+	}
+	
+	debugPrintf("Downloading TMD...");
+	
+	char downloadUrl[256];
+	strcpy(downloadUrl, DOWNLOAD_URL);
+	strcat(downloadUrl, tid);
+	strcat(downloadUrl, "/tmd");
+//	if(strlen(titleVer) > 0)
+//	{
+//		strcat(downloadUrl, ".");
+//		strcat(downloadUrl, titleVer);
+//	}
+	
+	if(downloadFile(downloadUrl, "TMD", FILE_TYPE_TMD | FILE_TYPE_TORAM, true))
+	{
+		clearRamBuf();
+		MEMFreeToDefaultHeap(tid);
+		debugPrintf("Error downloading TMD");
+		return;
+	}
+	
+	TMD *tmd = (TMD *)ramBuf;
+	TMD_CONTENT *content;
+	uint64_t dls = 0;
+	for(uint16_t i = 0; i < tmd->num_contents; i++)
+	{
+		content = tmdGetContent(tmd, i);
+		if((content->type & 0x0003) == 0x0003)
+			dls += 20;
+		
+		dls += content->size;
+		debugPrintf("size: %" PRIu64, dls);
+	}
+	
 	MCPTitleListType titleList;
 	bool installed = MCP_GetTitleInfo(mcpHandle, entry->tid, &titleList) == 0;
 	
@@ -116,7 +186,7 @@ void predownloadMenu(const TitleEntry *entry)
 	char folderName[FILENAME_MAX - 11];
 	folderName[0] = '\0';
 	
-	drawPDMenuFrame(entry, installed, folderName, usbMounted, dlToUSB, keepFiles);
+	drawPDMenuFrame(entry, dls, installed, folderName, usbMounted, dlToUSB, keepFiles);
 	
 	bool loop = true;
 	bool inst, toUSB;
@@ -127,12 +197,16 @@ void predownloadMenu(const TitleEntry *entry)
 		if(app == APP_STATE_BACKGROUND)
 			continue;
 		if(app == APP_STATE_RETURNING)
-			drawPDMenuFrame(entry, installed, folderName, usbMounted, dlToUSB, keepFiles);
+			drawPDMenuFrame(entry, dls, installed, folderName, usbMounted, dlToUSB, keepFiles);
 		
 		showFrame();
 		
 		if(vpad.trigger & VPAD_BUTTON_B)
+		{
+			clearRamBuf();
+			MEMFreeToDefaultHeap(tid);
 			return;
+		}
 		
 		if(usbMounted && vpad.trigger & VPAD_BUTTON_A)
 		{
@@ -178,25 +252,25 @@ void predownloadMenu(const TitleEntry *entry)
 		
 		if(redraw)
 		{
-			drawPDMenuFrame(entry, installed, folderName, usbMounted, dlToUSB, keepFiles);
+			drawPDMenuFrame(entry, dls, installed, folderName, usbMounted, dlToUSB, keepFiles);
 			redraw = false;
 		}
 	}
 	
+	clearRamBuf();
 	if(!AppRunning())
+	{
+		MEMFreeToDefaultHeap(tid);
 		return;
+	}
 	
 	if(uninstall)
 	{
+		MEMFreeToDefaultHeap(tid);
 		deinstall(titleList, false);
 		return;
 	}
 	
-	char *tid = hex(entry->tid, 16);
-	if(tid != NULL)
-	{
-		downloadTitle(tid, "\0", folderName, inst, dlToUSB, toUSB, keepFiles);
-		MEMFreeToDefaultHeap(tid);
-	}
-	// TODO: Else
+	downloadTitle(tid, "\0", folderName, inst, dlToUSB, toUSB, keepFiles);
+	MEMFreeToDefaultHeap(tid);
 }
