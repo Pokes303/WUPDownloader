@@ -235,9 +235,9 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 			multiplier = 1 << 30;
 			multiplierName = "GB";
 		}
-		barToFrame(1, 80, 40, (float)(data->data->dlnow / data->data->dltotal) * 100.0f);
+		barToFrame(1, 77, 40, (float)(data->data->dlnow / data->data->dltotal) * 100.0f);
 		sprintf(tmpString, "%.2f / %.2f %s", data->data->dlnow / multiplier, data->data->dltotal / multiplier, multiplierName);
-		textToFrame(1, 121, tmpString);
+		textToFrame(1, 118, tmpString);
 	}
 	
 	if(dling)
