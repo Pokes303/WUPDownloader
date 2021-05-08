@@ -169,33 +169,6 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 	
 	int multiplier;
 	char *multiplierName;
-	if(data->data != NULL)
-	{
-		if(data->data->dltotal < 1024.0D)
-		{
-			multiplier = 1;
-			multiplierName = "B";
-		}
-		else if(data->data->dltotal < 1024.0D * 1024.0D)
-		{
-			multiplier = 1 << 10;
-			multiplierName = "KB";
-		}
-		else if(data->data->dltotal < 1024.0D * 1024.0D * 1024.0D)
-		{
-			multiplier = 1 << 20;
-			multiplierName = "MB";
-		}
-		else
-		{
-			multiplier = 1 << 30;
-			multiplierName = "GB";
-		}
-		barToFrame(1, 80, 40, (float)(data->data->dlnow / data->data->dltotal) * 100.0f);
-		sprintf(tmpString, "%.2f / %.2f %s", data->data->dlnow / multiplier, data->data->dltotal / multiplier, multiplierName);
-		textToFrame(1, 121, tmpString);
-	}
-	
 	if(!dling)
 	{
 		strcpy(tmpString, "Preparing ");
@@ -237,10 +210,34 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 			data->data->dlnow = data->data->dltmp + dlnow;
 	}
 	
-	if(data->data != 0)
+	if(data->data != NULL)
 	{
 		sprintf(tmpString, "(%d/%d)", data->data->dcontent + 1, data->data->contents);
 		textToFrame(0, ALIGNED_CENTER, tmpString);
+		
+		if(data->data->dltotal < 1024.0D)
+		{
+			multiplier = 1;
+			multiplierName = "B";
+		}
+		else if(data->data->dltotal < 1024.0D * 1024.0D)
+		{
+			multiplier = 1 << 10;
+			multiplierName = "KB";
+		}
+		else if(data->data->dltotal < 1024.0D * 1024.0D * 1024.0D)
+		{
+			multiplier = 1 << 20;
+			multiplierName = "MB";
+		}
+		else
+		{
+			multiplier = 1 << 30;
+			multiplierName = "GB";
+		}
+		barToFrame(1, 80, 40, (float)(data->data->dlnow / data->data->dltotal) * 100.0f);
+		sprintf(tmpString, "%.2f / %.2f %s", data->data->dlnow / multiplier, data->data->dltotal / multiplier, multiplierName);
+		textToFrame(1, 121, tmpString);
 	}
 	
 	if(dling)
