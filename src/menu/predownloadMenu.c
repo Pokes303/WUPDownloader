@@ -150,6 +150,7 @@ void predownloadMenu(const TitleEntry *entry)
 	strcpy(downloadUrl, DOWNLOAD_URL);
 	strcat(downloadUrl, tid);
 	strcat(downloadUrl, "/tmd");
+	MEMFreeToDefaultHeap(tid);
 //	if(strlen(titleVer) > 0)
 //	{
 //		strcat(downloadUrl, ".");
@@ -159,7 +160,6 @@ void predownloadMenu(const TitleEntry *entry)
 	if(downloadFile(downloadUrl, "TMD", FILE_TYPE_TMD | FILE_TYPE_TORAM, true))
 	{
 		clearRamBuf();
-		MEMFreeToDefaultHeap(tid);
 		debugPrintf("Error downloading TMD");
 		return;
 	}
@@ -204,7 +204,6 @@ void predownloadMenu(const TitleEntry *entry)
 		if(vpad.trigger & VPAD_BUTTON_B)
 		{
 			clearRamBuf();
-			MEMFreeToDefaultHeap(tid);
 			return;
 		}
 		
@@ -257,20 +256,19 @@ void predownloadMenu(const TitleEntry *entry)
 		}
 	}
 	
-	clearRamBuf();
 	if(!AppRunning())
 	{
-		MEMFreeToDefaultHeap(tid);
+		clearRamBuf();
 		return;
 	}
 	
 	if(uninstall)
 	{
-		MEMFreeToDefaultHeap(tid);
+		clearRamBuf();
 		deinstall(titleList, false);
 		return;
 	}
 	
-	downloadTitle(tid, "\0", folderName, inst, dlToUSB, toUSB, keepFiles);
-	MEMFreeToDefaultHeap(tid);
+	downloadTitle(tmd, ramBufSize, "\0", folderName, inst, dlToUSB, toUSB, keepFiles);
+	clearRamBuf();
 }

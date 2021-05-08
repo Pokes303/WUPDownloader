@@ -26,6 +26,7 @@
 #include <stdbool.h>
 
 #include <file.h>
+#include <tmd.h>
 #include <menu/download.h>
 
 #ifdef __cplusplus
@@ -41,7 +42,7 @@ extern size_t ramBufSize;
 bool initDownloader();
 void deinitDownloader();
 int downloadFile(const char *url, char *file, FileType type, bool resume);
-bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles);
+bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles);
 void clearRamBuf();
 
 #ifdef __cplusplus

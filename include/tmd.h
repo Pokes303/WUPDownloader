@@ -44,15 +44,18 @@ WUT_CHECK_OFFSET(TMD_CONTENT, 0x06, type);
 WUT_CHECK_OFFSET(TMD_CONTENT, 0x08, size);
 
 typedef struct WUT_PACKED {
-	WUT_UNKNOWN_BYTES(0x01DE);
+	WUT_UNKNOWN_BYTES(0x018C);
+	uint64_t tid;
+	WUT_UNKNOWN_BYTES(0x01DE - 0x018C - 8);
 	uint16_t num_contents;
 	WUT_UNKNOWN_BYTES(0x0B04 - 0x01E0);
 	void *contents;
 } TMD;
+WUT_CHECK_OFFSET(TMD, 0x018C, tid);
 WUT_CHECK_OFFSET(TMD, 0x01DE, num_contents);
 WUT_CHECK_OFFSET(TMD, 0x0B04, contents);
 
-TMD_CONTENT *tmdGetContent(TMD *tmd, uint16_t i);
+TMD_CONTENT *tmdGetContent(const TMD *tmd, uint16_t i);
 
 #ifdef __cplusplus
 }

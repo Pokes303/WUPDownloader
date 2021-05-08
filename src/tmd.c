@@ -23,7 +23,7 @@
 
 #include <tmd.h>
 
-TMD_CONTENT *tmdGetContent(TMD *tmd, uint16_t i)
+TMD_CONTENT *tmdGetContent(const TMD *tmd, uint16_t i)
 {
 	i *= 0x30;
 	uint8_t *ptr = (uint8_t *)&(tmd->contents);

@@ -40,6 +40,7 @@
 #include <status.h>
 #include <ticket.h>
 #include <titles.h>
+#include <tmd.h>
 #include <utils.h>
 
 #include <coreinit/filesystem.h>
@@ -587,8 +588,9 @@ void showPrepScreen(const char *gameName)
 	showFrame();
 }
 
-bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles)
+bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles)
 {
+	char *tid = hex(tmd->tid, 16);
 	const char *gameName = tid2name(tid);
 	if(gameName == NULL)
 		gameName = "UNKNOWN";
@@ -656,6 +658,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 		if(mkdir(installDir, 777) == -1)
 		{
 			int ie = errno;
+			MEMFreeToDefaultHeap(tid);
 			char *toScreen = getToFrameBuffer();
 			switch(ie)
 			{
@@ -693,35 +696,26 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 	else
 		addToScreenLog("WARNING: The download directory already exists");
 	
-	debugPrintf("Downloading TMD...");
-	char tDownloadUrl[256];
-	strcpy(tDownloadUrl, downloadUrl);
-	strcat(tDownloadUrl, "tmd");
-	if(strlen(titleVer) > 0)
-	{
-		strcat(tDownloadUrl, ".");
-		strcat(tDownloadUrl, titleVer);
-	}
-	char tmd[FILENAME_MAX + 37];
-	strcpy(tmd, installDir);
-	strcat(tmd, "title.tmd");
+	debugPrintf("Saving TMD...");
+	char tmdp[FILENAME_MAX + 37];
+	strcpy(tmdp, installDir);
+	strcat(tmdp, "title.tmd");
 	contents = 0xFFFF;
-	FileType ft = FILE_TYPE_TMD;
-	if(dlToUSB)
-		ft |= FILE_TYPE_TOUSB;
 	
-	if(downloadFile(tDownloadUrl, tmd, ft, true))
+	NUSFILE *fp = openFile(tmdp, "wb");
+	if(fp == NULL)
 	{
-		debugPrintf("Error downloading TMD");
-		return true;
+		//TODO
 	}
-	flushIOQueue();
-	addToScreenLog("TMD Downloaded");
+	
+	addToIOQueue(tmd, 1, tmdSize, fp);
+	addToIOQueue(NULL, 0, 0, fp);
+	addToScreenLog("TMD saved");
 	
 	char *toScreen = getToFrameBuffer();
 	strcpy(toScreen, "=>Title type: ");
 	bool hasDependencies;
-	switch(readUInt32(tmd, 0x18C)) //Title type
+	switch(*(uint32_t *)&(tmd->tid)) //Title type
 	{
 		case TID_HIGH_GAME:
 			strcat(toScreen, "eShop or Packed");
@@ -765,21 +759,19 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 			hasDependencies = false;
 			break;
 		default:
-			strcat(toScreen, "Unknown (");
-			char *h = hex(readUInt32(tmd, 0x18C), 8);
-			strcat(toScreen, h);
-			MEMFreeToDefaultHeap(h);
-			strcat(toScreen, ")");
+			sprintf(toScreen + strlen(toScreen), "Unknown (0x%08X)", *(uint32_t *)&(tmd->tid));
 			hasDependencies = false;
 			break;
 	}
 	addToScreenLog(toScreen);
+	char tDownloadUrl[256];
 	strcpy(tDownloadUrl, downloadUrl);
 	strcat(tDownloadUrl, "cetk");
 	
 	char tInstallDir[FILENAME_MAX + 37];
 	strcpy(tInstallDir, installDir);
 	strcat(tInstallDir, "title.tik");
+	FileType ft;
 	if(!fileExists(tInstallDir))
 	{
 		ft = FILE_TYPE_TIK;
@@ -788,7 +780,10 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 		
 		int tikRes = downloadFile(tDownloadUrl, tInstallDir, ft, true);
 		if(tikRes == 1)
+		{
+			MEMFreeToDefaultHeap(tid);
 			return true;
+		}
 		if(tikRes == 2)
 		{
 			addToScreenLog("title.tik not found on the NUS. Generating...");
@@ -800,12 +795,14 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 			
 			generateTik(tInstallDir, tid);
 			addToScreenLog("Fake ticket created successfully");
-			if(!AppRunning())
-				return true;
 		}
 	}
 	else
 		addToScreenLog("title.tik skipped!");
+	
+	MEMFreeToDefaultHeap(tid);
+	if(!AppRunning())
+		return true;
 	
 	strcpy(tInstallDir, installDir);
 	strcat(tInstallDir, "title.cert");
@@ -865,24 +862,26 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 	}
 	else
 		addToScreenLog("Cert skipped!");
-
-	uint16_t conts = readUInt16(tmd, 0x1DE);
-	char *apps[conts];
-	bool h3[conts];
-	contents = conts;
+	
+	contents = tmd->num_contents;
+	char *apps[contents];
+	bool h3[contents];
+	TMD_CONTENT *content;
 	
 	//Get .app and .h3 files
-	for(int i = 0; i < conts; i++)
+	for(int i = 0; i < tmd->num_contents; i++)
 	{
-		apps[i] = hex(readUInt32(tmd, 0xB04 + i * 0x30), 8);
-		h3[i] = readUInt8(tmd, 0xB0B + i * 0x30) == 0x03;
+		content = tmdGetContent(tmd, i);
+		
+		apps[i] = hex(content->cid, 8);
+		h3[i] = (content->type & 0x0003) == 0x0003;
 		if(h3[i])
 			contents++;
 	}
 	
 	char tmpFileName[FILENAME_MAX + 37];
 	dcontent = 0;
-	for(int i = 0; i < conts && AppRunning(); i++)
+	for(int i = 0; i < tmd->num_contents && AppRunning(); i++)
 	{
 		strcpy(tDownloadUrl, downloadUrl);
 		strcat(tDownloadUrl, apps[i]);
@@ -899,7 +898,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 	
 		if(downloadFile(tDownloadUrl, tInstallDir, ft, true) == 1)
 		{
-			for(int j = ++i; j < conts; j++)
+			for(int j = ++i; j < tmd->num_contents; j++)
 				MEMFreeToDefaultHeap(apps[j]);
 			return true;
 		}
@@ -916,7 +915,7 @@ bool downloadTitle(const char *tid, const char *titleVer, char *folderName, bool
 			
 			if(downloadFile(tDownloadUrl, tmpFileName, ft, true) == 1)
 			{
-				for(int j = ++i; j < conts; j++)
+				for(int j = ++i; j < tmd->num_contents; j++)
 					MEMFreeToDefaultHeap(apps[j]);
 				return true;
 			}
