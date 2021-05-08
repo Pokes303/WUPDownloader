@@ -33,6 +33,13 @@
 	extern "C" {
 #endif
 
+typedef struct
+{
+	double dlnow;
+	double dltotal;
+	double dltmp;
+} downloadData;
+
 extern uint16_t contents;
 extern char *ramBuf;
 extern size_t ramBufSize;
@@ -41,7 +48,7 @@ extern size_t ramBufSize;
 
 bool initDownloader();
 void deinitDownloader();
-int downloadFile(const char *url, char *file, FileType type, bool resume);
+int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume);
 bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles);
 void clearRamBuf();
 

@@ -68,7 +68,7 @@ bool updateCheck()
 	drawFrame();
 	showFrame();
 	
-	if(downloadFile(UPDATE_CHECK_URL, "JSON", FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
+	if(downloadFile(UPDATE_CHECK_URL, "JSON", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
 	{
 		clearRamBuf();
 		debugPrintf("Error downloading %s", UPDATE_CHECK_URL);
@@ -255,7 +255,7 @@ void update(char *newVersion)
 	
 	char *url = isAroma() ? UPDATE_DL_URL"a" : (isChannel() ? UPDATE_DL_URL"c" : UPDATE_DL_URL"h");
 	
-	if(downloadFile(url, "NUSspli.zip", FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
+	if(downloadFile(url, "NUSspli.zip", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
 	{
 		clearRamBuf();
 		showUpdateErrorf("Error downloading %s", url);

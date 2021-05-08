@@ -170,7 +170,7 @@ bool initTitles()
 		drawFrame();
 		showFrame();
 		
-		if(downloadFile(TITLE_DB, "JSON", FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
+		if(downloadFile(TITLE_DB, "JSON", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
 		{
 			clearRamBuf();
 			debugPrintf("Error downloading %s", TITLE_DB);

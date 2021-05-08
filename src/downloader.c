@@ -105,23 +105,25 @@ typedef struct
 {
 	CURL *curl;
 	CURL_DATA_ERROR error;
+	downloadData *data;
 } curlProgressData;
 
 static int progressCallback(void *rawData, double dltotal, double dlnow, double ultotal, double ulnow)
 {
+	curlProgressData *data = (curlProgressData *)rawData;
 	if(AppRunning())
 	{
 /*
 		if(app == APP_STATE_BACKGROUND)
 		{
-			if(!downloadPaused && curl_easy_pause(((curlProgressData *)rawData)->curl, CURLPAUSE_ALL) == CURLE_OK)
+			if(!downloadPaused && curl_easy_pause(data->curl, CURLPAUSE_ALL) == CURLE_OK)
 			{
 				downloadPaused = true;
 				debugPrintf("Download paused!");
 			}
 			return 0;
 		}
-		if(downloadPaused && curl_easy_pause(((curlProgressData *)rawData)->curl, CURLPAUSE_CONT) == CURLE_OK)
+		if(downloadPaused && curl_easy_pause(data->curl, CURLPAUSE_CONT) == CURLE_OK)
 		{
 			downloadPaused = false;
 			lastDraw = lastTransfair = 0;
@@ -132,7 +134,7 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 	else
 	{
 		debugPrintf("Download cancelled!");
-		((curlProgressData *)rawData)->error = CDE_CANCELLED;
+		data->error = CDE_CANCELLED;
 		return 1;
 	}
 	
@@ -167,11 +169,43 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 	//debugPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", downloading, dcontent, contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
 	startNewFrame();
 	char tmpString[13 + strlen(downloading)];
+	
+	int multiplier;
+	char *multiplierName;
+	if(data->data != NULL)
+	{
+		if(data->data->dltotal < 1024.0D)
+		{
+			multiplier = 1;
+			multiplierName = "B";
+		}
+		else if(data->data->dltotal < 1024.0D * 1024.0D)
+		{
+			multiplier = 1 << 10;
+			multiplierName = "KB";
+		}
+		else if(data->data->dltotal < 1024.0D * 1024.0D * 1024.0D)
+		{
+			multiplier = 1 << 20;
+			multiplierName = "MB";
+		}
+		else
+		{
+			multiplier = 1 << 30;
+			multiplierName = "GB";
+		}
+		barToFrame(1, 80, 40, (float)(data->data->dlnow / data->data->dltotal) * 100.0f);
+		sprintf(tmpString, "%.2f / %.2f %s", data->data->dlnow / multiplier, data->data->dltotal / multiplier, multiplierName);
+		textToFrame(1, 121, tmpString);
+	}
+	
 	if(!dling)
 	{
 		strcpy(tmpString, "Preparing ");
 		strcat(tmpString, downloading);
 		textToFrame(0, 0, tmpString);
+		if(data->data != NULL)
+			data->data->dlnow = data->data->dltmp;
 	}
 	else
 	{
@@ -179,8 +213,6 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 		strcat(tmpString, downloading);
 		textToFrame(0, 0, tmpString);
 		
-		int multiplier;
-		char *multiplierName;
 		if(dltotal < 1024.0D)
 		{
 			multiplier = 1;
@@ -204,12 +236,14 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 		barToFrame(1, 0, 40, (float)(dlnow / dltotal) * 100.0f);
 		sprintf(tmpString, "%.2f / %.2f %s", dlnow / multiplier, dltotal / multiplier, multiplierName);
 		textToFrame(1, 41, tmpString);
+		if(data->data != NULL)
+			data->data->dlnow = data->data->dltmp + dlnow;
 	}
 	
 	if(contents < 0xFFFF)
 	{
 		sprintf(tmpString, "(%d/%d)", dcontent + 1, contents);
-		textToFrame(0, ALIGNED_RIGHT, tmpString);
+		textToFrame(0, ALIGNED_CENTER, tmpString);
 	}
 	
 	if(dling)
@@ -218,7 +252,7 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 		getSpeedString(dls, buf);
 		
 		downloaded = dlnow;
-		textToFrame(1, ALIGNED_RIGHT, buf);
+		textToFrame(0, ALIGNED_RIGHT, buf);
 	}
 	
 	writeScreenLog();
@@ -299,7 +333,7 @@ static curl_off_t initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 	return 0;
 }
 
-int downloadFile(const char *url, char *file, FileType type, bool resume)
+int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume)
 {
 	//Results: 0 = OK | 1 = Error | 2 = No ticket aviable | 3 = Exit
 	//Types: 0 = .app | 1 = .h3 | 2 = title.tmd | 3 = tilte.tik
@@ -379,6 +413,7 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 	
 	ret |= curl_easy_setopt(curl, CURLOPT_USERAGENT, USERAGENT);
 	
+	uint32_t realFileSize = fileSize;
 	if(fileExist)
 	{
 		if(resume)
@@ -395,10 +430,11 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 	ret |= curl_easy_setopt(curl, CURLOPT_WRITEDATA, (FILE *)fp);
 
 	ret |= curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressCallback);
-	curlProgressData data;
-	data.curl = curl;
-	data.error = CDE_OK;
-	ret |= curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &data);
+	curlProgressData cdata;
+	cdata.curl = curl;
+	cdata.error = CDE_OK;
+	cdata.data = data;
+	ret |= curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &cdata);
 	ret |= curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
 	
 	ret |= curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
@@ -437,7 +473,7 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 		sprintf(toScreen, "curl_easy_perform returned a non-valid value: %d\n\n", ret);
 		if(ret == CURLE_ABORTED_BY_CALLBACK)
 		{
-			switch(data.error)
+			switch(cdata.error)
 			{
 				case CDE_TIMEOUT:
 					ret = CURLE_OPERATION_TIMEDOUT;
@@ -453,7 +489,7 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 		
 		switch(ret) {
 			case CURLE_RANGE_ERROR:
-				return downloadFile(url, file, type, false);
+				return downloadFile(url, file, data, type, false);
 			case CURLE_FAILED_INIT:
 			case CURLE_COULDNT_RESOLVE_HOST:
 				strcat(toScreen, "---> Network error\nYour WiiU is not connected to the internet,\ncheck the network settings and try again");
@@ -492,18 +528,26 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 			if(vpad.trigger & VPAD_BUTTON_B)
 				break;
 			if(vpad.trigger & VPAD_BUTTON_Y || (autoResumeEnabled() && --framesLeft == 0))
-				return downloadFile(url, file, type, resume);
+				return downloadFile(url, file, data, type, resume);
 		}
 		return 1;
 	}
 	debugPrintf("curl_easy_perform executed successfully");
 	
+	double dld;
 	long resp;
 	if(!toRam && fileExist && fileSize == 0) // File skipped by headerCallback
+	{
+		dld = 0.0D;
 		resp = 200;
+	}
 	else
 	{
-		ret = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &resp);
+		ret = curl_easy_getinfo(curl, CURLINFO_SIZE_DOWNLOAD, &dld);
+		if(ret != CURLE_OK)
+			dld = 0.0D;
+		
+		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &resp);
 		switch(resp)
 		{
 			case 206: // Resumed download OK
@@ -513,7 +557,6 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 	}
 	
 	curl_easy_cleanup(curl);
-	
 	debugPrintf("The download returned: %u", resp);
 	if(resp != 200)
 	{
@@ -539,7 +582,7 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 				if(vpad.trigger & VPAD_BUTTON_B)
 					break;
 				if(vpad.trigger & VPAD_BUTTON_Y)
-					return downloadFile(url, file, type, resume);
+					return downloadFile(url, file, data, type, resume);
 			}
 			return 1;
 		}
@@ -566,10 +609,18 @@ int downloadFile(const char *url, char *file, FileType type, bool resume)
 				if(vpad.trigger & VPAD_BUTTON_B)
 					break;
 				if(vpad.trigger & VPAD_BUTTON_Y)
-					return downloadFile(url, file, type, resume);
+					return downloadFile(url, file, data, type, resume);
 			}
 			return 1;
 		}
+	}
+	
+	if(data != NULL)
+	{
+		if(fileExist)
+			dld += (double) realFileSize;
+		
+		data->dltmp += dld;
 	}
 	
 	debugPrintf("The file was downloaded successfully");
@@ -706,7 +757,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 	if(fp == NULL)
 	{
 		MEMFreeToDefaultHeap(tid);
-		drawErrorFrame("Can't save TMD file!"), B_RETURN);
+		drawErrorFrame("Can't save TMD file!", B_RETURN);
 		
 		while(AppRunning())
 		{
@@ -793,7 +844,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 		if(dlToUSB)
 			ft |= FILE_TYPE_TOUSB;
 		
-		int tikRes = downloadFile(tDownloadUrl, tInstallDir, ft, true);
+		int tikRes = downloadFile(tDownloadUrl, tInstallDir, NULL, ft, true);
 		if(tikRes == 1)
 		{
 			MEMFreeToDefaultHeap(tid);
@@ -882,6 +933,8 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 	char *apps[contents];
 	bool h3[contents];
 	TMD_CONTENT *content;
+	downloadData data;
+	data.dlnow = data.dltmp = data.dltotal = 0.0D;
 	
 	//Get .app and .h3 files
 	for(int i = 0; i < tmd->num_contents; i++)
@@ -891,7 +944,12 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 		apps[i] = hex(content->cid, 8);
 		h3[i] = (content->type & 0x0003) == 0x0003;
 		if(h3[i])
+		{
 			contents++;
+			data.dltotal += 20;
+		}
+		
+		data.dltotal += (double)(content->size);
 	}
 	
 	char tmpFileName[FILENAME_MAX + 37];
@@ -911,7 +969,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 		if(dlToUSB)
 			ft |= FILE_TYPE_TOUSB;
 	
-		if(downloadFile(tDownloadUrl, tInstallDir, ft, true) == 1)
+		if(downloadFile(tDownloadUrl, tInstallDir, &data, ft, true) == 1)
 		{
 			for(int j = ++i; j < tmd->num_contents; j++)
 				MEMFreeToDefaultHeap(apps[j]);
@@ -928,7 +986,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 			if(dlToUSB)
 				ft |= FILE_TYPE_TOUSB;
 			
-			if(downloadFile(tDownloadUrl, tmpFileName, ft, true) == 1)
+			if(downloadFile(tDownloadUrl, tmpFileName, &data, ft, true) == 1)
 			{
 				for(int j = ++i; j < tmd->num_contents; j++)
 					MEMFreeToDefaultHeap(apps[j]);
