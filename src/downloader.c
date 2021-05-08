@@ -637,7 +637,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 	strcpy(installDir, dlToUSB ? INSTALL_DIR_USB : INSTALL_DIR_SD);
 	if(!dirExists(installDir))
 	{
-		debugPrintf("Creating directroty \"%s\"", installDir);
+		debugPrintf("Creating directory \"%s\"", installDir);
 		mkdir(installDir, 777);
 	}
 	
