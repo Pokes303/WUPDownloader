@@ -29,18 +29,21 @@
 #include <tmd.h>
 #include <menu/download.h>
 
+#include <wut_structsize.h>
+
 #ifdef __cplusplus
 	extern "C" {
 #endif
 
-typedef struct
+typedef struct WUT_PACKED
 {
+	uint16_t contents; //Contents count
+	uint16_t dcontent; //Actual content number
 	double dlnow;
 	double dltotal;
 	double dltmp;
 } downloadData;
 
-extern uint16_t contents;
 extern char *ramBuf;
 extern size_t ramBufSize;
 

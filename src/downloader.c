@@ -54,9 +54,6 @@
 #define DLBGT_STACK_SIZE	0x2000
 #define SOCKLIB_BUFSIZE		(IO_BUFSIZE * 4) // For send & receive + double buffering
 
-uint16_t contents = 0xFFFF; //Contents count
-uint16_t dcontent = 0xFFFF; //Actual content number
-
 double downloaded;
 double onDisc;
 
@@ -166,7 +163,7 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 		lastTransfair = now;
 	
 	lastDraw = now;
-	//debugPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", downloading, dcontent, contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
+	//debugPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", downloading, data->data->dcontent, data->data->contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
 	startNewFrame();
 	char tmpString[13 + strlen(downloading)];
 	
@@ -240,9 +237,9 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 			data->data->dlnow = data->data->dltmp + dlnow;
 	}
 	
-	if(contents < 0xFFFF)
+	if(data->data != 0)
 	{
-		sprintf(tmpString, "(%d/%d)", dcontent + 1, contents);
+		sprintf(tmpString, "(%d/%d)", data->data->dcontent + 1, data->data->contents);
 		textToFrame(0, ALIGNED_CENTER, tmpString);
 	}
 	
@@ -751,7 +748,6 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 	char tmdp[FILENAME_MAX + 37];
 	strcpy(tmdp, installDir);
 	strcat(tmdp, "title.tmd");
-	contents = 0xFFFF;
 	
 	NUSFILE *fp = openFile(tmdp, "wb");
 	if(fp == NULL)
@@ -929,12 +925,14 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 	else
 		addToScreenLog("Cert skipped!");
 	
-	contents = tmd->num_contents;
-	char *apps[contents];
-	bool h3[contents];
-	TMD_CONTENT *content;
 	downloadData data;
+	data.contents = tmd->num_contents;
+	data.dcontent = 0;
 	data.dlnow = data.dltmp = data.dltotal = 0.0D;
+	
+	char *apps[data.contents];
+	bool h3[data.contents];
+	TMD_CONTENT *content;
 	
 	//Get .app and .h3 files
 	for(int i = 0; i < tmd->num_contents; i++)
@@ -945,7 +943,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 		h3[i] = (content->type & 0x0003) == 0x0003;
 		if(h3[i])
 		{
-			contents++;
+			data.contents++;
 			data.dltotal += 20;
 		}
 		
@@ -953,7 +951,6 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 	}
 	
 	char tmpFileName[FILENAME_MAX + 37];
-	dcontent = 0;
 	for(int i = 0; i < tmd->num_contents && AppRunning(); i++)
 	{
 		strcpy(tDownloadUrl, downloadUrl);
@@ -975,7 +972,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 				MEMFreeToDefaultHeap(apps[j]);
 			return true;
 		}
-		dcontent++;
+		data.dcontent++;
 		
 		if(h3[i])
 		{
@@ -992,7 +989,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 					MEMFreeToDefaultHeap(apps[j]);
 				return true;
 			}
-			dcontent++;
+			data.dcontent++;
 		}
 	}
 	
