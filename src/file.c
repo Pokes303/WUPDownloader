@@ -35,46 +35,6 @@
 #include <coreinit/memory.h>
 #include <coreinit/time.h>
 
-uint8_t readUInt8(const char *file, uint32_t pos)
-{
-	FILE* fp = fopen(file, "rb");
-	fseek(fp, pos, SEEK_SET);
-	uint8_t result;
-	fread(&result, 1, 1, fp);
-	fclose(fp);
-	return result;
-}
-
-uint16_t readUInt16(const char *file, uint32_t pos)
-{
-	FILE* fp = fopen(file, "rb");
-	fseek(fp, pos, SEEK_SET);
-	uint16_t result;
-	fread(&result, 2, 1, fp);
-	fclose(fp);
-	return result;
-}
-
-uint32_t readUInt32(const char *file, uint32_t pos)
-{
-	FILE* fp = fopen(file, "rb");
-	fseek(fp, pos, SEEK_SET);
-	uint32_t result;
-	fread(&result, 4, 1, fp);
-	fclose(fp);
-	return result;
-}
-
-uint64_t readUInt64(const char *file, uint32_t pos)
-{
-	FILE* fp = fopen(file, "rb");
-	fseek(fp, pos, SEEK_SET);
-	uint64_t result;
-	fread(&result, 8, 1, fp);
-	fclose(fp);
-	return result;
-}
-
 void writeVoidBytes(NUSFILE* fp, uint32_t len)
 {
 	uint8_t bytes[len];

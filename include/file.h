@@ -51,11 +51,6 @@ typedef enum
 	FILE_TYPE_TOUSB = 1 << 7,	// 10000000
 } FileType;
 
-uint8_t readUInt8(const char *file, uint32_t pos);
-uint16_t readUInt16(const char *file, uint32_t pos);
-uint32_t readUInt32(const char *file, uint32_t pos);
-uint64_t readUInt64(const char *file, uint32_t pos);
-
 void writeVoidBytes(NUSFILE *fp, uint32_t length);
 void writeCustomBytes(NUSFILE *fp, const char *str);
 void writeRandomBytes(NUSFILE *fp, uint32_t length);
