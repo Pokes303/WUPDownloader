@@ -705,7 +705,22 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 	NUSFILE *fp = openFile(tmdp, "wb");
 	if(fp == NULL)
 	{
-		//TODO
+		MEMFreeToDefaultHeap(tid);
+		drawErrorFrame("Can't save TMD file!"), B_RETURN);
+		
+		while(AppRunning())
+		{
+			if(app == APP_STATE_BACKGROUND)
+				continue;
+			if(app == APP_STATE_RETURNING)
+				drawErrorFrame("Can't save TMD file!", B_RETURN);
+			
+			showFrame();
+			
+			if(vpad.trigger & VPAD_BUTTON_B)
+				break;
+		}
+		return false;
 	}
 	
 	addToIOQueue(tmd, 1, tmdSize, fp);
