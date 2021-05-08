@@ -25,8 +25,5 @@
 
 TMD_CONTENT *tmdGetContent(const TMD *tmd, uint16_t i)
 {
-	i *= 0x30;
-	uint8_t *ptr = (uint8_t *)&(tmd->contents);
-	ptr += i;
-	return (TMD_CONTENT *)ptr;
+	return (TMD_CONTENT *)(((uint8_t *)&(tmd->contents)) + (i * 0x30));
 }
