@@ -69,7 +69,7 @@ void drawMainMenuFrame()
 	textToFrame(22, MAX_CHARS - 23, "• pirate       ");
 	
 	textToFrame(MAX_LINES - 3, 0, "WARNING:");
-	textToFrame(MAX_LINES - 2, 1, "• Don't eject the SD Card or the application will crash!");
+	textToFrame(MAX_LINES - 2, 1, "• Don't eject the SD Card / USB drive or the application will crash!");
 	textToFrame(MAX_LINES - 1, 1, "• You are unable to exit while installing a game");
 	drawFrame();
 }
