@@ -162,7 +162,6 @@ void predownloadMenu(const TitleEntry *entry)
 	char titleVer[33];
 	folderName[0] = titleVer[0] = '\0';
 	TMD *tmd;
-	TMD_CONTENT *content;
 	uint64_t dls;
 	
 	bool loop = true;
@@ -193,11 +192,10 @@ downloadTMD:
 	dls = 0;
 	for(uint16_t i = 0; i < tmd->num_contents; i++)
 	{
-		content = tmdGetContent(tmd, i);
-		if((content->type & 0x0003) == 0x0003)
+		if((tmd->contents[i].type & 0x0003) == 0x0003)
 			dls += 20;
 		
-		dls += content->size;
+		dls += tmd->contents[i].size;
 	}
 	
 	drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlToUSB, keepFiles);

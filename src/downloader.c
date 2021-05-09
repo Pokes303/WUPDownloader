@@ -929,22 +929,19 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 	
 	char *apps[data.contents];
 	bool h3[data.contents];
-	TMD_CONTENT *content;
 	
 	//Get .app and .h3 files
 	for(int i = 0; i < tmd->num_contents; i++)
 	{
-		content = tmdGetContent(tmd, i);
-		
-		apps[i] = hex(content->cid, 8);
-		h3[i] = (content->type & 0x0003) == 0x0003;
+		apps[i] = hex(tmd->contents[i].cid, 8);
+		h3[i] = (tmd->contents[i].type & 0x0003) == 0x0003;
 		if(h3[i])
 		{
 			data.contents++;
 			data.dltotal += 20;
 		}
 		
-		data.dltotal += (double)(content->size);
+		data.dltotal += (double)(tmd->contents[i].size);
 	}
 	
 	char tmpFileName[FILENAME_MAX + 37];
