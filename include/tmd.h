@@ -100,7 +100,7 @@ WUT_CHECK_OFFSET(TMD, 0x01E0, boot_index);
 WUT_CHECK_OFFSET(TMD, 0x01E4, hash);
 WUT_CHECK_OFFSET(TMD, 0x0204, content_infos);
 WUT_CHECK_OFFSET(TMD, 0x0B04, contents);
-//TODO: WUT_CHECK_SIZE(TMD, 0xB74);
+WUT_CHECK_SIZE(TMD, 0x1704);
 
 #ifdef __cplusplus
 }
