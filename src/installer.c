@@ -69,8 +69,11 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	MCPInstallTitleInfo info;
 	McpData data;
 	
-	flushIOQueue(); // Make sure all game files are on disc
-	unmountUSB(); // Get MCP ready
+	if(!isAroma())
+	{
+		flushIOQueue(); // Make sure all game files are on disc
+		unmountUSB(); // Get MCP ready
+	}
 	
 	// Let's see if MCP is able to parse the TMD...
 	data.err = MCP_InstallGetInfo(mcpHandle, newPath, (MCPInstallInfo *)&info);
@@ -139,6 +142,9 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	// Last prepairing step...
 	disableShutdown();
 	glueMcpData(&info, &data);
+	
+	if(isAroma())
+		flushIOQueue(); // Make sure all game files are on disc
 	
 	// Start the installation process
 	MCPError err = MCP_InstallTitleAsync(mcpHandle, newPath, &info);

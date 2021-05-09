@@ -64,7 +64,9 @@ bool deinstall(MCPTitleListType title, bool channelHaxx)
 	MCPInstallTitleInfo info;
 	glueMcpData(&info, &data);
 	
-	unmountUSB();
+	if(!isAroma())
+		unmountUSB();
+	
 	if(!channelHaxx)
 		disableShutdown();
 	

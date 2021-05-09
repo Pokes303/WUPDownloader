@@ -44,9 +44,13 @@
 TitleEntry *titleEntrys;
 TitleEntry *filteredTitleEntries;
 
-size_t filteredTitleEntrySize;void drawTBMenuFrame(const size_t pos, const size_t cursor, const char* search)
+size_t filteredTitleEntrySize;
+
+void drawTBMenuFrame(const size_t pos, const size_t cursor, const char* search)
 {
-	unmountUSB();
+	if(!isAroma())
+		unmountUSB();
+	
 	startNewFrame();
 	textToFrame(0, 6, "Select a title:");
 	
