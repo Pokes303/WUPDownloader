@@ -57,6 +57,8 @@ typedef struct
 {
 	char *name;
 	uint64_t tid;
+	bool isDLC;
+	bool isUpdate;
 	TITLE_REGION region;
 } TitleEntry;
 

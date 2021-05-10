@@ -93,6 +93,7 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor, const char* search)
 	size_t max = MAX_TITLEBROWSER_LINES < filteredTitleEntrySize ? MAX_TITLEBROWSER_LINES : filteredTitleEntrySize;
 	size_t j, l;
 	MCPTitleListType titleList;
+	char *toFrame = getToFrameBuffer();
 	for(size_t i = 0; i < max; i++)
 	{
 		l = i + 2;
@@ -104,7 +105,19 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor, const char* search)
 			checkmarkToFrame(l, 5);
 		
 		flagToFrame(l, 9, filteredTitleEntries[j].region);
-		textToFrame(l, 13, filteredTitleEntries[j].name);
+		
+		if(filteredTitleEntries[j].isDLC)
+			strcpy(toFrame, "[DLC] ");
+		else if(filteredTitleEntries[j].isUpdate)
+			strcpy(toFrame, "[UPD] ");
+		else
+		{
+			textToFrame(l, 13, filteredTitleEntries[j].name);
+			continue;
+		}
+		
+		strcat(toFrame, filteredTitleEntries[j].name);
+		textToFrame(l, 13, toFrame);
 	}
 	drawFrame();
 }

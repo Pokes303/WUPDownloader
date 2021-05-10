@@ -50,12 +50,40 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#define UPDATE_CHECK_URL NAPI_URL "versioncheck.php"
-#define UPDATE_DL_URL NAPI_URL "dl.php?t="
+#define UPDATE_CHECK_URL NAPI_URL "s?v=" NUSSPLI_VERSION "&t="
+#define UPDATE_DL_URL NAPI_URL "d?t="
 #define UPDATE_TEMP_FOLDER "fs:/vol/external01/NUSspli_temp/"
 #define UPDATE_AROMA_FOLDER "fs:/vol/external01/wiiu/apps/"
 #define UPDATE_AROMA_FILE "NUSspli.wuhb"
 #define UPDATE_HBL_FOLDER "fs:/vol/external01/wiiu/apps/NUSspli"
+
+void showUpdateError(const char* msg)
+{
+	enableShutdown();
+	drawErrorFrame(msg, B_RETURN);
+	while(AppRunning())
+	{
+		if(app == APP_STATE_BACKGROUND)
+			continue;
+		if(app == APP_STATE_RETURNING)
+			drawErrorFrame(msg, B_RETURN);
+		
+		showFrame();
+		
+		if(vpad.trigger & VPAD_BUTTON_B)
+			return;
+	}
+}
+
+void showUpdateErrorf(const char *msg, ...)
+{
+	va_list va;
+	va_start(va, msg);
+	char newMsg[2048];
+	vsnprintf(newMsg, 2048, msg, va);
+	va_end(va);
+	showUpdateError(newMsg);
+}
 
 bool updateCheck()
 {
@@ -68,10 +96,12 @@ bool updateCheck()
 	drawFrame();
 	showFrame();
 	
-	if(downloadFile(UPDATE_CHECK_URL, "JSON", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
+	char *updateChkUrl = isAroma() ? UPDATE_CHECK_URL "a" : isChannel() ? UPDATE_CHECK_URL "c" : UPDATE_CHECK_URL "h";
+	
+	if(downloadFile(updateChkUrl, "JSON", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
 	{
 		clearRamBuf();
-		debugPrintf("Error downloading %s", UPDATE_CHECK_URL);
+		debugPrintf("Error downloading %s", updateChkUrl);
 		return false;
 	}
 	
@@ -89,7 +119,7 @@ bool updateCheck()
 		return false;
 	}
 	
-	cJSON *jsonObj = cJSON_GetObjectItemCaseSensitive(json, "state");
+	cJSON *jsonObj = cJSON_GetObjectItemCaseSensitive(json, "s");
 	if(jsonObj == NULL || !cJSON_IsNumber(jsonObj))
 	{
 		cJSON_Delete(json);
@@ -98,74 +128,35 @@ bool updateCheck()
 		return false;
 	}
 	
-	if(jsonObj->valueint != 0)
+	char *newVer;
+	switch(jsonObj->valueint)
 	{
-		jsonObj = cJSON_GetObjectItemCaseSensitive(json, "error");
-		if(jsonObj != NULL && cJSON_IsString(jsonObj) && jsonObj->valuestring != NULL)
-			debugPrintf("Server error: %s", jsonObj->valuestring);
-		else
-			debugPrintf("Server error");
-		
-		cJSON_Delete(json);
-		clearRamBuf();
-		debugPrintf("Invalid JSON data");
-		return false;
+		case 0:
+			debugPrintf("Newest version!");
+			cJSON_Delete(json);
+			clearRamBuf();
+			return false;
+		case 1:
+			newVer = cJSON_GetObjectItemCaseSensitive(json, "v")->valuestring;
+			break;
+		case 2:
+			showUpdateErrorf("This version of NUSspli is deprecated!"); //TODO
+			return false;
+		case 3: // TODO
+		case 4: // TODO
+		default: // TODO
+			showUpdateErrorf("Invalid state value: %d", jsonObj->valueint);
+			cJSON_Delete(json);
+			clearRamBuf();
+			return false;
 	}
 	
-	jsonObj = cJSON_GetObjectItemCaseSensitive(json, "latest");
-	if(jsonObj == NULL || !cJSON_IsString(jsonObj) || jsonObj->valuestring == NULL)
-	{
-		cJSON_Delete(json);
-		clearRamBuf();
-		debugPrintf("Invalid JSON data");
-		return false;
-	}
-	
-	char versionString[strlen(jsonObj->valuestring) + 1];
-	strcpy(versionString, jsonObj->valuestring);
+	char versionString[strlen(newVer) + 1];
+	strcpy(versionString, newVer);
 	cJSON_Delete(json);
 	clearRamBuf();
 	
-	char cv[32];
-	char *curVer = cv;
-	strcpy(curVer, NUSSPLI_VERSION);
-	char *needle = strchr(curVer, '.');
-	needle[0] = '\0';
-	int curMajor = atoi(curVer);
-	curVer = needle + 1;
-	needle = strchr(curVer, '-');
-	if(needle != NULL) // BETA version
-		needle[0] = '\0';
-	
-	int curMinor = atoi(curVer);
-	if(needle != NULL)
-		curMinor--;
-	
-	needle = strchr(versionString, '.');
-	if(needle == NULL)
-	{
-		debugPrintf("Invalid version string");
-		return false;
-	}
-	
-	needle[0] = '\0';
-	int major = atoi(versionString);
-	if(major == 0)
-	{
-		debugPrintf("Invalid major version");
-		return false;
-	}
-	
-	bool updateAvailable;
-	if(major > curMajor)
-		updateAvailable = true;
-	else if(major == curMajor)
-		updateAvailable = atoi(needle + 1) > curMinor;
-	else // Should never happen
-		updateAvailable = false;
-	
-	needle[0] = '.';
-	return updateAvailable && updateMenu(versionString);
+	return updateMenu(versionString);
 }
 
 //TODO: Quick & dirty, supports absolute paths on fs:/vol/external01 only.
@@ -197,34 +188,6 @@ bool createDirRecursive(char *dir)
 	while(ptr[0] != '\0');
 	
 	return true;
-}
-
-void showUpdateError(const char* msg)
-{
-	enableShutdown();
-	drawErrorFrame(msg, B_RETURN);
-	while(AppRunning())
-	{
-		if(app == APP_STATE_BACKGROUND)
-			continue;
-		if(app == APP_STATE_RETURNING)
-			drawErrorFrame(msg, B_RETURN);
-		
-		showFrame();
-		
-		if(vpad.trigger & VPAD_BUTTON_B)
-			return;
-	}
-}
-
-void showUpdateErrorf(const char *msg, ...)
-{
-	va_list va;
-	va_start(va, msg);
-	char newMsg[2048];
-	vsnprintf(newMsg, 2048, msg, va);
-	va_end(va);
-	showUpdateError(newMsg);
 }
 
 void update(char *newVersion)

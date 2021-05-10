@@ -72,7 +72,7 @@ real: $(CURDIR)/payload/arm_kernel_bin.h
 	@git submodule deinit --force libgui
 	@git submodule update --init --recursive
 	@rm -f data/titleDB.json
-	@wget -U "NUSspli builder" -O data/titleDB.json http://napi.nbg01.v10lator.de/titles.php
+	@wget -U "NUSspli builder" -O data/titleDB.json http://napi.nbg01.v10lator.de/v2/t
 	@rm -f zlib/contrib/minizip/iowin* zlib/contrib/minizip/mini* zlib/contrib/minizip/zip.? zlib/contrib/minizip/mztools.? zlib/contrib/minizip/configure.ac zlib/contrib/minizip/Makefile zlib/contrib/minizip/Makefile.am zlib/contrib/minizip/*.com zlib/contrib/minizip/*.txt
 	@cd zlib && git apply ../minizip.patch || true
 	@mv $(CURDIR)/src/cJSON/test.c $(CURDIR)/src/cJSON/test.c.old 2>/dev/null || true

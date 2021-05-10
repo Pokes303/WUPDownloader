@@ -37,11 +37,11 @@
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 
-#define TITLE_DB NAPI_URL "titles.php"
+#define TITLE_DB NAPI_URL "t"
 
 char *titleMemArea = NULL;
-char **titleNames[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-size_t titleSizes[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+char **titleNames[10] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+size_t titleSizes[10] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 size_t titleEntries = 0;
 TitleEntry *titleEntry = NULL;
 
@@ -50,8 +50,6 @@ int transformTidHigh(TID_HIGH tidHigh)
 	switch(tidHigh)
 	{
 		case TID_HIGH_GAME:
-		case TID_HIGH_DLC:
-		case TID_HIGH_UPDATE:
 			return 0;
 		case TID_HIGH_DEMO:
 			return 1;
@@ -67,6 +65,10 @@ int transformTidHigh(TID_HIGH tidHigh)
 			return 6;
 		case TID_HIGH_VWII_SYSTEM:
 			return 7;
+		case TID_HIGH_DLC:
+			return 8;
+		case TID_HIGH_UPDATE:
+			return 9;
 		default:
 			return -1;
 	}
@@ -92,6 +94,10 @@ TID_HIGH retransformTidHigh(int transformedTidHigh)
 			return TID_HIGH_VWII_SYSTEM_APP;
 		case 7:
 			return TID_HIGH_VWII_SYSTEM;
+		case 8:
+			return TID_HIGH_DLC;
+		case 9:
+			return TID_HIGH_UPDATE;
 		default:
 			return -1;
 	}
@@ -203,7 +209,7 @@ bool initTitles()
 	cJSON_ArrayForEach(curr[0], json)
 	{
 		i = atoi(curr[0]->string);
-		if(i > 7)
+		if(i > 9)
 			continue;
 		
 		cJSON_ArrayForEach(curr[1], curr[0])
@@ -264,12 +270,10 @@ bool initTitles()
 	char *ptr = titleMemArea;
 	titleEntries = 0;
 	uint64_t tid;
-	char *rgn;
-	bool cont;
 	cJSON_ArrayForEach(curr[0], json)
 	{
 		i = atoi(curr[0]->string);
-		if(i > 7)
+		if(i > 9)
 			continue;
 		
 		cJSON_ArrayForEach(curr[1], curr[0])
@@ -290,34 +294,10 @@ bool initTitles()
 			titleNames[i][j] = titleEntry[titleEntries].name = ptr;
 			ptr += size;
 			
-			rgn = cJSON_GetArrayItem(curr[1], 1)->valuestring;
-			if(strcmp(rgn, "ALL") == 0)
-				titleEntry[titleEntries].region = TITLE_REGION_ALL;
-			else
-			{
-				titleEntry[titleEntries].region = TITLE_REGION_UNKNOWN;
-				
-				cont = true;
-				while(strlen(rgn) > 2)
-				{
-					if(rgn[3] != '\0')
-						rgn[3] = '\0';
-					else
-						cont = false;
-					
-					if(strcmp(rgn, "EUR") == 0)
-						titleEntry[titleEntries].region |= TITLE_REGION_EUR;
-					if(strcmp(rgn, "USA") == 0)
-						titleEntry[titleEntries].region |= TITLE_REGION_USA;
-					if(strcmp(rgn, "JPN") == 0)
-						titleEntry[titleEntries].region |= TITLE_REGION_JAP;
-					
-					if(cont)
-						rgn += 4;
-					else
-						break;
-				}
-			}
+			titleEntry[titleEntries].region = cJSON_GetArrayItem(curr[1], 1)->valueint;
+			
+			titleEntry[titleEntries].isDLC = i == 8;
+			titleEntry[titleEntries].isUpdate = i == 9;
 			
 			tid = retransformTidHigh(i);
 			tid <<= 32;
