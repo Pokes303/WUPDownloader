@@ -70,6 +70,8 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor, const char* search)
 		
 		ts = 0;
 		size_t ss;
+		char *ptr[2];
+		bool found;
 		for(size_t i = 0 ; i < filteredTitleEntrySize; i++)
 		{
 			ss = strlen(titleEntrys[i].name);
@@ -78,10 +80,32 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor, const char* search)
 				tmpName[j] = tolower(titleEntrys[i].name[j]);
 			tmpName[ss] = '\0';
 			
-			if(strstr(tmpName, lowerSearch) == NULL)
-				continue;
+			ptr[0] = lowerSearch;
+			ptr[1] = strstr(ptr[0], " ");
+			found = true;
+			while(found)
+			{
+				if(ptr[1] != NULL)
+					ptr[1][0] = '\0';
+				
+				if(strstr(tmpName, ptr[0]) == NULL)
+					found = false;
+				
+				if(ptr[1] != NULL)
+				{
+					ptr[1][0] = ' ';
+					if(found)
+					{
+						ptr[0] = ptr[1] + 1;
+						ptr[1] = strstr(ptr[0], " ");
+					}
+				}
+				else
+					break;
+			};
 			
-			filteredTitleEntries[ts++] = titleEntrys[i];
+			if(found)
+				filteredTitleEntries[ts++] = titleEntrys[i];
 		}
 		
 		filteredTitleEntrySize = ts;
