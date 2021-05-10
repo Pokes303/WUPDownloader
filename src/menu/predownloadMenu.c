@@ -141,17 +141,6 @@ void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t siz
 
 void predownloadMenu(const TitleEntry *entry)
 {
-	char *tid = hex(entry->tid, 16);
-	if(tid == NULL)
-	{
-		debugPrintf("OUT OF MEMORY!");
-		return;
-	}
-	
-	debugPrintf("Downloading TMD...");
-	
-	
-	
 	MCPTitleListType titleList;
 	bool installed = MCP_GetTitleInfo(mcpHandle, entry->tid, &titleList) == 0;
 	
@@ -169,12 +158,22 @@ void predownloadMenu(const TitleEntry *entry)
 	bool uninstall = false;
 	bool redraw = false;
 	
+	char *tid;
 	char downloadUrl[256];
 downloadTMD:
+	tid = hex(entry->tid, 16);
+	if(tid == NULL)
+	{
+		debugPrintf("OUT OF MEMORY!");
+		return;
+	}
+	
+	debugPrintf("Downloading TMD...");
 	strcpy(downloadUrl, DOWNLOAD_URL);
 	strcat(downloadUrl, tid);
 	strcat(downloadUrl, "/tmd");
 	MEMFreeToDefaultHeap(tid);
+	
 	if(strlen(titleVer) > 0)
 	{
 		strcat(downloadUrl, ".");
