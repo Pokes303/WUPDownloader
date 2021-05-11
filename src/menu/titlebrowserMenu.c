@@ -41,24 +41,42 @@
 
 #define MAX_TITLEBROWSER_LINES (MAX_LINES - 4)
 
-TitleEntry *titleEntrys;
 TitleEntry *filteredTitleEntries;
 
 size_t filteredTitleEntrySize;
 
-void drawTBMenuFrame(const size_t pos, const size_t cursor, const char* search)
+void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cursor, const char* search)
 {
 	if(!isAroma())
 		unmountUSB();
 	
 	startNewFrame();
-	textToFrame(0, 6, "Select a title:");
+	textToFrame(0, 6, "Select a");
+	switch(tab)
+	{
+		case TITLE_CATEGORY_GAME:
+			textToFrame(0, 19, "game:");
+			break;
+		case TITLE_CATEGORY_UPDATE:
+			textToFrame(0, 19, "update:");
+			break;
+		case TITLE_CATEGORY_DLC:
+			textToFrame(0, 19, "DLC:");
+			break;
+		case TITLE_CATEGORY_DEMO:
+			textToFrame(0, 19, "demo:");
+			break;
+		default:
+			textToFrame(0, 19, "title:");
+			break;
+	}
 	
 	boxToFrame(1, MAX_LINES - 2);
 	
 	textToFrame(MAX_LINES - 1, ALIGNED_CENTER, "Press \uE000 to select || \uE001 to return || \uE002 to enter a title ID || \uE003 to search");
 	
-	filteredTitleEntrySize = getTitleEntriesSize();
+	filteredTitleEntrySize = getTitleEntriesSize(tab);
+	TitleEntry *titleEntrys = getTitleEntries(tab);
 	
 	if(search[0] != '\0')
 	{
@@ -130,30 +148,30 @@ void drawTBMenuFrame(const size_t pos, const size_t cursor, const char* search)
 		
 		flagToFrame(l, 9, filteredTitleEntries[j].region);
 		
-		if(filteredTitleEntries[j].isDLC)
-			strcpy(toFrame, "[DLC] ");
-		else if(filteredTitleEntries[j].isUpdate)
-			strcpy(toFrame, "[UPD] ");
-		else
+		if(tab == TITLE_CATEGORY_ALL)
 		{
-			textToFrame(l, 13, filteredTitleEntries[j].name);
-			continue;
+			if(filteredTitleEntries[j].isDLC)
+				strcpy(toFrame, "[DLC] ");
+			else if(filteredTitleEntries[j].isUpdate)
+				strcpy(toFrame, "[UPD] ");
+			else
+			{
+				textToFrame(l, 13, filteredTitleEntries[j].name);
+				continue;
+			}
+			
+			strcat(toFrame, filteredTitleEntries[j].name);
+			textToFrame(l, 13, toFrame);
 		}
-		
-		strcat(toFrame, filteredTitleEntries[j].name);
-		textToFrame(l, 13, toFrame);
+		else
+			textToFrame(l, 13, filteredTitleEntries[j].name);
 	}
 	drawFrame();
 }
 
 void titleBrowserMenu()
 {
-	size_t cursor = 0;
-	size_t pos = 0;
-	char search[129];
-	search[0] = '\0';
-	titleEntrys = getTitleEntries();
-	filteredTitleEntrySize = getTitleEntriesSize();
+	filteredTitleEntrySize = getTitleEntriesSize(TITLE_CATEGORY_ALL);
 	filteredTitleEntries = MEMAllocFromDefaultHeap(filteredTitleEntrySize * sizeof(TitleEntry));
 	if(filteredTitleEntries == NULL)
 	{
@@ -161,7 +179,13 @@ void titleBrowserMenu()
 		return;
 	}
 	
-	drawTBMenuFrame(pos, cursor, search);
+	TITLE_CATEGORY tab = TITLE_CATEGORY_GAME;
+	size_t cursor = 0;
+	size_t pos = 0;
+	char search[129];
+	search[0] = '\0';
+	
+	drawTBMenuFrame(tab, pos, cursor, search);
 	
 	bool mov = filteredTitleEntrySize >= MAX_TITLEBROWSER_LINES;
 	bool redraw = false;
@@ -171,7 +195,7 @@ void titleBrowserMenu()
 		if(app == APP_STATE_BACKGROUND)
 			continue;
 		if(app == APP_STATE_RETURNING)
-			drawTBMenuFrame(pos, cursor, search);
+			drawTBMenuFrame(tab, pos, cursor, search);
 		
 		showFrame();
 		if(vpad.trigger & VPAD_BUTTON_A)
@@ -257,10 +281,29 @@ void titleBrowserMenu()
 			redraw = true;
 		}
 		
+		if(vpad.trigger & VPAD_BUTTON_R || vpad.trigger & VPAD_BUTTON_ZR)
+		{
+			if(++tab > TITLE_CATEGORY_ALL)
+				tab = TITLE_CATEGORY_GAME;
+			
+			cursor = pos = 0;
+			redraw = true;
+		}
+		else if(vpad.trigger & VPAD_BUTTON_L || vpad.trigger & VPAD_BUTTON_ZL)
+		{
+			if(tab == TITLE_CATEGORY_GAME)
+				tab = TITLE_CATEGORY_ALL;
+			else
+				tab--;
+			
+			cursor = pos = 0;
+			redraw = true;
+		}
+		
 		
 		if(redraw)
 		{
-			drawTBMenuFrame(pos, cursor, search);
+			drawTBMenuFrame(tab, pos, cursor, search);
 			mov = filteredTitleEntrySize > MAX_TITLEBROWSER_LINES;
 			redraw = false;
 		}

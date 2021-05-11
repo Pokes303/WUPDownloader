@@ -53,6 +53,15 @@ typedef enum
 	TITLE_REGION_ALL =	TITLE_REGION_EUR | TITLE_REGION_USA | TITLE_REGION_JAP,
 } TITLE_REGION;
 
+typedef enum
+{
+	TITLE_CATEGORY_GAME = 0,
+	TITLE_CATEGORY_UPDATE = 1,
+	TITLE_CATEGORY_DLC = 2,
+	TITLE_CATEGORY_DEMO = 3,
+	TITLE_CATEGORY_ALL = 4,
+} TITLE_CATEGORY;
+
 typedef struct
 {
 	char *name;
@@ -62,8 +71,8 @@ typedef struct
 	TITLE_REGION region;
 } TitleEntry;
 
-TitleEntry *getTitleEntries();
-size_t getTitleEntriesSize();
+TitleEntry *getTitleEntries(TITLE_CATEGORY cat);
+size_t getTitleEntriesSize(TITLE_CATEGORY cat);
 char *tid2name(const char *tid);
 char *name2tid(const char *name);
 bool initTitles();
