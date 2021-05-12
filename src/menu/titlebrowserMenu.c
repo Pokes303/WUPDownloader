@@ -51,25 +51,11 @@ void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cu
 		unmountUSB();
 	
 	startNewFrame();
-	textToFrame(0, 6, "Select a");
-	switch(tab)
-	{
-		case TITLE_CATEGORY_GAME:
-			textToFrame(0, 19, "game:");
-			break;
-		case TITLE_CATEGORY_UPDATE:
-			textToFrame(0, 19, "update:");
-			break;
-		case TITLE_CATEGORY_DLC:
-			textToFrame(0, 19, "DLC:");
-			break;
-		case TITLE_CATEGORY_DEMO:
-			textToFrame(0, 19, "demo:");
-			break;
-		default:
-			textToFrame(0, 19, "title:");
-			break;
-	}
+	
+	// Games, Updates, DLC, Demos, All
+	char *tabLabels[5] = { "Games", "Updates", "DLC", "Demos", "All" };
+	for(int i = 0; i < 5; i++)
+		tabToFrame(0, i, tabLabels[i], i == tab);
 	
 	boxToFrame(1, MAX_LINES - 2);
 	

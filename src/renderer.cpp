@@ -56,6 +56,7 @@
 #include <input.h>
 #include <renderer.h>
 #include <swkbd_wrapper.h>
+#include <tab_png.h>
 #include <utils.h>
 #include <menu/utils.h>
 
@@ -73,6 +74,7 @@ int32_t spaceWidth;
 GuiFrame *errorOverlay = NULL;
 GuiImageData *arrowData;
 GuiImageData *checkmarkData;
+GuiImageData *tabData;
 GuiImageData *flagData[6];
 
 #define SSAA 8
@@ -273,6 +275,32 @@ void flagToFrame(int line, int column, TITLE_REGION flag)
 	window->append(image);
 }
 
+void tabToFrame(int line, int column, char *label, bool active)
+{
+	line *= -FONT_SIZE;
+	line -= 8;
+	column *= 240;
+	column += 15;
+	
+	GuiImage *image = new GuiImage(tabData);
+	image->setAlignment(ALIGN_TOP_LEFT);
+	image->setPosition(column + FONT_SIZE, line);
+	
+	GuiText *text = new GuiText(label);
+	
+	line -= 24;
+	line -= FONT_SIZE >> 1;
+	column += 120 - (text->getTextWidth() >> 1); //TODO
+	
+	text->setPosition(column + FONT_SIZE, line);
+	text->setMaxWidth(width - column, GuiText::DOTTED);
+	if(!active)
+		text->setColor(glm::vec4({1.0f, 1.0f, 1.0f, 0.25f}));
+	
+	window->append(image);
+	window->append(text);
+}
+
 void addErrorOverlay(const char *err)
 {
 	if(!rendererRunning)
@@ -347,8 +375,9 @@ void resumeRenderer()
 	
 	background = new GuiImage(width, height, screenColorToGX2color(bgColor), GuiImage::IMAGE_COLOR);
 	
-	arrowData = new GuiImageData(arrow_png, arrow_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
-	checkmarkData = new GuiImageData(checkmark_png, checkmark_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
+	arrowData = new GuiImageData(arrow_png, arrow_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
+	checkmarkData = new GuiImageData(checkmark_png, checkmark_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
+	tabData = new GuiImageData(tab_png, tab_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
 	
 	const uint8_t *tex;
 	for(int i = 0; i < 6; i++)
@@ -441,6 +470,7 @@ void pauseRenderer()
 	delete font;
 	delete arrowData;
 	delete checkmarkData;
+	delete tabData;
 	for(int i = 0; i < 6; i++)
 		delete flagData[i];
 	

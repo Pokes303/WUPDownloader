@@ -80,6 +80,7 @@ void boxToFrame(int lineStart, int lineEnd);
 void barToFrame(int line, int column, uint32_t width, float progress);
 void arrowToFrame(int line, int column);
 void checkmarkToFrame(int line, int column);
+void tabToFrame(int line, int column, char *label, bool active);
 void flagToFrame(int line, int column, TITLE_REGION flag);
 void addErrorOverlay(const char *err);
 void removeErrorOverlay();
