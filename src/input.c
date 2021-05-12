@@ -215,7 +215,7 @@ bool SWKBD_Init()
 	
 	OSDynLoadAllocFn oAlloc;
 	OSDynLoadFreeFn oFree;
-	OSDynLoad_GetAllocator(&pfAlloc, &pfFree);
+	OSDynLoad_GetAllocator(&oAlloc, &oFree);
 	
 	OSBlockSet(&createArg, 0, sizeof(Swkbd_CreateArg));
 	createArg.fsClient = MEMAllocFromDefaultHeap(sizeof(FSClient));
@@ -254,7 +254,7 @@ bool SWKBD_Init()
 	debugPrintf("A");
 	bool ret = Swkbd_Create(createArg);
 	debugPrintf("B");
-	OSDynLoad_SetAllocator(pfAlloc, pfFree);
+	OSDynLoad_SetAllocator(oAlloc, oFree);
 	debugPrintf("C");
 	return ret;
 }

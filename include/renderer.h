@@ -63,6 +63,8 @@
 
 void initRenderer();
 void shutdownRenderer();
+void pauseRenderer();
+void resumeRenderer();
 void colorStartNewFrame(uint32_t color);
 static inline void startNewFrame()
 {

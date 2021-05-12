@@ -358,5 +358,11 @@ void setKeyboardLanguage(Swkbd_LanguageType language)
 	changed = true;
 	
 	SWKBD_Shutdown();
-	SWKBD_Init();
+	debugPrintf("CA");
+	pauseRenderer();
+	debugPrintf("CB");
+	resumeRenderer();
+	debugPrintf("CC");
+//	SWKBD_Init();
+	debugPrintf("CD");
 }

@@ -323,24 +323,10 @@ void removeErrorOverlay()
 	drawFrame();
 }
 
-void initRenderer()
+void resumeRenderer()
 {
 	if(rendererRunning)
 		return;
-	
-	libgui_memoryInitialize();
-	
-	OSThread *audioThread = (OSThread *)SoundHandler::instance()->getThread();
-	OSSetThreadName(audioThread, "NUSspli Audio");
-	if(OSSetThreadPriority(audioThread, 0))
-		addToScreenLog("Changed audio thread priority!");
-	else
-		addToScreenLog("WARNING: Error changing audio thread priority!");
-	
-	backgroundMusic = new GuiSound(backgroundMusic_mp3, backgroundMusic_mp3_size);
-	backgroundMusic->SetLoop(true);
-	backgroundMusic->SetVolume(15);
-	backgroundMusic->Play();
 	
 	renderer = new CVideo(GX2_TV_SCAN_MODE_720P, GX2_DRC_RENDER_MODE_SINGLE);
 	GX2SetSwapInterval(FRAMERATE_60FPS);
@@ -365,7 +351,7 @@ void initRenderer()
 	checkmarkData = new GuiImageData(checkmark_png, checkmark_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
 	
 	const uint8_t *tex;
-	for(int i = 0; i < 5; i++)
+	for(int i = 0; i < 6; i++)
 	{
 		switch(i)
 		{
@@ -398,6 +384,28 @@ void initRenderer()
 	}
 	
 	rendererRunning = true;
+}
+
+void initRenderer()
+{
+	if(rendererRunning)
+		return;
+	
+	libgui_memoryInitialize();
+	
+	OSThread *audioThread = (OSThread *)SoundHandler::instance()->getThread();
+	OSSetThreadName(audioThread, "NUSspli Audio");
+	if(OSSetThreadPriority(audioThread, 0))
+		addToScreenLog("Changed audio thread priority!");
+	else
+		addToScreenLog("WARNING: Error changing audio thread priority!");
+	
+	backgroundMusic = new GuiSound(backgroundMusic_mp3, backgroundMusic_mp3_size);
+	backgroundMusic->SetLoop(true);
+	backgroundMusic->SetVolume(15);
+	backgroundMusic->Play();
+	
+	resumeRenderer();
 	
 	addToScreenLog("libgui initialized!");
 	startNewFrame();
@@ -419,6 +427,27 @@ static inline void clearFrame()
 	window->removeAll();
 }
 
+void pauseRenderer()
+{
+	if(!rendererRunning)
+		return;
+	
+	clearFrame();
+	removeErrorOverlay();
+	
+	delete renderer;
+	delete window;
+	delete background;
+	delete font;
+	delete arrowData;
+	delete checkmarkData;
+	for(int i = 0; i < 6; i++)
+		delete flagData[i];
+	
+	bgColor = SCREEN_COLOR_BLACK;
+	rendererRunning = false;
+}
+
 void shutdownRenderer()
 {
 	if(!rendererRunning)
@@ -432,24 +461,14 @@ void shutdownRenderer()
 	
 	drawFrame();
 	clearFrame();
-	removeErrorOverlay();
 	
 	backgroundMusic->Stop();
 	delete backgroundMusic;
-	delete renderer;
-	delete window;
-	delete background;
-	delete font;
 	delete bye;
 	delete byeData;
-	delete arrowData;
-	delete checkmarkData;
-	for(int i = 0; i < 6; i++)
-		delete flagData[i];
 	
+	pauseRenderer();
 	libgui_memoryRelease();
-	bgColor = SCREEN_COLOR_BLACK;
-	rendererRunning = false;
 }
 
 void colorStartNewFrame(uint32_t color)
