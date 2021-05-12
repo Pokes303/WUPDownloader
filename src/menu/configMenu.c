@@ -52,12 +52,12 @@ void drawConfigMenu()
 	strcat(toScreen, autoResumeEnabled() ? "disable" : "enable");
 	strcat(toScreen, " auto resuming of failed downloads");
 	textToFrame(i++, 0, toScreen);
-	
+	/*
 	strcpy(toScreen, "Press LEFT/RIGHT to change the language (curently ");
 	strcat(toScreen, getLanguageString(getUnfilteredLanguage()));
 	strcat(toScreen, ")");
 	textToFrame(i++, 0, toScreen);
-	
+	*/
 	textToFrame(++i, 0, "Press \uE001 to go back");
 	drawFrame();
 }
@@ -91,7 +91,7 @@ void configMenu()
 			setAutoResume(!autoResumeEnabled());
 			redraw = true;
 		}
-		if(vpad.trigger & VPAD_BUTTON_LEFT)
+/*		if(vpad.trigger & VPAD_BUTTON_LEFT)
 		{
 			int l = getUnfilteredLanguage();
 			if(--l < Swkbd_LanguageType__Japanese)
@@ -108,7 +108,7 @@ void configMenu()
 			
 			setKeyboardLanguage(l);
 			redraw = true;
-		}
+		}*/
 		if(vpad.trigger & VPAD_BUTTON_B)
 		{
 			saveConfig();
