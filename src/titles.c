@@ -329,8 +329,8 @@ bool initTitles()
 			
 			titleEntry[entries].region = cJSON_GetArrayItem(curr[1], 1)->valueint;
 			
-			titleEntry[entries].isDLC = i == 8;
-			titleEntry[entries].isUpdate = i == 9;
+			titleEntry[entries].isDLC = i == TRANSFORMED_TID_HIGH_DLC;
+			titleEntry[entries].isUpdate = i == TRANSFORMED_TID_HIGH_UPDATE;
 			
 			tid = retransformTidHigh(i);
 			tid <<= 32;
