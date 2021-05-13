@@ -44,60 +44,60 @@ char **titleNames[10] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 size_t titleSizes[10] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 size_t titleEntries[5] = { 0, 0, 0, 0, 0 };
 TitleEntry *titleEntry = NULL;
-TitleEntry *filteredEntry[4] = { NULL, NULL, NULL, NULL}; // Games, Updates, DLC, Demos
+TitleEntry *filteredEntry[4] = { NULL, NULL, NULL, NULL }; // Games, Updates, DLC, Demos
 
-int transformTidHigh(TID_HIGH tidHigh)
+TRANSFORMED_TID_HIGH transformTidHigh(TID_HIGH tidHigh)
 {
 	switch(tidHigh)
 	{
 		case TID_HIGH_GAME:
-			return 0;
+			return TRANSFORMED_TID_HIGH_GAME;
 		case TID_HIGH_DEMO:
-			return 1;
+			return TRANSFORMED_TID_HIGH_DEMO;
 		case TID_HIGH_SYSTEM_APP:
-			return 2;
+			return TRANSFORMED_TID_HIGH_SYSTEM_APP;
 		case TID_HIGH_SYSTEM_DATA:
-			return 3;
+			return TRANSFORMED_TID_HIGH_SYSTEM_DATA;
 		case TID_HIGH_SYSTEM_APPLET:
-			return 4;
+			return TRANSFORMED_TID_HIGH_SYSTEM_APPLET;
 		case TID_HIGH_VWII_IOS:
-			return 5;
+			return TRANSFORMED_TID_HIGH_VWII_IOS;
 		case TID_HIGH_VWII_SYSTEM_APP:
-			return 6;
+			return TRANSFORMED_TID_HIGH_VWII_SYSTEM_APP;
 		case TID_HIGH_VWII_SYSTEM:
-			return 7;
+			return TRANSFORMED_TID_HIGH_VWII_SYSTEM;
 		case TID_HIGH_DLC:
-			return 8;
+			return TRANSFORMED_TID_HIGH_DLC;
 		case TID_HIGH_UPDATE:
-			return 9;
+			return TRANSFORMED_TID_HIGH_UPDATE;
 		default:
 			return -1;
 	}
 }
 
-TID_HIGH retransformTidHigh(int transformedTidHigh)
+TID_HIGH retransformTidHigh(TRANSFORMED_TID_HIGH transformedTidHigh)
 {
 	switch(transformedTidHigh)
 	{
-		case 0:
+		case TRANSFORMED_TID_HIGH_GAME:
 			return TID_HIGH_GAME;
-		case 1:
+		case TRANSFORMED_TID_HIGH_DEMO:
 			return TID_HIGH_DEMO;
-		case 2:
+		case TRANSFORMED_TID_HIGH_SYSTEM_APP:
 			return TID_HIGH_SYSTEM_APP;
-		case 3:
+		case TRANSFORMED_TID_HIGH_SYSTEM_DATA:
 			return TID_HIGH_SYSTEM_DATA;
-		case 4:
+		case TRANSFORMED_TID_HIGH_SYSTEM_APPLET:
 			return TID_HIGH_SYSTEM_APPLET;
-		case 5:
+		case TRANSFORMED_TID_HIGH_VWII_IOS:
 			return TID_HIGH_VWII_IOS;
-		case 6:
+		case TRANSFORMED_TID_HIGH_VWII_SYSTEM_APP:
 			return TID_HIGH_VWII_SYSTEM_APP;
-		case 7:
+		case TRANSFORMED_TID_HIGH_VWII_SYSTEM:
 			return TID_HIGH_VWII_SYSTEM;
-		case 8:
+		case TRANSFORMED_TID_HIGH_DLC:
 			return TID_HIGH_DLC;
-		case 9:
+		case TRANSFORMED_TID_HIGH_UPDATE:
 			return TID_HIGH_UPDATE;
 		default:
 			return -1;
@@ -203,7 +203,7 @@ bool initTitles()
 	}
 	
 	cJSON *curr[3];
-	uint32_t i;
+	TRANSFORMED_TID_HIGH i;
 	size_t ma = 0;
 	size_t size;
 	char sj[9];
@@ -216,7 +216,7 @@ bool initTitles()
 			continue; // TODO
 		
 		i = atoi(curr[0]->string);
-		if(i > 9)
+		if(i > TRANSFORMED_TID_HIGH_UPDATE)
 			continue;
 		
 		cJSON_ArrayForEach(curr[1], curr[0])
@@ -284,34 +284,30 @@ bool initTitles()
 			continue; // TODO
 		
 		i = atoi(curr[0]->string);
-		if(i > 9)
+		if(i > TRANSFORMED_TID_HIGH_UPDATE)
 			continue;
 		
 		switch(i)
 		{
-			case 0:
+			case TRANSFORMED_TID_HIGH_GAME:
 				cat = 0;
 				break;
-			case 1:
-				cat = 2;
-				break;
-			case 2:
-			case 3:
-			case 4:
-			case 5:
-			case 6:
-			case 7:
-				cat = 4;
-				break;
-			case 8:
+			case TRANSFORMED_TID_HIGH_UPDATE:
 				cat = 1;
 				break;
-			case 9:
+			case TRANSFORMED_TID_HIGH_DLC:
+				cat = 2;
+				break;
+			case TRANSFORMED_TID_HIGH_DEMO:
 				cat = 3;
+				break;
+			default:
+				cat = 4;
 				break;
 		}
 		
-		filteredEntry[cat] = &(titleEntry[entries]);
+		if(cat != 4)
+			filteredEntry[cat] = &(titleEntry[entries]);
 		
 		cJSON_ArrayForEach(curr[1], curr[0])
 		{
@@ -372,7 +368,7 @@ void clearTitles()
 	for(int i = 0; i < 4; i++)
 		filteredEntry[i] = NULL;
 	
-	for(int i = 0; i < 8; i++)
+	for(int i = 0; i < 10; i++)
 	{
 		if(titleNames[i] != NULL)
 		{
