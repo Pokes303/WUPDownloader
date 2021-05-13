@@ -278,7 +278,7 @@ void flagToFrame(int line, int column, TITLE_REGION flag)
 void tabToFrame(int line, int column, char *label, bool active)
 {
 	line *= -FONT_SIZE;
-	line -= 8;
+	line -= 9;
 	column *= 240;
 	column += 15;
 	
@@ -288,7 +288,7 @@ void tabToFrame(int line, int column, char *label, bool active)
 	
 	GuiText *text = new GuiText(label);
 	
-	line -= 24;
+	line -= 27;
 	line -= FONT_SIZE >> 1;
 	column += 120 - (text->getTextWidth() >> 1); //TODO
 	
