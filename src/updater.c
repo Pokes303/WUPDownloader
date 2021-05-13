@@ -139,11 +139,18 @@ bool updateCheck()
 		case 1:
 			newVer = cJSON_GetObjectItemCaseSensitive(json, "v")->valuestring;
 			break;
-		case 2:
-			showUpdateErrorf("This version of NUSspli is deprecated!"); //TODO
+		case 2: //TODO
+			char *vt = isAroma() ? "Aroma" : isChannel() ? "Channel" : "HBL";
+			showUpdateErrorf("The %s version of NUSspli is deprecated!", vt);
+			cJSON_Delete(json);
+			clearRamBuf();
 			return false;
 		case 3: // TODO
-		case 4: // TODO
+		case 4:
+			showUpdateError("Internal server error!");
+			cJSON_Delete(json);
+			clearRamBuf();
+			return false;
 		default: // TODO
 			showUpdateErrorf("Invalid state value: %d", jsonObj->valueint);
 			cJSON_Delete(json);
