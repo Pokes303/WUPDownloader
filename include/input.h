@@ -51,6 +51,12 @@ typedef enum
 
 typedef enum
 {
+	KEYBOARD_LAYOUT_NORMAL	= 0,
+	KEYBOARD_LAYOUT_TID	= 2,
+} KeyboardLayout;
+
+typedef enum
+{
 	CT_WPAD_0 = WPAD_CHAN_0,
 	CT_WPAD_1 = WPAD_CHAN_1,
 	CT_WPAD_2 = WPAD_CHAN_2,
@@ -62,7 +68,7 @@ bool SWKBD_Init();
 void SWKBD_Shutdown();
 
 void readInput();
-bool showKeyboard(KeyboardType type, char *output, KeyboardChecks check, int maxlength, bool limit, const char *input, const char *okStr);
+bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, KeyboardChecks check, int maxlength, bool limit, const char *input, const char *okStr);
 
 #ifdef __cplusplus
 	}

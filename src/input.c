@@ -40,6 +40,8 @@
 #include <padscore/kpad.h>
 #include <padscore/wpad.h>
 
+#define CT_STACK_SIZE (256 * 1024)
+
 //WIP. This need a better implementation
 
 VPADStatus vpad;
@@ -53,12 +55,22 @@ bool globalLimit;
 
 bool okButtonEnabled;
 
+static OSThread calcThread;
+static void *calcThreadStack;
+
 bool isUrl(char c)
 {
 	return isNumber(c) || isLowercase(c) || isUppercase(c) || c == '.' || c == '/' || c == ':' || c == '%' || c == '-' || c == '_'; //TODO
 }
 
 typedef bool (*checkingFunction)(char);
+
+int calcThreadMain(int argc, const char **argv)
+{
+	Swkbd_CalcSubThreadFont();
+	checkStacks("SWKBD font");
+	return 0;
+}
 
 void SWKBD_Render(KeyboardChecks check)
 {
@@ -114,16 +126,27 @@ void SWKBD_Render(KeyboardChecks check)
 	
 	Swkbd_Calc(controllerInfo); //TODO: Do this in a new thread?
 
-	if (Swkbd_IsNeedCalcSubThreadFont())
+	if(Swkbd_IsNeedCalcSubThreadFont())
 	{
-		Swkbd_CalcSubThreadFont(); //TODO: Do this in a new thread?
-		debugPrintf("SWKBD nn::swkbd::IsNeedCalcSubThreadFont()");
+		calcThreadStack = MEMAllocFromDefaultHeapEx(CT_STACK_SIZE, 8);
+		if(calcThreadStack == NULL)
+			debugPrintf("OUT OF MEMORY!"); // TODO
+		else
+		{
+			if(OSCreateThread(&calcThread, calcThreadMain, 0, NULL, calcThreadStack + CT_STACK_SIZE, CT_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_CPU1))
+			{
+				OSSetThreadName(&calcThread, "NUSspli SWKBD font calculator");
+				OSResumeThread(&calcThread);
+				int ret;
+				OSJoinThread(&calcThread, &ret);
+			}
+		}
 	}
 
 	drawKeyboard(lastUsedController != CT_VPAD_0);
 }
 
-bool SWKBD_Show(KeyboardType type, int maxlength, bool limit, const char *okStr) {
+bool SWKBD_Show(KeyboardLayout layout, KeyboardType type, int maxlength, bool limit, const char *okStr) {
 	debugPrintf("SWKBD_Show()");
 	if(!Swkbd_IsHidden())
 	{
@@ -151,9 +174,40 @@ bool SWKBD_Show(KeyboardType type, int maxlength, bool limit, const char *okStr)
 	
 	appearArg.keyboardArg.configArg.languageType = getKeyboardLanguage();
 	appearArg.keyboardArg.configArg.unk_0x04 = lastUsedController;
-	appearArg.keyboardArg.configArg.unk_0x08 = 2;
-	appearArg.keyboardArg.configArg.unk_0x0C = 2;
-	appearArg.keyboardArg.configArg.unk_0x10 = 2;
+	appearArg.keyboardArg.configArg.unk_0x08 = layout;
+	appearArg.keyboardArg.configArg.unk_0x0C = 0xFFFFFFFF;
+	
+	switch(appearArg.keyboardArg.configArg.languageType)
+	{
+		case Swkbd_LanguageType__Japanese:
+			appearArg.keyboardArg.configArg.unk_0x10 = 1;
+			break;
+		case Swkbd_LanguageType__French:
+			appearArg.keyboardArg.configArg.unk_0x10 = 1 << 6;
+			break;
+		case Swkbd_LanguageType__German:
+			appearArg.keyboardArg.configArg.unk_0x10 = 1 << 7;
+			break;
+		case Swkbd_LanguageType__Italian:
+			appearArg.keyboardArg.configArg.unk_0x10 = 1 << 8;
+			break;
+		case Swkbd_LanguageType__Spanish:
+			appearArg.keyboardArg.configArg.unk_0x10 = 1 << 9;
+			break;
+		case Swkbd_LanguageType__Dutch:
+			appearArg.keyboardArg.configArg.unk_0x10 = 1 << 10;
+			break;
+		case Swkbd_LanguageType__Potuguese:
+			appearArg.keyboardArg.configArg.unk_0x10 = 1 << 11;
+			break;
+		case Swkbd_LanguageType__Russian:
+			appearArg.keyboardArg.configArg.unk_0x10 = 1 << 12;
+			break;
+		default:
+			appearArg.keyboardArg.configArg.unk_0x10 = 2;
+			break;
+	}
+	
 	appearArg.keyboardArg.configArg.unk_0x14 = -1;
 	appearArg.keyboardArg.configArg.str = okStrL;
 	appearArg.keyboardArg.configArg.framerate = FRAMERATE_60FPS;
@@ -229,7 +283,7 @@ bool SWKBD_Init()
 		return false;
 	}
 	
-/*	switch(getKeyboardLanguage())
+	switch(getKeyboardLanguage())
 	{
 		case Swkbd_LanguageType__Japanese:
 			createArg.regionType = Swkbd_RegionType__Japan;
@@ -249,13 +303,10 @@ bool SWKBD_Init()
 		default:
 			createArg.regionType = Swkbd_RegionType__Europe;
 			break;
-	}*/
-	createArg.regionType = Swkbd_RegionType__Europe;
-	debugPrintf("A");
+	}
+	
 	bool ret = Swkbd_Create(createArg);
-	debugPrintf("B");
 	OSDynLoad_SetAllocator(oAlloc, oFree);
-	debugPrintf("C");
 	return ret;
 }
 
@@ -368,9 +419,9 @@ void readInput()
 		removeErrorOverlay();
 }
 
-bool showKeyboard(KeyboardType type, char *output, KeyboardChecks check, int maxlength, bool limit, const char *input, const char *okStr) {
+bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, KeyboardChecks check, int maxlength, bool limit, const char *input, const char *okStr) {
 	debugPrintf("Initialising SWKBD");
-	if(!SWKBD_Show(type, maxlength, limit, okStr))
+	if(!SWKBD_Show(layout, type, maxlength, limit, okStr))
 	{
 		drawErrorFrame("Error showing SWKBD:\nnn::swkbd::AppearInputForm failed", B_RETURN);
 		

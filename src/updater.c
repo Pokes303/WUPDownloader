@@ -140,8 +140,7 @@ bool updateCheck()
 			newVer = cJSON_GetObjectItemCaseSensitive(json, "v")->valuestring;
 			break;
 		case 2: //TODO
-			char *vt = isAroma() ? "Aroma" : isChannel() ? "Channel" : "HBL";
-			showUpdateErrorf("The %s version of NUSspli is deprecated!", vt);
+			showUpdateErrorf("The %s version of NUSspli is deprecated!", isAroma() ? "Aroma" : isChannel() ? "Channel" : "HBL");
 			cJSON_Delete(json);
 			clearRamBuf();
 			return false;

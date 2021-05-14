@@ -221,7 +221,7 @@ bool generateFakeTicket()
 		
 		if(vpad.trigger & VPAD_BUTTON_LEFT)
 		{
-			showKeyboard(KEYBOARD_TYPE_RESTRICTED, titleID, CHECK_HEXADECIMAL, 16, true, titleID, NULL);
+			showKeyboard(KEYBOARD_LAYOUT_TID, KEYBOARD_TYPE_RESTRICTED, titleID, CHECK_HEXADECIMAL, 16, true, titleID, NULL);
 			toLowercase(titleID);
 			drawTicketFrame(titleID);
 		}

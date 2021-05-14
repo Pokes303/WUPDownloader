@@ -62,7 +62,7 @@
 
 CVideo *renderer;
 GuiFrame *window;
-FreeTypeGX *font;
+FreeTypeGX *font = NULL;
 GuiImage *background;
 uint32_t bgColor = SCREEN_COLOR_BLACK;
 uint32_t width, height;
@@ -364,10 +364,14 @@ void resumeRenderer()
 	
 	window = new GuiFrame(width, height);
 	
-	FT_Bytes ttf;
 	size_t size;
-	OSGetSharedData(OS_SHAREDDATATYPE_FONT_STANDARD, 0, (void **)&ttf, &size);
-	font = new FreeTypeGX(ttf, size);
+	if(font == NULL)
+	{
+		FT_Bytes ttf;
+		OSGetSharedData(OS_SHAREDDATATYPE_FONT_STANDARD, 0, (void **)&ttf, &size);
+		font = new FreeTypeGX(ttf, size);
+	}
+	
 	spaceWidth = font->getCharWidth(L' ', FONT_SIZE);
 	
 	GuiText::setPresets(FONT_SIZE, glm::vec4({1.0f}), width - (FONT_SIZE << 1), ALIGN_TOP_LEFT, SSAA);
@@ -467,10 +471,11 @@ void pauseRenderer()
 	delete renderer;
 	delete window;
 	delete background;
-	delete font;
+//	delete font;
 	delete arrowData;
 	delete checkmarkData;
 	delete tabData;
+	
 	for(int i = 0; i < 6; i++)
 		delete flagData[i];
 	

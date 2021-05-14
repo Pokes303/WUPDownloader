@@ -29,7 +29,7 @@
 #include <osdefs.h>
 #include <utils.h>
 
-#define RUMBLE_STACK_SIZE 0x2000
+#define RUMBLE_STACK_SIZE 0x200
 
 static OSThread rumbleThread;
 static uint8_t *rumbleThreadStack;

@@ -262,7 +262,7 @@ void titleBrowserMenu()
 		}
 		if(vpad.trigger & VPAD_BUTTON_Y)
 		{
-			showKeyboard(KEYBOARD_TYPE_NORMAL, search, CHECK_NONE, 128, false, search, "Search");
+			showKeyboard(KEYBOARD_LAYOUT_NORMAL, KEYBOARD_TYPE_NORMAL, search, CHECK_NONE, 128, false, search, "Search");
 			cursor = pos = 0;
 			redraw = true;
 		}

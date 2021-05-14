@@ -229,14 +229,14 @@ downloadTMD:
 		
 		if(vpad.trigger & VPAD_BUTTON_RIGHT)
 		{
-			if(!showKeyboard(KEYBOARD_TYPE_RESTRICTED, titleVer, CHECK_NUMERICAL, 5, false, titleVer, NULL))
+			if(!showKeyboard(KEYBOARD_LAYOUT_TID, KEYBOARD_TYPE_RESTRICTED, titleVer, CHECK_NUMERICAL, 5, false, titleVer, NULL))
 				titleVer[0] = '\0';
 			clearRamBuf();
 			goto downloadTMD;
 		}
 		if(vpad.trigger & VPAD_BUTTON_DOWN)
 		{
-			if(!showKeyboard(KEYBOARD_TYPE_NORMAL, folderName, CHECK_ALPHANUMERICAL, FILENAME_MAX - 11, false, folderName, NULL))
+			if(!showKeyboard(KEYBOARD_LAYOUT_TID, KEYBOARD_TYPE_NORMAL, folderName, CHECK_ALPHANUMERICAL, FILENAME_MAX - 11, false, folderName, NULL))
 				folderName[0] = '\0';
 			redraw = true;
 		}
