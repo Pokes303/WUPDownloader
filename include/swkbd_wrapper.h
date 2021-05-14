@@ -60,6 +60,19 @@ typedef enum
    Swkbd_RegionType__Taiwan   = 5,
 } Swkbd_RegionType;
 
+typedef enum
+{
+   Swkbd_LanguageType2__Japanese  = 0,
+   Swkbd_LanguageType2__English   = 1,
+   Swkbd_LanguageType2__French    = 6,
+   Swkbd_LanguageType2__German    = 7,
+   Swkbd_LanguageType2__Italian   = 8,
+   Swkbd_LanguageType2__Spanish   = 9,
+   Swkbd_LanguageType2__Dutch     = 10,
+   Swkbd_LanguageType2__Portuguese = 11,
+   Swkbd_LanguageType2__Russian   = 12,
+} Swkbd_LanguageType2;
+
 //Structs also from the link above
 typedef struct
 {
@@ -67,7 +80,7 @@ typedef struct
    uint32_t unk_0x04;
    uint32_t unk_0x08;
    uint32_t unk_0x0C;
-   uint32_t unk_0x10;
+   Swkbd_LanguageType2 languageType2;
    int32_t unk_0x14;
    bool unk_0x18;
    char16_t *str;
@@ -80,7 +93,7 @@ WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x00, languageType);
 WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x04, unk_0x04);
 WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x08, unk_0x08);
 WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x0C, unk_0x0C);
-WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x10, unk_0x10);
+WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x10, languageType2);
 WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x14, unk_0x14);
 WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x18, unk_0x18);
 WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x1C, str);

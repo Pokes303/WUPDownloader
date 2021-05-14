@@ -173,41 +173,39 @@ bool SWKBD_Show(KeyboardLayout layout, KeyboardType type, int maxlength, bool li
 	OSBlockSet(&appearArg.keyboardArg.receiverArg, 0, sizeof(Swkbd_ReceiverArg));
 	
 	appearArg.keyboardArg.configArg.languageType = getKeyboardLanguage();
-	appearArg.keyboardArg.configArg.unk_0x04 = lastUsedController;
-	appearArg.keyboardArg.configArg.unk_0x08 = layout;
-	appearArg.keyboardArg.configArg.unk_0x0C = 0xFFFFFFFF;
-	
 	switch(appearArg.keyboardArg.configArg.languageType)
 	{
 		case Swkbd_LanguageType__Japanese:
-			appearArg.keyboardArg.configArg.unk_0x10 = 1;
+			appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__Japanese;
 			break;
 		case Swkbd_LanguageType__French:
-			appearArg.keyboardArg.configArg.unk_0x10 = 1 << 6;
+			appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__French;
 			break;
 		case Swkbd_LanguageType__German:
-			appearArg.keyboardArg.configArg.unk_0x10 = 1 << 7;
+			appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__German;
 			break;
 		case Swkbd_LanguageType__Italian:
-			appearArg.keyboardArg.configArg.unk_0x10 = 1 << 8;
+			appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__Italian;
 			break;
 		case Swkbd_LanguageType__Spanish:
-			appearArg.keyboardArg.configArg.unk_0x10 = 1 << 9;
+			appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__Spanish;
 			break;
 		case Swkbd_LanguageType__Dutch:
-			appearArg.keyboardArg.configArg.unk_0x10 = 1 << 10;
+			appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__Dutch;
 			break;
 		case Swkbd_LanguageType__Potuguese:
-			appearArg.keyboardArg.configArg.unk_0x10 = 1 << 11;
+			appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__Portuguese;
 			break;
 		case Swkbd_LanguageType__Russian:
-			appearArg.keyboardArg.configArg.unk_0x10 = 1 << 12;
+			appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__Russian;
 			break;
 		default:
-			appearArg.keyboardArg.configArg.unk_0x10 = 2;
-			break;
+			appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__English;
 	}
-	
+
+	appearArg.keyboardArg.configArg.unk_0x04 = lastUsedController;
+	appearArg.keyboardArg.configArg.unk_0x08 = layout;
+	appearArg.keyboardArg.configArg.unk_0x0C = 0xFFFFFFFF;
 	appearArg.keyboardArg.configArg.unk_0x14 = -1;
 	appearArg.keyboardArg.configArg.str = okStrL;
 	appearArg.keyboardArg.configArg.framerate = FRAMERATE_60FPS;
