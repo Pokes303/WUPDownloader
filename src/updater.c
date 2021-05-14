@@ -50,7 +50,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#define UPDATE_CHECK_URL NAPI_URL "s?v=" NUSSPLI_VERSION "&t="
+#define UPDATE_CHECK_URL NAPI_URL "s?t="
 #define UPDATE_DL_URL NAPI_URL "d?t="
 #define UPDATE_TEMP_FOLDER "fs:/vol/external01/NUSspli_temp/"
 #define UPDATE_AROMA_FOLDER "fs:/vol/external01/wiiu/apps/"
