@@ -50,7 +50,7 @@
 #include <curl/curl.h>
 #include <nsysnet/socket.h>
 
-#define USERAGENT		"NUSspli/"NUSSPLI_VERSION" (WarezLoader, like WUPDownloader)" // TODO: Spoof eShop here?
+#define USERAGENT		"NUSspli/" NUSSPLI_VERSION // TODO: Spoof eShop here?
 #define DLBGT_STACK_SIZE	0x2000
 #define SOCKLIB_BUFSIZE		(IO_BUFSIZE * 4) // For send & receive + double buffering
 
