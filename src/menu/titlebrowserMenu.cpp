@@ -93,36 +93,6 @@ char16_t *str16str(char16_t *haystack, char16_t *needle)
 	return ret;
 }
 
-bool str16_contains(char16_t *haystack, char16_t *needle)
-{
-	size_t needleL = strlen16(needle);
-	if(needleL == 0)
-		return true;
-	
-	size_t hayL = strlen16(haystack);
-	if(needleL > hayL)
-		return false;
-	
-	size_t i = 0;
-	bool ret;
-	do
-	{
-		ret = true;
-		for(size_t j = 0 ; j < needleL; j++)
-		{
-			if(haystack[i + j] != needle[j])
-			{
-				ret = false;
-				break;
-			}
-		}
-		i++;
-	}
-	while(!ret && haystack + i <= haystack + (hayL - needleL));
-	
-	return ret;
-}
-
 void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cursor, char16_t *search)
 {
 	if(!isAroma())
@@ -187,13 +157,12 @@ void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cu
 			
 			ptr[0] = lowerSearch;
 			ptr[1] = str16str(ptr[0], (char16_t *)u" ");
-			found = true;
-			while(found)
+			do
 			{
 				if(ptr[1] != NULL)
 					ptr[1][0] = u'\0';
 				
-				found = str16_contains(tmp16Name, ptr[0]);
+				found = str16str(tmp16Name, ptr[0]) != NULL;
 				
 				if(ptr[1] != NULL)
 				{
@@ -206,7 +175,8 @@ void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cu
 				}
 				else
 					break;
-			};
+			}
+			while(found);
 			
 			if(found)
 				filteredTitleEntries[ts++] = titleEntrys[i];
