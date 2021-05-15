@@ -35,6 +35,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <wctype.h>
+#include <string>
+#include <locale>
 
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
@@ -45,7 +48,82 @@ TitleEntry *filteredTitleEntries;
 
 size_t filteredTitleEntrySize;
 
-void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cursor, const char* search)
+template<class I, class E, class S>
+struct codecvt : std::codecvt<I, E, S>
+{
+    ~codecvt()
+    { }
+};
+
+static inline size_t strlen16(char16_t *str)
+{
+	size_t ret = 0;
+	while(str[ret] != u'\0')
+		ret++;
+	return ret;
+}
+
+char16_t *str16str(char16_t *haystack, char16_t *needle)
+{
+	size_t needleL = strlen16(needle);
+	if(needleL == 0)
+		return haystack;
+	
+	size_t hayL = strlen16(haystack);
+	if(needleL > hayL)
+		return NULL;
+	
+	size_t i = 0;
+	char16_t *ret;
+	do
+	{
+		ret = haystack + i;
+		for(size_t j = 0 ; j < needleL; j++)
+		{
+			if(haystack[i + j] != needle[j])
+			{
+				ret = NULL;
+				break;
+			}
+		}
+		i++;
+	}
+	while(ret == NULL && haystack + i <= haystack + (hayL - needleL));
+	
+	return ret;
+}
+
+bool str16_contains(char16_t *haystack, char16_t *needle)
+{
+	size_t needleL = strlen16(needle);
+	if(needleL == 0)
+		return true;
+	
+	size_t hayL = strlen16(haystack);
+	if(needleL > hayL)
+		return false;
+	
+	size_t i = 0;
+	bool ret;
+	do
+	{
+		ret = true;
+		for(size_t j = 0 ; j < needleL; j++)
+		{
+			if(haystack[i + j] != needle[j])
+			{
+				ret = false;
+				break;
+			}
+		}
+		i++;
+	}
+	while(!ret && haystack + i <= haystack + (hayL - needleL));
+	
+	return ret;
+}
+
+void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cursor, char16_t *search)
 {
 	if(!isAroma())
 		unmountUSB();
@@ -53,9 +131,9 @@ void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cu
 	startNewFrame();
 	
 	// Games, Updates, DLC, Demos, All
-	char *tabLabels[5] = { "Games", "Updates", "DLC", "Demos", "All" };
+	const char *tabLabels[5] = { "Games", "Updates", "DLC", "Demos", "All" };
 	for(int i = 0; i < 5; i++)
-		tabToFrame(0, i, tabLabels[i], i == tab);
+		tabToFrame(0, i, (char *)tabLabels[i], i == tab);
 	
 	boxToFrame(1, MAX_LINES - 2);
 	
@@ -64,44 +142,66 @@ void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cu
 	filteredTitleEntrySize = getTitleEntriesSize(tab);
 	TitleEntry *titleEntrys = getTitleEntries(tab);
 	
-	if(search[0] != '\0')
+	if(search[0] != u'\0')
 	{
-		size_t ts = strlen(search);
-		char lowerSearch[ts + 1];
-		for(size_t i = 0; i < ts; i++)
-			lowerSearch[i] = tolower(search[i]);
-		lowerSearch[ts] = '\0';
+		size_t ts = strlen16(search);
+		char16_t *lowerSearch = new char16_t[ts + 1];
+		ts = 0;
+		do
+		{
+			if(search[ts] >= u'A')
+			{
+				if(search[ts] <= u'Z')
+				{
+					lowerSearch[ts] = search[ts] + (u'a' - u'A');
+					continue;
+				}
+				if(search[ts] >= u'À')
+				{
+					if(search[ts] <= u'Ý')
+					{
+						lowerSearch[ts] = search[ts] + (u'à' - u'À');
+						continue;
+					}
+				}
+			}
+			lowerSearch[ts] = search[ts];
+		}
+		while(search[ts++] != u'\0');
 		
 		ts = 0;
 		size_t ss;
-		char *ptr[2];
+		std::u16string u16s;
+		char16_t *ptr[2];
 		bool found;
+		std::wstring_convert<codecvt<char16_t, char, std::mbstate_t>, char16_t> conv;
 		for(size_t i = 0 ; i < filteredTitleEntrySize; i++)
 		{
 			ss = strlen(titleEntrys[i].name);
 			char tmpName[ss + 1];
 			for(size_t j = 0; j < ss; j++)
 				tmpName[j] = tolower(titleEntrys[i].name[j]);
-			tmpName[ss] = '\0';
+			
+			u16s = conv.from_bytes(tmpName, tmpName+ss);
+			char16_t *tmp16Name = (char16_t *)u16s.c_str();
 			
 			ptr[0] = lowerSearch;
-			ptr[1] = strstr(ptr[0], " ");
+			ptr[1] = str16str(ptr[0], (char16_t *)u" ");
 			found = true;
 			while(found)
 			{
 				if(ptr[1] != NULL)
-					ptr[1][0] = '\0';
+					ptr[1][0] = u'\0';
 				
-				if(strstr(tmpName, ptr[0]) == NULL)
-					found = false;
+				found = str16_contains(tmp16Name, ptr[0]);
 				
 				if(ptr[1] != NULL)
 				{
-					ptr[1][0] = ' ';
+					ptr[1][0] = u' ';
 					if(found)
 					{
 						ptr[0] = ptr[1] + 1;
-						ptr[1] = strstr(ptr[0], " ");
+						ptr[1] = str16str(ptr[0], (char16_t *)u" ");
 					}
 				}
 				else
@@ -113,6 +213,7 @@ void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cu
 		}
 		
 		filteredTitleEntrySize = ts;
+		delete lowerSearch;
 	}
 	else
 		for(size_t i = 0; i < filteredTitleEntrySize; i++)
@@ -158,7 +259,7 @@ void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cu
 void titleBrowserMenu()
 {
 	filteredTitleEntrySize = getTitleEntriesSize(TITLE_CATEGORY_ALL);
-	filteredTitleEntries = MEMAllocFromDefaultHeap(filteredTitleEntrySize * sizeof(TitleEntry));
+	filteredTitleEntries = (TitleEntry *)MEMAllocFromDefaultHeap(filteredTitleEntrySize * sizeof(TitleEntry));
 	if(filteredTitleEntries == NULL)
 	{
 		debugPrintf("Titlebrowser: OUT OF MEMORY!");
@@ -168,8 +269,8 @@ void titleBrowserMenu()
 	TITLE_CATEGORY tab = TITLE_CATEGORY_GAME;
 	size_t cursor = 0;
 	size_t pos = 0;
-	char search[129];
-	search[0] = '\0';
+	char16_t search[129];
+	search[0] = u'\0';
 	
 	drawTBMenuFrame(tab, pos, cursor, search);
 	
@@ -262,16 +363,18 @@ void titleBrowserMenu()
 		}
 		if(vpad.trigger & VPAD_BUTTON_Y)
 		{
-			showKeyboard(KEYBOARD_LAYOUT_NORMAL, KEYBOARD_TYPE_NORMAL, search, CHECK_NONE, 128, false, search, "Search");
+			showKeyboard(KEYBOARD_LAYOUT_NORMAL, KEYBOARD_TYPE_NORMAL, (char *)search, CHECK_NONE, 128, false, (const char *)search, "Search");
 			cursor = pos = 0;
 			redraw = true;
 		}
 		
 		if(vpad.trigger & VPAD_BUTTON_R || vpad.trigger & VPAD_BUTTON_ZR)
 		{
-			if(++tab > TITLE_CATEGORY_ALL)
-				tab = TITLE_CATEGORY_GAME;
+			size_t tt = (size_t)tab;
+			if(++tt > TITLE_CATEGORY_ALL)
+				tt = (size_t)TITLE_CATEGORY_GAME;
 			
+			tab = (TITLE_CATEGORY)tt;
 			cursor = pos = 0;
 			redraw = true;
 		}
@@ -280,7 +383,11 @@ void titleBrowserMenu()
 			if(tab == TITLE_CATEGORY_GAME)
 				tab = TITLE_CATEGORY_ALL;
 			else
-				tab--;
+			{
+				size_t tt = (size_t)tab;
+				tt--;
+				tab = (TITLE_CATEGORY)tt;
+			}
 			
 			cursor = pos = 0;
 			redraw = true;

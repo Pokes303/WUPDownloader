@@ -433,7 +433,12 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 	debugPrintf("SWKBD initialised successfully");
 	
 	if(input != NULL)
-		Swkbd_SetInputFormString(input);
+	{
+		if(layout == KEYBOARD_LAYOUT_NORMAL)
+			Swkbd_SetInputFormString16((void *)input);
+		else
+			Swkbd_SetInputFormString(input);
+	}
 	
 	bool dummy;
 	while(true)
@@ -446,9 +451,24 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 		if(okButtonEnabled && (Swkbd_IsDecideOkButton(&dummy) || (lastUsedController == CT_VPAD_0 && vpad.trigger & VPAD_BUTTON_A)))
 		{
 			debugPrintf("SWKBD Ok button pressed");
-			char *outputStr = Swkbd_GetInputFormString();
-			strcpy(output, outputStr);
-			MEMFreeToDefaultHeap(outputStr);
+			if(layout == KEYBOARD_LAYOUT_NORMAL)
+			{
+				uint16_t *outputStr = (uint16_t *)Swkbd_GetInputFormString16();
+				size_t i = 0;
+				size_t j = 0;
+				do
+				{
+					output[j++] = (char)(outputStr[i] >> 8);
+					output[j++] = (char)(outputStr[i]);
+				}
+				while(outputStr[i++] != u'\0');
+			}
+			else
+			{
+				char *outputStr = Swkbd_GetInputFormString();
+				strcpy(output, outputStr);
+				MEMFreeToDefaultHeap(outputStr);
+			}
 			SWKBD_Hide();
 			return true;
 		}
