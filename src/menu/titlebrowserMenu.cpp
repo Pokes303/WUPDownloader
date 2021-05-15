@@ -115,7 +115,7 @@ void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cu
 	if(search[0] != u'\0')
 	{
 		size_t ts = strlen16(search);
-		char16_t *lowerSearch = new char16_t[ts + 1];
+		char16_t lowerSearch[ts + 1];
 		ts = 0;
 		do
 		{
@@ -183,7 +183,6 @@ void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cu
 		}
 		
 		filteredTitleEntrySize = ts;
-		delete lowerSearch;
 	}
 	else
 		for(size_t i = 0; i < filteredTitleEntrySize; i++)
