@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <uchar.h>
 
 #include <coreinit/ios.h>
 #include <coreinit/memdefaultheap.h>
@@ -240,6 +241,51 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 		
 		showFrame();
 	}
+}
+
+size_t strlen16(char16_t *str)
+{
+	size_t ret = 0;
+	while(str[ret] != u'\0')
+		ret++;
+	return ret;
+}
+
+char16_t *str16str(char16_t *haystack, char16_t *needle)
+{
+	size_t needleL = strlen16(needle);
+	if(needleL == 0)
+		return haystack;
+	
+	size_t hayL = strlen16(haystack);
+	if(needleL > hayL)
+		return NULL;
+	
+	size_t i = 0;
+	char16_t *ret;
+	do
+	{
+		ret = haystack + i;
+		for(size_t j = 0 ; j < needleL; j++)
+		{
+			if(haystack[i + j] != needle[j])
+			{
+				ret = NULL;
+				break;
+			}
+		}
+		i++;
+	}
+	while(ret == NULL && haystack + i <= haystack + (hayL - needleL));
+	
+	return ret;
+}
+
+char16_t tolower16(char16_t in)
+{
+	if(in >= u'A' && (in <= u'Z' || (in >= u'À' && in <= u'Þ')))
+		in += 0x0020;
+	return in;
 }
 
 #ifdef NUSSPLI_DEBUG

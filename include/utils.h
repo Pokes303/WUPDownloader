@@ -26,6 +26,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <uchar.h>
 
 #include <coreinit/mcp.h>
 
@@ -47,6 +48,15 @@
 #endif
 
 #ifdef __cplusplus
+	#include <codecvt>
+	
+	template<class I, class E, class S>
+	struct codecvt : std::codecvt<I, E, S>
+	{
+		~codecvt()
+		{}
+	};
+
 	extern "C" {
 #endif
 
@@ -73,6 +83,9 @@ void getSpeedString(float bytePerSecond, char *out);
 void hexToByte(const char *hex, uint8_t *out);
 void glueMcpData(MCPInstallTitleInfo *info, McpData *data);
 void showMcpProgress(McpData *data, const char *game, const bool inst);
+size_t strlen16(char16_t *str);
+char16_t *str16str(char16_t *haystack, char16_t *needle);
+char16_t tolower16(char16_t in);
 #ifdef NUSSPLI_DEBUG
 void debugInit();
 void debugPrintf(const char *str, ...);

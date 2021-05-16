@@ -47,51 +47,6 @@
 TitleEntry *filteredTitleEntries;
 size_t filteredTitleEntrySize;
 
-template<class I, class E, class S>
-struct codecvt : std::codecvt<I, E, S>
-{
-    ~codecvt()
-    { }
-};
-
-static inline size_t strlen16(char16_t *str)
-{
-	size_t ret = 0;
-	while(str[ret] != u'\0')
-		ret++;
-	return ret;
-}
-
-char16_t *str16str(char16_t *haystack, char16_t *needle)
-{
-	size_t needleL = strlen16(needle);
-	if(needleL == 0)
-		return haystack;
-	
-	size_t hayL = strlen16(haystack);
-	if(needleL > hayL)
-		return NULL;
-	
-	size_t i = 0;
-	char16_t *ret;
-	do
-	{
-		ret = haystack + i;
-		for(size_t j = 0 ; j < needleL; j++)
-		{
-			if(haystack[i + j] != needle[j])
-			{
-				ret = NULL;
-				break;
-			}
-		}
-		i++;
-	}
-	while(ret == NULL && haystack + i <= haystack + (hayL - needleL));
-	
-	return ret;
-}
-
 void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cursor, char16_t *search)
 {
 	if(!isAroma())
@@ -117,25 +72,7 @@ void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cu
 		char16_t lowerSearch[ts + 1];
 		ts = 0;
 		do
-		{
-			if(search[ts] >= u'A')
-			{
-				if(search[ts] <= u'Z')
-				{
-					lowerSearch[ts] = search[ts] + (u'a' - u'A');
-					continue;
-				}
-				if(search[ts] >= u'À')
-				{
-					if(search[ts] <= u'Ý')
-					{
-						lowerSearch[ts] = search[ts] + (u'à' - u'À');
-						continue;
-					}
-				}
-			}
-			lowerSearch[ts] = search[ts];
-		}
+			lowerSearch[ts] = tolower16(search[ts]);
 		while(search[ts++] != u'\0');
 		
 		ts = 0;
