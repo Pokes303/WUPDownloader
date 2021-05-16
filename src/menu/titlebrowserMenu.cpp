@@ -45,7 +45,6 @@
 #define MAX_TITLEBROWSER_LINES (MAX_LINES - 4)
 
 TitleEntry *filteredTitleEntries;
-
 size_t filteredTitleEntrySize;
 
 template<class I, class E, class S>
