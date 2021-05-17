@@ -79,9 +79,9 @@ char *Swkbd_GetInputFormString()
 	return outputStr;
 }
 
-void *Swkbd_GetInputFormString16()
+const char16_t *Swkbd_GetInputFormString16()
 {
-	return (void *)nn::swkbd::GetInputFormString();
+	return nn::swkbd::GetInputFormString();
 }
 
 void Swkbd_SetInputFormString(const char *str)
@@ -100,9 +100,9 @@ void Swkbd_SetInputFormString(const char *str)
 	nn::swkbd::SetInputFormString(cppStr);
 }
 
-void Swkbd_SetInputFormString16(void *str)
+void Swkbd_SetInputFormString16(const char16_t *str)
 {
-	nn::swkbd::SetInputFormString((char16_t *)str);
+	nn::swkbd::SetInputFormString(str);
 }
 
 void Swkbd_Calc(const Swkbd_ControllerInfo controllerInfo)

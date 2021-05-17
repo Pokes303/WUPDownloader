@@ -435,7 +435,7 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 	if(input != NULL)
 	{
 		if(layout == KEYBOARD_LAYOUT_NORMAL)
-			Swkbd_SetInputFormString16((void *)input);
+			Swkbd_SetInputFormString16((char16_t *)input);
 		else
 			Swkbd_SetInputFormString(input);
 	}
@@ -453,7 +453,7 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 			debugPrintf("SWKBD Ok button pressed");
 			if(layout == KEYBOARD_LAYOUT_NORMAL)
 			{
-				uint16_t *outputStr = (uint16_t *)Swkbd_GetInputFormString16();
+				const char16_t *outputStr = Swkbd_GetInputFormString16();
 				size_t i = 0;
 				size_t j = 0;
 				do
@@ -476,11 +476,20 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 		bool close = vpad.trigger & VPAD_BUTTON_B;
 		if(close)
 		{
-			char *inputFormString = Swkbd_GetInputFormString();
-			if(inputFormString != NULL)
+			if(layout == KEYBOARD_LAYOUT_NORMAL)
 			{
-				close = strlen(inputFormString) == 0;
-				MEMFreeToDefaultHeap(inputFormString);
+				const char16_t *inputFormString = Swkbd_GetInputFormString16();
+				if(inputFormString != NULL)
+					close = strlen16((char16_t *)inputFormString) == 0;
+			}
+			else
+			{
+				char *inputFormString = Swkbd_GetInputFormString();
+				if(inputFormString != NULL)
+				{
+					close = strlen(inputFormString) == 0;
+					MEMFreeToDefaultHeap(inputFormString);
+				}
 			}
 		}
 		
