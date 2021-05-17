@@ -40,6 +40,16 @@
 
 bool vibrateWhenFinished = true;
 
+static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
+{
+	if(out == NULL)
+	{
+		MCPTitleListType titleList;
+		out = &titleList;
+	}
+	return MCP_GetTitleInfo(mcpHandle, entry->tid, out) == 0;
+}
+
 void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t size, bool installed, const char *folderName, bool usbMounted, bool dlToUSB, bool keepFiles)
 {
 	startNewFrame();
@@ -142,8 +152,7 @@ void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t siz
 void predownloadMenu(const TitleEntry *entry)
 {
 	MCPTitleListType titleList;
-	bool installed = MCP_GetTitleInfo(mcpHandle, entry->tid, &titleList) == 0;
-	
+	bool installed = isInstalled(entry, &titleList);
 	bool usbMounted = mountUSB();
 	bool dlToUSB = usbMounted;
 	bool keepFiles = true;
