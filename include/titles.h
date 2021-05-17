@@ -92,6 +92,25 @@ char *name2tid(const char *name);
 bool initTitles();
 void clearTitles();
 
+static inline bool isGame(const TitleEntry *entry)
+{
+	return (TID_HIGH)(entry->tid >> 32) == TID_HIGH_GAME;
+}
+
+static inline bool isDLC(const TitleEntry *entry)
+{
+	return (TID_HIGH)(entry->tid >> 32) == TID_HIGH_DLC;
+}
+
+static inline bool isUpdate(const TitleEntry *entry)
+{
+	return (TID_HIGH)(entry->tid >> 32) == TID_HIGH_UPDATE;
+}
+
+static inline bool isDemo(const TitleEntry *entry)
+{
+	return (TID_HIGH)(entry->tid >> 32) == TID_HIGH_DEMO;
+}
 
 // TODO
 
