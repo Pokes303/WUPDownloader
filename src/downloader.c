@@ -710,9 +710,11 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 				case EROFS:
 					strcpy(toScreen, "SD card write locked!");
 					break;
+				case ENOSPC:
+					strcpy(toScreen, "No space left on device!");
+					break;
 				case FS_ERROR_MAX_FILES:
 				case FS_ERROR_MAX_DIRS:
-				case ENOSPC:
 					strcpy(toScreen, "Filesystem limits reached!");
 					break;
 				default:

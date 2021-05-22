@@ -210,9 +210,11 @@ void update(char *newVersion)
 			case EROFS:
 				strcat(toScreen, "SD card write locked!");
 				break;
+			case ENOSPC:
+				strcpy(toScreen, "No space left on device!");
+				break;
 			case FS_ERROR_MAX_FILES:
 			case FS_ERROR_MAX_DIRS:
-			case ENOSPC:
 				strcat(toScreen, "Filesystem limits reached!");
 				break;
 			default:
