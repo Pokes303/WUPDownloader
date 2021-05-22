@@ -58,6 +58,7 @@ bool autoResume = true;
 Swkbd_LanguageType lang = Swkbd_LanguageType__Invalid;
 Swkbd_LanguageType sysLang;
 int configInitTries = 0;
+bool dlToUSB = true;
 
 bool initConfig()
 {
@@ -141,6 +142,12 @@ bool initConfig()
 		else
 			lang = Swkbd_LanguageType__Invalid;
 	}
+	else
+		changed = true;
+	
+	configEntry = cJSON_GetObjectItemCaseSensitive(json, "Download to USB");
+	if(configEntry != NULL && cJSON_IsBool(configEntry))
+		dlToUSB = cJSON_IsTrue(configEntry);
 	else
 		changed = true;
 	
@@ -280,6 +287,14 @@ bool saveConfig()
 	}
 	cJSON_AddItemToObject(config, "Language", entry);
 	
+	entry = cJSON_CreateBool(dlToUSB);
+	if(entry == NULL)
+	{
+		cJSON_Delete(config);
+		return false;
+	}
+	cJSON_AddItemToObject(config, "Download to USB", entry);
+	
 	char *configString = cJSON_Print(config);
 	cJSON_Delete(config);
 	if(configString == NULL)
@@ -336,6 +351,20 @@ void setAutoResume(bool enabled)
 		return;
 	
 	autoResume = enabled;
+	changed = true;
+}
+
+bool dlToUSBenabled()
+{
+	return dlToUSB;
+}
+
+void setDlToUSB(bool toUSB)
+{
+	if(dlToUSB == toUSB)
+		return;
+	
+	dlToUSB = toUSB;
 	changed = true;
 }
 

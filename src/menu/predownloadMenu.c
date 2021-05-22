@@ -20,6 +20,7 @@
 
 #include <wut-fixups.h>
 
+#include <config.h>
 #include <deinstaller.h>
 #include <downloader.h>
 #include <input.h>
@@ -154,7 +155,7 @@ void predownloadMenu(const TitleEntry *entry)
 	MCPTitleListType titleList;
 	bool installed = isInstalled(entry, &titleList);
 	bool usbMounted = mountUSB();
-	bool dlToUSB = usbMounted;
+	bool dlToUSB = usbMounted && dlToUSBenabled();
 	bool keepFiles = true;
 	char folderName[FILENAME_MAX - 11];
 	char titleVer[33];
@@ -193,6 +194,7 @@ downloadTMD:
 	{
 		clearRamBuf();
 		debugPrintf("Error downloading TMD");
+		saveConfig();
 		return;
 	}
 	
@@ -220,6 +222,7 @@ downloadTMD:
 		if(vpad.trigger & VPAD_BUTTON_B)
 		{
 			clearRamBuf();
+			saveConfig();
 			return;
 		}
 		
@@ -254,6 +257,7 @@ downloadTMD:
 		{
 			dlToUSB = !dlToUSB;
 			keepFiles = !dlToUSB;
+			setDlToUSB(dlToUSB);
 			redraw = true;
 		}
 		if(vpad.trigger & VPAD_BUTTON_PLUS)
@@ -288,10 +292,12 @@ downloadTMD:
 	if(uninstall)
 	{
 		clearRamBuf();
+		saveConfig();
 		deinstall(titleList, false);
 		return;
 	}
 	
+	saveConfig();
 	downloadTitle(tmd, ramBufSize, titleVer, folderName, inst, dlToUSB, toUSB, keepFiles);
 	clearRamBuf();
 }

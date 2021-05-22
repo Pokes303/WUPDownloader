@@ -45,6 +45,8 @@ Swkbd_LanguageType getKeyboardLanguage();
 Swkbd_LanguageType getUnfilteredLanguage();
 void setKeyboardLanguage(Swkbd_LanguageType language);
 char *getLanguageString(Swkbd_LanguageType language);
+bool dlToUSBenabled();
+void setDlToUSB(bool toUSB);
 
 #ifdef __cplusplus
 	}
