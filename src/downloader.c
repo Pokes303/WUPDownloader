@@ -946,6 +946,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 		data.dltotal += (double)(tmd->contents[i].size);
 	}
 	
+	disableApd();
 	char tmpFileName[FILENAME_MAX + 37];
 	for(int i = 0; i < tmd->num_contents && AppRunning(); i++)
 	{
@@ -966,6 +967,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 		{
 			for(int j = ++i; j < tmd->num_contents; j++)
 				MEMFreeToDefaultHeap(apps[j]);
+			enableApd();
 			return true;
 		}
 		data.dcontent++;
@@ -983,6 +985,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 			{
 				for(int j = ++i; j < tmd->num_contents; j++)
 					MEMFreeToDefaultHeap(apps[j]);
+				enableApd();
 				return true;
 			}
 			data.dcontent++;
@@ -990,7 +993,10 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 	}
 	
 	if(!AppRunning())
+	{
+		enableApd();
 		return true;
+	}
 	
 	if(inst)
 		return install(gameName, hasDependencies, dlToUSB, installDir, toUSB, keepFiles);
@@ -1003,6 +1009,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 	showFrame();
 	
 	startRumble();
+	enableApd();
 	
 	while(AppRunning())
 	{

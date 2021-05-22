@@ -42,6 +42,8 @@ typedef enum
 extern volatile APP_STATE app;
 
 void initStatus();
+void enableApd();
+void disableApd();
 void enableShutdown();
 void disableShutdown();
 bool isAroma();

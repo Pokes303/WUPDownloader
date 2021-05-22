@@ -40,16 +40,54 @@ volatile APP_STATE app = APP_STATE_RUNNING;
 volatile bool shutdownEnabled = true;
 bool channel;
 bool aroma;
+bool apdEnabled;
+bool apdDisabled = false;
+
+void enableApd()
+{
+	if(!apdEnabled || !apdDisabled)
+		return;
+	
+	if(IMEnableAPD() == 0)
+	{
+		apdDisabled = false;
+		debugPrintf("APD enabled!");
+	}
+	else
+		debugPrintf("Error enabling APD!");
+}
+
+void disableApd()
+{
+	if(!apdEnabled || apdDisabled)
+		return;
+	
+	if(IMDisableAPD() == 0)
+	{
+		apdDisabled = true;
+		debugPrintf("APD disabled!");
+	}
+	else
+		debugPrintf("Error disabling APD!");
+}
 
 void enableShutdown()
 {
-	IMEnableAPD();
+	if(shutdownEnabled)
+		return;
+	
+	enableApd();
 	shutdownEnabled = true;
+	debugPrintf("Home key enabled!");
 }
 void disableShutdown()
 {
-	IMDisableAPD();
+	if(!shutdownEnabled)
+		return;
+	
+	disableApd();
 	shutdownEnabled = false;
+	debugPrintf("Home key disabled!");
 }
 
 bool isAroma()
@@ -84,6 +122,12 @@ void initStatus()
 	if(aroma)
 		OSDynLoad_Release(mod);
 	channel = OSGetTitleID() == 0x0005000010155373;
+	
+	if(IMIsAPDEnabledBySysSettings((uint32_t *)&apdEnabled) != 0)
+	{
+		debugPrintf("Couldn't read APD sys setting!");
+		apdEnabled = false;
+	}
 	
 }
 
