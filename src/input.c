@@ -380,6 +380,14 @@ void readInput()
 				vpad.trigger |= VPAD_BUTTON_MINUS;
 			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_HOME)
 				vpad.trigger |= VPAD_BUTTON_HOME;
+			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_R)
+				vpad.trigger |= VPAD_BUTTON_R;
+			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_L)
+				vpad.trigger |= VPAD_BUTTON_L;
+			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_ZR)
+				vpad.trigger |= VPAD_BUTTON_ZR;
+			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_ZL)
+				vpad.trigger |= VPAD_BUTTON_ZL;
 			
 			if(vpad.trigger != 0)
 			{
