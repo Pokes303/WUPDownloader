@@ -273,7 +273,7 @@ void titleBrowserMenu()
 			redraw = true;
 		}
 		
-		if(vpad.trigger & VPAD_BUTTON_R || vpad.trigger & VPAD_BUTTON_ZR)
+		if(vpad.trigger & VPAD_BUTTON_R || vpad.trigger & VPAD_BUTTON_ZR || vpad.trigger & VPAD_BUTTON_PLUS)
 		{
 			size_t tt = (size_t)tab;
 			if(++tt > TITLE_CATEGORY_ALL)
@@ -283,7 +283,7 @@ void titleBrowserMenu()
 			cursor = pos = 0;
 			redraw = true;
 		}
-		else if(vpad.trigger & VPAD_BUTTON_L || vpad.trigger & VPAD_BUTTON_ZL)
+		else if(vpad.trigger & VPAD_BUTTON_L || vpad.trigger & VPAD_BUTTON_ZL || vpad.trigger & VPAD_BUTTON_MINUS)
 		{
 			if(tab == TITLE_CATEGORY_GAME)
 				tab = TITLE_CATEGORY_ALL;
