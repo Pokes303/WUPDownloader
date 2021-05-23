@@ -27,9 +27,11 @@
 
 #include <string.h>
 
-void drawInstallerMenuFrame(bool fromUSB, bool keepFiles)
+void drawInstallerMenuFrame(const char *name, bool fromUSB, bool keepFiles)
 {
 	startNewFrame();
+	
+	textToFrame(0, 0, name);
 	
 	lineToFrame(MAX_LINES - 6, SCREEN_COLOR_WHITE);
 	textToFrame(MAX_LINES - 5, 0, "Press \uE000 to install to USB");
@@ -44,7 +46,7 @@ void drawInstallerMenuFrame(bool fromUSB, bool keepFiles)
 		char *toFrame = getToFrameBuffer();
 		strcpy(toFrame, "Press \uE07B to ");
 		strcat(toFrame, keepFiles ? "delete" : "keep");
-		strcat(toFrame, " downloaded files after the installation");
+		strcat(toFrame, " files after the installation");
 		textToFrame(MAX_LINES - 1, 0, toFrame);
 	}
 	
@@ -55,45 +57,43 @@ void installerMenu(const char *dir)
 {
 	bool fromUSB = dir[3] == ':';
 	bool keepFiles = !fromUSB;
-	bool toUSB = true;
 	char name[strlen(dir) + 1];
 	if(fromUSB)
 		strcpy(name, dir);
 	else
 	{
 		strcpy(name, "SD:");
-		strcat(name, dir + 15);
+		strcat(name, dir + 18);
 	}
 	
-	drawInstallerMenuFrame(fromUSB, keepFiles);
+	drawInstallerMenuFrame(name, fromUSB, keepFiles);
 	
 	while(AppRunning())
 	{
 		if(app == APP_STATE_BACKGROUND)
 			continue;
 		if(app == APP_STATE_RETURNING)
-			drawInstallerMenuFrame(fromUSB, keepFiles);
+			drawInstallerMenuFrame(name, fromUSB, keepFiles);
 		
 		showFrame();
 		
 		if(vpad.trigger & VPAD_BUTTON_A)
 		{
-			install(name, false, fromUSB, dir, toUSB, keepFiles);
+			install(name, false, fromUSB, dir, true, keepFiles);
 			return;
 		}
 		if(vpad.trigger & VPAD_BUTTON_B)
 			return;
 		if(vpad.trigger & VPAD_BUTTON_X)
 		{
-			toUSB = false;
-			install(name, false, fromUSB, dir, toUSB, keepFiles);
+			install(name, false, fromUSB, dir, false, keepFiles);
 			return;
 		}
 		
 		if(vpad.trigger & VPAD_BUTTON_LEFT)
 		{
 			keepFiles = !keepFiles;
-			drawInstallerMenuFrame(fromUSB, keepFiles);
+			drawInstallerMenuFrame(name, fromUSB, keepFiles);
 		}
 	}
 }
