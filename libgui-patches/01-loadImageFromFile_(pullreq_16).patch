@@ -1,0 +1,77 @@
+diff --git a/include/gui/GuiImageData.h b/include/gui/GuiImageData.h
+index 7f8b658..a1b4af7 100644
+--- a/include/gui/GuiImageData.h
++++ b/include/gui/GuiImageData.h
+@@ -26,11 +26,16 @@ class GuiImageData : public GuiElement {
+ public:
+     //!Constructor
+     GuiImageData();
++    //!\param path Image path
++    GuiImageData(const char *path, GX2TexClampMode textureClamp, GX2SurfaceFormat textureFormat);
+     //!\param img Image data
+     //!\param imgSize The image size
+     GuiImageData(const uint8_t * img, int32_t imgSize, GX2TexClampMode textureClamp = GX2_TEX_CLAMP_MODE_CLAMP, GX2SurfaceFormat textureFormat = GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
+     //!Destructor
+     virtual ~GuiImageData();
++    //!Load image from file
++    //!\param path Image path
++    void loadImageFromFile(const char *path, GX2TexClampMode textureClamp, GX2SurfaceFormat textureFormat);
+     //!Load image from buffer
+     //!\param img Image data
+     //!\param imgSize The image size
+diff --git a/source/gui/GuiImageData.cpp b/source/gui/GuiImageData.cpp
+index b540691..b47b8bf 100644
+--- a/source/gui/GuiImageData.cpp
++++ b/source/gui/GuiImageData.cpp
+@@ -17,6 +17,7 @@
+ #include <malloc.h>
+ #include <string.h>
+ #include <stdint.h>
++#include <stdio.h>
+ #include <gui/GuiImageData.h>
+ #include <gui/memory.h>
+ /**
+@@ -28,6 +29,15 @@ GuiImageData::GuiImageData() {
+     memoryType = eMemTypeMEM2;
+ }
+ 
++/**
++ * Constructor for the GuiImageData class.
++ */
++GuiImageData::GuiImageData(const char *path, GX2TexClampMode textureClamp, GX2SurfaceFormat textureFormat) {
++    texture = NULL;
++    sampler = NULL;
++    loadImageFromFile(path, textureClamp, textureFormat);
++}
++
+ /**
+  * Constructor for the GuiImageData class.
+  */
+@@ -69,6 +79,27 @@ void GuiImageData::releaseData(void) {
+     }
+ }
+ 
++void GuiImageData::loadImageFromFile(const char *path, GX2TexClampMode textureClamp, GX2SurfaceFormat textureFormat) {
++    FILE *file = fopen(path, "rb");
++    if(file) {
++        off_t i = ftello(file);
++        if(fseek(file, 0, SEEK_END) == 0)
++        {
++            off_t fileSize = ftello(file);
++            if(fileSize > 8)
++            {
++                fseeko(file, i, SEEK_SET);
++                uint8_t buffer[fileSize];
++                if(fread(buffer, 1, fileSize, file) == fileSize)
++                {
++                    loadImage(buffer, fileSize, textureClamp, textureFormat);
++                }
++            }
++        }
++        fclose(file);
++    }
++}
++
+ void GuiImageData::loadImage(const uint8_t *img, int32_t imgSize, GX2TexClampMode textureClamp, GX2SurfaceFormat textureFormat) {
+     if(!img || (imgSize < 8))
+         return;
