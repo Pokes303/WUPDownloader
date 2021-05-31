@@ -43,33 +43,28 @@
 #include <string>
 #include <wchar.h>
 
-#include <arrow_png.h>
-#include <backgroundMusic_mp3.h>
-#include <checkmark_png.h>
-#include <flagEur_png.h>
-#include <flagEurUsa_png.h>
-#include <flagJap_png.h>
-#include <flagMulti_png.h>
-#include <flagUnk_png.h>
-#include <flagUsa_png.h>
-#include <goodbye_png.h>
+#include <file.h>
 #include <input.h>
 #include <renderer.h>
+#include <romfs.h>
 #include <swkbd_wrapper.h>
-#include <tab_png.h>
 #include <utils.h>
 #include <menu/utils.h>
 
 CVideo *renderer;
 GuiFrame *window;
 FreeTypeGX *font = NULL;
-GuiImage *background;
-uint32_t bgColor = SCREEN_COLOR_BLACK;
 uint32_t width, height;
-GuiSound *backgroundMusic;
+GuiSound *backgroundMusic = NULL;
 bool rendererRunning = false;
 
 int32_t spaceWidth;
+
+void *backgroundMusicRaw = NULL;
+void *arrowRaw;
+void *checkmarkRaw;
+void *tabRaw;
+void *flagRaw[6];
 
 GuiFrame *errorOverlay = NULL;
 GuiImageData *arrowData;
@@ -377,43 +372,57 @@ void resumeRenderer()
 	GuiText::setPresets(FONT_SIZE, glm::vec4({1.0f}), width - (FONT_SIZE << 1), ALIGN_TOP_LEFT, SSAA);
 	GuiText::setPresetFont(font);
 	
-	background = new GuiImage(width, height, screenColorToGX2color(bgColor), GuiImage::IMAGE_COLOR);
+	FILE *f = fopen(ROMFS_PATH "arrow.png", "rb"); //TODO: Error handling...
+	size = getFilesize(f);
+	arrowRaw = MEMAllocFromDefaultHeap(size);
+	fread(arrowRaw, 1, size, f); //TODO: Error handling...
+	fclose(f);
+	arrowData = new GuiImageData((const uint8_t *)arrowRaw, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
 	
-	arrowData = new GuiImageData(arrow_png, arrow_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
-	checkmarkData = new GuiImageData(checkmark_png, checkmark_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
-	tabData = new GuiImageData(tab_png, tab_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
+	f = fopen(ROMFS_PATH "checkmark.png", "rb"); //TODO: Error handling...
+	size = getFilesize(f);
+	checkmarkRaw = MEMAllocFromDefaultHeap(size);
+	fread(checkmarkRaw, 1, size, f); //TODO: Error handling...
+	fclose(f);
+	checkmarkData = new GuiImageData((const uint8_t *)checkmarkRaw, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
 	
-	const uint8_t *tex;
+	f = fopen(ROMFS_PATH "tab.png", "rb"); //TODO: Error handling...
+	size = getFilesize(f);
+	tabRaw = MEMAllocFromDefaultHeap(size);
+	fread(tabRaw, 1, size, f); //TODO: Error handling...
+	fclose(f);
+	tabData = new GuiImageData((const uint8_t *)tabRaw, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
+	
+	const char *tex;
 	for(int i = 0; i < 6; i++)
 	{
 		switch(i)
 		{
 			case 0:
-				tex = flagMulti_png;
-				size = flagMulti_png_size;
+				tex = ROMFS_PATH "flagMulti.png";
 				break;
 			case 1:
-				tex = flagEur_png;
-				size = flagEur_png_size;
+				tex = ROMFS_PATH "flagEur.png";
 				break;
 			case 2:
-				tex = flagUsa_png;
-				size = flagUsa_png_size;
+				tex = ROMFS_PATH "flagUsa.png";
 				break;
 			case 3:
-				tex = flagJap_png;
-				size = flagJap_png_size;
+				tex = ROMFS_PATH "flagJap.png";
 				break;
 			case 4:
-				tex = flagEurUsa_png;
-				size = flagEurUsa_png_size;
+				tex = ROMFS_PATH "flagEurUsa.png";
 				break;
 			case 5:
-				tex = flagUnk_png;
-				size = flagUnk_png_size;
+				tex = ROMFS_PATH "flagUnk.png";
 				break;
 		}
-		flagData[i] = new GuiImageData(tex, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
+		f = fopen(tex, "rb"); //TODO: Error handling...
+		size = getFilesize(f);
+		flagRaw[i] = MEMAllocFromDefaultHeap(size);
+		fread(flagRaw[i], 1, size, f); //TODO: Error handling...
+		fclose(f);
+		flagData[i] = new GuiImageData((const uint8_t *)(flagRaw[i]), size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
 	}
 	
 	rendererRunning = true;
@@ -433,10 +442,28 @@ void initRenderer()
 	else
 		addToScreenLog("WARNING: Error changing audio thread priority!");
 	
-	backgroundMusic = new GuiSound(backgroundMusic_mp3, backgroundMusic_mp3_size);
-	backgroundMusic->SetLoop(true);
-	backgroundMusic->SetVolume(15);
-	backgroundMusic->Play();
+	FILE *f = fopen(ROMFS_PATH "backgroundMusic.mp3", "rb");
+	if(f != NULL)
+	{
+		size_t fileSize = getFilesize(f);
+		backgroundMusicRaw = MEMAllocFromDefaultHeap(fileSize);
+		if(backgroundMusicRaw != NULL)
+		{
+			if(fread(backgroundMusicRaw, 1, fileSize, f) == fileSize)
+			{
+				backgroundMusic = new GuiSound((const uint8_t *)backgroundMusicRaw, fileSize);
+				backgroundMusic->SetLoop(true);
+				backgroundMusic->SetVolume(15);
+				backgroundMusic->Play();
+			}
+			else
+			{
+				MEMFreeToDefaultHeap(backgroundMusicRaw);
+				backgroundMusicRaw = NULL;
+			}
+		}
+		fclose(f);
+	}
 	
 	resumeRenderer();
 	
@@ -468,18 +495,24 @@ void pauseRenderer()
 	clearFrame();
 	removeErrorOverlay();
 	
+	/* TODO: Somehow this feezes...
 	delete renderer;
 	delete window;
-	delete background;
-//	delete font;
+	delete font;*/
 	delete arrowData;
 	delete checkmarkData;
 	delete tabData;
 	
-	for(int i = 0; i < 6; i++)
-		delete flagData[i];
+	MEMFreeToDefaultHeap(arrowRaw);
+	MEMFreeToDefaultHeap(checkmarkRaw);
+	MEMFreeToDefaultHeap(tabRaw);
 	
-	bgColor = SCREEN_COLOR_BLACK;
+	for(int i = 0; i < 6; i++)
+	{
+		delete flagData[i];
+		MEMFreeToDefaultHeap(flagRaw[i]);
+	}
+	
 	rendererRunning = false;
 }
 
@@ -490,19 +523,53 @@ void shutdownRenderer()
 	
 	colorStartNewFrame(SCREEN_COLOR_BLUE);
 	
-	GuiImageData *byeData = new GuiImageData(goodbye_png, goodbye_png_size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
-	GuiImage *bye = new GuiImage(byeData);
-	window->append(bye);
+	FILE *f = fopen(ROMFS_PATH "goodbye.png", "rb");
+	void *raw;
+	GuiImageData *byeData;
+	if(f != NULL)
+	{
+		size_t fileSize = getFilesize(f);
+		raw = MEMAllocFromDefaultHeap(fileSize);
+		if(raw != NULL)
+		{
+			if(fread(raw, 1, fileSize, f) ==  fileSize)
+			{
+				byeData = new GuiImageData((const uint8_t *)raw, fileSize, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
+				GuiImage *bye = new GuiImage(byeData);
+				window->append(bye);
+			}
+			else
+			{
+				MEMFreeToDefaultHeap(raw);
+				raw = NULL;
+			}
+		}
+		fclose(f);
+	}
+	else
+		raw = NULL;
 	
 	drawFrame();
-	clearFrame();
-	
-	backgroundMusic->Stop();
-	delete backgroundMusic;
-	delete bye;
-	delete byeData;
-	
 	pauseRenderer();
+	
+	if(raw != NULL)
+	{
+		delete byeData;
+		MEMFreeToDefaultHeap(raw);
+	}
+	
+	if(backgroundMusic != NULL)
+	{
+		backgroundMusic->Stop();
+		delete backgroundMusic;
+		backgroundMusic = NULL;
+	}
+	if(backgroundMusicRaw != NULL)
+	{
+		MEMFreeToDefaultHeap(backgroundMusicRaw);
+		backgroundMusicRaw = NULL;
+	}
+	
 	libgui_memoryRelease();
 }
 
@@ -513,27 +580,14 @@ void colorStartNewFrame(uint32_t color)
 	
 	clearFrame();
 	
-//	if((color & 0xFFFFFF00) == 0xFFFFFF00 || (color & 0xFF) == 0x00)
-//		color = SCREEN_COLOR_BLACK
-	
-	if(color != bgColor)
+	GuiImage *background = new GuiImage(width, height, screenColorToGX2color(color), GuiImage::IMAGE_COLOR);
+	if(color == SCREEN_COLOR_BLUE)
 	{
-		if(color == SCREEN_COLOR_BLUE)
-		{
-			background->setImageColor(screenColorToGX2color(SCREEN_COLOR_BG2), 0);
-			background->setImageColor(screenColorToGX2color(SCREEN_COLOR_BG3), 1);
-			background->setImageColor(screenColorToGX2color(SCREEN_COLOR_BG4), 2);
-			background->setImageColor(screenColorToGX2color(SCREEN_COLOR_BG1), 3);
-		}
-		else
-		{
-			GX2Color gx2c = screenColorToGX2color(color);
-			for(int i = 0; i < 4; i++)
-				background->setImageColor(gx2c, i);
-		}
-		bgColor = color;
+		background->setImageColor(screenColorToGX2color(SCREEN_COLOR_BG2), 0);
+		background->setImageColor(screenColorToGX2color(SCREEN_COLOR_BG3), 1);
+		background->setImageColor(screenColorToGX2color(SCREEN_COLOR_BG4), 2);
+		background->setImageColor(screenColorToGX2color(SCREEN_COLOR_BG1), 3);
 	}
-	
 	window->append(background);
 }
 

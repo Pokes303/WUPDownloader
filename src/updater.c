@@ -96,7 +96,11 @@ bool updateCheck()
 	drawFrame();
 	showFrame();
 	
-	char *updateChkUrl = isAroma() ? UPDATE_CHECK_URL "a" : isChannel() ? UPDATE_CHECK_URL "c" : UPDATE_CHECK_URL "h";
+#ifdef NUSSPLI_HBL
+	char *updateChkUrl = UPDATE_CHECK_URL "h";
+#else
+	char *updateChkUrl = isAroma() ? UPDATE_CHECK_URL "a" : UPDATE_CHECK_URL "c";
+#endif
 	
 	if(downloadFile(updateChkUrl, "JSON", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
 	{
@@ -224,7 +228,11 @@ void update(char *newVersion)
 		return;
 	}
 	
-	char *url = isAroma() ? UPDATE_DL_URL"a" : (isChannel() ? UPDATE_DL_URL"c" : UPDATE_DL_URL"h");
+#ifdef NUSSPLI_HBL
+	char *url = UPDATE_DL_URL "h";
+#else
+	char *url = isAroma() ? UPDATE_DL_URL "a" : UPDATE_DL_URL "c";
+#endif
 	
 	if(downloadFile(url, "NUSspli.zip", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
 	{

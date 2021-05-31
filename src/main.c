@@ -30,6 +30,7 @@
 #include <osdefs.h>
 #include <otp.h>
 #include <renderer.h>
+#include <romfs-wiiu.h>
 #include <rumbleThread.h>
 #include <status.h>
 #include <ticket.h>
@@ -80,6 +81,10 @@ int main()
 	
 	getCommonKey(); // We do this exploit as soon as possible
 	
+	FSInit();
+#ifdef NUSSPLI_HBL
+	romfsInit();
+#endif
 	initRenderer();
 	
 	// ASAN Trigger
@@ -112,8 +117,6 @@ int main()
 	showFrame();
 	
 	char *lerr = NULL;
-	
-	FSInit();
 	if(initRumble())
 	{
 		addToScreenLog("Rumble initialized!");
@@ -262,6 +265,9 @@ int main()
 	
 	shutdownRenderer();
 	clearScreenLog();
+#ifdef NUSSPLI_HBL
+	romfsExit();
+#endif
 	FSShutdown();
 	debugPrintf("libgui closed");
 	
@@ -270,11 +276,12 @@ int main()
 	debugPrintf("Bye!");
 	shutdownDebug();
 #endif
-	
-	if(isAroma() || isChannel())
-		SYSLaunchMenu();
-	else
-		SYSRelaunchTitle(0, NULL);
+
+#ifdef NUSSPLI_HBL
+	SYSRelaunchTitle(0, NULL);
+#else
+	SYSLaunchMenu();
+#endif
 	
 	do
 		AppRunning();

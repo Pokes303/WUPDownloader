@@ -25,25 +25,38 @@ SOURCES		:=	zlib/contrib/minizip \
 				src/menu \
 				src
 
-DATA		:=	data
+DATA		:=	
 INCLUDES	:=	include \
 				payload \
 				src/cJSON \
 				zlib/contrib/minizip
 
+ifeq ($(strip $(HBL)), 1)
+ROMFS		:=	data
+else
+ROMFS		:=	
+endif
+
+
 #-------------------------------------------------------------------------------
 # options for code generation
 #-------------------------------------------------------------------------------
+include $(PORTLIBS_PATH)/wiiu/share/romfs-wiiu.mk
+
 CFLAGS		:=	$(MACHDEP) -Ofast -flto=auto -fno-fat-lto-objects \
 				-fuse-linker-plugin -pipe -D__WIIU__ -D__WUT__ \
-				-DNUSSPLI_VERSION=\"$(NUSSPLI_VERSION)\" -DIOAPI_NO_64
+				-DNUSSPLI_VERSION=\"$(NUSSPLI_VERSION)\" \
+				-DIOAPI_NO_64 $(ROMFS_CFLAGS)
+ifeq ($(strip $(HBL)), 1)
+CFLAGS		+=	-DNUSSPLI_HBL
+endif
 
 CXXFLAGS	:=	$(CFLAGS)
 ASFLAGS		:=	-g $(ARCH)
 LDFLAGS		:=	-g $(ARCH) $(RPXSPECS) $(CFLAGS) -Wl,-Map,$(notdir $*.map)
 
 LIBS		:=	-lgui -lwut -lfreetype -lgd -lpng -ljpeg -lz -lmad \
-				-lvorbisidec -logg -lbz2 -liosuhax
+				-lvorbisidec -logg -lbz2 -liosuhax $(ROMFS_LIBS)
 
 #-------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level
@@ -142,7 +155,7 @@ endif
 
 OFILES_BIN	:=	$(addsuffix .o,$(BINFILES))
 OFILES_SRC	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
-OFILES 		:=	$(OFILES_BIN) $(OFILES_SRC)
+OFILES 		:=	$(OFILES_BIN) $(OFILES_SRC) $(ROMFS_TARGET)
 HFILES_BIN	:=	$(addsuffix .h,$(subst .,_,$(BINFILES)))
 
 INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(TOPDIR)/$(dir)) \

@@ -22,7 +22,7 @@
 #include <config.h>
 #include <downloader.h>
 #include <renderer.h>
-#include <titleDB_json.h>
+#include <romfs.h>
 #include <titles.h>
 #include <utils.h>
 #include <menu/utils.h>
@@ -31,6 +31,7 @@
 
 #include <limits.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -194,10 +195,16 @@ bool initTitles()
 	drawFrame();
 	showFrame();
 	
-	cJSON *json = cJSON_ParseWithLength(useOnline ? ramBuf : (char *)titleDB_json, useOnline ? ramBufSize : titleDB_json_size);
+	FILE *f = fopen(ROMFS_PATH "titleDB.json", "rb"); //TODO: Error handling...
+	size_t fileSize = getFilesize(f);
+	void *raw = MEMAllocFromDefaultHeap(fileSize);
+	fread(raw, 1, fileSize, f); //TODO: Error handling...
+	fclose(f);
+	cJSON *json = cJSON_ParseWithLength(useOnline ? ramBuf : (char *)raw, useOnline ? ramBufSize : fileSize);
 	if(json == NULL)
 	{
 		clearRamBuf();
+		MEMFreeToDefaultHeap(raw);
 		debugPrintf("json == NULL");
 		return false;
 	}
@@ -250,6 +257,7 @@ bool initTitles()
 			cJSON_Delete(json);
 			clearRamBuf();
 			clearTitles();
+			MEMFreeToDefaultHeap(raw);
 			return false;
 		}
 		
@@ -262,6 +270,7 @@ bool initTitles()
 		cJSON_Delete(json);
 		clearRamBuf();
 		clearTitles();
+		MEMFreeToDefaultHeap(raw);
 		return false;
 	}
 	
@@ -271,6 +280,7 @@ bool initTitles()
 		cJSON_Delete(json);
 		clearRamBuf();
 		clearTitles();
+		MEMFreeToDefaultHeap(raw);
 		return false;
 	}
 	
@@ -343,6 +353,7 @@ bool initTitles()
 	
 	cJSON_Delete(json);
 	clearRamBuf();
+	MEMFreeToDefaultHeap(raw);
 	addToScreenLog("title database parsed!");
 	debugPrintf("%d titles parsed", getTitleEntriesSize(TITLE_CATEGORY_ALL));
 	return true;
