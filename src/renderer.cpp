@@ -372,21 +372,21 @@ void resumeRenderer()
 	GuiText::setPresets(FONT_SIZE, glm::vec4({1.0f}), width - (FONT_SIZE << 1), ALIGN_TOP_LEFT, SSAA);
 	GuiText::setPresetFont(font);
 	
-	FILE *f = fopen(ROMFS_PATH "arrow.png", "rb"); //TODO: Error handling...
+	FILE *f = fopen(ROMFS_PATH "textures/arrow.png", "rb"); //TODO: Error handling...
 	size = getFilesize(f);
 	arrowRaw = MEMAllocFromDefaultHeap(size);
 	fread(arrowRaw, 1, size, f); //TODO: Error handling...
 	fclose(f);
 	arrowData = new GuiImageData((const uint8_t *)arrowRaw, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
 	
-	f = fopen(ROMFS_PATH "checkmark.png", "rb"); //TODO: Error handling...
+	f = fopen(ROMFS_PATH "textures/checkmark.png", "rb"); //TODO: Error handling...
 	size = getFilesize(f);
 	checkmarkRaw = MEMAllocFromDefaultHeap(size);
 	fread(checkmarkRaw, 1, size, f); //TODO: Error handling...
 	fclose(f);
 	checkmarkData = new GuiImageData((const uint8_t *)checkmarkRaw, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
 	
-	f = fopen(ROMFS_PATH "tab.png", "rb"); //TODO: Error handling...
+	f = fopen(ROMFS_PATH "textures/tab.png", "rb"); //TODO: Error handling...
 	size = getFilesize(f);
 	tabRaw = MEMAllocFromDefaultHeap(size);
 	fread(tabRaw, 1, size, f); //TODO: Error handling...
@@ -399,22 +399,22 @@ void resumeRenderer()
 		switch(i)
 		{
 			case 0:
-				tex = ROMFS_PATH "flagMulti.png";
+				tex = ROMFS_PATH "textures/flags/multi.png";
 				break;
 			case 1:
-				tex = ROMFS_PATH "flagEur.png";
+				tex = ROMFS_PATH "textures/flags/eur.png";
 				break;
 			case 2:
-				tex = ROMFS_PATH "flagUsa.png";
+				tex = ROMFS_PATH "textures/flags/usa.png";
 				break;
 			case 3:
-				tex = ROMFS_PATH "flagJap.png";
+				tex = ROMFS_PATH "textures/flags/jap.png";
 				break;
 			case 4:
-				tex = ROMFS_PATH "flagEurUsa.png";
+				tex = ROMFS_PATH "textures/flags/eurUsa.png";
 				break;
 			case 5:
-				tex = ROMFS_PATH "flagUnk.png";
+				tex = ROMFS_PATH "textures/flags/unk.png";
 				break;
 		}
 		f = fopen(tex, "rb"); //TODO: Error handling...
@@ -442,7 +442,7 @@ void initRenderer()
 	else
 		addToScreenLog("WARNING: Error changing audio thread priority!");
 	
-	FILE *f = fopen(ROMFS_PATH "backgroundMusic.mp3", "rb");
+	FILE *f = fopen(ROMFS_PATH "audio/bg.mp3", "rb");
 	if(f != NULL)
 	{
 		size_t fileSize = getFilesize(f);
@@ -523,7 +523,7 @@ void shutdownRenderer()
 	
 	colorStartNewFrame(SCREEN_COLOR_BLUE);
 	
-	FILE *f = fopen(ROMFS_PATH "goodbye.png", "rb");
+	FILE *f = fopen(ROMFS_PATH "textures/goodbye.png", "rb");
 	void *raw;
 	GuiImageData *byeData;
 	if(f != NULL)
