@@ -360,12 +360,9 @@ void resumeRenderer()
 	window = new GuiFrame(width, height);
 	
 	size_t size;
-	if(font == NULL)
-	{
-		FT_Bytes ttf;
-		OSGetSharedData(OS_SHAREDDATATYPE_FONT_STANDARD, 0, (void **)&ttf, &size);
-		font = new FreeTypeGX(ttf, size);
-	}
+	FT_Bytes ttf;
+	OSGetSharedData(OS_SHAREDDATATYPE_FONT_STANDARD, 0, (void **)&ttf, &size);
+	font = new FreeTypeGX(ttf, size);
 	
 	spaceWidth = font->getCharWidth(L' ', FONT_SIZE);
 	
@@ -495,10 +492,7 @@ void pauseRenderer()
 	clearFrame();
 	removeErrorOverlay();
 	
-	/* TODO: Somehow this feezes...
-	delete renderer;
-	delete window;
-	delete font;*/
+	delete font;
 	delete arrowData;
 	delete checkmarkData;
 	delete tabData;
@@ -512,6 +506,9 @@ void pauseRenderer()
 		delete flagData[i];
 		MEMFreeToDefaultHeap(flagRaw[i]);
 	}
+	
+	delete window;
+	delete renderer;
 	
 	rendererRunning = false;
 }
