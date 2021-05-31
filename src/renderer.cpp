@@ -61,10 +61,6 @@ bool rendererRunning = false;
 int32_t spaceWidth;
 
 void *backgroundMusicRaw = NULL;
-void *arrowRaw;
-void *checkmarkRaw;
-void *tabRaw;
-void *flagRaw[6];
 
 GuiFrame *errorOverlay = NULL;
 GuiImageData *arrowData;
@@ -371,24 +367,27 @@ void resumeRenderer()
 	
 	FILE *f = fopen(ROMFS_PATH "textures/arrow.png", "rb"); //TODO: Error handling...
 	size = getFilesize(f);
-	arrowRaw = MEMAllocFromDefaultHeap(size);
-	fread(arrowRaw, 1, size, f); //TODO: Error handling...
+	void *raw = MEMAllocFromDefaultHeap(size);
+	fread(raw, 1, size, f); //TODO: Error handling...
 	fclose(f);
-	arrowData = new GuiImageData((const uint8_t *)arrowRaw, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
+	arrowData = new GuiImageData((const uint8_t *)raw, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
+	MEMFreeToDefaultHeap(raw);
 	
 	f = fopen(ROMFS_PATH "textures/checkmark.png", "rb"); //TODO: Error handling...
 	size = getFilesize(f);
-	checkmarkRaw = MEMAllocFromDefaultHeap(size);
-	fread(checkmarkRaw, 1, size, f); //TODO: Error handling...
+	raw = MEMAllocFromDefaultHeap(size);
+	fread(raw, 1, size, f); //TODO: Error handling...
 	fclose(f);
-	checkmarkData = new GuiImageData((const uint8_t *)checkmarkRaw, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
+	checkmarkData = new GuiImageData((const uint8_t *)raw, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
+	MEMFreeToDefaultHeap(raw);
 	
 	f = fopen(ROMFS_PATH "textures/tab.png", "rb"); //TODO: Error handling...
 	size = getFilesize(f);
-	tabRaw = MEMAllocFromDefaultHeap(size);
-	fread(tabRaw, 1, size, f); //TODO: Error handling...
+	raw = MEMAllocFromDefaultHeap(size);
+	fread(raw, 1, size, f); //TODO: Error handling...
 	fclose(f);
-	tabData = new GuiImageData((const uint8_t *)tabRaw, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
+	tabData = new GuiImageData((const uint8_t *)raw, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
+	MEMFreeToDefaultHeap(raw);
 	
 	const char *tex;
 	for(int i = 0; i < 6; i++)
@@ -416,10 +415,11 @@ void resumeRenderer()
 		}
 		f = fopen(tex, "rb"); //TODO: Error handling...
 		size = getFilesize(f);
-		flagRaw[i] = MEMAllocFromDefaultHeap(size);
-		fread(flagRaw[i], 1, size, f); //TODO: Error handling...
+		raw = MEMAllocFromDefaultHeap(size);
+		fread(raw, 1, size, f); //TODO: Error handling...
 		fclose(f);
-		flagData[i] = new GuiImageData((const uint8_t *)(flagRaw[i]), size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
+		flagData[i] = new GuiImageData((const uint8_t *)raw, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
+		MEMFreeToDefaultHeap(raw);
 	}
 	
 	rendererRunning = true;
@@ -497,15 +497,8 @@ void pauseRenderer()
 	delete checkmarkData;
 	delete tabData;
 	
-	MEMFreeToDefaultHeap(arrowRaw);
-	MEMFreeToDefaultHeap(checkmarkRaw);
-	MEMFreeToDefaultHeap(tabRaw);
-	
 	for(int i = 0; i < 6; i++)
-	{
 		delete flagData[i];
-		MEMFreeToDefaultHeap(flagRaw[i]);
-	}
 	
 	delete window;
 	delete renderer;
