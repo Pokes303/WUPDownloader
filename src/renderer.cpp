@@ -60,6 +60,8 @@ bool rendererRunning = false;
 
 int32_t spaceWidth;
 
+void *backgroundMusicRaw = NULL;
+
 GuiFrame *errorOverlay = NULL;
 GuiImageData *arrowData;
 GuiImageData *checkmarkData;
@@ -363,9 +365,29 @@ void resumeRenderer()
 	GuiText::setPresets(FONT_SIZE, glm::vec4({1.0f}), width - (FONT_SIZE << 1), ALIGN_TOP_LEFT, SSAA);
 	GuiText::setPresetFont(font);
 	
-	arrowData = new GuiImageData(ROMFS_PATH "textures/arrow.png", GX2_TEX_CLAMP_MODE_WRAP, GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
-	checkmarkData = new GuiImageData(ROMFS_PATH "textures/checkmark.png", GX2_TEX_CLAMP_MODE_WRAP, GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
-	tabData = new GuiImageData(ROMFS_PATH "textures/tab.png", GX2_TEX_CLAMP_MODE_WRAP, GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
+	FILE *f = fopen(ROMFS_PATH "textures/arrow.png", "rb"); //TODO: Error handling...
+	size = getFilesize(f);
+	void *raw = MEMAllocFromDefaultHeap(size);
+	fread(raw, 1, size, f); //TODO: Error handling...
+	fclose(f);
+	arrowData = new GuiImageData((const uint8_t *)raw, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
+	MEMFreeToDefaultHeap(raw);
+	
+	f = fopen(ROMFS_PATH "textures/checkmark.png", "rb"); //TODO: Error handling...
+	size = getFilesize(f);
+	raw = MEMAllocFromDefaultHeap(size);
+	fread(raw, 1, size, f); //TODO: Error handling...
+	fclose(f);
+	checkmarkData = new GuiImageData((const uint8_t *)raw, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
+	MEMFreeToDefaultHeap(raw);
+	
+	f = fopen(ROMFS_PATH "textures/tab.png", "rb"); //TODO: Error handling...
+	size = getFilesize(f);
+	raw = MEMAllocFromDefaultHeap(size);
+	fread(raw, 1, size, f); //TODO: Error handling...
+	fclose(f);
+	tabData = new GuiImageData((const uint8_t *)raw, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
+	MEMFreeToDefaultHeap(raw);
 	
 	const char *tex;
 	for(int i = 0; i < 6; i++)
@@ -391,7 +413,13 @@ void resumeRenderer()
 				tex = ROMFS_PATH "textures/flags/unk.png";
 				break;
 		}
-		flagData[i] = new GuiImageData(tex, GX2_TEX_CLAMP_MODE_WRAP, GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
+		f = fopen(tex, "rb"); //TODO: Error handling...
+		size = getFilesize(f);
+		raw = MEMAllocFromDefaultHeap(size);
+		fread(raw, 1, size, f); //TODO: Error handling...
+		fclose(f);
+		flagData[i] = new GuiImageData((const uint8_t *)raw, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
+		MEMFreeToDefaultHeap(raw);
 	}
 	
 	rendererRunning = true;
@@ -411,10 +439,28 @@ void initRenderer()
 	else
 		addToScreenLog("WARNING: Error changing audio thread priority!");
 	
-	backgroundMusic = new GuiSound(ROMFS_PATH "audio/bg.mp3");
-	backgroundMusic->SetLoop(true);
-	backgroundMusic->SetVolume(15);
-	backgroundMusic->Play();
+	FILE *f = fopen(ROMFS_PATH "audio/bg.mp3", "rb");
+	if(f != NULL)
+	{
+		size_t fileSize = getFilesize(f);
+		backgroundMusicRaw = MEMAllocFromDefaultHeap(fileSize);
+		if(backgroundMusicRaw != NULL)
+		{
+			if(fread(backgroundMusicRaw, 1, fileSize, f) == fileSize)
+			{
+				backgroundMusic = new GuiSound((const uint8_t *)backgroundMusicRaw, fileSize);
+				backgroundMusic->SetLoop(true);
+				backgroundMusic->SetVolume(15);
+				backgroundMusic->Play();
+			}
+			else
+			{
+				MEMFreeToDefaultHeap(backgroundMusicRaw);
+				backgroundMusicRaw = NULL;
+			}
+		}
+		fclose(f);
+	}
 	
 	resumeRenderer();
 	
@@ -467,19 +513,51 @@ void shutdownRenderer()
 	
 	colorStartNewFrame(SCREEN_COLOR_BLUE);
 	
-	GuiImageData *byeData = new GuiImageData(ROMFS_PATH "textures/goodbye.png", GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);;
-	GuiImage *bye = new GuiImage(byeData);
-	window->append(bye);
+	FILE *f = fopen(ROMFS_PATH "textures/goodbye.png", "rb");
+	void *raw;
+	GuiImageData *byeData;
+	if(f != NULL)
+	{
+		size_t fileSize = getFilesize(f);
+		raw = MEMAllocFromDefaultHeap(fileSize);
+		if(raw != NULL)
+		{
+			if(fread(raw, 1, fileSize, f) ==  fileSize)
+			{
+				byeData = new GuiImageData((const uint8_t *)raw, fileSize, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
+				GuiImage *bye = new GuiImage(byeData);
+				window->append(bye);
+			}
+			else
+			{
+				MEMFreeToDefaultHeap(raw);
+				raw = NULL;
+			}
+		}
+		fclose(f);
+	}
+	else
+		raw = NULL;
 	
 	drawFrame();
 	pauseRenderer();
 	
-	delete byeData;
+	if(raw != NULL)
+	{
+		delete byeData;
+		MEMFreeToDefaultHeap(raw);
+	}
+	
 	if(backgroundMusic != NULL)
 	{
 		backgroundMusic->Stop();
 		delete backgroundMusic;
 		backgroundMusic = NULL;
+	}
+	if(backgroundMusicRaw != NULL)
+	{
+		MEMFreeToDefaultHeap(backgroundMusicRaw);
+		backgroundMusicRaw = NULL;
 	}
 	
 	libgui_memoryRelease();
