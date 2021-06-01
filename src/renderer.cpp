@@ -568,8 +568,6 @@ void colorStartNewFrame(uint32_t color)
 	if(!rendererRunning)
 		return;
 	
-	clearFrame();
-	
 	GuiImage *background = new GuiImage(width, height, screenColorToGX2color(color), GuiImage::IMAGE_COLOR);
 	if(color == SCREEN_COLOR_BLUE)
 	{
@@ -607,6 +605,8 @@ void drawFrame()
 	if(errorOverlay != NULL)
 		errorOverlay->draw(renderer);
 	renderer->tvDrawDone();
+	
+	clearFrame();
 }
 
 void drawKeyboard(bool tv)
