@@ -45,8 +45,10 @@
 bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, bool toUsb, bool keepFiles)
 {
 	startNewFrame();
-	textToFrame(0, 0, "Installing");
-	textToFrame(0, 11, game);
+	char *toScreen = getToFrameBuffer();
+	strcpy(toScreen, "Installing ");
+	strcat(toScreen, game);
+	textToFrame(0, 0, toScreen);
 	barToFrame(1, 0, 40, 0);
 	textToFrame(1, 41, "Preparing...");
 	writeScreenLog();
@@ -151,7 +153,6 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	
 	if(err != 0)
 	{
-		char toScreen[2048];
 		sprintf(toScreen, "Error starting async installation of \"%s\": %#010x", newPath, data.err);
 		debugPrintf(toScreen);
 		enableShutdown();
@@ -183,7 +184,6 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	if(data.err != 0)
 	{
 		debugPrintf("Installation failed with result: %#010x", data.err);
-		char *toScreen = getToFrameBuffer();
 		strcpy(toScreen, "Installation failed!\n\n");
 		switch(data.err)
 		{

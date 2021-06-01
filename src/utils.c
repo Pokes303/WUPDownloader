@@ -182,16 +182,11 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 		err = MCP_InstallGetProgress(mcpHandle, progress);
 		if(err == IOS_ERROR_OK)
 		{
-			if(progress->inProgress == 1)
+			if(progress->inProgress == 1 && progress->sizeTotal != 0)
 			{
 				if(multiplier == 0)
 				{
-					if(progress->sizeTotal == 0) // TODO
-					{
-						strcpy(multiplierName, "B");
-						progress->sizeTotal = 9999999;
-					}
-					else if(progress->sizeTotal < 1 << 10)
+					if(progress->sizeTotal < 1 << 10)
 					{
 						multiplier = 1;
 						strcpy(multiplierName, "B");
