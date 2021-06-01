@@ -199,26 +199,6 @@ debug: all
 	@echo $(notdir $<)
 	@$(bin2o)
 
-%.mp3.o %_mp3.h	:	%.mp3
-	@echo $(notdir $<)
-	@$(bin2o)
-
-%.json.o %_json.h	:	%.json
-	@echo $(notdir $<)
-	@$(bin2o)
-
-%.png.o %_png.h	:	%.png
-	@echo $(notdir $<)
-	@$(bin2o)
-
-exports.def.o :	exports.def
-	$(SILENTMSG) $(notdir $<)
-	$(SILENTCMD)rplexportgen $< $*.s
-	$(SILENTCMD)$(CC) -x assembler-with-cpp $(ASFLAGS) -c $*.s -o $@ $(ERROR_FILTER)
-
-exports_def.h :	exports.def
-	@echo "" > /dev/null
-
 -include $(DEPENDS)
 
 #-------------------------------------------------------------------------------
