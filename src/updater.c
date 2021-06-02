@@ -390,11 +390,12 @@ void update(char *newVersion)
 			return;
 		}
 		
-		deinstall(ownInfo, true);
-		OSSleepTicks(OSSecondsToTicks(10)); // channelHaxx...
-		
 		if(isAroma())
+		{
+			deinstall(ownInfo, true);
+			OSSleepTicks(OSSecondsToTicks(10)); // channelHaxx...
 			goto aromaInstallation;
+		}
 		
 		char installPath[strlen(UPDATE_TEMP_FOLDER) + 8];
 		strcpy(installPath, UPDATE_TEMP_FOLDER);
