@@ -47,7 +47,11 @@ void disableApd();
 void enableShutdown();
 void disableShutdown();
 bool isAroma();
+#ifdef NUSSPLI_HBL
+#define isChannel() false
+#else
 bool isChannel();
+#endif
 bool AppRunning();
 uint32_t homeButtonCallback(void *dummy);
 

@@ -38,7 +38,9 @@
 
 volatile APP_STATE app = APP_STATE_RUNNING;
 volatile bool shutdownEnabled = true;
+#ifndef NUSSPLI_HBL
 bool channel;
+#endif
 bool aroma;
 bool apdEnabled;
 bool apdDisabled = false;
@@ -95,10 +97,12 @@ bool isAroma()
 	return aroma;
 }
 
+#ifndef NUSSPLI_HBL
 bool isChannel()
 {
 	return channel;
 }
+#endif
 
 uint32_t homeButtonCallback(void *dummy)
 {
@@ -121,7 +125,9 @@ void initStatus()
 	aroma = OSDynLoad_Acquire("homebrew_kernel", &mod) == OS_DYNLOAD_OK;
 	if(aroma)
 		OSDynLoad_Release(mod);
+#ifndef NUSSPLI_HBL
 	channel = OSGetTitleID() == 0x0005000010155373;
+#endif
 	
 	if(IMIsAPDEnabledBySysSettings((uint32_t *)&apdEnabled) != 0)
 	{
