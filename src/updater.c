@@ -412,28 +412,24 @@ void update(char *newVersion)
 			if(dirExists(UPDATE_HBL_FOLDER))
 				removeDirectory(UPDATE_HBL_FOLDER);
 			
-			char *aromaFile = UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE;
-			if(fileExists(aromaFile))
-				remove(aromaFile);
+			if(fileExists(UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE))
+				remove(UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
 			
 aromaInstallation:
-			rename(UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE, aromaFile);
+			rename(UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
+			goto finishUpdate;
 		}
-		else
+		// else
+		if(!dirExists(UPDATE_HBL_FOLDER))
 		{
-			if(!dirExists(UPDATE_HBL_FOLDER))
-			{
-				showUpdateError("Couldn't find NUSspli folder on the SD card");
-				return;
-			}
-			
-			removeDirectory(UPDATE_HBL_FOLDER);
-			char installPath[strlen(UPDATE_TEMP_FOLDER) + 8];
-			strcpy(installPath, UPDATE_TEMP_FOLDER);
-			strcat(installPath, "NUSspli");
-			moveDirectory(installPath, UPDATE_HBL_FOLDER);
+			showUpdateError("Couldn't find NUSspli folder on the SD card");
+			return;
 		}
 		
+		removeDirectory(UPDATE_HBL_FOLDER);
+		moveDirectory(UPDATE_TEMP_FOLDER "NUSspli", UPDATE_HBL_FOLDER);
+		// endif
+finishUpdate:
 		removeDirectory(UPDATE_TEMP_FOLDER);
 		enableShutdown();
 		startRumble();
