@@ -174,8 +174,10 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 	MCPError err;
 	OSTime lastSpeedCalc = 0;
 	OSTime now;
+	uint64_t sc = 0;
 	uint64_t lsp = 0;
 	char speedBuf[32];
+	speedBuf[0] = '\0';
 	
 	while(data->processing)
 	{
@@ -220,8 +222,12 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 					
 					if(progress->sizeProgress != 0)
 					{
-						getSpeedString(progress->sizeProgress - lsp, speedBuf);
-						lsp = progress->sizeProgress;
+						if(sc-- == 0)
+						{
+							getSpeedString(progress->sizeProgress - lsp, speedBuf);
+							lsp = progress->sizeProgress;
+							sc = 10;
+						}
 					}
 					textToFrame(1, ALIGNED_RIGHT, speedBuf);
 					
