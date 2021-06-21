@@ -29,6 +29,7 @@
 #include <keygen.h>
 #include <renderer.h>
 #include <status.h>
+#include <titles.h>
 #include <usb.h>
 #include <utils.h>
 #include <menu/filebrowser.h>
@@ -45,16 +46,24 @@
  * with the randomness of NUSPackager to create unique
  * NUSspli tickets.
  */
-void generateTik(const char *path, const char *titleID)
+void generateTik(const char *path, const TitleEntry *titleEntry)
 {
-	char *encKey = generateKey(titleID);
+	char *encKey = generateKey(titleEntry);
 	if(encKey == NULL)
 		return;
+	
+	char *tid = hex(titleEntry->tid, 16);
+	if(tid == NULL)
+	{
+		MEMFreeToDefaultHeap(encKey);
+		return;
+	}
 	
 	NUSFILE *tik = openFile(path, "wb");
 	if(tik == NULL)
 	{
 		MEMFreeToDefaultHeap(encKey);
+		MEMFreeToDefaultHeap(tid);
 		char err[1044];
 		sprintf(err, "Could not open path\n%s", path);
 		drawErrorFrame(err, B_RETURN);
@@ -88,7 +97,7 @@ void generateTik(const char *path, const char *titleID)
 	writeCustomBytes(tik, "0x00010000");
 	writeCustomBytes(tik, encKey);
 	writeVoidBytes(tik, 0xD); // 0x00000000, so one of the magic things again
-	writeCustomBytes(tik, titleID);
+	writeCustomBytes(tik, tid);
 	
 	writeVoidBytes(tik, 0x3D);
 	writeCustomBytes(tik, "01"); // Not sure what shis is for
@@ -109,6 +118,7 @@ void generateTik(const char *path, const char *titleID)
 	
 	addToIOQueue(NULL, 0, 0, tik);
 	MEMFreeToDefaultHeap(encKey);
+	MEMFreeToDefaultHeap(tid);
 }
 
 void drawTicketFrame(const char *titleID)
@@ -187,7 +197,20 @@ bool generateFakeTicket()
 				MEMFreeToDefaultHeap(dir);
 				strcat(tikPath, ".tik");
 				
-				generateTik(tikPath, titleID);
+				TitleEntry te;
+				uint64_t tid;
+				hexToByte(titleID, (uint8_t *)&tid);
+				TitleEntry *entry = getTitleEntryByTid(tid);
+				if(entry == NULL)
+				{
+					te.name = "UNKNOWN";
+					te.tid = tid;
+					te.isDLC = te.isUpdate = false;
+					te.region = TITLE_REGION_UNKNOWN;
+					te.key = TITLE_KEY_mypass;
+					entry = &te;
+				}
+				generateTik(tikPath, entry);
 				
 				colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 				textToFrame(0, 0, "Fake ticket generated on:");

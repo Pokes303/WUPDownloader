@@ -22,11 +22,13 @@
 
 #include <wut-fixups.h>
 
+#include <titles.h>
+
 #ifdef __cplusplus
 	extern "C" {
 #endif
 
-char *generateKey(const char *tid);
+char *generateKey(const TitleEntry *te);
 
 #ifdef __cplusplus
 	}

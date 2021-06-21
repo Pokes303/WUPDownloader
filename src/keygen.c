@@ -24,6 +24,7 @@
 #include <otp.h>
 #include <pbkdf2.h>
 
+#include <titles.h>
 #include <utils.h>
 
 #include <string.h>
@@ -33,24 +34,52 @@
 
 #define KEYGEN_SECRET  "fd040105060b111c2d49"
 
-//const uint8_t keygen_pw[] = { 0x6e, 0x690, 0x6e, 0x74, 0x65, 0x6e, 0x64, 0x6f };
-const uint8_t keygen_pw[] = { 0x6d, 0x79, 0x70, 0x61, 0x73, 0x73 };
+static inline const char *transformPassword(TITLE_KEY in)
+{
+	switch(in)
+	{
+		case TITLE_KEY_mypass:
+			return "mypass";
+		case TITLE_KEY_nintendo:
+			return "nintendo";
+		case TITLE_KEY_test:
+			return "test";
+		case TITLE_KEY_1234567890:
+			return "1234567890";
+		case TITLE_KEY_Lucy131211:
+			return "Lucy131211";
+		case TITLE_KEY_fbf10:
+			return "fbf10";
+		case TITLE_KEY_5678:
+			return "5678";
+		case TITLE_KEY_1234:
+			return "1234";
+		case TITLE_KEY_:
+			return "";
+		default:
+			return "???";
+	}
+}
 
-
-char *generateKey(const char *tid)
+char *generateKey(const TitleEntry *te)
 {
 	char *ret = MEMAllocFromDefaultHeap(33);
 	if(ret == NULL)
 		return NULL;
 	ret[32] = '\0';
 	
-	const char *tmp = tid;
+	char *tid = hex(te->tid, 16);
+	if(tid == NULL)
+		return NULL;
+	
+	char *tmp = tid;
 	while(tmp[0] == '0' && tmp[1] == '0')
 		tmp += 2;
 	
 	char h[1024];
 	strcpy(h, KEYGEN_SECRET);
 	strcat(h, tmp);
+	MEMFreeToDefaultHeap(tid);
 	
 	size_t bhl = strlen(h) >> 1;
 	uint8_t bh[bhl];
@@ -63,12 +92,13 @@ char *generateKey(const char *tid)
 	MD5_Final(&md5sum[0], &md5c);
 	
 	uint8_t key[16];
-	pbkdf2_hmac_sha1(keygen_pw, sizeof(keygen_pw), md5sum, 16, 20, key, 16);
+	const char *pw = transformPassword(te->key);
+	pbkdf2_hmac_sha1((uint8_t *)pw, strlen(pw), md5sum, 16, 20, key, 16);
 	
-	uint8_t iv[16];
-	hexToByte(tid, iv);
+	uint64_t riv = te->tid;
+	uint8_t *iv = (uint8_t *)&riv;
 	
-	OSBlockSet(&iv[8], 0, 8);
+	OSBlockSet(iv + 8, 0, 8);
 	struct AES_ctx aesc;
 	AES_init_ctx_iv(&aesc, getCommonKey(), iv);
 	AES_CBC_encrypt_buffer(&aesc, key, 16);

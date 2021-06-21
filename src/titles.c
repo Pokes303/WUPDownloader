@@ -119,6 +119,42 @@ size_t getTitleEntriesSize(TITLE_CATEGORY cat)
 		titleEntries[cat];
 }
 
+TitleEntry *getTitleEntryByTid(uint64_t tid)
+{
+	TitleEntry *haystack;
+	size_t haySize;
+	
+	switch((TID_HIGH)tid)
+	{
+		case TID_HIGH_GAME:
+			haystack = filteredEntry[TITLE_CATEGORY_GAME];
+			haySize = titleEntries[TITLE_CATEGORY_GAME];
+			break;
+		case TID_HIGH_UPDATE:
+			haystack = filteredEntry[TITLE_CATEGORY_UPDATE];
+			haySize = titleEntries[TITLE_CATEGORY_UPDATE];
+			break;
+		case TID_HIGH_DLC:
+			haystack = filteredEntry[TITLE_CATEGORY_DLC];
+			haySize = titleEntries[TITLE_CATEGORY_DLC];
+			break;
+		case TID_HIGH_DEMO:
+			haystack = filteredEntry[TITLE_CATEGORY_DEMO];
+			haySize = titleEntries[TITLE_CATEGORY_DEMO];
+			break;
+		default:
+			haystack = titleEntry;
+			haySize = titleEntries[TITLE_CATEGORY_ALL];
+		
+	}
+	
+	for(size_t i = 0; i < haySize; i++, haystack++)
+		if(haystack->tid == tid)
+			return haystack;
+	
+	return NULL;
+}
+
 char *tid2name(const char *tid)
 {
 	if(titleMemArea == NULL)
@@ -341,6 +377,8 @@ bool initTitles()
 			
 			titleEntry[entries].isDLC = i == TRANSFORMED_TID_HIGH_DLC;
 			titleEntry[entries].isUpdate = i == TRANSFORMED_TID_HIGH_UPDATE;
+			
+			titleEntry[entries].key = cJSON_GetArrayItem(curr[1], 2)->valueint;
 			
 			tid = retransformTidHigh(i);
 			tid <<= 32;

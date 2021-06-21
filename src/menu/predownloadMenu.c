@@ -298,6 +298,6 @@ downloadTMD:
 	}
 	
 	saveConfig();
-	downloadTitle(tmd, ramBufSize, titleVer, folderName, inst, dlToUSB, toUSB, keepFiles);
+	downloadTitle(tmd, ramBufSize, entry, titleVer, folderName, inst, dlToUSB, toUSB, keepFiles);
 	clearRamBuf();
 }

@@ -76,6 +76,19 @@ typedef enum
 	TITLE_CATEGORY_ALL = 4,
 } TITLE_CATEGORY;
 
+typedef enum
+{
+	TITLE_KEY_mypass	= 0,
+	TITLE_KEY_nintendo	= 1,
+	TITLE_KEY_test		= 2,
+	TITLE_KEY_1234567890	= 3,
+	TITLE_KEY_Lucy131211	= 4,
+	TITLE_KEY_fbf10		= 5,
+	TITLE_KEY_5678		= 6,
+	TITLE_KEY_1234		= 7,
+	TITLE_KEY_		= 8
+} TITLE_KEY;
+
 typedef struct
 {
 	char *name;
@@ -83,10 +96,12 @@ typedef struct
 	bool isDLC;
 	bool isUpdate;
 	TITLE_REGION region;
+	TITLE_KEY key;
 } TitleEntry;
 
 TitleEntry *getTitleEntries(TITLE_CATEGORY cat);
 size_t getTitleEntriesSize(TITLE_CATEGORY cat);
+TitleEntry *getTitleEntryByTid(uint64_t tid);
 char *tid2name(const char *tid);
 char *name2tid(const char *name);
 bool initTitles();

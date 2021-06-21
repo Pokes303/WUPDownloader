@@ -29,7 +29,7 @@
 #include <menu/predownload.h>
 #include <menu/utils.h>
 
-bool  downloadMenu()
+bool downloadMenu()
 {
 	char titleID[17];
 	char titleVer[33];

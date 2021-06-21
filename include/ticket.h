@@ -23,6 +23,8 @@
 
 #include <wut-fixups.h>
 
+#include <titles.h>
+
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -30,7 +32,7 @@
 	extern "C" {
 #endif
 
-void generateTik(const char *path, const char *titleID);
+void generateTik(const char *path, const TitleEntry *titleEntry);
 bool generateFakeTicket();
 
 #ifdef __cplusplus

@@ -137,7 +137,7 @@ uint8_t charToByte(char c)
 
 void hexToByte(const char *hex, uint8_t *out)
 {
-	for(int i = 0; *hex != '\0'; out[i++] |= charToByte(*hex++))
+	for(int i = 0; *hex != '\0' && i < 64; out[i++] |= charToByte(*hex++))
 		out[i] = charToByte(*hex++) << 4;
 }
 

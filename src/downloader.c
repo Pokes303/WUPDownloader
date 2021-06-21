@@ -633,15 +633,12 @@ void showPrepScreen(const char *gameName)
 	showFrame();
 }
 
-bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles)
+bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles)
 {
 	char *tid = hex(tmd->tid, 16);
-	const char *gameName = tid2name(tid);
-	if(gameName == NULL)
-		gameName = "UNKNOWN";
 	
-	showPrepScreen(gameName);
-	debugPrintf("Downloading title... tID: %s, tVer: %s, name: %s, folder: %s", tid, titleVer, gameName, folderName);
+	showPrepScreen(titleEntry->name);
+	debugPrintf("Downloading title... tID: %s, tVer: %s, name: %s, folder: %s", tid, titleVer, titleEntry->name, folderName);
 	
 	char downloadUrl[128];
 	strcpy(downloadUrl, DOWNLOAD_URL);
@@ -650,27 +647,13 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 	
 	if(folderName[0] == '\0')
 	{
-		if(gameName != NULL)
-		{
-			for(int i = 0; i < strlen(gameName); i++)
-				folderName[i] = isAllowedInFilename(gameName[i]) ? gameName[i] : '_';
-			
-			strcpy(folderName + strlen(gameName), " [");
-			strcat(folderName, tid);
-		}
-		else
-		{
-			folderName[0] = '[';
-			strcpy(folderName + 1, tid);
-		}
-			
+		for(int i = 0; i < strlen(titleEntry->name); i++)
+			folderName[i] = isAllowedInFilename(titleEntry->name[i]) ? titleEntry->name[i] : '_';
 	}
-	else
-	{
-		strcat(folderName, " [");
-		strcat(folderName, tid);
-	}
+	strcat(folderName, " [");
+	strcat(folderName, tid);
 	strcat(folderName, "]");
+	MEMFreeToDefaultHeap(tid);
 	
 	if(strlen(titleVer) > 0)
 	{
@@ -689,12 +672,8 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 	strcat(installDir, folderName);
 	strcat(installDir, "/");
 	
-	if(gameName == NULL)
-		gameName = tid;
-	
-	addToScreenLog("Started the download of \"%s\"", gameName);
+	addToScreenLog("Started the download of \"%s\"", titleEntry->name);
 	addToScreenLog("The content will be saved on \"%s:/install/%s\"", dlToUSB ? "usb" : "sd", folderName);
-	showPrepScreen(gameName);
 	
 	if(!dirExists(installDir))
 	{
@@ -703,7 +682,6 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 		if(mkdir(installDir, 777) == -1)
 		{
 			int ie = errno;
-			MEMFreeToDefaultHeap(tid);
 			char *toScreen = getToFrameBuffer();
 			switch(ie)
 			{
@@ -751,7 +729,6 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 	NUSFILE *fp = openFile(tmdp, "wb");
 	if(fp == NULL)
 	{
-		MEMFreeToDefaultHeap(tid);
 		drawErrorFrame("Can't save TMD file!", B_RETURN);
 		
 		while(AppRunning())
@@ -842,7 +819,6 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 		int tikRes = downloadFile(tDownloadUrl, tInstallDir, NULL, ft, true);
 		if(tikRes == 1)
 		{
-			MEMFreeToDefaultHeap(tid);
 			return true;
 		}
 		if(tikRes == 2)
@@ -854,14 +830,13 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 			drawFrame();
 			showFrame();
 			
-			generateTik(tInstallDir, tid);
+			generateTik(tInstallDir, titleEntry);
 			addToScreenLog("Fake ticket created successfully");
 		}
 	}
 	else
 		addToScreenLog("title.tik skipped!");
 	
-	MEMFreeToDefaultHeap(tid);
 	if(!AppRunning())
 		return true;
 	
@@ -999,10 +974,10 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 	}
 	
 	if(inst)
-		return install(gameName, hasDependencies, dlToUSB, installDir, toUSB, keepFiles);
+		return install(titleEntry->name, hasDependencies, dlToUSB, installDir, toUSB, keepFiles);
 	
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-	textToFrame(0, 0, gameName);
+	textToFrame(0, 0, titleEntry->name);
 	textToFrame(1, 0, "Downloaded successfully!");
 	writeScreenLog();
 	drawFrame();
@@ -1018,7 +993,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const char *titleVer, char *f
 		if(app == APP_STATE_RETURNING)
 		{
 			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-			textToFrame(0, 0, gameName);
+			textToFrame(0, 0, titleEntry->name);
 			textToFrame(1, 0, "Downloaded successfully!");
 			writeScreenLog();
 			drawFrame();
