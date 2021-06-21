@@ -584,7 +584,7 @@ void showFrame()
 	if(!rendererRunning)
 		return;
 	
-	GX2WaitForVsync();
+	renderer->waitForVSync();
 	readInput();
 }
 
