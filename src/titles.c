@@ -41,8 +41,6 @@
 #define TITLE_DB NAPI_URL "t"
 
 char *titleMemArea = NULL;
-char **titleNames[10] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-size_t titleSizes[10] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 size_t titleEntries[5] = { 0, 0, 0, 0, 0 };
 TitleEntry *titleEntry = NULL;
 TitleEntry *filteredEntry[4] = { NULL, NULL, NULL, NULL }; // Games, Updates, DLC, Demos
@@ -124,7 +122,7 @@ TitleEntry *getTitleEntryByTid(uint64_t tid)
 	TitleEntry *haystack;
 	size_t haySize;
 	
-	switch((TID_HIGH)tid)
+	switch((TID_HIGH)(tid >> 32))
 	{
 		case TID_HIGH_GAME:
 			haystack = filteredEntry[TITLE_CATEGORY_GAME];
@@ -157,23 +155,10 @@ TitleEntry *getTitleEntryByTid(uint64_t tid)
 
 char *tid2name(const char *tid)
 {
-	if(titleMemArea == NULL)
-		return NULL;
-	
-	char tidHigh[9];
-	OSBlockMove(tidHigh, tid, 8, false);
-	tidHigh[8] = '\0';
-	
-	uint32_t tl;
-	uint8_t *tlp = (uint8_t *)&tl;
-	hexToByte(tidHigh, tlp);
-	int tt = transformTidHigh(tl);
-	if(tt == -1)
-		return NULL;
-	
-	hexToByte(tid + 8, tlp);
-	tl &= 0x00FFFFFF;
-	return tl > titleSizes[tt] ? NULL : titleNames[tt][tl];
+	uint64_t rtid;
+	hexToByte(tid, (uint8_t *)&rtid);
+	TitleEntry *e = getTitleEntryByTid(rtid);
+	return e == NULL ? "UNKNOWN" : e->name;
 }
 
 char *name2tid(const char *name)
@@ -249,9 +234,6 @@ bool initTitles()
 	TRANSFORMED_TID_HIGH i;
 	size_t ma = 0;
 	size_t size;
-	char sj[9];
-	sj[0] = sj[1] = '0';
-	size_t j;
 	size_t entries = 0;
 	cJSON_ArrayForEach(curr[0], json)
 	{
@@ -276,28 +258,9 @@ bool initTitles()
 				continue;
 			}
 			
-			j = 0;
-			strcpy(&sj[2], curr[1]->string);
-			hexToByte(sj, (uint8_t *)&j);
-			
-			if(j > titleSizes[i])
-				titleSizes[i] = j;
-			
 			ma += size;
 			entries++;
 		}
-		
-		titleNames[i] = MEMAllocFromDefaultHeap(++titleSizes[i]);
-		if(titleNames[i] == NULL)
-		{
-			cJSON_Delete(json);
-			clearRamBuf();
-			clearTitles();
-			MEMFreeToDefaultHeap(raw);
-			return false;
-		}
-		
-		OSBlockSet(titleNames[i], 0, titleSizes[i]);
 	}
 	
 	titleMemArea = MEMAllocFromDefaultHeap(ma);
@@ -324,6 +287,10 @@ bool initTitles()
 	entries = 0;
 	uint64_t tid;
 	uint32_t cat;
+	size_t j;
+	char sj[32];
+	sj[0] = sj[1] = '0';
+	char *sjm = sj + 2;
 	cJSON_ArrayForEach(curr[0], json)
 	{
 		if(curr[0]->string[0] == 's')
@@ -353,7 +320,7 @@ bool initTitles()
 		}
 		
 		if(cat != 4)
-			filteredEntry[cat] = &(titleEntry[entries]);
+			filteredEntry[cat] = titleEntry + entries;
 		
 		cJSON_ArrayForEach(curr[1], curr[0])
 		{
@@ -366,18 +333,16 @@ bool initTitles()
 			if(size > 128)
 				continue;
 			
-			strcpy(&sj[2], curr[1]->string);
+			strcpy(sjm, curr[1]->string);
 			hexToByte(sj, (uint8_t *)&j);
 			strcpy(ptr, curr[2]->valuestring);
 //			debugPrintf("titleNames[%d][0x%08X] = %s", i, j, ptr);
-			titleNames[i][j] = titleEntry[entries].name = ptr;
+			titleEntry[entries].name = ptr;
 			ptr += size;
 			
 			titleEntry[entries].region = cJSON_GetArrayItem(curr[1], 1)->valueint;
-			
 			titleEntry[entries].isDLC = i == TRANSFORMED_TID_HIGH_DLC;
 			titleEntry[entries].isUpdate = i == TRANSFORMED_TID_HIGH_UPDATE;
-			
 			titleEntry[entries].key = cJSON_GetArrayItem(curr[1], 2)->valueint;
 			
 			tid = retransformTidHigh(i);
@@ -416,14 +381,4 @@ void clearTitles()
 	
 	for(int i = 0; i < 4; i++)
 		filteredEntry[i] = NULL;
-	
-	for(int i = 0; i < 10; i++)
-	{
-		if(titleNames[i] != NULL)
-		{
-			MEMFreeToDefaultHeap(titleNames[i]);
-			titleNames[i] = NULL;
-		}
-		titleSizes[i] = 0;
-	}
 }

@@ -29,6 +29,8 @@
 #include <menu/predownload.h>
 #include <menu/utils.h>
 
+#include <stdint.h>
+
 bool downloadMenu()
 {
 	char titleID[17];
@@ -43,14 +45,21 @@ bool downloadMenu()
 		return true;
 	
 	toLowercase(titleID);
+	uint64_t tid;
+	hexToByte(titleID, (uint8_t *)&tid);
 	
-	TitleEntry entry;
-	entry.name = tid2name(titleID);
-	if(entry.name == NULL)
-		entry.name = "UNKNOWN";
+	TitleEntry *entry = getTitleEntryByTid(tid);
+	TitleEntry e;
+	if(entry == NULL)
+	{
+		e.name = "UNKNOWN";
+		e.tid = tid;
+		e.isDLC = e.isUpdate = false;
+		e.region = TITLE_REGION_UNKNOWN;
+		e.key = 99;
+		entry = &e;
+	}
 	
-	hexToByte(titleID, (uint8_t *)&entry.tid);
-	
-	predownloadMenu(&entry);
+	predownloadMenu(entry);
 	return true;
 }

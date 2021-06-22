@@ -86,26 +86,27 @@ char *generateKey(const TitleEntry *te)
 	hexToByte(h, bh);
 	
 	MD5_CTX md5c;
-	uint8_t md5sum[16];
+	uint8_t ct[16];
 	MD5_Init(&md5c);
 	MD5_Update(&md5c, bh, bhl);
-	MD5_Final(&md5sum[0], &md5c);
+	MD5_Final(&ct[0], &md5c);
 	
 	uint8_t key[16];
 	const char *pw = transformPassword(te->key);
-	pbkdf2_hmac_sha1((uint8_t *)pw, strlen(pw), md5sum, 16, 20, key, 16);
+	debugPrintf("Using password \"%s\"", pw);
+	pbkdf2_hmac_sha1(pw, strlen(pw), ct, 16, 20, key, 16);
 	
-	uint64_t riv = te->tid;
-	uint8_t *iv = (uint8_t *)&riv;
+	hexToByte(tid, ct);
 	
-	OSBlockSet(iv + 8, 0, 8);
+	OSBlockSet(ct + 8, 0, 8);
 	struct AES_ctx aesc;
-	AES_init_ctx_iv(&aesc, getCommonKey(), iv);
+	AES_init_ctx_iv(&aesc, getCommonKey(), ct);
 	AES_CBC_encrypt_buffer(&aesc, key, 16);
 	
 	char *t = ret;
 	for(int i = 0; i < 16; i++, t += 2)
 		sprintf(t, "%02x", key[i]);
 	
+	debugPrintf("Key: 0x%s", ret);
 	return ret;
 }
