@@ -94,7 +94,7 @@ char *generateKey(const TitleEntry *te)
 	uint8_t key[16];
 	const char *pw = transformPassword(te->key);
 	debugPrintf("Using password \"%s\"", pw);
-	pbkdf2_hmac_sha1(pw, strlen(pw), ct, 16, 20, key, 16);
+	pbkdf2_hmac_sha1((uint8_t *)pw, strlen(pw), ct, 16, 20, key, 16);
 	
 	hexToByte(tid, ct);
 	
