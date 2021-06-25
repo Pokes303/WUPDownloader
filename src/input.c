@@ -49,6 +49,7 @@ KPADStatus kpad[4];
 ControllerType lastUsedController;
 
 Swkbd_CreateArg createArg;
+FSClient swkbd_fsc;
 
 int globalMaxlength;
 bool globalLimit;
@@ -265,17 +266,8 @@ bool SWKBD_Init()
 {
 	debugPrintf("SWKBD_Init()");
 	
-	OSDynLoadAllocFn oAlloc;
-	OSDynLoadFreeFn oFree;
-	OSDynLoad_GetAllocator(&oAlloc, &oFree);
-	
-	OSBlockSet(&createArg, 0, sizeof(Swkbd_CreateArg));
-	createArg.fsClient = MEMAllocFromDefaultHeap(sizeof(FSClient));
-	if(createArg.fsClient != NULL)
-		FSAddClient(createArg.fsClient, 0);
-	
 	createArg.workMemory = MEMAllocFromDefaultHeap(Swkbd_GetWorkMemorySize(0));
-	if(createArg.fsClient == NULL || createArg.workMemory == NULL)
+	if(createArg.workMemory == NULL)
 	{
 		debugPrintf("SWKBD: Can't allocate memory!");
 		return false;
@@ -303,6 +295,12 @@ bool SWKBD_Init()
 			break;
 	}
 	
+	createArg.unk_0x08 = 0;
+	createArg.fsClient = &swkbd_fsc;
+	FSAddClient(createArg.fsClient, 0);
+	OSDynLoadAllocFn oAlloc;
+	OSDynLoadFreeFn oFree;
+	OSDynLoad_GetAllocator(&oAlloc, &oFree);
 	bool ret = Swkbd_Create(createArg);
 	OSDynLoad_SetAllocator(oAlloc, oFree);
 	return ret;
@@ -315,13 +313,7 @@ void SWKBD_Shutdown()
 		Swkbd_Destroy();
 		MEMFreeToDefaultHeap(createArg.workMemory);
 		createArg.workMemory = NULL;
-	}
-	
-	if(createArg.fsClient != NULL)
-	{
 		FSDelClient(createArg.fsClient, 0);
-		MEMFreeToDefaultHeap(createArg.fsClient);
-		createArg.fsClient = NULL;
 	}
 }
 
