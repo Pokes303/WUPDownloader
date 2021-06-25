@@ -66,7 +66,7 @@ static int rumbleThreadMain(int argc, const char **argv)
 		}
 		checkStacks("Rumble thread");
 	}
-	while(msg.message == NUSSPLI_MESSAGE_NONE);
+	while(msg.message != NUSSPLI_MESSAGE_EXIT);
 	
 	return 0;
 }

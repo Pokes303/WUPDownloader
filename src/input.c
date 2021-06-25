@@ -82,7 +82,7 @@ int calcThreadMain(int argc, const char **argv)
 			Swkbd_CalcSubThreadFont();
 		checkStacks("SWKBD font");
 	}
-	while(msg.message == NUSSPLI_MESSAGE_NONE);
+	while(msg.message != NUSSPLI_MESSAGE_EXIT);
 	
 	return 0;
 }
