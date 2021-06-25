@@ -36,11 +36,13 @@
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memfrmheap.h>
 #include <coreinit/memory.h>
+#include <coreinit/messagequeue.h>
 #include <coreinit/thread.h>
 #include <padscore/kpad.h>
 #include <padscore/wpad.h>
 
 #define CT_STACK_SIZE (256 * 1024)
+#define SWKBD_QUEUE_SIZE 10
 
 //WIP. This need a better implementation
 
@@ -59,6 +61,9 @@ bool okButtonEnabled;
 static OSThread calcThread;
 static void *calcThreadStack;
 
+OSMessageQueue swkbd_queue;
+OSMessage swkbd_msg[SWKBD_QUEUE_SIZE];
+
 bool isUrl(char c)
 {
 	return isNumber(c) || isLowercase(c) || isUppercase(c) || c == '.' || c == '/' || c == ':' || c == '%' || c == '-' || c == '_'; //TODO
@@ -68,8 +73,16 @@ typedef bool (*checkingFunction)(char);
 
 int calcThreadMain(int argc, const char **argv)
 {
-	Swkbd_CalcSubThreadFont();
-	checkStacks("SWKBD font");
+	OSMessage msg;
+	do
+	{
+		OSReceiveMessage(&swkbd_queue, &msg, OS_MESSAGE_FLAGS_BLOCKING);
+		if(msg.message == NULL)
+			Swkbd_CalcSubThreadFont();
+		checkStacks("SWKBD font");
+	}
+	while(msg.message == NULL);
+	
 	return 0;
 }
 
@@ -129,19 +142,9 @@ void SWKBD_Render(KeyboardChecks check)
 
 	if(Swkbd_IsNeedCalcSubThreadFont())
 	{
-		calcThreadStack = MEMAllocFromDefaultHeapEx(CT_STACK_SIZE, 8);
-		if(calcThreadStack == NULL)
-			debugPrintf("OUT OF MEMORY!"); // TODO
-		else
-		{
-			if(OSCreateThread(&calcThread, calcThreadMain, 0, NULL, calcThreadStack + CT_STACK_SIZE, CT_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_CPU1))
-			{
-				OSSetThreadName(&calcThread, "NUSspli SWKBD font calculator");
-				OSResumeThread(&calcThread);
-				int ret;
-				OSJoinThread(&calcThread, &ret);
-			}
-		}
+		OSMessage msg;
+		msg.message = NULL;
+		OSSendMessage(&swkbd_queue, &msg, OS_MESSAGE_FLAGS_NONE);
 	}
 
 	drawKeyboard(lastUsedController != CT_VPAD_0);
@@ -273,6 +276,28 @@ bool SWKBD_Init()
 		return false;
 	}
 	
+	calcThreadStack = MEMAllocFromDefaultHeapEx(CT_STACK_SIZE, 8);
+	if(calcThreadStack == NULL)
+	{
+		MEMFreeToDefaultHeap(createArg.workMemory);
+		createArg.workMemory = NULL;
+		debugPrintf("SWKBD: Can't allocate memory!");
+		return false;
+	}
+	if(!OSCreateThread(&calcThread, calcThreadMain, 0, NULL, calcThreadStack + CT_STACK_SIZE, CT_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_ANY))
+	{
+		MEMFreeToDefaultHeap(calcThreadStack);
+		MEMFreeToDefaultHeap(createArg.workMemory);
+		calcThreadStack = createArg.workMemory = NULL;
+		debugPrintf("SWKBD: Can't create thread!");
+		return false;
+	}
+	
+	OSBlockSet(swkbd_msg, 0, sizeof(OSMessage) * SWKBD_QUEUE_SIZE);
+	OSInitMessageQueueEx(&swkbd_queue, swkbd_msg, SWKBD_QUEUE_SIZE, "NUSspli SWKBD calc queue");
+	OSSetThreadName(&calcThread, "NUSspli SWKBD font calculator");
+	OSResumeThread(&calcThread);
+	
 	switch(getKeyboardLanguage())
 	{
 		case Swkbd_LanguageType__Japanese:
@@ -303,6 +328,7 @@ bool SWKBD_Init()
 	OSDynLoad_GetAllocator(&oAlloc, &oFree);
 	bool ret = Swkbd_Create(createArg);
 	OSDynLoad_SetAllocator(oAlloc, oFree);
+	
 	return ret;
 }
 
@@ -314,6 +340,12 @@ void SWKBD_Shutdown()
 		MEMFreeToDefaultHeap(createArg.workMemory);
 		createArg.workMemory = NULL;
 		FSDelClient(createArg.fsClient, 0);
+		
+		OSMessage msg;
+		msg.message = (void *)0xDEADBABE;
+		OSSendMessage(&swkbd_queue, &msg, OS_MESSAGE_FLAGS_NONE);
+		int ret;
+		OSJoinThread(&calcThread, &ret);
 	}
 }
 
