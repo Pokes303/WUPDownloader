@@ -22,37 +22,52 @@
 #include <stdlib.h>
 
 #include <coreinit/memdefaultheap.h>
+#include <coreinit/messagequeue.h>
 #include <coreinit/thread.h>
 #include <padscore/wpad.h>
 #include <vpad/input.h>
 
+#include <messages.h>
 #include <osdefs.h>
 #include <utils.h>
 
 #define RUMBLE_STACK_SIZE 0x2000
+#define RUMBLE_QUEUE_SIZE 2
 
 static OSThread rumbleThread;
-static uint8_t *rumbleThreadStack;
+static uint8_t *rumbleThreadStack = NULL;
 static uint8_t pattern[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-static volatile bool isRumbling = true;
+OSMessageQueue rumble_queue;
+OSMessage rumble_msg[2];
 
 static int rumbleThreadMain(int argc, const char **argv)
 {
-	int i = 3;
-	for(; i > 1; i--)
-		VPADControlMotor(VPAD_CHAN_0, pattern, 120);
+	int i;
+	OSMessage msg;
 	
-	for(; i > -1; i--)
+	do
 	{
-		for(int j = 0; j < 4; j++)
-			WPADControlMotor(j, i);
-		
-		OSSleepTicks(OSSecondsToTicks(i));
+		OSReceiveMessage(&rumble_queue, &msg, OS_MESSAGE_FLAGS_BLOCKING);
+		if(msg.message == NUSSPLI_MESSAGE_NONE)
+		{
+			i = 3;
+			for(; i > 1; i--)
+				VPADControlMotor(VPAD_CHAN_0, pattern, 120);
+			
+			for(; i > -1; i--)
+			{
+				for(int j = 0; j < 4; j++)
+					WPADControlMotor(j, i);
+				
+				OSSleepTicks(OSSecondsToTicks(i));
+			}
+			
+			VPADStopMotor(VPAD_CHAN_0);
+		}
+		checkStacks("Rumble thread");
 	}
+	while(msg.message == NUSSPLI_MESSAGE_NONE);
 	
-	VPADStopMotor(VPAD_CHAN_0);
-	checkStacks("Rumble thread");
-	isRumbling = false;
 	return 0;
 }
 
@@ -61,25 +76,37 @@ bool initRumble()
 	rumbleThreadStack = MEMAllocFromDefaultHeapEx(RUMBLE_STACK_SIZE, 8);
 	if(rumbleThreadStack == NULL)
 		return false;
-	isRumbling = false;
+	
+	if(!OSCreateThread(&rumbleThread, rumbleThreadMain, 0, NULL, rumbleThreadStack + RUMBLE_STACK_SIZE, RUMBLE_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_ANY))
+	{
+		MEMFreeToDefaultHeap(rumbleThreadStack);
+		rumbleThreadStack = NULL;
+		return false;
+	}
+	
+	OSInitMessageQueueEx(&rumble_queue, rumble_msg, RUMBLE_QUEUE_SIZE, "NUSspli rumble queue");
+	OSSetThreadName(&rumbleThread, "NUSspli Rumble");
+	OSResumeThread(&rumbleThread);
 	return true;
 }
 
 void deinitRumble()
 {
-	while(isRumbling)
-		;
-	
-	isRumbling = true;
-	MEMFreeToDefaultHeap(rumbleThreadStack);
+	if(rumbleThreadStack != NULL)
+	{
+		OSMessage msg;
+		msg.message = NUSSPLI_MESSAGE_EXIT;
+		OSSendMessage(&rumble_queue, &msg, OS_MESSAGE_FLAGS_BLOCKING);
+		int ret;
+		OSJoinThread(&rumbleThread, &ret);
+		MEMFreeToDefaultHeap(rumbleThreadStack);
+		rumbleThreadStack = NULL;
+	}
 }
 
 void startRumble()
 {
-	if(isRumbling || !OSCreateThread(&rumbleThread, rumbleThreadMain, 0, NULL, rumbleThreadStack + RUMBLE_STACK_SIZE, RUMBLE_STACK_SIZE, 0, OS_THREAD_ATTRIB_DETACHED | OS_THREAD_ATTRIB_AFFINITY_ANY))
-		return;
-	
-	isRumbling = true;
-	OSSetThreadName(&rumbleThread, "NUSspli Rumble");
-	OSResumeThread(&rumbleThread);
+	OSMessage msg;
+	msg.message = NUSSPLI_MESSAGE_NONE;
+	OSSendMessage(&rumble_queue, &msg, OS_MESSAGE_FLAGS_NONE);
 }

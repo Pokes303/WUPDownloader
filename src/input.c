@@ -22,6 +22,7 @@
 
 #include <config.h>
 #include <input.h>
+#include <messages.h>
 #include <renderer.h>
 #include <status.h>
 #include <swkbd_wrapper.h>
@@ -77,11 +78,11 @@ int calcThreadMain(int argc, const char **argv)
 	do
 	{
 		OSReceiveMessage(&swkbd_queue, &msg, OS_MESSAGE_FLAGS_BLOCKING);
-		if(msg.message == NULL)
+		if(msg.message == NUSSPLI_MESSAGE_NONE)
 			Swkbd_CalcSubThreadFont();
 		checkStacks("SWKBD font");
 	}
-	while(msg.message == NULL);
+	while(msg.message == NUSSPLI_MESSAGE_NONE);
 	
 	return 0;
 }
@@ -143,7 +144,7 @@ void SWKBD_Render(KeyboardChecks check)
 	if(Swkbd_IsNeedCalcSubThreadFont())
 	{
 		OSMessage msg;
-		msg.message = NULL;
+		msg.message = NUSSPLI_MESSAGE_NONE;
 		OSSendMessage(&swkbd_queue, &msg, OS_MESSAGE_FLAGS_NONE);
 	}
 
@@ -342,8 +343,8 @@ void SWKBD_Shutdown()
 		FSDelClient(createArg.fsClient, 0);
 		
 		OSMessage msg;
-		msg.message = (void *)0xDEADBABE;
-		OSSendMessage(&swkbd_queue, &msg, OS_MESSAGE_FLAGS_NONE);
+		msg.message = NUSSPLI_MESSAGE_EXIT;
+		OSSendMessage(&swkbd_queue, &msg, OS_MESSAGE_FLAGS_BLOCKING);
 		int ret;
 		OSJoinThread(&calcThread, &ret);
 	}
