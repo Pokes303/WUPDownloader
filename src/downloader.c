@@ -650,7 +650,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		for(int i = 0; i < strlen(titleEntry->name); i++)
 			folderName[i] = isAllowedInFilename(titleEntry->name[i]) ? titleEntry->name[i] : '_';
 	}
-	strcat(folderName, " [");
+	strcpy(folderName + strlen(titleEntry->name), " [");
 	strcat(folderName, tid);
 	strcat(folderName, "]");
 	MEMFreeToDefaultHeap(tid);
