@@ -62,12 +62,11 @@ void drawMainMenuFrame()
 	textToFrame(16, MAX_CHARS - 23, "• WUP installer");
 	
 	textToFrame(17, MAX_CHARS - 24, "Beta testers:   ");
-	textToFrame(18, MAX_CHARS - 23, "• Anonym       ");
-	textToFrame(19, MAX_CHARS - 23, "• GABO1423     ");
-	textToFrame(20, MAX_CHARS - 23, "• huma_dawii   ");
-	textToFrame(21, MAX_CHARS - 23, "• jacobsson    ");
-	textToFrame(22, MAX_CHARS - 23, "• pirate       ");
-	textToFrame(23, MAX_CHARS - 23, "• Vague Rant   ");
+	textToFrame(18, MAX_CHARS - 23, "• GABO1423     ");
+	textToFrame(19, MAX_CHARS - 23, "• huma_dawii   ");
+	textToFrame(20, MAX_CHARS - 23, "• jacobsson    ");
+	textToFrame(21, MAX_CHARS - 23, "• pirate       ");
+	textToFrame(22, MAX_CHARS - 23, "• Vague Rant   ");
 	
 	textToFrame(MAX_LINES - 3, 0, "WARNING:");
 	textToFrame(MAX_LINES - 2, 1, "• Don't eject the SD Card / USB drive or the application will crash!");
