@@ -112,8 +112,7 @@ void configMenu()
 		if(vpad.trigger & VPAD_BUTTON_B)
 		{
 			saveConfig();
-			if(!useOnlineTitleDB())
-				clearTitles();
+			clearTitles();
 			initTitles();
 			return;
 		}
