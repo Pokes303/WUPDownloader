@@ -57,7 +57,8 @@ static inline const char *transformPassword(TITLE_KEY in)
 		case TITLE_KEY_:
 			return "";
 		default:
-			return "???";
+			debugPrintf("Unknown password!");
+			return "mypass"; // TODO
 	}
 }
 
