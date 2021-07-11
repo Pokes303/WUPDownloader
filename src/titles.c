@@ -247,7 +247,7 @@ bool initTitles()
 		cJSON_ArrayForEach(curr[1], curr[0])
 		{
 			size = strlen(curr[1]->string);
-			if(size != 6)
+			if(size != 7)
 				continue;
 			
 			curr[2] = cJSON_GetArrayItem(curr[1], 0);
@@ -287,10 +287,10 @@ bool initTitles()
 	entries = 0;
 	uint64_t tid;
 	uint32_t cat;
-	size_t j;
+	uint32_t j;
 	char sj[32];
-	sj[0] = sj[1] = '0';
-	char *sjm = sj + 2;
+	sj[0] = '0';
+	char *sjm = sj + 1;
 	cJSON_ArrayForEach(curr[0], json)
 	{
 		if(curr[0]->string[0] == 's')
@@ -325,7 +325,7 @@ bool initTitles()
 		cJSON_ArrayForEach(curr[1], curr[0])
 		{
 			size = strlen(curr[1]->string);
-			if(size != 6)
+			if(size != 7)
 				continue;
 			
 			curr[2] = cJSON_GetArrayItem(curr[1], 0);
@@ -335,6 +335,7 @@ bool initTitles()
 			
 			strcpy(sjm, curr[1]->string);
 			hexToByte(sj, (uint8_t *)&j);
+			
 			strcpy(ptr, curr[2]->valuestring);
 //			debugPrintf("titleNames[%d][0x%08X] = %s", i, j, ptr);
 			titleEntry[entries].name = ptr;
@@ -349,6 +350,7 @@ bool initTitles()
 			tid <<= 32;
 			tid |= 0x0000000010000000;
 			tid |= j;
+//			debugPrintf("%s / 0x%016X / 0x%016X", sj, j, tid);
 			titleEntry[entries++].tid = tid;
 			titleEntries[cat]++;
 		}
