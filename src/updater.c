@@ -91,7 +91,7 @@ bool updateCheck()
 		return false;
 	
 	startNewFrame();
-	textToFrame(0, 0, "Prepairing download");
+	textToFrame(0, 0, "Preparing download");
 	writeScreenLog();
 	drawFrame();
 	showFrame();

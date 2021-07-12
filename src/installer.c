@@ -141,7 +141,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	debugPrintf("NUSspli path:  %s (%d)", path, strlen(path));
 	debugPrintf("MCP Path:      %s (%d)", newPath, strlen(newPath));
 	
-	// Last prepairing step...
+	// Last preparing step...
 	disableShutdown();
 	glueMcpData(&info, &data);
 	
