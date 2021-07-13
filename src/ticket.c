@@ -156,7 +156,6 @@ bool generateFakeTicket()
 		char *ide = strstr(++ids, "]");
 		if(ide != NULL && ide - ids == 16)
 		{
-			ide[0] = '\0';
 			for(int i = 0; i < 16; i++)
 			{
 				if(isHexa(ids[i]))
