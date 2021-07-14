@@ -125,7 +125,6 @@ void initStatus()
 	ProcUIRegisterCallback(PROCUI_CALLBACK_HOME_BUTTON_DENIED, &homeButtonCallback, NULL, 100);
 	OSEnableHomeButtonMenu(false);
 	
-	debugPrintf("Checking for Aroma CFW");
 	OSDynLoad_Module mod;
 	aroma = OSDynLoad_Acquire("homebrew_kernel", &mod) == OS_DYNLOAD_OK;
 	if(aroma)
@@ -134,7 +133,6 @@ void initStatus()
 	channel = OSGetTitleID() == 0x0005000010155373;
 #endif
 	
-	debugPrintf("Reading APD settings");
 	if(IMIsAPDEnabledBySysSettings((uint32_t *)&apdEnabled) != 0)
 	{
 		debugPrintf("Couldn't read APD sys setting!");
