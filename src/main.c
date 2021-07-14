@@ -75,8 +75,6 @@ int main()
 	OSThread *mainThread = OSGetCurrentThread();
 	OSSetThreadName(mainThread, "NUSspli");
 	
-	debugInit();
-	debugPrintf("NUSspli " NUSSPLI_VERSION);
 	checkStacks("main");
 	
 	getCommonKey(); // We do this exploit as soon as possible

@@ -118,6 +118,10 @@ uint32_t homeButtonCallback(void *dummy)
 void initStatus()
 {
 	ProcUIInit(&OSSavesDone_ReadyToRelease);
+	
+	debugInit();
+	debugPrintf("NUSspli " NUSSPLI_VERSION);
+	
 	ProcUIRegisterCallback(PROCUI_CALLBACK_HOME_BUTTON_DENIED, &homeButtonCallback, NULL, 100);
 	OSEnableHomeButtonMenu(false);
 	
