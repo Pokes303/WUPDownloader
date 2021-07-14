@@ -134,7 +134,10 @@ void initStatus()
 #endif
 	
 	if(IMIsAPDEnabledBySysSettings((uint32_t *)&apdEnabled) != 0)
+	{
+		debugPrintf("Couldn't read APD sys setting!");
 		apdEnabled = false;
+	}
 	
 }
 
