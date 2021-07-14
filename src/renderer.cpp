@@ -478,7 +478,7 @@ void initRenderer()
 
 static inline void clearFrame()
 {
-	for(uint32_t i = 1; i < window->getSize(); i++)
+	for(uint32_t i = 0; i < window->getSize(); i++)
 		delete window->getGuiElementAt(i);
 	
 	window->removeAll();
