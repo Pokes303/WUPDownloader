@@ -511,21 +511,28 @@ void shutdownRenderer()
 	if(!rendererRunning)
 		return;
 	
+	debugPrintf("Starting new frame");
 	colorStartNewFrame(SCREEN_COLOR_BLUE);
 	
+	debugPrintf("Opening PNG file");
 	FILE *f = fopen(ROMFS_PATH "textures/goodbye.png", "rb");
 	void *raw;
 	GuiImageData *byeData;
 	if(f != NULL)
 	{
+		debugPrintf("Grabbing filesize");
 		size_t fileSize = getFilesize(f);
+		debugPrintf("Allocating memory");
 		raw = MEMAllocFromDefaultHeap(fileSize);
 		if(raw != NULL)
 		{
+			debugPrintf("Loading PNG file into memory");
 			if(fread(raw, 1, fileSize, f) ==  fileSize)
 			{
+				debugPrintf("Creating texture");
 				byeData = new GuiImageData((const uint8_t *)raw, fileSize, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
 				GuiImage *bye = new GuiImage(byeData);
+				debugPrintf("Attaching texture to frame");
 				window->append(bye);
 			}
 			else
@@ -534,12 +541,16 @@ void shutdownRenderer()
 				raw = NULL;
 			}
 		}
+		debugPrintf("Closing file");
 		fclose(f);
 	}
 	else
 		raw = NULL;
 	
+	
+	debugPrintf("Drawing frame");
 	drawFrame();
+	debugPrintf("Stopping renderer");
 	pauseRenderer();
 	
 	if(raw != NULL)
