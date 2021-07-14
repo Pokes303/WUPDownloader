@@ -550,6 +550,8 @@ void shutdownRenderer()
 	
 	debugPrintf("Drawing frame");
 	drawFrame();
+	debugPrintf("Showing frame");
+	showFrame();
 	debugPrintf("Stopping renderer");
 	pauseRenderer();
 	
