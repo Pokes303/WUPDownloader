@@ -23,15 +23,15 @@
 
 #include <gx2/enum.h>
 
-#include <gui/FreeTypeGX.h>
+#include <SDL2/SDL.h>
+#include <gui/GuiFont.h>
 #include <gui/GuiFrame.h>
 #include <gui/GuiImage.h>
 #include <gui/GuiSound.h>
 #include <gui/GuiText.h>
-#include <gui/gx2_ext.h>
-#include <gui/memory.h>
-#include <gui/sounds/SoundHandler.hpp>
-#include <gui/video/CVideo.h>
+#include <gui/GuiTextureData.h>
+#include <gui/system/SDLSystem.h>
+#include <gui/video/Renderer.h>
 
 #include <coreinit/thread.h>
 #include <coreinit/memdefaultheap.h>
@@ -51,9 +51,9 @@
 #include <utils.h>
 #include <menu/utils.h>
 
-CVideo *renderer;
+SDLSystem *sys;
 GuiFrame *window;
-FreeTypeGX *font = NULL;
+GuiFont *font = NULL;
 uint32_t width, height;
 GuiSound *backgroundMusic = NULL;
 bool rendererRunning = false;
@@ -63,16 +63,16 @@ int32_t spaceWidth;
 void *backgroundMusicRaw = NULL;
 
 GuiFrame *errorOverlay = NULL;
-GuiImageData *arrowData;
-GuiImageData *checkmarkData;
-GuiImageData *tabData;
-GuiImageData *flagData[6];
+GuiTextureData *arrowData;
+GuiTextureData *checkmarkData;
+GuiTextureData *tabData;
+GuiTextureData *flagData[6];
 
 #define SSAA 8
 
-static inline GX2Color screenColorToGX2color(uint32_t color)
+static inline SDL_Color screenColorToSDLcolor(uint32_t color)
 {
-	GX2Color gx2color;
+	SDL_Color gx2color;
 	
 	gx2color.a = color & 0xFF;
 	color >>= 8;
@@ -90,8 +90,9 @@ void textToFrame(int line, int column, const char *str)
 	if(!rendererRunning)
 		return;
 	
-	line += 2;
-	line *= -FONT_SIZE;
+	line += 1;
+	line *= FONT_SIZE;
+	line -= 7;
 	
 	GuiText *text = new GuiText(str);
 	
@@ -107,8 +108,9 @@ void textToFrame(int line, int column, const char *str)
 			break;
 		default:
 			column *= spaceWidth;
+			text->setAlignment(ALIGN_TOP_LEFT);
 			text->setPosition(column + FONT_SIZE, line);
-			text->setMaxWidth(width - column, GuiText::DOTTED);
+			text->setMaxWidth(width - column);
 	}
 	
 	window->append(text);
@@ -120,9 +122,9 @@ void lineToFrame(int column, uint32_t color)
 	if(!rendererRunning)
 		return;
 	
-	GuiImage *line = new GuiImage(width - (FONT_SIZE << 1), 3, screenColorToGX2color(color), GuiImage::IMAGE_COLOR);
+	GuiImage *line = new GuiImage(screenColorToSDLcolor(color), width - (FONT_SIZE << 1), 3);
 	line->setAlignment(ALIGN_TOP_CENTER);
-	line->setPosition(0.0f, ((column + 2) * -FONT_SIZE) + ((FONT_SIZE >> 1) + 1));
+	line->setPosition(0.0f, ((column + 1) * FONT_SIZE) + ((FONT_SIZE >> 1) - 1));
 	
 	window->append(line);
 }
@@ -137,26 +139,26 @@ void boxToFrame(int lineStart, int lineEnd)
 	lineToFrame(lineEnd, SCREEN_COLOR_GRAY);
 	
 	// Vertical lines
-	GX2Color co = screenColorToGX2color(SCREEN_COLOR_GRAY);
+	SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_GRAY);
 	int size = (lineEnd - lineStart) * FONT_SIZE;
-	int y = ((lineStart + 2) * -FONT_SIZE) + (FONT_SIZE >> 1);
+	int y = ((lineStart + 1) * FONT_SIZE) + (FONT_SIZE >> 1);
 	
-	GuiImage *box = new GuiImage(3, size, co, GuiImage::IMAGE_COLOR);
+	GuiImage *box = new GuiImage(co, 3, size);
 	box->setAlignment(ALIGN_TOP_LEFT);
 	box->setPosition(FONT_SIZE, y);
 	window->append(box);
 	
-	box = new GuiImage(3, size, co, GuiImage::IMAGE_COLOR);
+	box = new GuiImage(co, 3, size);
 	box->setAlignment(ALIGN_TOP_RIGHT);
 	box->setPosition(-FONT_SIZE, y);
 	window->append(box);
 	
 	// Background - we paint it on top of the gray lines as they look better that way
-	co = screenColorToGX2color(SCREEN_COLOR_BLACK);
+	co = screenColorToSDLcolor(SCREEN_COLOR_BLACK);
 	co.a = 64;
-	size -= 6;
-	y -= 3;
-	box = new GuiImage(width - (FONT_SIZE << 1) - 6, size, co, GuiImage::IMAGE_COLOR);
+	size -= 4;
+	y += 2;
+	box = new GuiImage(co, width - (FONT_SIZE << 1) - 6, size);
 	box->setAlignment(ALIGN_TOP_CENTER);
 	box->setPosition(0.0f, y);
 	window->append(box);
@@ -168,26 +170,23 @@ void barToFrame(int line, int column, uint32_t width, float progress)
 		return;
 	
 	int x = FONT_SIZE + (column * spaceWidth);
-	int y = ((line + 1) * -FONT_SIZE) + 2;
+	int y = ((line + 1) * FONT_SIZE) - 2;
 	int height = FONT_SIZE;
 	uint32_t tc = column + (width >> 1);
 	width *= spaceWidth;
 	
-	GuiImage *bar = new GuiImage(width, height, screenColorToGX2color(SCREEN_COLOR_GRAY), GuiImage::IMAGE_COLOR);
+	GuiImage *bar = new GuiImage(screenColorToSDLcolor(SCREEN_COLOR_GRAY), width, height);
 	bar->setAlignment(ALIGN_TOP_LEFT);
 	bar->setPosition(x, y);
 	window->append(bar);
 	
 	x += 2;
-	y -= 2;
+	y += 2;
 	height -= 4;
 	width -= 4;
 	uint32_t barWidth = ((float)width) / 100.0f * progress; //TODO
 	
-	bar = new GuiImage(barWidth, height, screenColorToGX2color(SCREEN_COLOR_GREEN), GuiImage::IMAGE_COLOR);
-	GX2Color co = screenColorToGX2color(SCREEN_COLOR_D_GREEN);
-	for(int i = 1; i < 3; i++)
-		bar->setImageColor(co, i);
+	bar = new GuiImage(screenColorToSDLcolor(SCREEN_COLOR_GREEN), barWidth, height);
 	bar->setAlignment(ALIGN_TOP_LEFT);
 	bar->setPosition(x, y);
 	window->append(bar);
@@ -195,15 +194,15 @@ void barToFrame(int line, int column, uint32_t width, float progress)
 	width -= barWidth;
 	x += barWidth;
 	
-	co = screenColorToGX2color(SCREEN_COLOR_BLACK);
+	SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_BLACK);
 	co.a = 64;
-	bar = new GuiImage(width, height, co, GuiImage::IMAGE_COLOR);
+	bar = new GuiImage(co, width, height);
 	bar->setAlignment(ALIGN_TOP_LEFT);
 	bar->setPosition(x, y);
 	window->append(bar);
 	
 	char text[5];
-	sprintf(text, "%d%%", (int)progress);
+	sprintf(text, "%d%%%%", (int)progress);
 	tc -= strlen(text) >> 1;
 	textToFrame(line, tc, text);
 }
@@ -211,7 +210,7 @@ void barToFrame(int line, int column, uint32_t width, float progress)
 void arrowToFrame(int line, int column)
 {
 	line += 1;
-	line *= -FONT_SIZE;
+	line *= FONT_SIZE;
 	column *= spaceWidth;
 	column += spaceWidth;
 	
@@ -224,7 +223,7 @@ void arrowToFrame(int line, int column)
 void checkmarkToFrame(int line, int column)
 {
 	line += 1;
-	line *= -FONT_SIZE;
+	line *= FONT_SIZE;
 	column *= spaceWidth;
 	column += spaceWidth >> 1;
 	
@@ -234,7 +233,7 @@ void checkmarkToFrame(int line, int column)
 	window->append(checkmark);
 }
 
-GuiImageData *getFlagData(TITLE_REGION flag)
+GuiTextureData *getFlagData(TITLE_REGION flag)
 {
 	switch(flag)
 	{
@@ -256,7 +255,7 @@ GuiImageData *getFlagData(TITLE_REGION flag)
 void flagToFrame(int line, int column, TITLE_REGION flag)
 {
 	line += 1;
-	line *= -FONT_SIZE;
+	line *= FONT_SIZE;
 	column *= spaceWidth;
 	column += spaceWidth >> 1;
 	
@@ -268,8 +267,8 @@ void flagToFrame(int line, int column, TITLE_REGION flag)
 
 void tabToFrame(int line, int column, char *label, bool active)
 {
-	line *= -FONT_SIZE;
-	line -= 9;
+	line *= FONT_SIZE;
+	line += 9;
 	column *= 240;
 	column += 15;
 	
@@ -279,15 +278,19 @@ void tabToFrame(int line, int column, char *label, bool active)
 	
 	GuiText *text = new GuiText(label);
 	
-	line -= 27;
+	line += 27;
 	line -= FONT_SIZE >> 1;
-	column += 120 - (text->getTextWidth() >> 1); //TODO
-	
-	text->setPosition(column + FONT_SIZE, line);
-	text->setMaxWidth(width - column, GuiText::DOTTED);
+	column += 120 - (((int)text->getWidth()) >> 1); //TODO
+		text->setPosition(column + FONT_SIZE, line);
+	text->setAlignment(ALIGN_TOP_LEFT);
+	text->setMaxWidth(width - column);
 	if(!active)
-		text->setColor(glm::vec4({1.0f, 1.0f, 1.0f, 0.25f}));
-	
+	{
+		SDL_Color co;
+		co.r = co.g = co.b = 255;
+		co.a = 64;
+		text->setColor(co);
+	}
 	window->append(image);
 	window->append(text);
 }
@@ -302,26 +305,27 @@ void addErrorOverlay(const char *err)
 	
 	errorOverlay = new GuiFrame(width, height);
 	
-	GX2Color bgColor = screenColorToGX2color(SCREEN_COLOR_BLACK);
-	bgColor.a = 0xC0;
-	GuiImage *img = new GuiImage(width, height, bgColor, GuiImage::IMAGE_COLOR);
+	SDL_Color bgColor = screenColorToSDLcolor(SCREEN_COLOR_BLACK);
+	bgColor.a = 0xC0; // TODO
+	GuiImage *img = new GuiImage(bgColor, width, height);
+	img->setAlignment(ALIGN_CENTERED);
 	errorOverlay->append(img);
 	
-	const wchar_t *werr = FreeTypeGX::charToWideChar(err);
-	GuiText *text = new GuiText(werr, FONT_SIZE, glm::vec4(1.0f), SSAA);
+	GuiText *text = new GuiText(err, FONT_SIZE, screenColorToSDLcolor(SCREEN_COLOR_WHITE)); // TODO: Add back SSAA
 	text->setAlignment(ALIGN_CENTERED);
+
+	// TODO
+	uint16_t ow = text->getWidth();
+	uint16_t oh = text->getHeight();
 	
-	uint16_t ow = font->getWidth(werr, FONT_SIZE) + (FONT_SIZE << 1);
-	uint16_t oh = font->getHeight(werr, FONT_SIZE) + (FONT_SIZE << 1);
-	
-	img = new GuiImage(ow, oh, screenColorToGX2color(SCREEN_COLOR_RED), GuiImage::IMAGE_COLOR);
+	img = new GuiImage(screenColorToSDLcolor(SCREEN_COLOR_RED), ow, oh);
 	img->setAlignment(ALIGN_CENTERED);
 	errorOverlay->append(img);
 	
 	ow -= 2;
 	oh -= 2;
 	
-	img = new GuiImage(ow, oh, screenColorToGX2color(SCREEN_COLOR_D_RED), GuiImage::IMAGE_COLOR);
+	img = new GuiImage(screenColorToSDLcolor(SCREEN_COLOR_D_RED), ow, oh);
 	img->setAlignment(ALIGN_CENTERED);
 	errorOverlay->append(img);
 	
@@ -347,47 +351,26 @@ void resumeRenderer()
 	if(rendererRunning)
 		return;
 	
-	renderer = new CVideo(GX2_TV_SCAN_MODE_720P, GX2_DRC_RENDER_MODE_SINGLE);
-	GX2SetSwapInterval(FRAMERATE_60FPS);
-	
-	width = renderer->getTvWidth();
-	height = renderer->getTvHeight();
+	width = sys->getWidth();
+	height = sys->getHeight();
 	
 	window = new GuiFrame(width, height);
 	
+	void *ttf;
 	size_t size;
-	FT_Bytes ttf;
-	OSGetSharedData(OS_SHAREDDATATYPE_FONT_STANDARD, 0, (void **)&ttf, &size);
-	font = new FreeTypeGX(ttf, size);
+	OSGetSharedData(OS_SHAREDDATATYPE_FONT_STANDARD, 0, &ttf, &size);
+	font = new GuiFont((uint8_t *)ttf, size, sys->getRenderer());
 	
-	spaceWidth = font->getCharWidth(L' ', FONT_SIZE);
-	
-	GuiText::setPresets(FONT_SIZE, glm::vec4({1.0f}), width - (FONT_SIZE << 1), ALIGN_TOP_LEFT, SSAA);
+	GuiText::setPresets(FONT_SIZE, screenColorToSDLcolor(SCREEN_COLOR_WHITE)); // TODO
 	GuiText::setPresetFont(font);
 	
-	FILE *f = fopen(ROMFS_PATH "textures/arrow.png", "rb"); //TODO: Error handling...
-	size = getFilesize(f);
-	void *raw = MEMAllocFromDefaultHeap(size);
-	fread(raw, 1, size, f); //TODO: Error handling...
-	fclose(f);
-	arrowData = new GuiImageData((const uint8_t *)raw, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
-	MEMFreeToDefaultHeap(raw);
+	GuiText *space = new GuiText(" ");
+	spaceWidth = space->getWidth();
+	delete space;
 	
-	f = fopen(ROMFS_PATH "textures/checkmark.png", "rb"); //TODO: Error handling...
-	size = getFilesize(f);
-	raw = MEMAllocFromDefaultHeap(size);
-	fread(raw, 1, size, f); //TODO: Error handling...
-	fclose(f);
-	checkmarkData = new GuiImageData((const uint8_t *)raw, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
-	MEMFreeToDefaultHeap(raw);
-	
-	f = fopen(ROMFS_PATH "textures/tab.png", "rb"); //TODO: Error handling...
-	size = getFilesize(f);
-	raw = MEMAllocFromDefaultHeap(size);
-	fread(raw, 1, size, f); //TODO: Error handling...
-	fclose(f);
-	tabData = new GuiImageData((const uint8_t *)raw, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
-	MEMFreeToDefaultHeap(raw);
+	arrowData = new GuiTextureData(ROMFS_PATH "textures/arrow.png"); //TODO: Error handling...
+	checkmarkData = new GuiTextureData(ROMFS_PATH "textures/checkmark.png");
+	tabData = new GuiTextureData(ROMFS_PATH "textures/tab.png");
 	
 	const char *tex;
 	for(int i = 0; i < 6; i++)
@@ -413,13 +396,7 @@ void resumeRenderer()
 				tex = ROMFS_PATH "textures/flags/unk.png";
 				break;
 		}
-		f = fopen(tex, "rb"); //TODO: Error handling...
-		size = getFilesize(f);
-		raw = MEMAllocFromDefaultHeap(size);
-		fread(raw, 1, size, f); //TODO: Error handling...
-		fclose(f);
-		flagData[i] = new GuiImageData((const uint8_t *)raw, size, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8 );
-		MEMFreeToDefaultHeap(raw);
+		flagData[i] = new GuiTextureData(tex);
 	}
 	
 	rendererRunning = true;
@@ -430,55 +407,35 @@ void initRenderer()
 	if(rendererRunning)
 		return;
 	
-	libgui_memoryInitialize();
+	sys = new SDLSystem();
 	
-	OSThread *audioThread = (OSThread *)SoundHandler::instance()->getThread();
-	OSSetThreadName(audioThread, "NUSspli Audio");
-	if(OSSetThreadPriority(audioThread, 0))
-		addToScreenLog("Changed audio thread priority!");
-	else
-		addToScreenLog("WARNING: Error changing audio thread priority!");
-	
-	FILE *f = fopen(ROMFS_PATH "audio/bg.mp3", "rb");
-	if(f != NULL)
+	backgroundMusic = new GuiSound(ROMFS_PATH "audio/bg.mp3");
+	if(backgroundMusic != NULL)
 	{
-		size_t fileSize = getFilesize(f);
-		backgroundMusicRaw = MEMAllocFromDefaultHeap(fileSize);
-		if(backgroundMusicRaw != NULL)
-		{
-			if(fread(backgroundMusicRaw, 1, fileSize, f) == fileSize)
-			{
-				backgroundMusic = new GuiSound((const uint8_t *)backgroundMusicRaw, fileSize);
-				backgroundMusic->SetLoop(true);
-				backgroundMusic->SetVolume(15);
-				backgroundMusic->Play();
-			}
-			else
-			{
-				MEMFreeToDefaultHeap(backgroundMusicRaw);
-				backgroundMusicRaw = NULL;
-			}
-		}
-		fclose(f);
+		backgroundMusic->SetLoop(true);
+		backgroundMusic->SetVolume(15);
+		backgroundMusic->Play();
 	}
 	
 	resumeRenderer();
 	
-	addToScreenLog("libgui initialized!");
+	addToScreenLog("libgui-sdl initialized!");
 	startNewFrame();
 	textToFrame(0, 0, "Loading...");
 	writeScreenLog();
 	drawFrame();
 	
-	renderer->drcEnable(true);
-	renderer->tvEnable(true);
+//	renderer->drcEnable(true);
+//	renderer->tvEnable(true);
 	
 	showFrame();
 }
 
 static inline void clearFrame()
 {
-	for(uint32_t i = 1; i < window->getSize(); i++)
+//	while(window->getGuiElementAt(0) != nullptr)
+//		delete window->getGuiElementAt(0);
+	for(int32_t i = window->getSize() - 1; i > -1; i--)
 		delete window->getGuiElementAt(i);
 	
 	window->removeAll();
@@ -505,8 +462,8 @@ void pauseRenderer()
 	
 	debugPrintf("Deleting surface");
 	delete window;
-	debugPrintf("Deleting renderer");
-	delete renderer;
+//	debugPrintf("Deleting renderer");
+//	delete sys;
 	
 	rendererRunning = false;
 }
@@ -520,38 +477,11 @@ void shutdownRenderer()
 	colorStartNewFrame(SCREEN_COLOR_BLUE);
 	
 	debugPrintf("Opening PNG file");
-	FILE *f = fopen(ROMFS_PATH "textures/goodbye.png", "rb");
-	void *raw;
-	GuiImageData *byeData;
-	if(f != NULL)
-	{
-		debugPrintf("Grabbing filesize");
-		size_t fileSize = getFilesize(f);
-		debugPrintf("Allocating memory");
-		raw = MEMAllocFromDefaultHeap(fileSize);
-		if(raw != NULL)
-		{
-			debugPrintf("Loading PNG file into memory");
-			if(fread(raw, 1, fileSize, f) ==  fileSize)
-			{
-				debugPrintf("Creating texture");
-				byeData = new GuiImageData((const uint8_t *)raw, fileSize, GX2_TEX_CLAMP_MODE_WRAP , GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
-				GuiImage *bye = new GuiImage(byeData);
-				debugPrintf("Attaching texture to frame");
-				window->append(bye);
-			}
-			else
-			{
-				MEMFreeToDefaultHeap(raw);
-				raw = NULL;
-			}
-		}
-		debugPrintf("Closing file");
-		fclose(f);
-	}
-	else
-		raw = NULL;
-	
+	GuiTextureData *byeData = new GuiTextureData(ROMFS_PATH "textures/goodbye.png");
+	GuiImage *bye = new GuiImage(byeData);
+	bye->setAlignment(ALIGN_CENTERED);
+	debugPrintf("Attaching texture to frame");
+	window->append(bye);
 	
 	debugPrintf("Drawing frame");
 	drawFrame();
@@ -560,13 +490,6 @@ void shutdownRenderer()
 	debugPrintf("Stopping renderer");
 	pauseRenderer();
 	
-	debugPrintf("Deleting goodbye screen blobs");
-	if(raw != NULL)
-	{
-		delete byeData;
-		MEMFreeToDefaultHeap(raw);
-	}
-	
 	debugPrintf("Deleting background music");
 	if(backgroundMusic != NULL)
 	{
@@ -574,15 +497,7 @@ void shutdownRenderer()
 		delete backgroundMusic;
 		backgroundMusic = NULL;
 	}
-	debugPrintf("Deleting background music blob");
-	if(backgroundMusicRaw != NULL)
-	{
-		MEMFreeToDefaultHeap(backgroundMusicRaw);
-		backgroundMusicRaw = NULL;
-	}
-	
-	debugPrintf("Releasing libgui");
-	libgui_memoryRelease();
+	delete byeData;
 }
 
 void colorStartNewFrame(uint32_t color)
@@ -590,23 +505,32 @@ void colorStartNewFrame(uint32_t color)
 	if(!rendererRunning)
 		return;
 	
-	GuiImage *background = new GuiImage(width, height, screenColorToGX2color(color), GuiImage::IMAGE_COLOR);
-	if(color == SCREEN_COLOR_BLUE)
+	GuiImage *background = new GuiImage(screenColorToSDLcolor(color), width, height);
+/*	if(color == SCREEN_COLOR_BLUE)
 	{
-		background->setImageColor(screenColorToGX2color(SCREEN_COLOR_BG2), 0);
-		background->setImageColor(screenColorToGX2color(SCREEN_COLOR_BG3), 1);
-		background->setImageColor(screenColorToGX2color(SCREEN_COLOR_BG4), 2);
-		background->setImageColor(screenColorToGX2color(SCREEN_COLOR_BG1), 3);
-	}
+		background->setImageColor(screenColorToSDLcolor(SCREEN_COLOR_BG2), 0);
+		background->setImageColor(screenColorToSDLcolor(SCREEN_COLOR_BG3), 1);
+		background->setImageColor(screenColorToSDLcolor(SCREEN_COLOR_BG4), 2);
+		background->setImageColor(screenColorToSDLcolor(SCREEN_COLOR_BG1), 3);
+	}*/
 	window->append(background);
 }
 
+uint32_t lastTick = 0;
 void showFrame()
 {
 	if(!rendererRunning)
 		return;
 	
-	renderer->waitForVSync();
+	uint32_t now;
+	do
+	{
+		SDL_Delay(1);
+		now = SDL_GetTicks();
+	}
+	while(now - lastTick < 1000 / 60);
+	
+	lastTick = now;
 	readInput();
 }
 
@@ -616,18 +540,18 @@ void drawFrame()
 	if(!rendererRunning)
 		return;
 	
-	renderer->prepareDrcRendering();
+	window->process();
+	Renderer *renderer = sys->getRenderer();
+	SDL_Renderer *sdlRenderer = renderer->getRenderer();
+	SDL_RenderClear(sdlRenderer);
 	window->draw(renderer);
 	if(errorOverlay != NULL)
+	{
+		errorOverlay->process();
 		errorOverlay->draw(renderer);
-	renderer->drcDrawDone();
+	}
 	
-	renderer->prepareTvRendering();
-	window->draw(renderer);
-	if(errorOverlay != NULL)
-		errorOverlay->draw(renderer);
-	renderer->tvDrawDone();
-	
+	SDL_RenderPresent(sdlRenderer);
 	clearFrame();
 }
 
@@ -636,7 +560,10 @@ void drawKeyboard(bool tv)
 	if(!rendererRunning)
 		return;
 	
-	renderer->prepareDrcRendering();
+	window->process();
+	Renderer *renderer = sys->getRenderer();
+	SDL_Renderer *sdlRenderer = renderer->getRenderer();
+	SDL_RenderClear(sdlRenderer);
 	window->draw(renderer);
 	if(tv)
 		Swkbd_DrawTV();
@@ -644,17 +571,7 @@ void drawKeyboard(bool tv)
 		Swkbd_DrawDRC();
 	if(errorOverlay != NULL)
 		errorOverlay->draw(renderer);
-	renderer->drcDrawDone();
 	
-	renderer->prepareTvRendering();
-	window->draw(renderer);
-	if(tv)
-		Swkbd_DrawTV();
-	else
-		Swkbd_DrawDRC();
-	if(errorOverlay != NULL)
-		errorOverlay->draw(renderer);
-	renderer->tvDrawDone();
-	
+	SDL_RenderPresent(sdlRenderer);
 	showFrame();
 }

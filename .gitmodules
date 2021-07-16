@@ -1,9 +1,9 @@
 [submodule "src/cJSON"]
 	path = src/cJSON
 	url = https://github.com/DaveGamble/cJSON.git
-[submodule "libgui"]
-	path = libgui
-	url = https://github.com/wiiu-env/libgui.git
 [submodule "zlib"]
 	path = zlib
 	url = https://github.com/madler/zlib.git
+[submodule "libgui-sdl"]
+	path = libgui-sdl
+	url = https://github.com/Maschell/libgui-sdl.git

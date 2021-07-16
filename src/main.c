@@ -269,7 +269,7 @@ int main()
 #endif
 	debugPrintf("Shutting down filesystem");
 	FSShutdown();
-	debugPrintf("libgui closed");
+	debugPrintf("libgui-sdl closed");
 	
 #ifdef NUSSPLI_DEBUG
 	checkStacks("main");
