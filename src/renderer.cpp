@@ -489,9 +489,12 @@ void pauseRenderer()
 	if(!rendererRunning)
 		return;
 	
+	debugPrintf("Clearing frame");
 	clearFrame();
+	debugPrintf("Removing error overlay");
 	removeErrorOverlay();
 	
+	debugPrintf("Deleting texture blobs");
 	delete font;
 	delete arrowData;
 	delete checkmarkData;
@@ -500,7 +503,9 @@ void pauseRenderer()
 	for(int i = 0; i < 6; i++)
 		delete flagData[i];
 	
+	debugPrintf("Deleting surface");
 	delete window;
+	debugPrintf("Deleting renderer");
 	delete renderer;
 	
 	rendererRunning = false;
@@ -555,24 +560,28 @@ void shutdownRenderer()
 	debugPrintf("Stopping renderer");
 	pauseRenderer();
 	
+	debugPrintf("Deleting goodbye screen blobs");
 	if(raw != NULL)
 	{
 		delete byeData;
 		MEMFreeToDefaultHeap(raw);
 	}
 	
+	debugPrintf("Deleting background music");
 	if(backgroundMusic != NULL)
 	{
 		backgroundMusic->Stop();
 		delete backgroundMusic;
 		backgroundMusic = NULL;
 	}
+	debugPrintf("Deleting background music blob");
 	if(backgroundMusicRaw != NULL)
 	{
 		MEMFreeToDefaultHeap(backgroundMusicRaw);
 		backgroundMusicRaw = NULL;
 	}
 	
+	debugPrintf("Releasing libgui");
 	libgui_memoryRelease();
 }
 
