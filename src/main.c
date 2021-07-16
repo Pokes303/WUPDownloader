@@ -262,10 +262,12 @@ int main()
 	}
 	
 	shutdownRenderer();
+	debugPrintf("Clearing screen log");
 	clearScreenLog();
 #ifdef NUSSPLI_HBL
 	romfsExit();
 #endif
+	debugPrintf("Shutting down filesystem");
 	FSShutdown();
 	debugPrintf("libgui closed");
 	
