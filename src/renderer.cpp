@@ -281,7 +281,8 @@ void tabToFrame(int line, int column, char *label, bool active)
 	line += 27;
 	line -= FONT_SIZE >> 1;
 	column += 120 - (((int)text->getWidth()) >> 1); //TODO
-		text->setPosition(column + FONT_SIZE, line);
+	
+	text->setPosition(column + FONT_SIZE, line);
 	text->setAlignment(ALIGN_TOP_LEFT);
 	text->setMaxWidth(width - column);
 	if(!active)
@@ -505,6 +506,8 @@ void colorStartNewFrame(uint32_t color)
 	if(!rendererRunning)
 		return;
 	
+	clearFrame();
+	
 	GuiImage *background = new GuiImage(screenColorToSDLcolor(color), width, height);
 /*	if(color == SCREEN_COLOR_BLUE)
 	{
@@ -552,7 +555,6 @@ void drawFrame()
 	}
 	
 	SDL_RenderPresent(sdlRenderer);
-	clearFrame();
 }
 
 void drawKeyboard(bool tv)
