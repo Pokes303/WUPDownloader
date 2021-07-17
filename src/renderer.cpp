@@ -533,7 +533,7 @@ void showFrame()
 	uint32_t now;
 	do
 	{
-		SDL_Delay(1);
+		SDL_Delay(5);
 		now = SDL_GetTicks();
 	}
 	while(now - lastTick < 1000 / 60);
