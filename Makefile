@@ -93,8 +93,7 @@ real: $(CURDIR)/payload/arm_kernel_bin.h
 	@sed -i '/			-ffunction-sections -fdata-sections \\/d' libgui-sdl/Makefile.wiiu
 	@sed -i 's/$$(ARCH) -/$$(ARCH) $$(CFLAGS) -/g' libgui-sdl/Makefile.wiiu
 	@sed -i 's/-DNDEBUG=1 -O2 -s/$(LIBGUIFLAGS)/g' libgui-sdl/Makefile.wiiu
-	@cd libgui-sdl && $(MAKE) -f Makefile.wiiu
-#	@cd libgui-sdl && for patch in $(TOPDIR)/libgui-sdl-patches/*.patch; do echo Applying $$patch && git apply $$patch; done && $(MAKE) -f Makefile.wiiu
+	@cd libgui-sdl && for patch in $(TOPDIR)/libgui-sdl-patches/*.patch; do echo Applying $$patch && git apply $$patch; done && $(MAKE) -f Makefile.wiiu
 	@[ -d $(BUILD) ] || mkdir -p $(BUILD)
 	@$(MAKE) -C $(BUILD) -f $(CURDIR)/Makefile BUILD=$(BUILD) NUSSPLI_VERSION=$(NUSSPLI_VERSION) $(MAKE_CMD)
 
