@@ -110,7 +110,6 @@ void textToFrame(int line, int column, const char *str)
 			column *= spaceWidth;
 			text->setAlignment(ALIGN_TOP_LEFT);
 			text->setPosition(column + FONT_SIZE, line);
-			text->setMaxWidth(width - column);
 	}
 	
 	window->append(text);
@@ -290,7 +289,6 @@ void tabToFrame(int line, int column, char *label, bool active)
 	
 	text->setPosition(column + FONT_SIZE, line);
 	text->setAlignment(ALIGN_TOP_LEFT);
-	text->setMaxWidth(width - column);
 	if(!active)
 	{
 		SDL_Color co;
