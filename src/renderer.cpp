@@ -487,6 +487,7 @@ void shutdownRenderer()
 	debugPrintf("Opening PNG file");
 	GuiTextureData *byeData = new GuiTextureData(ROMFS_PATH "textures/goodbye.png");
 	GuiImage *bye = new GuiImage(byeData);
+	bye->setBlendMode(SDL_BLENDMODE_BLEND);
 	bye->setAlignment(ALIGN_CENTERED);
 	debugPrintf("Attaching texture to frame");
 	window->append(bye);
