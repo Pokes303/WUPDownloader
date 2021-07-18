@@ -203,9 +203,9 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 			multiplier = 1 << 30;
 			multiplierName = "GB";
 		}
-		barToFrame(1, 0, 40, (float)(dlnow / dltotal) * 100.0f);
+		barToFrame(1, 0, 30, (float)(dlnow / dltotal) * 100.0f);
 		sprintf(tmpString, "%.2f / %.2f %s", dlnow / multiplier, dltotal / multiplier, multiplierName);
-		textToFrame(1, 41, tmpString);
+		textToFrame(1, 31, tmpString);
 		if(data->data != NULL)
 			data->data->dlnow = data->data->dltmp + dlnow;
 	}
@@ -235,9 +235,9 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 			multiplier = 1 << 30;
 			multiplierName = "GB";
 		}
-		barToFrame(1, 77, 40, (float)(data->data->dlnow / data->data->dltotal) * 100.0f);
+		barToFrame(1, 65, 30, (float)(data->data->dlnow / data->data->dltotal) * 100.0f);
 		sprintf(tmpString, "%.2f / %.2f %s", data->data->dlnow / multiplier, data->data->dltotal / multiplier, multiplierName);
-		textToFrame(1, 118, tmpString);
+		textToFrame(1, 96, tmpString);
 	}
 	
 	if(dling)

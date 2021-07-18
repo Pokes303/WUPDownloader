@@ -136,9 +136,9 @@ void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cu
 		
 		j = i + pos;
 		if(MCP_GetTitleInfo(mcpHandle, filteredTitleEntries[j].tid, &titleList) == 0)
-			checkmarkToFrame(l, 5);
+			checkmarkToFrame(l, 4);
 		
-		flagToFrame(l, 9, filteredTitleEntries[j].region);
+		flagToFrame(l, 7, filteredTitleEntries[j].region);
 		
 		if(tab == TITLE_CATEGORY_ALL)
 		{
@@ -148,15 +148,15 @@ void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cu
 				strcpy(toFrame, "[UPD] ");
 			else
 			{
-				textToFrame(l, 13, filteredTitleEntries[j].name);
+				textToFrame(l, 10, filteredTitleEntries[j].name);
 				continue;
 			}
 			
 			strcat(toFrame, filteredTitleEntries[j].name);
-			textToFrame(l, 13, toFrame);
+			textToFrame(l, 10, toFrame);
 		}
 		else
-			textToFrame(l, 13, filteredTitleEntries[j].name);
+			textToFrame(l, 10, filteredTitleEntries[j].name);
 	}
 	drawFrame();
 }

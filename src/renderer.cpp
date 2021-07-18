@@ -155,7 +155,7 @@ void boxToFrame(int lineStart, int lineEnd)
 	// Background - we paint it on top of the gray lines as they look better that way
 	co = screenColorToSDLcolor(SCREEN_COLOR_BLACK);
 	co.a = 64;
-	size -= 4;
+	size -= 3;
 	y += 2;
 	box = new GuiImage(co, width - (FONT_SIZE << 1) - 6, size);
 	box->setBlendMode(SDL_BLENDMODE_BLEND);
@@ -272,9 +272,9 @@ void flagToFrame(int line, int column, TITLE_REGION flag)
 void tabToFrame(int line, int column, char *label, bool active)
 {
 	line *= FONT_SIZE;
-	line += 9;
+	line += 20;
 	column *= 240;
-	column += 15;
+	column += 13;
 	
 	GuiImage *image = new GuiImage(tabData);
 	image->setBlendMode(SDL_BLENDMODE_BLEND);
@@ -283,7 +283,7 @@ void tabToFrame(int line, int column, char *label, bool active)
 	
 	GuiText *text = new GuiText(label);
 	
-	line += 27;
+	line += 20;
 	line -= FONT_SIZE >> 1;
 	column += 120 - (((int)text->getWidth()) >> 1); //TODO
 	
