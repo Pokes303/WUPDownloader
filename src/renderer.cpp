@@ -548,16 +548,12 @@ void drawFrame()
 	if(!rendererRunning)
 		return;
 	
-	window->process();
 	Renderer *renderer = sys->getRenderer();
 	SDL_Renderer *sdlRenderer = renderer->getRenderer();
 	SDL_RenderClear(sdlRenderer);
 	window->draw(renderer);
 	if(errorOverlay != NULL)
-	{
-		errorOverlay->process();
 		errorOverlay->draw(renderer);
-	}
 	
 	SDL_RenderPresent(sdlRenderer);
 }
@@ -567,7 +563,6 @@ void drawKeyboard(bool tv)
 	if(!rendererRunning)
 		return;
 	
-	window->process();
 	Renderer *renderer = sys->getRenderer();
 	SDL_Renderer *sdlRenderer = renderer->getRenderer();
 	SDL_RenderClear(sdlRenderer);
