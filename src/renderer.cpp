@@ -159,6 +159,7 @@ void boxToFrame(int lineStart, int lineEnd)
 	size -= 4;
 	y += 2;
 	box = new GuiImage(co, width - (FONT_SIZE << 1) - 6, size);
+	box->setBlendMode(SDL_BLENDMODE_BLEND);
 	box->setAlignment(ALIGN_TOP_CENTER);
 	box->setPosition(0.0f, y);
 	window->append(box);
@@ -197,6 +198,7 @@ void barToFrame(int line, int column, uint32_t width, float progress)
 	SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_BLACK);
 	co.a = 64;
 	bar = new GuiImage(co, width, height);
+	bar->setBlendMode(SDL_BLENDMODE_BLEND);
 	bar->setAlignment(ALIGN_TOP_LEFT);
 	bar->setPosition(x, y);
 	window->append(bar);
@@ -215,6 +217,7 @@ void arrowToFrame(int line, int column)
 	column += spaceWidth;
 	
 	GuiImage *arrow = new GuiImage(arrowData);
+	arrow->setBlendMode(SDL_BLENDMODE_BLEND);
 	arrow->setAlignment(ALIGN_TOP_LEFT);
 	arrow->setPosition(column + FONT_SIZE, line);
 	window->append(arrow);
@@ -228,6 +231,7 @@ void checkmarkToFrame(int line, int column)
 	column += spaceWidth >> 1;
 	
 	GuiImage *checkmark = new GuiImage(checkmarkData);
+	checkmark->setBlendMode(SDL_BLENDMODE_BLEND);
 	checkmark->setAlignment(ALIGN_TOP_LEFT);
 	checkmark->setPosition(column + FONT_SIZE, line);
 	window->append(checkmark);
@@ -260,6 +264,7 @@ void flagToFrame(int line, int column, TITLE_REGION flag)
 	column += spaceWidth >> 1;
 	
 	GuiImage *image = new GuiImage(getFlagData(flag));
+	image->setBlendMode(SDL_BLENDMODE_BLEND);
 	image->setAlignment(ALIGN_TOP_LEFT);
 	image->setPosition(column + FONT_SIZE, line);
 	window->append(image);
@@ -273,6 +278,7 @@ void tabToFrame(int line, int column, char *label, bool active)
 	column += 15;
 	
 	GuiImage *image = new GuiImage(tabData);
+	image->setBlendMode(SDL_BLENDMODE_BLEND);
 	image->setAlignment(ALIGN_TOP_LEFT);
 	image->setPosition(column + FONT_SIZE, line);
 	
@@ -309,6 +315,7 @@ void addErrorOverlay(const char *err)
 	SDL_Color bgColor = screenColorToSDLcolor(SCREEN_COLOR_BLACK);
 	bgColor.a = 0xC0; // TODO
 	GuiImage *img = new GuiImage(bgColor, width, height);
+	img->setBlendMode(SDL_BLENDMODE_BLEND);
 	img->setAlignment(ALIGN_CENTERED);
 	errorOverlay->append(img);
 	

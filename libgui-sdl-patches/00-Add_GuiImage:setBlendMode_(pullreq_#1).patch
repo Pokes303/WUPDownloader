@@ -1,0 +1,58 @@
+diff --git a/include/gui-sdl/gui/GuiImage.h b/include/gui-sdl/gui/GuiImage.h
+index 8a4e54d..923e8fd 100644
+--- a/include/gui-sdl/gui/GuiImage.h
++++ b/include/gui-sdl/gui/GuiImage.h
+@@ -41,10 +41,15 @@ public:
+ 
+     void setTexture(GuiTextureData *tex);
+ 
++    int setBlendMode(SDL_BlendMode blendMode);
++
+ private:
+     GuiTextureData *texture = nullptr;
+     bool freeTextureData = false;
+ 
+     // Color of the rect that's drawn if the picture has no texture.
+     SDL_Color color = {0, 0, 0, 0};
++
++protected:
++    SDL_BlendMode blendMode;
+ };
+diff --git a/source/gui/GuiImage.cpp b/source/gui/GuiImage.cpp
+index fad3231..8682c06 100644
+--- a/source/gui/GuiImage.cpp
++++ b/source/gui/GuiImage.cpp
+@@ -47,11 +47,24 @@ void GuiImage::draw(Renderer *renderer) {
+     if (texture) {
+         texture->draw(renderer, rect, getAngle());
+     } else {
++        // copy the texture to the rendering context
++        SDL_BlendMode mode;
++        SDL_GetRenderDrawBlendMode(renderer->getRenderer(), &mode);
++
++        // adjust blend mode
++        if(blendMode != mode){
++            SDL_SetRenderDrawBlendMode(renderer->getRenderer(), blendMode);
++        }
++
+         SDL_SetRenderDrawColor(renderer->getRenderer(), color.r, color.g, color.b, color.a);
+         SDL_RenderFillRect(renderer->getRenderer(), &rect);
+         if(getAngle() != 0.0f){
+             LG_Log("Drawing a rotated rect is not supported yet");
+         }
++        
++        if(blendMode != mode){
++            SDL_SetRenderDrawBlendMode(renderer->getRenderer(), mode);
++        }
+     }
+ }
+ 
+@@ -64,3 +77,8 @@ void GuiImage::setTexture(GuiTextureData *tex) {
+         this->setSize(tex->getWidth(), tex->getHeight());
+     }
+ }
++
++int GuiImage::setBlendMode(SDL_BlendMode blendMode) {
++    this->blendMode = blendMode;
++    return this->texture ? this->texture->setBlendMode(blendMode) : 0;
++}
