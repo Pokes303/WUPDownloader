@@ -63,7 +63,6 @@ int32_t spaceWidth;
 void *backgroundMusicRaw = NULL;
 
 GuiFrame *errorOverlay = NULL;
-GuiTextureData *alphaData;
 GuiTextureData *arrowData;
 GuiTextureData *checkmarkData;
 GuiTextureData *tabData;
@@ -155,11 +154,11 @@ void boxToFrame(int lineStart, int lineEnd)
 	window->append(box);
 	
 	// Background - we paint it on top of the gray lines as they look better that way
+	co = screenColorToSDLcolor(SCREEN_COLOR_BLACK);
+	co.a = 64;
 	size -= 4;
 	y += 2;
-	box = new GuiImage(alphaData);
-	box->setScaleX(width - (FONT_SIZE << 1) - 6);
-	box->setScaleY(size);
+	box = new GuiImage(co, width - (FONT_SIZE << 1) - 6, size);
 	box->setAlignment(ALIGN_TOP_CENTER);
 	box->setPosition(0.0f, y);
 	window->append(box);
@@ -187,7 +186,7 @@ void barToFrame(int line, int column, uint32_t width, float progress)
 	width -= 4;
 	uint32_t barWidth = ((float)width) / 100.0f * progress; //TODO
 	
-	bar = new GuiImage(screenColorToSDLcolor(SCREEN_COLOR_D_GREEN), barWidth, height);
+	bar = new GuiImage(screenColorToSDLcolor(SCREEN_COLOR_GREEN), barWidth, height);
 	bar->setAlignment(ALIGN_TOP_LEFT);
 	bar->setPosition(x, y);
 	window->append(bar);
@@ -197,9 +196,7 @@ void barToFrame(int line, int column, uint32_t width, float progress)
 	
 	SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_BLACK);
 	co.a = 64;
-	bar = new GuiImage(alphaData);
-	bar->setScaleX(width);
-	bar->setScaleY(height);
+	bar = new GuiImage(co, width, height);
 	bar->setAlignment(ALIGN_TOP_LEFT);
 	bar->setPosition(x, y);
 	window->append(bar);
@@ -372,7 +369,6 @@ void resumeRenderer()
 	spaceWidth = space->getWidth();
 	delete space;
 	
-	alphaData = new GuiTextureData(ROMFS_PATH "textures/alpha.png");
 	arrowData = new GuiTextureData(ROMFS_PATH "textures/arrow.png"); //TODO: Error handling...
 	checkmarkData = new GuiTextureData(ROMFS_PATH "textures/checkmark.png");
 	tabData = new GuiTextureData(ROMFS_PATH "textures/tab.png");
@@ -458,7 +454,6 @@ void pauseRenderer()
 	
 	debugPrintf("Deleting texture blobs");
 	delete font;
-	delete alphaData;
 	delete arrowData;
 	delete checkmarkData;
 	delete tabData;
