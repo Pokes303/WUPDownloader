@@ -1,0 +1,13 @@
+diff --git a/source/gui/system/SDLSystem.cpp b/source/gui/system/SDLSystem.cpp
+index 45d4b2d..de4ad74 100644
+--- a/source/gui/system/SDLSystem.cpp
++++ b/source/gui/system/SDLSystem.cpp
+@@ -21,7 +21,7 @@
+ #include <gui/system/libgui_log.h>
+ 
+ SDLSystem::SDLSystem() {
+-    SDL_Init(SDL_INIT_EVERYTHING);
++    SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO);
+ 
+     auto SDLFlags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
+ 
