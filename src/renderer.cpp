@@ -67,6 +67,8 @@ GuiTextureData *arrowData;
 GuiTextureData *checkmarkData;
 GuiTextureData *tabData;
 GuiTextureData *flagData[6];
+GuiTextureData *barData;
+GuiTextureData *bgData;
 
 #define SSAA 8
 
@@ -186,7 +188,11 @@ void barToFrame(int line, int column, uint32_t width, float progress)
 	width -= 4;
 	uint32_t barWidth = ((float)width) / 100.0f * progress; //TODO
 	
-	bar = new GuiImage(screenColorToSDLcolor(SCREEN_COLOR_GREEN), barWidth, height);
+	bar = new GuiImage(barData);
+	bar->setScaleQuality(SCALE_LINEAR);
+	bar->setScaleX(((float)barWidth) / 2.0f);
+	bar->setScaleY(height);
+//	bar = new GuiImage(screenColorToSDLcolor(SCREEN_COLOR_GREEN), barWidth, height);
 	bar->setAlignment(ALIGN_TOP_LEFT);
 	bar->setPosition(x, y);
 	window->append(bar);
@@ -377,6 +383,8 @@ void resumeRenderer()
 	arrowData = new GuiTextureData(ROMFS_PATH "textures/arrow.png"); //TODO: Error handling...
 	checkmarkData = new GuiTextureData(ROMFS_PATH "textures/checkmark.png");
 	tabData = new GuiTextureData(ROMFS_PATH "textures/tab.png");
+	barData = new GuiTextureData(ROMFS_PATH "textures/bar.png");
+	bgData = new GuiTextureData(ROMFS_PATH "textures/bg.png");
 	
 	const char *tex;
 	for(int i = 0; i < 6; i++)
@@ -462,6 +470,8 @@ void pauseRenderer()
 	delete arrowData;
 	delete checkmarkData;
 	delete tabData;
+	delete barData;
+	delete bgData;
 	
 	for(int i = 0; i < 6; i++)
 		delete flagData[i];
@@ -514,14 +524,17 @@ void colorStartNewFrame(uint32_t color)
 	
 	clearFrame();
 	
-	GuiImage *background = new GuiImage(screenColorToSDLcolor(color), width, height);
-/*	if(color == SCREEN_COLOR_BLUE)
+	GuiImage *background;
+	if(color == SCREEN_COLOR_BLUE)
 	{
-		background->setImageColor(screenColorToSDLcolor(SCREEN_COLOR_BG2), 0);
-		background->setImageColor(screenColorToSDLcolor(SCREEN_COLOR_BG3), 1);
-		background->setImageColor(screenColorToSDLcolor(SCREEN_COLOR_BG4), 2);
-		background->setImageColor(screenColorToSDLcolor(SCREEN_COLOR_BG1), 3);
-	}*/
+		background = new GuiImage(bgData);
+		background->setScaleQuality(SCALE_LINEAR);
+		background->setScaleX(((float)width) / 2.0f);
+		background->setScaleY(((float)height) / 2.0f);
+	}
+	else
+		background = new GuiImage(screenColorToSDLcolor(color), width, height);
+	
 	window->append(background);
 }
 

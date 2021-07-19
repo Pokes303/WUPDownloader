@@ -1,0 +1,71 @@
+diff --git a/include/gui-sdl/gui/GuiImage.h b/include/gui-sdl/gui/GuiImage.h
+index ff0fbea..5919386 100644
+--- a/include/gui-sdl/gui/GuiImage.h
++++ b/include/gui-sdl/gui/GuiImage.h
+@@ -20,6 +20,12 @@
+ #include <gui/GuiElement.h>
+ #include <gui/GuiTextureData.h>
+ 
++enum {
++    SCALE_NEAREST = 0,
++    SCALE_LINEAR =  1,
++    SCALE_BEST =    2,
++};
++
+ //!Display, manage, and manipulate images in the GUI
+ class GuiImage : public GuiElement {
+ public:
+@@ -43,6 +49,8 @@ public:
+ 
+     int setBlendMode(SDL_BlendMode blendMode);
+ 
++    void setScaleQuality(int quality);
++
+ private:
+     GuiTextureData *texture = nullptr;
+     bool freeTextureData = false;
+@@ -52,4 +60,6 @@ private:
+ 
+ protected:
+     SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
++    int quality = SCALE_NEAREST;
++
+ };
+diff --git a/source/gui/GuiImage.cpp b/source/gui/GuiImage.cpp
+index 8682c06..48a7836 100644
+--- a/source/gui/GuiImage.cpp
++++ b/source/gui/GuiImage.cpp
+@@ -44,6 +44,14 @@ void GuiImage::draw(Renderer *renderer) {
+     rect.w = (int) (getScaleX() * getWidth());
+     rect.h = (int) (getScaleY() * getHeight());
+ 
++    const char *origQuality = SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY);
++    if(!origQuality)
++            origQuality = "nearest";
++
++    char quality[16];
++    snprintf(quality, 16, "%d", this->quality);
++    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, quality);
++
+     if (texture) {
+         texture->draw(renderer, rect, getAngle());
+     } else {
+@@ -66,6 +74,8 @@ void GuiImage::draw(Renderer *renderer) {
+             SDL_SetRenderDrawBlendMode(renderer->getRenderer(), mode);
+         }
+     }
++
++    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, origQuality);
+ }
+ 
+ void GuiImage::setTexture(GuiTextureData *tex) {
+@@ -82,3 +92,9 @@ int GuiImage::setBlendMode(SDL_BlendMode blendMode) {
+     this->blendMode = blendMode;
+     return this->texture ? this->texture->setBlendMode(blendMode) : 0;
+ }
++
++void GuiImage::setScaleQuality(int quality)
++{
++    if(quality > -1 && quality < 3)
++        this->quality = quality;
++}
