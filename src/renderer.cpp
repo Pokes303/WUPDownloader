@@ -507,13 +507,15 @@ void shutdownRenderer()
 	debugPrintf("Stopping renderer");
 	pauseRenderer();
 	
-	debugPrintf("Deleting background music");
 	if(backgroundMusic != NULL)
 	{
+		debugPrintf("Stopping background music");
 		backgroundMusic->Stop();
+		debugPrintf("Deleting background music");
 		delete backgroundMusic;
 		backgroundMusic = NULL;
 	}
+	debugPrintf("Deleting goodbye texture");
 	delete byeData;
 }
 
@@ -527,15 +529,17 @@ void colorStartNewFrame(uint32_t color)
 	GuiImage *background;
 	if(color == SCREEN_COLOR_BLUE)
 	{
+		for(int i = 0; i < 10; i++) {
 		background = new GuiImage(bgData);
 		background->setScaleQuality(SCALE_LINEAR);
 		background->setScaleX(((float)width) / 2.0f);
 		background->setScaleY(((float)height) / 2.0f);
+		window->append(background);}
 	}
-	else
+	else{
 		background = new GuiImage(screenColorToSDLcolor(color), width, height);
 	
-	window->append(background);
+	window->append(background);}
 }
 
 uint32_t lastTick = 0;
