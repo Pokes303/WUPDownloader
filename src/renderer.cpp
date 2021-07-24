@@ -488,7 +488,7 @@ void shutdownRenderer()
 	colorStartNewFrame(SCREEN_COLOR_BLUE);
 	
 	GuiTextureData byeData(ROMFS_PATH "textures/goodbye.png");
-	GuiImage bye = new GuiImage(&byeData);
+	GuiImage *bye = new GuiImage(&byeData);
 	bye->setBlendMode(SDL_BLENDMODE_BLEND);
 	bye->setAlignment(ALIGN_CENTERED);
 	window->append(bye);
