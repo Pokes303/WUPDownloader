@@ -493,8 +493,8 @@ void shutdownRenderer()
 	colorStartNewFrame(SCREEN_COLOR_BLUE);
 	
 	debugPrintf("Opening PNG file");
-	GuiTextureData *byeData = new GuiTextureData(ROMFS_PATH "textures/goodbye.png");
-	GuiImage *bye = new GuiImage(byeData);
+	GuiTextureData byeData(ROMFS_PATH "textures/goodbye.png");
+	GuiImage bye = new GuiImage(&byeData);
 	bye->setBlendMode(SDL_BLENDMODE_BLEND);
 	bye->setAlignment(ALIGN_CENTERED);
 	debugPrintf("Attaching texture to frame");
@@ -515,8 +515,6 @@ void shutdownRenderer()
 		delete backgroundMusic;
 		backgroundMusic = NULL;
 	}
-	debugPrintf("Deleting goodbye texture");
-	delete byeData;
 }
 
 void colorStartNewFrame(uint32_t color)
