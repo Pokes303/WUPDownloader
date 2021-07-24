@@ -460,12 +460,9 @@ void pauseRenderer()
 	if(!rendererRunning)
 		return;
 	
-	debugPrintf("Clearing frame");
 	clearFrame();
-	debugPrintf("Removing error overlay");
 	removeErrorOverlay();
 	
-	debugPrintf("Deleting texture blobs");
 	delete font;
 	delete arrowData;
 	delete checkmarkData;
@@ -476,7 +473,6 @@ void pauseRenderer()
 	for(int i = 0; i < 6; i++)
 		delete flagData[i];
 	
-	debugPrintf("Deleting surface");
 	delete window;
 //	debugPrintf("Deleting renderer");
 //	delete sys;
@@ -489,29 +485,22 @@ void shutdownRenderer()
 	if(!rendererRunning)
 		return;
 	
-	debugPrintf("Starting new frame");
 	colorStartNewFrame(SCREEN_COLOR_BLUE);
 	
-	debugPrintf("Opening PNG file");
 	GuiTextureData byeData(ROMFS_PATH "textures/goodbye.png");
 	GuiImage bye = new GuiImage(&byeData);
 	bye->setBlendMode(SDL_BLENDMODE_BLEND);
 	bye->setAlignment(ALIGN_CENTERED);
-	debugPrintf("Attaching texture to frame");
 	window->append(bye);
 	
-	debugPrintf("Drawing frame");
 	drawFrame();
-	debugPrintf("Showing frame");
 	showFrame();
-	debugPrintf("Stopping renderer");
 	pauseRenderer();
 	
 	if(backgroundMusic != NULL)
 	{
 		debugPrintf("Stopping background music");
 		backgroundMusic->Stop();
-		debugPrintf("Deleting background music");
 		delete backgroundMusic;
 		backgroundMusic = NULL;
 	}
