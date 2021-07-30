@@ -274,18 +274,37 @@ int main()
 #ifdef NUSSPLI_DEBUG
 	checkStacks("main");
 	debugPrintf("Bye!");
-	shutdownDebug();
+//	shutdownDebug();
 #endif
-
+	
 #ifdef NUSSPLI_HBL
 	SYSRelaunchTitle(0, NULL);
 #else
 	SYSLaunchMenu();
 #endif
 	
-	do
-		AppRunning();
-	while(app != APP_STATE_STOPPED)
+	if(app != APP_STATE_STOPPED)
+	{
+		debugPrintf("Not STOPPED");
+		if(app == APP_STATE_STOPPING)
+		{
+			debugPrintf("Releasing GPU cause APP_STATE == STOPPING");
+			ProcUIDrawDoneRelease();
+		}
+		
+		int ps;
+		do
+		{
+			ps = ProcUIProcessMessages(true);
+			if(ps == PROCUI_STATUS_RELEASE_FOREGROUND)
+			{
+				debugPrintf("Releasing GPU cause PROCUI_STATUS == RELEASE_FOREGROUND");
+				ProcUIDrawDoneRelease();
+			}
+		}
+		while(ps != PROCUI_STATUS_EXITING);
+		debugPrintf("EXITED!");
+	}
 	
 	deinitASAN();
 	ProcUIShutdown();

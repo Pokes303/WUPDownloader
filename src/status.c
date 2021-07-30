@@ -36,7 +36,7 @@
 
 #include <stdbool.h>
 
-volatile APP_STATE app = APP_STATE_RUNNING;
+volatile APP_STATE app;
 volatile bool shutdownEnabled = true;
 #ifndef NUSSPLI_HBL
 bool channel;
@@ -119,6 +119,8 @@ void initStatus()
 {
 	ProcUIInit(&OSSavesDone_ReadyToRelease);
 	
+	app = APP_STATE_RUNNING;
+	
 	debugInit();
 	debugPrintf("NUSspli " NUSSPLI_VERSION);
 	
@@ -143,37 +145,27 @@ void initStatus()
 
 bool AppRunning()
 {
-	if(OSIsMainCore() && app != APP_STATE_STOPPED)
+	if(app == APP_STATE_STOPPING || app == APP_STATE_STOPPED)
+		return false;
+	
+	if(OSIsMainCore())
 	{
 		switch(ProcUIProcessMessages(true))
 		{
 			case PROCUI_STATUS_EXITING:
-				// Being closed, deinit, free, and prepare to exit
+				// Real exit request from CafeOS
+				debugPrintf("STOPPED");
 				app = APP_STATE_STOPPED;
 				break;
 			case PROCUI_STATUS_RELEASE_FOREGROUND:
-				// Free up MEM1 to next foreground app, deinit screen, etc.
+				// Exit with power button
+				debugPrintf("STOPPING");
+				SWKBD_Shutdown();
 				shutdownRenderer();
-				ProcUIDrawDoneRelease();
-				if(app != APP_STATE_STOPPING)
-					app = APP_STATE_BACKGROUND;
+				app = APP_STATE_STOPPING;
 				break;
-			case PROCUI_STATUS_IN_FOREGROUND:
-				// Executed while app is in foreground
-				if(app == APP_STATE_STOPPING)
-					break;
-				if(app == APP_STATE_BACKGROUND)
-				{
-					initRenderer();
-					app = APP_STATE_RETURNING;
-				}
-				else
-					app = APP_STATE_RUNNING;
-				
-				break;
-			case PROCUI_STATUS_IN_BACKGROUND:
-				if(app != APP_STATE_STOPPING)
-					app = APP_STATE_BACKGROUND;
+			default:
+				// Normal loop execution
 				break;
 		}
 	}
