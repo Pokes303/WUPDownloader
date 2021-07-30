@@ -52,11 +52,10 @@
 #include <menu/utils.h>
 
 SDLSystem *sys;
-GuiFrame *window;
+GuiFrame *window = NULL;
 GuiFont *font = NULL;
 uint32_t width, height;
 GuiSound *backgroundMusic = NULL;
-bool rendererRunning = false;
 
 int32_t spaceWidth;
 
@@ -89,7 +88,7 @@ static inline SDL_Color screenColorToSDLcolor(uint32_t color)
 
 void textToFrame(int line, int column, const char *str)
 {
-	if(!rendererRunning)
+	if(window == NULL)
 		return;
 	
 	line += 1;
@@ -120,7 +119,7 @@ void textToFrame(int line, int column, const char *str)
 
 void lineToFrame(int column, uint32_t color)
 {
-	if(!rendererRunning)
+	if(window == NULL)
 		return;
 	
 	GuiImage *line = new GuiImage(screenColorToSDLcolor(color), width - (FONT_SIZE << 1), 3);
@@ -132,7 +131,7 @@ void lineToFrame(int column, uint32_t color)
 
 void boxToFrame(int lineStart, int lineEnd)
 {
-	if(!rendererRunning)
+	if(window == NULL)
 		return;
 	
 	// Horizontal lines
@@ -168,7 +167,7 @@ void boxToFrame(int lineStart, int lineEnd)
 
 void barToFrame(int line, int column, uint32_t width, float progress)
 {
-	if(!rendererRunning)
+	if(window == NULL)
 		return;
 	
 	int x = FONT_SIZE + (column * spaceWidth);
@@ -216,6 +215,9 @@ void barToFrame(int line, int column, uint32_t width, float progress)
 
 void arrowToFrame(int line, int column)
 {
+	if(window == NULL)
+		return;
+	
 	line += 1;
 	line *= FONT_SIZE;
 	column *= spaceWidth;
@@ -230,6 +232,9 @@ void arrowToFrame(int line, int column)
 
 void checkmarkToFrame(int line, int column)
 {
+	if(window == NULL)
+		return;
+	
 	line += 1;
 	line *= FONT_SIZE;
 	column *= spaceWidth;
@@ -244,6 +249,9 @@ void checkmarkToFrame(int line, int column)
 
 GuiTextureData *getFlagData(TITLE_REGION flag)
 {
+	if(window == NULL)
+		return NULL;
+	
 	switch(flag)
 	{
 		case TITLE_REGION_ALL:
@@ -263,6 +271,9 @@ GuiTextureData *getFlagData(TITLE_REGION flag)
 
 void flagToFrame(int line, int column, TITLE_REGION flag)
 {
+	if(window == NULL)
+		return;
+	
 	line += 1;
 	line *= FONT_SIZE;
 	column *= spaceWidth;
@@ -277,6 +288,9 @@ void flagToFrame(int line, int column, TITLE_REGION flag)
 
 void tabToFrame(int line, int column, char *label, bool active)
 {
+	if(window == NULL)
+		return;
+	
 	line *= FONT_SIZE;
 	line += 20;
 	column *= 240;
@@ -308,7 +322,7 @@ void tabToFrame(int line, int column, char *label, bool active)
 
 void addErrorOverlay(const char *err)
 {
-	if(!rendererRunning)
+	if(window == NULL)
 		return;
 	
 	if(errorOverlay != NULL)
@@ -360,7 +374,7 @@ void removeErrorOverlay()
 
 void resumeRenderer()
 {
-	if(rendererRunning)
+	if(window != NULL)
 		return;
 	
 	width = sys->getWidth();
@@ -412,13 +426,11 @@ void resumeRenderer()
 		}
 		flagData[i] = new GuiTextureData(tex);
 	}
-	
-	rendererRunning = true;
 }
 
 void initRenderer()
 {
-	if(rendererRunning)
+	if(window != NULL)
 		return;
 	
 	sys = new SDLSystem();
@@ -447,8 +459,6 @@ void initRenderer()
 
 static inline void clearFrame()
 {
-//	while(window->getGuiElementAt(0) != nullptr)
-//		delete window->getGuiElementAt(0);
 	for(int32_t i = window->getSize() - 1; i > -1; i--)
 		delete window->getGuiElementAt(i);
 	
@@ -457,7 +467,7 @@ static inline void clearFrame()
 
 void pauseRenderer()
 {
-	if(!rendererRunning)
+	if(window == NULL)
 		return;
 	
 	clearFrame();
@@ -474,15 +484,14 @@ void pauseRenderer()
 		delete flagData[i];
 	
 	delete window;
+	window = NULL;
 //	debugPrintf("Deleting renderer");
 //	delete sys;
-	
-	rendererRunning = false;
 }
 
 void shutdownRenderer()
 {
-	if(!rendererRunning)
+	if(window == NULL)
 		return;
 	
 	colorStartNewFrame(SCREEN_COLOR_BLUE);
@@ -508,7 +517,7 @@ void shutdownRenderer()
 
 void colorStartNewFrame(uint32_t color)
 {
-	if(!rendererRunning)
+	if(window == NULL)
 		return;
 	
 	clearFrame();
@@ -532,7 +541,7 @@ void colorStartNewFrame(uint32_t color)
 uint32_t lastTick = 0;
 void showFrame()
 {
-	if(!rendererRunning)
+	if(window == NULL)
 		return;
 	
 	uint32_t now;
@@ -550,7 +559,7 @@ void showFrame()
 // We need to draw the DRC before the TV, else the DRC is always one frame behind
 void drawFrame()
 {
-	if(!rendererRunning)
+	if(window == NULL)
 		return;
 	
 	Renderer *renderer = sys->getRenderer();
@@ -565,7 +574,7 @@ void drawFrame()
 
 void drawKeyboard(bool tv)
 {
-	if(!rendererRunning)
+	if(window == NULL)
 		return;
 	
 	Renderer *renderer = sys->getRenderer();
