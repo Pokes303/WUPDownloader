@@ -109,7 +109,7 @@ uint32_t homeButtonCallback(void *dummy)
 	if(shutdownEnabled)
 	{
 		shutdownEnabled = false;
-		app = APP_STATE_STOPPING;
+		app = APP_STATE_HOME;
 	}
 	
 	return 0;
@@ -145,7 +145,7 @@ void initStatus()
 
 bool AppRunning()
 {
-	if(app == APP_STATE_STOPPING || app == APP_STATE_STOPPED)
+	if(app == APP_STATE_STOPPING || app == APP_STATE_HOME || app == APP_STATE_STOPPED)
 		return false;
 	
 	if(OSIsMainCore())
@@ -160,7 +160,6 @@ bool AppRunning()
 			case PROCUI_STATUS_RELEASE_FOREGROUND:
 				// Exit with power button
 				debugPrintf("STOPPING");
-				SWKBD_Shutdown();
 				shutdownRenderer();
 				app = APP_STATE_STOPPING;
 				break;
@@ -170,5 +169,5 @@ bool AppRunning()
 		}
 	}
 	
-	return app;
+	return true;
 }

@@ -277,15 +277,22 @@ int main()
 //	shutdownDebug();
 #endif
 	
-#ifdef NUSSPLI_HBL
-	SYSRelaunchTitle(0, NULL);
-#else
-	SYSLaunchMenu();
-#endif
-	
 	if(app != APP_STATE_STOPPED)
 	{
 		debugPrintf("Not STOPPED");
+#ifdef NUSSPLI_HBL
+		SYSRelaunchTitle(0, NULL);
+#else
+		SYSLaunchMenu();
+#endif
+		if(app == APP_STATE_HOME)
+		{
+			debugPrintf("Home button detected, waiting for CafeOS to tell us we're ready to release...");
+			app = APP_STATE_RUNNING;
+			while(AppRunning())
+				;
+		}
+		
 		if(app == APP_STATE_STOPPING)
 		{
 			debugPrintf("Releasing GPU cause APP_STATE == STOPPING");
