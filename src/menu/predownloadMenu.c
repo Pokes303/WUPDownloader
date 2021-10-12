@@ -148,6 +148,22 @@ void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t siz
 	drawFrame();
 }
 
+void drawPDDemoFrame(const TitleEntry *entry)
+{
+	startNewFrame();
+	char *toFrame = getToFrameBuffer();
+	strcpy(toFrame, entry->name);
+	strcat(toFrame, " is a demo.");
+	textToFrame(0, 0, toFrame);
+	
+	int line = MAX_LINES - 1;
+	textToFrame(line--, 0, "Press \uE001 to continue");
+	textToFrame(line--, 0, "Press \uE000 to install the main game instead");
+	lineToFrame(line, SCREEN_COLOR_WHITE);
+	
+	drawFrame();
+}
+
 #include <inttypes.h>
 
 void predownloadMenu(const TitleEntry *entry)
@@ -298,6 +314,32 @@ downloadTMD:
 	}
 	
 	saveConfig();
+	
+	if(isDemo(entry))
+	{
+		drawPDDemoFrame(entry);
+		
+		while(AppRunning())
+		{
+			if(app == APP_STATE_BACKGROUND)
+				continue;
+			if(app == APP_STATE_RETURNING)
+				drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlToUSB, keepFiles);
+			
+			showFrame();
+			
+			if(vpad.trigger & VPAD_BUTTON_B)
+				break;
+			if(vpad.trigger & VPAD_BUTTON_A)
+			{
+				uint64_t tid = entry->tid;
+				tid -= 0x0000000e00000000;
+				entry = getTitleEntryByTid(tid); //TODO: Error handling
+				break;
+			}
+		}
+	}
+	
 	downloadTitle(tmd, ramBufSize, entry, titleVer, folderName, inst, dlToUSB, toUSB, keepFiles);
 	clearRamBuf();
 }

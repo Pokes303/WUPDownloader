@@ -140,7 +140,7 @@ void initStatus()
 		debugPrintf("Couldn't read APD sys setting!");
 		apdEnabled = false;
 	}
-	
+
 }
 
 bool AppRunning()
