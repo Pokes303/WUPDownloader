@@ -204,26 +204,17 @@ void update(char *newVersion)
 {
 	disableShutdown();
 	removeDirectory(UPDATE_TEMP_FOLDER);
-	if(mkdir(UPDATE_TEMP_FOLDER, 777) == -1)
+	NUSFS_ERR err = createDirectory(UPDATE_TEMP_FOLDER, 777);
+	if(err != NUSFS_ERR_NOERR)
 	{
-		int ie = errno;
 		char *toScreen = getToFrameBuffer();
 		strcpy(toScreen, "Error creating temporary directory!\n\n");
-		switch(ie)
-		{
-			case EROFS:
-				strcat(toScreen, "SD card write locked!");
-				break;
-			case ENOSPC:
-				strcpy(toScreen, "No space left on device!");
-				break;
-			case FS_ERROR_MAX_FILES:
-			case FS_ERROR_MAX_DIRS:
-				strcat(toScreen, "Filesystem limits reached!");
-				break;
-			default:
-				sprintf(toScreen + strlen(toScreen), "%d %s", ie, strerror(ie));
-		}
+		const char *errStr = translateNusfsErr(err);
+		if(errStr == NULL)
+			sprintf(toScreen + strlen(toScreen), "%d", err);
+		else
+			strcat(toScreen, errStr);
+
 		showUpdateError(toScreen);
 		return;
 	}

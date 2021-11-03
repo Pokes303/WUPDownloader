@@ -32,6 +32,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#include <coreinit/filesystem.h>
 #include <coreinit/memory.h>
 #include <coreinit/time.h>
 
@@ -159,7 +160,7 @@ void removeDirectory(const char *path)
 		debugPrintf("Path \"%s\" not found!", newPath);
 }
 
-void moveDirectory(const char *src, const char *dest)
+NUSFS_ERR moveDirectory(const char *src, const char *dest)
 {
 	size_t len = strlen(src);
 	char newSrc[len + 1024]; // TODO
@@ -170,30 +171,34 @@ void moveDirectory(const char *src, const char *dest)
 	
 	char *inSrc = newSrc + len;
 	DIR *dir = opendir(src);
-	if(dir != NULL)
+	if(dir == NULL)
+		return NUSFS_ERR_DONTEXIST;
+
+	NUSFS_ERR err = createDirectory(dest, 0777);
+	if(err != NUSFS_ERR_NOERR)
+		return err;
+
+	len = strlen(dest);
+	char newDest[len + 1024]; // TODO
+	strcpy(newDest, dest);
+
+	if(newDest[len - 1] != '/')
+		newDest[len++] = '/';
+
+	char *inDest = newDest + len;
+
+	for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
 	{
-		mkdir(dest, 0777);
-		len = strlen(dest);
-		char newDest[len + 1024]; // TODO
-		strcpy(newDest, dest);
-		
-		if(newDest[len - 1] != '/')
-			newDest[len++] = '/';
-		
-		char *inDest = newDest + len;
-		
-		for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
-		{
-			strcpy(inSrc, entry->d_name);
-			strcpy(inDest, entry->d_name);
-			if(entry->d_type & DT_DIR)
-				moveDirectory(newSrc, newDest);
-			else
-				rename(newSrc, newDest);
-		}
-		closedir(dir);
-		remove(src);
+		strcpy(inSrc, entry->d_name);
+		strcpy(inDest, entry->d_name);
+		if(entry->d_type & DT_DIR)
+			moveDirectory(newSrc, newDest);
+		else
+			rename(newSrc, newDest);
 	}
+	closedir(dir);
+	remove(src);
+	return NUSFS_ERR_NOERR;
 }
 
 long getFilesize(FILE *fp)
@@ -208,4 +213,45 @@ long getFilesize(FILE *fp)
 	
 	fseeko(fp, i, SEEK_SET);
 	return fileSize;
+}
+
+NUSFS_ERR createDirectory(const char *path, mode_t mode)
+{
+    if(mkdir(path, mode) == 0)
+		return NUSFS_ERR_NOERR;
+
+	int ie = errno;
+	switch(ie)
+	{
+		case EROFS:
+		case -19:
+			return NUSFS_ERR_LOCKED;
+		case ENOSPC:
+			return NUSFS_ERR_FULL;
+        case FS_ERROR_MAX_FILES:
+		case FS_ERROR_MAX_DIRS:
+			return NUSFS_ERR_LIMITS;
+	}
+
+	if(ie >= 0)
+		ie += 1000;
+
+	return (NUSFS_ERR)ie;
+}
+
+const char *translateNusfsErr(NUSFS_ERR err)
+{
+	switch(err)
+	{
+		case NUSFS_ERR_LOCKED:
+			return "SD card write locked!";
+		case NUSFS_ERR_FULL:
+			return "No space left on device!";
+		case NUSFS_ERR_LIMITS:
+			return "Filesystem limits reached!";
+		case NUSFS_ERR_DONTEXIST:
+			return "Not found!";
+        default:
+            return NULL;
+	}
 }

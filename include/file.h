@@ -51,6 +51,15 @@ typedef enum
 	FILE_TYPE_TOUSB = 1 << 7,	// 10000000
 } FileType;
 
+typedef enum
+{
+	NUSFS_ERR_NOERR,
+	NUSFS_ERR_LOCKED,
+	NUSFS_ERR_FULL,
+	NUSFS_ERR_LIMITS,
+	NUSFS_ERR_DONTEXIST
+} NUSFS_ERR;
+
 void writeVoidBytes(NUSFILE *fp, uint32_t length);
 void writeCustomBytes(NUSFILE *fp, const char *str);
 void writeRandomBytes(NUSFILE *fp, uint32_t length);
@@ -59,7 +68,9 @@ void writeHeader(NUSFILE *fp, FileType type);
 bool fileExists(const char *path);
 bool dirExists(const char *path);
 void removeDirectory(const char *path);
-void moveDirectory(const char *src, const char *dest);
+NUSFS_ERR moveDirectory(const char *src, const char *dest);
+NUSFS_ERR createDirectory(const char *path, mode_t mode);
+const char *translateNusfsErr(NUSFS_ERR err);
 long getFilesize(FILE *fp);
 
 #ifdef __cplusplus

@@ -666,7 +666,35 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	if(!dirExists(installDir))
 	{
 		debugPrintf("Creating directory \"%s\"", installDir);
-		mkdir(installDir, 777);
+		NUSFS_ERR err = createDirectory(installDir, 777);
+		if(err == NUSFS_ERR_NOERR)
+			addToScreenLog("Download directory successfully created");
+		else
+		{
+			char *toScreen = getToFrameBuffer();
+			strcpy(toScreen, "Error creating temporary directory!\n\n");
+			const char *errStr = translateNusfsErr(err);
+			if(errStr == NULL)
+				sprintf(toScreen, "Error creating directory: %d", err);
+			else
+				strcpy(toScreen, errStr);
+
+			drawErrorFrame(toScreen, B_RETURN);
+
+			while(AppRunning())
+			{
+				if(app == APP_STATE_BACKGROUND)
+					continue;
+				if(app == APP_STATE_RETURNING)
+					drawErrorFrame(toScreen, B_RETURN);
+
+				showFrame();
+
+				if(vpad.trigger & VPAD_BUTTON_B)
+					break;
+			}
+			return false;
+		}
 	}
 	
 	strcat(installDir, folderName);
@@ -678,26 +706,18 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	if(!dirExists(installDir))
 	{
 		debugPrintf("Creating directory \"%s\"", installDir);
-		errno = 0;
-		if(mkdir(installDir, 777) == -1)
+		NUSFS_ERR err = createDirectory(installDir, 777);
+		if(err == NUSFS_ERR_NOERR)
+			addToScreenLog("Download directory successfully created");
+		else
 		{
-			int ie = errno;
 			char *toScreen = getToFrameBuffer();
-			switch(ie)
-			{
-				case EROFS:
-					strcpy(toScreen, "SD card write locked!");
-					break;
-				case ENOSPC:
-					strcpy(toScreen, "No space left on device!");
-					break;
-				case FS_ERROR_MAX_FILES:
-				case FS_ERROR_MAX_DIRS:
-					strcpy(toScreen, "Filesystem limits reached!");
-					break;
-				default:
-					sprintf(toScreen, "Error creating directory: %d %s", ie, strerror(ie));
-			}
+			strcpy(toScreen, "Error creating temporary directory!\n\n");
+			const char *errStr = translateNusfsErr(err);
+			if(errStr == NULL)
+				sprintf(toScreen, "Error creating directory: %d", err);
+			else
+				strcpy(toScreen, errStr);
 			
 			drawErrorFrame(toScreen, B_RETURN);
 			
@@ -715,8 +735,6 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 			}
 			return false;
 		}
-		else
-			addToScreenLog("Download directory successfully created");
 	}
 	else
 		addToScreenLog("WARNING: The download directory already exists");
