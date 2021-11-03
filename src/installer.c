@@ -155,7 +155,6 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	{
 		sprintf(toScreen, "Error starting async installation of \"%s\": %#010x", newPath, data.err);
 		debugPrintf(toScreen);
-		enableShutdown();
 		addToScreenLog("Installation failed!");
 		drawErrorFrame(toScreen, B_RETURN);
 		
@@ -171,14 +170,13 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 			if(vpad.trigger & VPAD_BUTTON_B)
 				break;
 		}
+		enableShutdown();
 		return false;
 	}
 	
 	showMcpProgress(&data, game, true);
 	// Quarkys ASAN catched this / seems like MCP already frees it for us
 //	MEMFreeToDefaultHeap(progress);
-	
-	enableShutdown();
 	
 	// MCP thread finished. Let's see if we got any error - TODO: This is a 1:1 copy&paste from WUP Installer GX2 which itself stole it from WUP Installer Y mod which got it from WUP Installer minor edit by Nexocube who got it from WUP installer JHBL Version by Dimrok who portet it from the ASM of WUP Installer. So I think it's time for something new... ^^
 	if(data.err != 0)
@@ -233,10 +231,11 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 			if(vpad.trigger & VPAD_BUTTON_B)
 				break;
 		}
+		enableShutdown();
 		return false;
 	}
-	else 
-		addToScreenLog("Installation finished!");
+
+	addToScreenLog("Installation finished!");
 	
 	if(!fromUSB && !keepFiles)
 	{
@@ -244,13 +243,14 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		removeDirectory(path);
 	}
 	
-	startRumble();
-	
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 	textToFrame(0, 0, game);
 	textToFrame(1, 0, "Installed successfully!");
 	writeScreenLog();
 	drawFrame();
+
+	startRumble();
+	enableShutdown();
 	
 	while(AppRunning())
 	{
