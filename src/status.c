@@ -135,12 +135,15 @@ void initStatus()
 	channel = OSGetTitleID() == 0x0005000010155373;
 #endif
 	
-	if(IMIsAPDEnabledBySysSettings((uint32_t *)&apdEnabled) != 0)
+	uint32_t ime;
+	if(IMIsAPDEnabledBySysSettings(&ime) == 0)
+		apdEnabled = ime == 1;
+	else
 	{
 		debugPrintf("Couldn't read APD sys setting!");
 		apdEnabled = false;
 	}
-
+	debugPrintf("APD enabled by sys settings: %s (%d)", apdEnabled ? "true" : "false", (uint32_t)ime);
 }
 
 bool AppRunning()
