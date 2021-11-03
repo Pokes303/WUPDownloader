@@ -313,7 +313,7 @@ void tabToFrame(int line, int column, char *label, bool active)
 	{
 		SDL_Color co;
 		co.r = co.g = co.b = 255;
-		co.a = 64;
+		co.a = 159;
 		text->setColor(co);
 	}
 	window->append(image);
