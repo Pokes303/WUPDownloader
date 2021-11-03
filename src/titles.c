@@ -252,7 +252,7 @@ bool initTitles()
 			
 			curr[2] = cJSON_GetArrayItem(curr[1], 0);
 			size = strlen(curr[2]->valuestring) + 1;
-			if(size > 128)
+			if(size > 256)
 			{
 				debugPrintf("Too long title name detected: %s", curr[2]->valuestring);
 				continue;
@@ -330,7 +330,7 @@ bool initTitles()
 			
 			curr[2] = cJSON_GetArrayItem(curr[1], 0);
 			size = strlen(curr[2]->valuestring) + 1;
-			if(size > 128)
+			if(size > 256)
 				continue;
 			
 			strcpy(sjm, curr[1]->string);
