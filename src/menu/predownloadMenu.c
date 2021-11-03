@@ -148,7 +148,7 @@ void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t siz
 	drawFrame();
 }
 
-void drawPDDemoFrame(const TitleEntry *entry)
+void drawPDDemoFrame(const TitleEntry *entry, bool inst)
 {
 	startNewFrame();
 	char *toFrame = getToFrameBuffer();
@@ -158,7 +158,8 @@ void drawPDDemoFrame(const TitleEntry *entry)
 	
 	int line = MAX_LINES - 1;
 	textToFrame(line--, 0, "Press \uE001 to continue");
-	textToFrame(line--, 0, "Press \uE000 to install the main game instead");
+    sprintf(toFrame, "Press \uE000 to %s the main game instead", inst ? "install" : "download");
+	textToFrame(line--, 0, toFrame);
 	lineToFrame(line, SCREEN_COLOR_WHITE);
 	
 	drawFrame();
@@ -317,25 +318,30 @@ downloadTMD:
 	
 	if(isDemo(entry))
 	{
-		drawPDDemoFrame(entry);
-
-		while(AppRunning())
+        uint64_t tid = entry->tid;
+		tid &= 0xFFFFFFF0FFFFFFF0; // TODO
+		const TitleEntry *te = getTitleEntryByTid(tid);
+		if(te != NULL)
 		{
-			if(app == APP_STATE_BACKGROUND)
-				continue;
-			if(app == APP_STATE_RETURNING)
-				drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlToUSB, keepFiles);
+			drawPDDemoFrame(entry, inst);
 
-			showFrame();
-
-			if(vpad.trigger & VPAD_BUTTON_B)
-				break;
-			if(vpad.trigger & VPAD_BUTTON_A)
+			while(AppRunning())
 			{
-				uint64_t tid = entry->tid;
-				tid -= 0x0000000e00000000;
-				entry = getTitleEntryByTid(tid); //TODO: Error handling
-				break;
+				if(app == APP_STATE_BACKGROUND)
+					continue;
+				if(app == APP_STATE_RETURNING)
+					drawPDDemoFrame(entry, inst);
+
+				showFrame();
+
+				if(vpad.trigger & VPAD_BUTTON_B)
+					break;
+				if(vpad.trigger & VPAD_BUTTON_A)
+				{
+					clearRamBuf();
+					entry = te;
+					goto downloadTMD;
+				}
 			}
 		}
 	}
