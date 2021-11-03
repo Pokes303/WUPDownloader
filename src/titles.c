@@ -254,7 +254,7 @@ bool initTitles()
 			size = strlen(curr[2]->valuestring) + 1;
 			if(size > 128)
 			{
-				debugPrintf("Too long title name detected!");
+				debugPrintf("Too long title name detected: %s", curr[2]->valuestring);
 				continue;
 			}
 			

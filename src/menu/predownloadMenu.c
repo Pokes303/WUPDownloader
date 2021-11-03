@@ -318,16 +318,16 @@ downloadTMD:
 	if(isDemo(entry))
 	{
 		drawPDDemoFrame(entry);
-		
+
 		while(AppRunning())
 		{
 			if(app == APP_STATE_BACKGROUND)
 				continue;
 			if(app == APP_STATE_RETURNING)
 				drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlToUSB, keepFiles);
-			
+
 			showFrame();
-			
+
 			if(vpad.trigger & VPAD_BUTTON_B)
 				break;
 			if(vpad.trigger & VPAD_BUTTON_A)
