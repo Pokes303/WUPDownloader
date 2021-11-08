@@ -242,19 +242,15 @@ void update(char *newVersion)
 	unz_global_info zipInfo;
 	if(unzGetGlobalInfo(zip, &zipInfo) != UNZ_OK)
 	{
-        unzClose(zip);
-		clearRamBuf();
 		showUpdateError("Error getting zip info");
-		return;
+		goto zipError1;
 	}
 	
 	uint8_t *buf = MEMAllocFromDefaultHeap(IO_BUFSIZE);
 	if(buf == NULL)
 	{
-        unzClose(zip);
-		clearRamBuf();
 		showUpdateError("Error allocating memory");
-		return;
+		goto zipError1;
 	}
 	
 	char zipFileName[256];
@@ -273,20 +269,14 @@ void update(char *newVersion)
 	{
 		if(unzGetCurrentFileInfo(zip, &zipFileInfo, zipFileName, 256, NULL, 0, NULL, 0) != UNZ_OK)
 		{
-            unzClose(zip);
-			MEMFreeToDefaultHeap(buf);
-			clearRamBuf();
 			showUpdateError("Error extracting zip");
-			return;
+			goto zipError2;
 		}
 		
 		if(unzOpenCurrentFile(zip) != UNZ_OK)
 		{
-            unzClose(zip);
-			MEMFreeToDefaultHeap(buf);
-			clearRamBuf();
 			showUpdateError("Error opening zip file");
-			return;
+			goto zipError2;
 		}
 		
 		needle = strchr(zipFileName, '/');
@@ -316,12 +306,8 @@ void update(char *newVersion)
 			
 			if(!createDirRecursive(fileName))
 			{
-				unzCloseCurrentFile(zip);
-                unzClose(zip);
-				MEMFreeToDefaultHeap(buf);
-				clearRamBuf();
 				showUpdateErrorf("Error creating directory: %s", fileName);
-				return;
+				goto zipError3;
 			}
 		}
 		else
@@ -331,12 +317,8 @@ void update(char *newVersion)
 		file = openFile(fileName, "wb");
 		if(file == NULL)
 		{
-			unzCloseCurrentFile(zip);
-            unzClose(zip);
-			MEMFreeToDefaultHeap(buf);
-			clearRamBuf();
 			showUpdateErrorf("Error opening file: %s", fileName);
-			return;
+			goto zipError3;
 		}
 		
 		while(true)
@@ -344,26 +326,16 @@ void update(char *newVersion)
 			extracted = unzReadCurrentFile(zip, buf, IO_BUFSIZE);
 			if(extracted < 0)
 			{
-				addToIOQueue(NULL, 0, 0, file);
-				unzCloseCurrentFile(zip);
-                unzClose(zip);
-				MEMFreeToDefaultHeap(buf);
-				clearRamBuf();
 				showUpdateErrorf("Error extracting file: %s", fileName);
-				return;
+				goto zipError4;
 			}
 			
 			if(extracted != 0)
 			{
 				if(addToIOQueue(buf, 1, extracted, file) != extracted)
 				{
-					addToIOQueue(NULL, 0, 0, file);
-					unzCloseCurrentFile(zip);
-                    unzClose(zip);
-					MEMFreeToDefaultHeap(buf);
-					clearRamBuf();
 					showUpdateErrorf("Error writing file: %s", fileName);
-					return;
+					goto zipError4;
 				}
 			}
 			else
@@ -375,7 +347,7 @@ void update(char *newVersion)
 	}
 	while(unzGoToNextFile(zip) == UNZ_OK);
 	
-    unzClose(zip);
+	unzClose(zip);
 	MEMFreeToDefaultHeap(buf);
 	clearRamBuf();
 	flushIOQueue();
@@ -387,7 +359,7 @@ void update(char *newVersion)
 		if(err != 0)
 		{
 			showUpdateErrorf("Error getting own title info: %#010x", err);
-			return;
+			goto updateError;
 		}
 		
 		if(isAroma())
@@ -423,7 +395,7 @@ aromaInstallation:
 		if(!dirExists(UPDATE_HBL_FOLDER))
 		{
 			showUpdateError("Couldn't find NUSspli folder on the SD card");
-			return;
+			goto updateError;
 		}
 		
 		removeDirectory(UPDATE_HBL_FOLDER);
@@ -458,4 +430,18 @@ finishUpdate:
 				return;
 		}
 	}
+	return;
+
+zipError4:
+	addToIOQueue(NULL, 0, 0, file);
+zipError3:
+	unzCloseCurrentFile(zip);
+zipError2:
+    MEMFreeToDefaultHeap(buf);
+zipError1:
+	unzClose(zip);
+	clearRamBuf();
+updateError:
+	flushIOQueue();
+	removeDirectory(UPDATE_TEMP_FOLDER);
 }
