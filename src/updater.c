@@ -242,6 +242,7 @@ void update(char *newVersion)
 	unz_global_info zipInfo;
 	if(unzGetGlobalInfo(zip, &zipInfo) != UNZ_OK)
 	{
+        unzClose(zip);
 		clearRamBuf();
 		showUpdateError("Error getting zip info");
 		return;
@@ -250,6 +251,7 @@ void update(char *newVersion)
 	uint8_t *buf = MEMAllocFromDefaultHeap(IO_BUFSIZE);
 	if(buf == NULL)
 	{
+        unzClose(zip);
 		clearRamBuf();
 		showUpdateError("Error allocating memory");
 		return;
@@ -271,6 +273,7 @@ void update(char *newVersion)
 	{
 		if(unzGetCurrentFileInfo(zip, &zipFileInfo, zipFileName, 256, NULL, 0, NULL, 0) != UNZ_OK)
 		{
+            unzClose(zip);
 			MEMFreeToDefaultHeap(buf);
 			clearRamBuf();
 			showUpdateError("Error extracting zip");
@@ -279,6 +282,7 @@ void update(char *newVersion)
 		
 		if(unzOpenCurrentFile(zip) != UNZ_OK)
 		{
+            unzClose(zip);
 			MEMFreeToDefaultHeap(buf);
 			clearRamBuf();
 			showUpdateError("Error opening zip file");
@@ -313,6 +317,7 @@ void update(char *newVersion)
 			if(!createDirRecursive(fileName))
 			{
 				unzCloseCurrentFile(zip);
+                unzClose(zip);
 				MEMFreeToDefaultHeap(buf);
 				clearRamBuf();
 				showUpdateErrorf("Error creating directory: %s", fileName);
@@ -327,6 +332,7 @@ void update(char *newVersion)
 		if(file == NULL)
 		{
 			unzCloseCurrentFile(zip);
+            unzClose(zip);
 			MEMFreeToDefaultHeap(buf);
 			clearRamBuf();
 			showUpdateErrorf("Error opening file: %s", fileName);
@@ -340,6 +346,7 @@ void update(char *newVersion)
 			{
 				addToIOQueue(NULL, 0, 0, file);
 				unzCloseCurrentFile(zip);
+                unzClose(zip);
 				MEMFreeToDefaultHeap(buf);
 				clearRamBuf();
 				showUpdateErrorf("Error extracting file: %s", fileName);
@@ -352,6 +359,7 @@ void update(char *newVersion)
 				{
 					addToIOQueue(NULL, 0, 0, file);
 					unzCloseCurrentFile(zip);
+                    unzClose(zip);
 					MEMFreeToDefaultHeap(buf);
 					clearRamBuf();
 					showUpdateErrorf("Error writing file: %s", fileName);
@@ -367,6 +375,7 @@ void update(char *newVersion)
 	}
 	while(unzGoToNextFile(zip) == UNZ_OK);
 	
+    unzClose(zip);
 	MEMFreeToDefaultHeap(buf);
 	clearRamBuf();
 	flushIOQueue();
