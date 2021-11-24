@@ -20,6 +20,23 @@
 // This is to fix some WUT bugs.
 // Inclde it in every other source and header files and DO NOT GUARD IT with ifdefs!
 
+#ifndef NUSSPLI_WUT_FIXUPS_H
+#define NUSSPLI_WUT_FIXUPS_H
+
 //#ifndef FD_SETSIZE
 #define FD_SETSIZE 32
 //#endif
+
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
+// // Functions from https://github.com/devkitPro/wut/blob/master/libraries/wutsocket/wut_socket_common.c
+void __attribute__((weak)) __init_wut_socket();
+void __attribute__((weak))__fini_wut_socket();
+
+#ifdef __cplusplus
+	}
+#endif
+
+#endif // NUSSPLI_WUT_FIXUPS_H

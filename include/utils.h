@@ -43,8 +43,8 @@
 	#include <nsysnet/socket.h>
 	#define debugPrintf(...)
 	#define checkStacks(...)
-	#define debugInit socket_lib_init
-	#define shutdownDebug socket_lib_finish
+	#define debugInit()
+	#define shutdownDebug()
 #endif
 
 #ifdef __cplusplus

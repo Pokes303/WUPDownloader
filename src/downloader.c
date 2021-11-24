@@ -249,8 +249,10 @@ int dlbgThreadMain(int argc, const char **argv)
 		return 1;
 	}
 	
-	int ret;
-	if(somemopt(0x01, buf, SOCKLIB_BUFSIZE, 0) == -1 && RPLWRAP(socketlasterr)() != 50) // We need the rplwrapped socketlasterr() here as WUTs simply retuns errno but errno hasn't been setted.
+	int ret = somemopt(0x01, buf, SOCKLIB_BUFSIZE, 0) == -1 ? RPLWRAP(socketlasterr)() : 50;
+    __init_wut_socket();
+    debugInit();
+	if(ret != 50) // We need the rplwrapped socketlasterr() here as WUTs simply retuns errno but errno hasn't been setted.
 	{
 		debugPrintf("somemopt failed!");
 		ret = 1;
@@ -259,7 +261,7 @@ int dlbgThreadMain(int argc, const char **argv)
 		ret = 0;
 	
 	MEMFreeToDefaultHeap(buf);
-	// debugPrintf("Socket optimizer finished!"); // We have no network at this point in time, so we can't use the UDP log.
+	debugPrintf("Socket optimizer finished!");
 	return ret;
 }
 
@@ -277,11 +279,9 @@ bool initDownloader()
 
 void deinitDownloader()
 {
+    int ret;
 	shutdownDebug();
-	socket_lib_finish();
-    socket_lib_init();
-	debugInit();
-	int ret;
+	__fini_wut_socket();
 	OSJoinThread(&dlbgThread, &ret);
 	MEMFreeToDefaultHeap(dlbgThreadStack);
 	debugPrintf("Socket optimizer returned: %d", ret);
