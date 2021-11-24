@@ -252,13 +252,10 @@ int dlbgThreadMain(int argc, const char **argv)
 	int ret = somemopt(0x01, buf, SOCKLIB_BUFSIZE, 0) == -1 ? RPLWRAP(socketlasterr)() : 50; // We need the rplwrapped socketlasterr() here as WUTs simply retuns errno but errno hasn't been setted.
     __init_wut_socket();
     debugInit();
-	if(ret != 50)
-	{
+    if(ret == 50)
+        ret = 0;
+    else
 		debugPrintf("somemopt failed!");
-		ret = 1;
-	}
-	else
-		ret = 0;
 	
 	MEMFreeToDefaultHeap(buf);
 	debugPrintf("Socket optimizer finished!");
