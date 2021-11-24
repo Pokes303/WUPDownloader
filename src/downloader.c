@@ -139,50 +139,24 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 	
 	if(lastDraw > 0 && OSTicksToMilliseconds(now - lastDraw) < 1000)
 		return 0;
-	
+
+	lastDraw = now;
+	//debugPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", downloading, data->data->dcontent, data->data->contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
+	startNewFrame();
 	bool dling = dltotal > 0.0d && !isinf(dltotal) && !isnan(dltotal);
-	double dls;
+	char *tmpString = getToFrameBuffer();
+	strcpy(tmpString, dling ? "Downloading " : "Preparing ");
+	strcat(tmpString, downloading);
+	textToFrame(0, 0, tmpString);
+	
+	int multiplier;
+	char *multiplierName;
 	if(dling)
 	{
 		dlnow += onDisc;
 		dltotal += onDisc;
-		
-		dls = dlnow - downloaded;
-		if(dls < 0.01d)
-		{
-			if(lastTransfair > 0 && OSTicksToSeconds(now - lastTransfair) > 30)
-			{
-				((curlProgressData *)rawData)->error = CDE_TIMEOUT;
-				return 1;
-			}
-		}
-		else
-			lastTransfair = now;
-	}
-	else
-		lastTransfair = now;
-	
-	lastDraw = now;
-	//debugPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", downloading, data->data->dcontent, data->data->contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
-	startNewFrame();
-	char tmpString[13 + strlen(downloading)];
-	
-	int multiplier;
-	char *multiplierName;
-	if(!dling)
-	{
-		strcpy(tmpString, "Preparing ");
-		strcat(tmpString, downloading);
-		textToFrame(0, 0, tmpString);
-		if(data->data != NULL)
-			data->data->dlnow = data->data->dltmp;
-	}
-	else
-	{
-		strcpy(tmpString, "Downloading ");
-		strcat(tmpString, downloading);
-		textToFrame(0, 0, tmpString);
-		
+		barToFrame(1, 0, 30, (float)(dlnow / dltotal) * 100.0f);
+
 		if(dltotal < 1024.0D)
 		{
 			multiplier = 1;
@@ -203,12 +177,29 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 			multiplier = 1 << 30;
 			multiplierName = "GB";
 		}
-		barToFrame(1, 0, 30, (float)(dlnow / dltotal) * 100.0f);
+
 		sprintf(tmpString, "%.2f / %.2f %s", dlnow / multiplier, dltotal / multiplier, multiplierName);
 		textToFrame(1, 31, tmpString);
-		if(data->data != NULL)
-			data->data->dlnow = data->data->dltmp + dlnow;
+
+		double dls = dlnow - downloaded;
+		if(dls < 0.01d)
+		{
+			if(lastTransfair > 0 && OSTicksToSeconds(now - lastTransfair) > 30)
+			{
+				((curlProgressData *)rawData)->error = CDE_TIMEOUT;
+				return 1;
+			}
+		}
+		else
+			lastTransfair = now;
+
+		getSpeedString(dls, tmpString);
+		textToFrame(0, ALIGNED_RIGHT, tmpString);
+
+		downloaded = dlnow;
 	}
+	else
+        lastTransfair = now;
 	
 	if(data->data != NULL)
 	{
@@ -235,18 +226,10 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 			multiplier = 1 << 30;
 			multiplierName = "GB";
 		}
+		data->data->dlnow = data->data->dltmp + dlnow;
 		barToFrame(1, 65, 30, (float)(data->data->dlnow / data->data->dltotal) * 100.0f);
 		sprintf(tmpString, "%.2f / %.2f %s", data->data->dlnow / multiplier, data->data->dltotal / multiplier, multiplierName);
 		textToFrame(1, 96, tmpString);
-	}
-	
-	if(dling)
-	{
-		char buf[32];
-		getSpeedString(dls, buf);
-		
-		downloaded = dlnow;
-		textToFrame(0, ALIGNED_RIGHT, buf);
 	}
 	
 	writeScreenLog();
@@ -267,7 +250,7 @@ int dlbgThreadMain(int argc, const char **argv)
 	}
 	
 	int ret;
-	if(somemopt(0x01, buf, SOCKLIB_BUFSIZE, 0) == -1 && RPLWRAP(socketlasterr)() != 50) // We need the rplwrapped socketlasterr() here as WUTs simply retuns errno but errno is never 50.
+	if(somemopt(0x01, buf, SOCKLIB_BUFSIZE, 0) == -1 && RPLWRAP(socketlasterr)() != 50) // We need the rplwrapped socketlasterr() here as WUTs simply retuns errno but errno hasn't been setted.
 	{
 		debugPrintf("somemopt failed!");
 		ret = 1;
