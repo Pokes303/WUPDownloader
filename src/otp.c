@@ -321,27 +321,31 @@ static inline void uhs_exploit_init()
 	ayylmao[5] = 1;
 	ayylmao[8] = 0x500000;
 
-	OSBlockMove((void *)0xF4120000, second_chain, sizeof(second_chain), false);
-	OSBlockMove((void *)0xF4130000, final_chain, sizeof(final_chain), false);
-	OSBlockMove((void *)0xF4140000, arm_kernel_bin, sizeof(arm_kernel_bin), false);
-	OSBlockMove((void *)0xF4148000, arm_user_bin, sizeof(arm_user_bin), false);
-
 	pretend_root_hub[33] = 0x500000;
 	pretend_root_hub[78] = 0;
 
-	DCFlushRange(pretend_root_hub + 33, 200);		//! |Make CPU fetch new data (with updated vals)
-	DCInvalidateRange(pretend_root_hub + 33, 200);	//! |for "pretend_root_hub"
+	DCFlushRange(pretend_root_hub + 33, 200);	// Push data out of PPC cache to RAM
 
-	DCFlushRange((void *)0xF4120000, 0xF4148000 - 0xF4120000 + sizeof(arm_user_bin));	//! |Make CPU fetch new data (with updated vals)
+    uint8_t *ptr = (uint8_t *)0xF4120000;
+	OSBlockMove(ptr, second_chain, sizeof(second_chain), false);
+	DCFlushRange(ptr, sizeof(second_chain));
+    ptr += 0x00010000;
+	OSBlockMove(ptr, final_chain, sizeof(final_chain), false);
+	DCFlushRange(ptr, sizeof(final_chain));
+    ptr += 0x00010000;
+	OSBlockMove(ptr, arm_kernel_bin, sizeof(arm_kernel_bin), false);
+	DCFlushRange(ptr, sizeof(arm_kernel_bin));
+    ptr += 0x00008000;
+	OSBlockMove(ptr, arm_user_bin, sizeof(arm_user_bin), false);
+	DCFlushRange(ptr, sizeof(arm_user_bin));
 }
 
 static int uhs_write32(int arm_addr, int val, int uhs)
 {
-	ayylmao[520] = arm_addr - 24;			//!  The address to be overwritten, minus 24 bytes
-	DCFlushRange(ayylmao, 521 * 4);			//! |Make CPU fetch new data (with updated adress)
-	DCInvalidateRange(ayylmao, 521 * 4);	//! |for "ayylmao"
-	OSSleepTicks(0x200000);					//!  Improves stability
-	request_buffer[1] = val;				//! -(0xBEA2C) gets IOS_USB to read from the middle of MEM1
+	ayylmao[520] = arm_addr - 24;			// The address to be overwritten, minus 24 bytes
+	DCFlushRange(ayylmao, 521 * 4);			// Push data out of PPC cache to RAM
+	OSSleepTicks(0x200000);					// Improves stability
+	request_buffer[1] = val;				// -(0xBEA2C) gets IOS_USB to read from the middle of MEM1
 	int output_buffer[32];
 	return IOS_Ioctl(uhs, 0x15, request_buffer, sizeof(request_buffer), output_buffer, sizeof(output_buffer));
 }
@@ -350,19 +354,19 @@ uint8_t *getCommonKey()
 {
 	if(otp_common_key[0] == 0x00)
 	{
-		int uhs = IOS_Open("/dev/uhs/0", 0);	//! Open /dev/uhs/0 IOS node
-		uhs_exploit_init();						//! Init variables for the exploit
-												//!------ROP CHAIN-------
+        int uhs = IOS_Open("/dev/uhs/0", 0);	// Open /dev/uhs/0 IOS node
+		uhs_exploit_init();						// Init variables for the exploit
+												//------ROP CHAIN-------
 		uhs_write32(CHAIN_START + 0x14, CHAIN_START + 0x14 + 0x4 + 0x20, uhs);
 		uhs_write32(CHAIN_START + 0x10, 0x1011814C, uhs);
 		uhs_write32(CHAIN_START + 0xC, SOURCE, uhs);
-		
+
 		uhs_write32(CHAIN_START, 0x1012392b, uhs); // pop {R4-R6,PC}
-		
+
 		void *armHackAddr = (void *)(0xF412F000 - 16);
-		DCInvalidateRange(armHackAddr, 16);
+		DCInvalidateRange(armHackAddr, 16); // invalidate PPC cache / get data from RAM
 		OSBlockMove(&otp_common_key[0], armHackAddr, 16, false);
-		
+
 		IOS_Close(uhs);
 		
 #ifdef NUSSPLI_DEBUG
