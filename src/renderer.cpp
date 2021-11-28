@@ -348,16 +348,15 @@ int addErrorOverlay(const char *err)
 	GuiText *text = new GuiText(err, FONT_SIZE, screenColorToSDLcolor(SCREEN_COLOR_WHITE)); // TODO: Add back SSAA
 	text->setAlignment(ALIGN_CENTERED);
 
-	// TODO
-	uint16_t ow = text->getWidth();
-	uint16_t oh = text->getHeight();
+	uint16_t ow = text->getWidth() + FONT_SIZE;
+	uint16_t oh = text->getHeight() + FONT_SIZE;
 	
 	img = new GuiImage(screenColorToSDLcolor(SCREEN_COLOR_RED), ow, oh);
 	img->setAlignment(ALIGN_CENTERED);
 	errorOverlay[i]->append(img);
 	
-	ow -= 2;
-	oh -= 2;
+	ow -= 4;
+	oh -= 4;
 	
 	img = new GuiImage(screenColorToSDLcolor(SCREEN_COLOR_D_RED), ow, oh);
 	img->setAlignment(ALIGN_CENTERED);
