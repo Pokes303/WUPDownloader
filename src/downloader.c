@@ -69,7 +69,7 @@ OSTime lastTransfair;
 static OSThread dlbgThread;
 static uint8_t *dlbgThreadStack;
 
-int dlo;
+int dlo = -1;
 
 static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData)
 {
@@ -509,8 +509,12 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	
 	debugPrintf("Calling curl_easy_perform()");
 	lastTransfair = 0;
-    dlo = -1;
 	ret = curl_easy_perform(curl);
+	if(dlo >= 0)
+	{
+		removeErrorOverlay(dlo);
+		dlo = -1;
+	}
 	debugPrintf("curl_easy_perform() returned: %d", ret);
 	
 	if(toRam)
