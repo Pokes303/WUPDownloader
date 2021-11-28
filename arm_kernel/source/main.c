@@ -1,5 +1,3 @@
-#include <stdint.h>
-
 #include "../../payload/arm_user_bin.h"
 
 static const char repairData_set_fault_behavior[] = {
@@ -57,50 +55,38 @@ int _main()
 	int(*disable_interrupts)() = (int(*)())0x0812E778;
 	int(*enable_interrupts)(int) = (int(*)(int))0x0812E78C;
 	void(*invalidate_dcache)(unsigned int, unsigned int) = (void(*)())0x08120164;
-	void(*flush_dcache)(unsigned int, unsigned int) = (void(*)())0x08120160;
 	char* (*kernel_memcpy)(void*, void*, int) = (char*(*)(void*, void*, int))0x08131D04;
-	int (*read_otp_internal)(int index, void* out_buf, uint32_t size) = (int (*)(int, void*, uint32_t)) 0x08120248;
-
-	char *ptr = (char *)0x00148000;
-	kernel_memcpy((void *)0x101312D0, ptr, sizeof(arm_user_bin));
-	read_otp_internal(0x38, ptr, 16);
-
-	/* Save the request handle so we can reply later */
-    ptr += 16;
-	*(int *)ptr = *(int *)0x1016AD18;
-
-	flush_dcache(0x081200F0, 0x4001); // giving a size >= 0x4000 flushes all cache
+	int (*read_otp)(int, void *, unsigned int) = (int (*)(int, void *, unsigned int))0x08120248;
 
 	int level = disable_interrupts();
 	unsigned int control_register = disable_mmu();
 
-	/* Patch kernel_error_handler to BX LR immediately */
-	*(int *)0x08129A24 = 0xE12FFF1E;
+	/* Save the request handle so we can reply later */
+	kernel_memcpy((void *)0x101312D0, (void *)0x00148000, sizeof(arm_user_bin));
+	*(int *)0x00148010 = *(int *)0x1016AD18;
 
-	kernel_memcpy((void *)0x081298BC, (void *)repairData_set_fault_behavior, sizeof(repairData_set_fault_behavior));
 	kernel_memcpy((void *)0x081296E4, (void *)repairData_set_panic_behavior, sizeof(repairData_set_panic_behavior));
-	kernel_memcpy((void *)0x10100174, (void *)repairData_usb_root_thread, sizeof(repairData_usb_root_thread));
-
+	kernel_memcpy((void *)0x081298BC, (void *)repairData_set_fault_behavior, sizeof(repairData_set_fault_behavior));
+	*(int *)0x08129A24 = 0xE12FFF1E; // Patch kernel_error_handler to BX LR immediately
+	*(int *)0x081CA818 = 0x20002000; // mov r0, #0; mov r0, #0
 	*(int *)0x081E82AE = 0xF031FB43; // bl launch_os_hook
-
 	*(int *)0x08212C44 = 0xE3A00000; // mov r0, #0
 	*(int *)0x08212C48 = 0xE12FFF1E; // bx lr
-
-	*(int *)0x081CA818 = 0x20002000; // mov r0, #0; mov r0, #0
-
+	kernel_memcpy((void *)0x08219938, (void *)os_launch_hook, sizeof(os_launch_hook));
 	*(int *)0x082817E0 = 0xE3A00000;
 	*(int *)0x082819C4 = 0xE3A00000;
 	*(int *)0x08281BB0 = 0xE3A00000;
 	*(int *)0x08281D40 = 0xE3A00000;
 
-    kernel_memcpy((void *)0x08219938, (void *)os_launch_hook, sizeof(os_launch_hook));
-
-	*(int *)(0x1555500) = 0;
+	kernel_memcpy((void *)0x10100174, (void *)repairData_usb_root_thread, sizeof(repairData_usb_root_thread));
+	*(int *)0x1555500 = 0;
 
 	/* REENABLE MMU */
 	restore_mmu(control_register);
-	invalidate_dcache(0x081298BC, 0x4001); // giving a size >= 0x4000 invalidates all cache
+	invalidate_dcache(0x081298BC, sizeof(repairData_set_fault_behavior));
 	enable_interrupts(level);
 
+    /* Finally copy the OTP */
+	read_otp(0x38, (void *)0x00148000, 16);
 	return 0;
 }
