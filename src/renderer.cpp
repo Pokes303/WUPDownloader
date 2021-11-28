@@ -53,6 +53,8 @@
 
 SDLSystem *sys;
 GuiFrame *window = NULL;
+Renderer *renderer;
+SDL_Renderer *sdlRenderer;
 GuiFont *font = NULL;
 uint32_t width, height;
 GuiSound *backgroundMusic = NULL;
@@ -434,6 +436,8 @@ void initRenderer()
 		return;
 	
 	sys = new SDLSystem();
+	renderer = sys->getRenderer();
+	sdlRenderer = renderer->getRenderer();
 	
 	backgroundMusic = new GuiSound(ROMFS_PATH "audio/bg.mp3");
 	if(backgroundMusic != NULL)
@@ -457,13 +461,10 @@ void initRenderer()
 	showFrame();
 }
 
-static inline void clearFrame()
-{
-	for(int32_t i = window->getSize() - 1; i > -1; i--)
-		delete window->getGuiElementAt(i);
-	
+#define clearFrame()									\
+	for(int32_t i = window->getSize() - 1; i > -1; i--)	\
+		delete window->getGuiElementAt(i);				\
 	window->removeAll();
-}
 
 void pauseRenderer()
 {
@@ -525,17 +526,20 @@ void colorStartNewFrame(uint32_t color)
 	GuiImage *background;
 	if(color == SCREEN_COLOR_BLUE)
 	{
-		for(int i = 0; i < 10; i++) {
-		background = new GuiImage(bgData);
-		background->setScaleQuality(SCALE_LINEAR);
-		background->setScaleX(((float)width) / 2.0f);
-		background->setScaleY(((float)height) / 2.0f);
-		window->append(background);}
+		for(int i = 0; i < 10; i++)
+		{
+			background = new GuiImage(bgData);
+			background->setScaleQuality(SCALE_LINEAR);
+			background->setScaleX(((float)width) / 2.0f);
+			background->setScaleY(((float)height) / 2.0f);
+			window->append(background);
+		}
 	}
-	else{
+	else
+	{
 		background = new GuiImage(screenColorToSDLcolor(color), width, height);
-	
-	window->append(background);}
+		window->append(background);
+	}
 }
 
 uint32_t lastTick = 0;
@@ -562,8 +566,6 @@ void drawFrame()
 	if(window == NULL)
 		return;
 	
-	Renderer *renderer = sys->getRenderer();
-	SDL_Renderer *sdlRenderer = renderer->getRenderer();
 	SDL_RenderClear(sdlRenderer);
 	window->draw(renderer);
 	if(errorOverlay != NULL)
@@ -577,8 +579,6 @@ void drawKeyboard(bool tv)
 	if(window == NULL)
 		return;
 	
-	Renderer *renderer = sys->getRenderer();
-	SDL_Renderer *sdlRenderer = renderer->getRenderer();
 	SDL_RenderClear(sdlRenderer);
 	window->draw(renderer);
 	if(tv)
