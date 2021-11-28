@@ -319,7 +319,7 @@ static const int second_chain[] = {
    0x1012EA68, // 0xAC         stack pivot
 };
 
-static uint8_t otp_common_key[16] = { 0x00 };
+static uint8_t otp_common_key[16] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 static inline void uhs_exploit_init()
 {
@@ -365,18 +365,21 @@ uint8_t *getCommonKey()
 		debugPrintf("IOSUHAX_SVC(): %d", r);
 */
 		int uhs = IOS_Open("/dev/uhs/0", 0);	// Open /dev/uhs/0 IOS node
-		uhs_exploit_init();						// Init variables for the exploit
-												//------ROP CHAIN-------
-		int buffer[32];
-		uhs_write32(buffer, CHAIN_START + 0x14, CHAIN_START + 0x14 + 0x4 + 0x20, uhs);
-		uhs_write32(buffer, CHAIN_START + 0x10, 0x1011814C, uhs);
-		uhs_write32(buffer, CHAIN_START + 0xC, SOURCE, uhs);
+		if(uhs >= 0)
+		{
+			uhs_exploit_init();						// Init variables for the exploit
+													//------ROP CHAIN-------
+			int buffer[32];
+			uhs_write32(buffer, CHAIN_START + 0x14, CHAIN_START + 0x14 + 0x4 + 0x20, uhs);
+			uhs_write32(buffer, CHAIN_START + 0x10, 0x1011814C, uhs);
+			uhs_write32(buffer, CHAIN_START + 0xC, SOURCE, uhs);
 
-		uhs_write32(buffer, CHAIN_START, 0x1012392b, uhs); // pop {R4-R6,PC}
-		IOS_Close(uhs);
+			uhs_write32(buffer, CHAIN_START, 0x1012392b, uhs); // pop {R4-R6,PC}
+			IOS_Close(uhs);
 
-		DCInvalidateRange(ADDY_AU, 16); // invalidate PPC cache / get data from RAM
-		OSBlockMove(&otp_common_key[0], ADDY_AU, 16, false);  // Copy common key from transient to static addy
+			DCInvalidateRange(ADDY_AU, 16); // invalidate PPC cache / get data from RAM
+			OSBlockMove(&otp_common_key[0], ADDY_AU, 16, false);  // Copy common key from transient to static addy
+		}
 		
 #ifdef NUSSPLI_DEBUG
 		char ret[33];
