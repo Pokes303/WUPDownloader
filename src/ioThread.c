@@ -54,39 +54,38 @@ static WriteQueueEntry *queueEntries;
 static volatile uint32_t activeReadBuffer;
 static volatile uint32_t activeWriteBuffer;
 
-static void executeIOQueue()
-{
-	uint32_t asl = activeWriteBuffer;
-	if(!queueEntries[asl].inUse)
-	{
-		OSSleepTicks(256);
-		return;
-	}
-	
-	if(queueEntries[asl].size != 0) // WRITE command
-		fwrite(queueEntries[asl].buf, 1, queueEntries[asl].size, queueEntries[asl].file->fd);
-	else // Close command
-	{
-		fflush(queueEntries[asl].file->fd);
-		fclose(queueEntries[asl].file->fd);
-		MEMFreeToDefaultHeap((void *)queueEntries[asl].file->buffer);
-		MEMFreeToDefaultHeap((void *)queueEntries[asl].file);
-	}
-	
-	uint32_t osl = asl;
-	if(++asl == MAX_IO_QUEUE_ENTRIES)
-		asl = 0;
-	
-	activeWriteBuffer = asl;
-	queueEntries[osl].inUse = false;
-}
-
-int ioThreadMain(int argc, const char **argv)
+static int ioThreadMain(int argc, const char **argv)
 {
 	debugPrintf("I/O queue running!");
 	ioWriteLock = false;
+	uint32_t asl;
+	WriteQueueEntry *entry;
 	while(ioRunning)
-		executeIOQueue();
+	{
+		asl = activeWriteBuffer;
+		entry = queueEntries + asl;
+		if(!entry->inUse)
+		{
+			OSSleepTicks(256);
+			continue;
+		}
+
+		if(entry->size != 0) // WRITE command
+			fwrite(entry->buf, 1, entry->size, entry->file->fd);
+		else // Close command
+		{
+			fflush(entry->file->fd);
+			fclose(entry->file->fd);
+			MEMFreeToDefaultHeap(entry->file->buffer);
+			MEMFreeToDefaultHeap((void *)entry->file);
+		}
+
+		if(++asl == MAX_IO_QUEUE_ENTRIES)
+			asl = 0;
+
+		activeWriteBuffer = asl;
+		entry->inUse = false;
+	}
 	
 	return 0;
 }
@@ -94,27 +93,21 @@ int ioThreadMain(int argc, const char **argv)
 bool initIOThread()
 {
 	ioThreadStack = MEMAllocFromDefaultHeapEx(IOT_STACK_SIZE, 8);
-	if(ioThreadStack == NULL || !OSCreateThread(&ioThread, ioThreadMain, 0, NULL, ioThreadStack + IOT_STACK_SIZE, IOT_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_CPU0)) // We move this to core 0 for maximum performance. Later on move it back to core 1 as we want download threads on core 0 and 2.
+	if(ioThreadStack == NULL)
 		return false;
 	
+	if(!OSCreateThread(&ioThread, ioThreadMain, 0, NULL, ioThreadStack + IOT_STACK_SIZE, IOT_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_CPU0)) // We move this to core 0 for maximum performance. Later on move it back to core 1 as we want download threads on core 0 and 2.
+		goto initExit1;
+
 	OSSetThreadName(&ioThread, "NUSspli I/O");
 	
 	queueEntries = MEMAllocFromDefaultHeap(MAX_IO_QUEUE_ENTRIES * sizeof(WriteQueueEntry));
 	if(queueEntries == NULL)
-	{
-		MEMFreeToDefaultHeap(ioThreadStack);
-		debugPrintf("OUT OF MEMORY (queueEntries)!");
-		return false;
-	}
+		goto initExit1;
 	
 	uint8_t *ptr = (uint8_t *)MEMAllocFromDefaultHeap(MAX_IO_QUEUE_ENTRIES * IO_BUFSIZE);
 	if(ptr == NULL)
-	{
-		MEMFreeToDefaultHeap(ioThreadStack);
-		MEMFreeToDefaultHeap(queueEntries);
-		debugPrintf("OUT OF MEMORY (ptr1)!");
-		return false;
-	}
+		goto initExit2;
 	
 	for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; i++, ptr += IO_BUFSIZE)
 	{
@@ -127,6 +120,12 @@ bool initIOThread()
 	ioRunning = true;
 	OSResumeThread(&ioThread);
 	return true;
+
+initExit2:
+    MEMFreeToDefaultHeap(queueEntries);
+initExit1:
+    MEMFreeToDefaultHeap(ioThreadStack);
+    return false;
 }
 
 void shutdownIOThread()
@@ -150,7 +149,7 @@ void shutdownIOThread()
 
 size_t addToIOQueue(const void *buf, size_t size, size_t n, NUSFILE *file)
 {
-	uint32_t asl;
+    WriteQueueEntry *entry;
 		
 retryAddingToQueue:
 	
@@ -158,8 +157,8 @@ retryAddingToQueue:
 		if(!ioRunning)
 			return 0;
 	
-	asl = activeReadBuffer;
-	if(queueEntries[asl].inUse)
+    entry = queueEntries + activeReadBuffer;
+	if(entry->inUse)
 	{
 		ioWriteLock = false;
 		debugPrintf("Waiting for free slot...");
@@ -170,11 +169,10 @@ retryAddingToQueue:
 	if(buf != NULL)
 	{
 		size *= n;
-		if(size < 1)
+		if(size == 0)
 		{
-			debugPrintf("size < 1 (%i)", size);
-			ioWriteLock = false;
-			return 0;
+			n = 0;
+			goto queueExit;
 		}
 		
 		if(size > IO_BUFSIZE)
@@ -188,19 +186,19 @@ retryAddingToQueue:
 			return n;
 		}
 		
-		OSBlockMove(queueEntries[asl].buf, buf, size, false);
-		queueEntries[asl].size = size;
+		OSBlockMove(entry->buf, buf, size, false);
+		entry->size = size;
 	}
 	else
-		queueEntries[asl].size = 0;
+		entry->size = 0;
 	
-	queueEntries[asl].file = file;
-	queueEntries[asl].inUse = true;
+	entry->file = file;
+	entry->inUse = true;
 	
-	if(++asl == MAX_IO_QUEUE_ENTRIES)
-		asl = 0;
+	if(++activeReadBuffer == MAX_IO_QUEUE_ENTRIES)
+		activeReadBuffer = 0;
 	
-	activeReadBuffer = asl;
+queueExit:
 	ioWriteLock = false;
 	return n;
 }
