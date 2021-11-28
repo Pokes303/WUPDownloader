@@ -69,6 +69,8 @@ OSTime lastTransfair;
 static OSThread dlbgThread;
 static uint8_t *dlbgThreadStack;
 
+int dlo;
+
 static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData)
 {
 	size *= multi;
@@ -139,11 +141,26 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 	if(OSTicksToMilliseconds(now - lastInput) > (1000 / 60))
 	{
 		lastInput = now;
-        readInput();
-		if(vpad.trigger & VPAD_BUTTON_B)
+		readInput();
+		if(dlo < 0)
 		{
-			data->error = CDE_CANCELLED;
-			return 1;
+			if(vpad.trigger & VPAD_BUTTON_B)
+				dlo = addErrorOverlay("Do you really want to cancel?");
+		}
+		else
+		{
+			if(vpad.trigger & VPAD_BUTTON_A)
+			{
+				removeErrorOverlay(dlo);
+				dlo = -1;
+				data->error = CDE_CANCELLED;
+				return 1;
+			}
+			if(vpad.trigger & VPAD_BUTTON_B)
+			{
+				removeErrorOverlay(dlo);
+				dlo = -1;
+			}
 		}
 	}
 
@@ -492,6 +509,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	
 	debugPrintf("Calling curl_easy_perform()");
 	lastTransfair = 0;
+    dlo = -1;
 	ret = curl_easy_perform(curl);
 	debugPrintf("curl_easy_perform() returned: %d", ret);
 	

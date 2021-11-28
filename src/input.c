@@ -51,6 +51,8 @@ VPADStatus vpad;
 KPADStatus kpad[4];
 ControllerType lastUsedController;
 
+int io = -1;
+
 Swkbd_CreateArg createArg;
 FSClient swkbd_fsc;
 
@@ -451,9 +453,15 @@ void readInput()
 	}
 	
 	if(!altCon && vError == VPAD_READ_INVALID_CONTROLLER)
-		addErrorOverlay("No Controller connected!");
-	else
-		removeErrorOverlay();
+	{
+		if(io < 0)
+			io = addErrorOverlay("No Controller connected!");
+	}
+	else if(io >= 0)
+	{
+		removeErrorOverlay(io);
+		io = -1;
+	};
 }
 
 bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, KeyboardChecks check, int maxlength, bool limit, const char *input, const char *okStr) {

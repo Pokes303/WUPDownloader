@@ -82,8 +82,8 @@ void arrowToFrame(int line, int column);
 void checkmarkToFrame(int line, int column);
 void tabToFrame(int line, int column, char *label, bool active);
 void flagToFrame(int line, int column, TITLE_REGION flag);
-void addErrorOverlay(const char *err);
-void removeErrorOverlay();
+int addErrorOverlay(const char *err);
+void removeErrorOverlay(int id);
 
 #ifdef __cplusplus
 	}

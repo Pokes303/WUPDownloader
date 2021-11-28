@@ -51,6 +51,9 @@
 #include <utils.h>
 #include <menu/utils.h>
 
+#define SSAA            8
+#define MAX_OVERLAYS    4
+
 SDLSystem *sys;
 GuiFrame *window = NULL;
 Renderer *renderer;
@@ -63,15 +66,13 @@ int32_t spaceWidth;
 
 void *backgroundMusicRaw = NULL;
 
-GuiFrame *errorOverlay = NULL;
+GuiFrame *errorOverlay[MAX_OVERLAYS];
 GuiTextureData *arrowData;
 GuiTextureData *checkmarkData;
 GuiTextureData *tabData;
 GuiTextureData *flagData[6];
 GuiTextureData *barData;
 GuiTextureData *bgData;
-
-#define SSAA 8
 
 static inline SDL_Color screenColorToSDLcolor(uint32_t color)
 {
@@ -322,22 +323,27 @@ void tabToFrame(int line, int column, char *label, bool active)
 	window->append(text);
 }
 
-void addErrorOverlay(const char *err)
+int addErrorOverlay(const char *err)
 {
 	if(window == NULL)
-		return;
+		return -1;
+
+	int i = 0;
+	for( ; i < MAX_OVERLAYS + 1; i++)
+		if(i < MAX_OVERLAYS && errorOverlay[i] == NULL)
+			break;
+
+	if(i == MAX_OVERLAYS)
+		return -2;
 	
-	if(errorOverlay != NULL)
-		return;
-	
-	errorOverlay = new GuiFrame(width, height);
+	errorOverlay[i] = new GuiFrame(width, height);
 	
 	SDL_Color bgColor = screenColorToSDLcolor(SCREEN_COLOR_BLACK);
 	bgColor.a = 0xC0; // TODO
 	GuiImage *img = new GuiImage(bgColor, width, height);
 	img->setBlendMode(SDL_BLENDMODE_BLEND);
 	img->setAlignment(ALIGN_CENTERED);
-	errorOverlay->append(img);
+	errorOverlay[i]->append(img);
 	
 	GuiText *text = new GuiText(err, FONT_SIZE, screenColorToSDLcolor(SCREEN_COLOR_WHITE)); // TODO: Add back SSAA
 	text->setAlignment(ALIGN_CENTERED);
@@ -348,29 +354,30 @@ void addErrorOverlay(const char *err)
 	
 	img = new GuiImage(screenColorToSDLcolor(SCREEN_COLOR_RED), ow, oh);
 	img->setAlignment(ALIGN_CENTERED);
-	errorOverlay->append(img);
+	errorOverlay[i]->append(img);
 	
 	ow -= 2;
 	oh -= 2;
 	
 	img = new GuiImage(screenColorToSDLcolor(SCREEN_COLOR_D_RED), ow, oh);
 	img->setAlignment(ALIGN_CENTERED);
-	errorOverlay->append(img);
+	errorOverlay[i]->append(img);
 	
-	errorOverlay->append(text);
+	errorOverlay[i]->append(text);
 	drawFrame();
+    return i;
 }
 
-void removeErrorOverlay()
+void removeErrorOverlay(int id)
 {
-	if(errorOverlay == NULL)
+	if(errorOverlay[id] == NULL)
 		return;
 	
 	for(int i = 0; i < 3; i++)
-		delete errorOverlay->getGuiElementAt(i);
+		delete errorOverlay[id]->getGuiElementAt(i);
 	
-	delete errorOverlay;
-	errorOverlay = NULL;
+	delete errorOverlay[id];
+	errorOverlay[id] = NULL;
 	drawFrame();
 }
 
@@ -434,6 +441,9 @@ void initRenderer()
 {
 	if(window != NULL)
 		return;
+
+	for(int i = 0; i < MAX_OVERLAYS; i++)
+		errorOverlay[i] = NULL;
 	
 	sys = new SDLSystem();
 	renderer = sys->getRenderer();
@@ -472,7 +482,6 @@ void pauseRenderer()
 		return;
 	
 	clearFrame();
-	removeErrorOverlay();
 	
 	delete font;
 	delete arrowData;
@@ -494,6 +503,9 @@ void shutdownRenderer()
 {
 	if(window == NULL)
 		return;
+
+	for(int i = 0; i < MAX_OVERLAYS; i++)
+		removeErrorOverlay(i);
 	
 	colorStartNewFrame(SCREEN_COLOR_BLUE);
 	
@@ -568,8 +580,9 @@ void drawFrame()
 	
 	SDL_RenderClear(sdlRenderer);
 	window->draw(renderer);
-	if(errorOverlay != NULL)
-		errorOverlay->draw(renderer);
+	for(int i = 0; i < MAX_OVERLAYS; i++)
+		if(errorOverlay[i] != NULL)
+			errorOverlay[i]->draw(renderer);
 	
 	SDL_RenderPresent(sdlRenderer);
 }
@@ -585,8 +598,9 @@ void drawKeyboard(bool tv)
 		Swkbd_DrawTV();
 	else
 		Swkbd_DrawDRC();
-	if(errorOverlay != NULL)
-		errorOverlay->draw(renderer);
+	for(int i = 0; i < MAX_OVERLAYS; i++)
+		if(errorOverlay[i] != NULL)
+			errorOverlay[i]->draw(renderer);
 	
 	SDL_RenderPresent(sdlRenderer);
 	showFrame();
