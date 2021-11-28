@@ -1,7 +1,7 @@
 void _main()
 {
-	void(*ios_shutdown)(int) = (void(*)(int))0x1012EE4C;
 	int(*reply)(int, int) = (int(*)(int, int))0x1012ED04;
+	void(*ios_shutdown)(int) = (void(*)(int))0x1012EE4C;
 	
 	if(reply(*(int *)0x00148010, 0) != 0)
 		ios_shutdown(1);

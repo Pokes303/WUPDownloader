@@ -11,7 +11,7 @@ CC = arm-none-eabi-gcc
 LINK = arm-none-eabi-ld
 AS = arm-none-eabi-as
 OBJCOPY = arm-none-eabi-objcopy
-CFLAGS += -Wall -mbig-endian -std=gnu99 -march=armv5tej -Os -I$(DEVKITPRO)/libnds/include
+CFLAGS += -Wall -mbig-endian -std=gnu99 -march=armv5tej -Ofast -pipe -I$(DEVKITPRO)/libnds/include
 LDFLAGS += --script=link.ld -EB -L"$(DEVKITARM)/arm-none-eabi/lib" -Map=output.map
 
 CFILES = $(wildcard source/*.c)
