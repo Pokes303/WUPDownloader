@@ -63,6 +63,7 @@ size_t ramBufSize = 0;
 char *downloading;
 bool downloadPaused = false;
 OSTime lastDraw = 0;
+OSTime lastInput = 0;
 OSTime lastTransfair;
 
 static OSThread dlbgThread;
@@ -108,9 +109,14 @@ typedef struct
 static int progressCallback(void *rawData, double dltotal, double dlnow, double ultotal, double ulnow)
 {
 	curlProgressData *data = (curlProgressData *)rawData;
-	if(AppRunning())
+	if(!AppRunning())
 	{
-/*
+		data->error = CDE_CANCELLED;
+		return 1;
+	}
+/*	else
+	{
+
 		if(app == APP_STATE_BACKGROUND)
 		{
 			if(!downloadPaused && curl_easy_pause(data->curl, CURLPAUSE_ALL) == CURLE_OK)
@@ -126,18 +132,22 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 			lastDraw = lastTransfair = 0;
 			debugPrintf("Download resumed");
 		}
+	}
 */
-	}
-	else
-	{
-		debugPrintf("Download cancelled!");
-		data->error = CDE_CANCELLED;
-		return 1;
-	}
-	
 	OSTime now = OSGetSystemTime();
-	
-	if(lastDraw > 0 && OSTicksToMilliseconds(now - lastDraw) < 1000)
+
+	if(OSTicksToMilliseconds(now - lastInput) > (1000 / 60))
+	{
+		lastInput = now;
+        readInput();
+		if(vpad.trigger & VPAD_BUTTON_B)
+		{
+			data->error = CDE_CANCELLED;
+			return 1;
+		}
+	}
+
+	if(OSTicksToMilliseconds(now - lastDraw) < 1000)
 		return 0;
 
 	lastDraw = now;
@@ -234,7 +244,7 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 	
 	writeScreenLog();
 	drawFrame();
-	showFrame();
+
 	return 0;
 }
 
