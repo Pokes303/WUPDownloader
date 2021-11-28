@@ -359,7 +359,7 @@ uint8_t *getCommonKey()
 	{
 /*		int r = IOSUHAX_Open(NULL);
 		debugPrintf("IOSUHAX_Open(): %d", r);
-		uint32_t args[3] = { 0x38, (uint32_t)ADDY_AU, 16 };
+		uint32_t args[3] = { 0x38, (uint32_t)(((uint8_t *)ADDY_AU) - 0xF4000000), 16 };
 		r = IOSUHAX_SVC(0x22, args, 3);
 		IOSUHAX_Close();
 		debugPrintf("IOSUHAX_SVC(): %d", r);
