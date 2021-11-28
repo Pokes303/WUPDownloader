@@ -24,6 +24,7 @@
 #include <coreinit/ios.h>
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
+//#include <iosuhax.h>
 
 #include <otp.h>
 #include <utils.h>
@@ -36,10 +37,11 @@
 #define ARM_CODE_BASE       0x08134100
 #define REPLACE_SYSCALL     0x081298BC
 
-#define ADDY_SC ((uint8_t *)0xF4120000)
-#define ADDY_FC (ADDY_SC + 0x00010000)
-#define ADDY_AK (ADDY_FC + 0x00010000)
-#define ADDY_AU (ADDY_AK + 0x00008000)
+#define ADDY_SC_RAW 0xF4120000
+#define ADDY_SC     ((void *)ADDY_SC_RAW)
+#define ADDY_FC     ((void *)(ADDY_SC_RAW + 0x00010000))
+#define ADDY_AK     ((void *)(ADDY_SC_RAW + 0x00020000))
+#define ADDY_AU     ((void *)(ADDY_SC_RAW + 0x00028000))
 
 /* YOUR ARM CODE HERE (starts at ARM_CODE_BASE) */
 #include <arm_kernel_bin.h>
@@ -356,6 +358,13 @@ uint8_t *getCommonKey()
 {
 	if(otp_common_key[0] == 0x00)
 	{
+/*		int r = IOSUHAX_Open(NULL);
+		debugPrintf("IOSUHAX_Open(): %d", r);
+		uint32_t args[3] = { 0x38, (uint32_t)ADDY_AU, 16 };
+		r = IOSUHAX_SVC(0x22, args, 3);
+		IOSUHAX_Close();
+		debugPrintf("IOSUHAX_SVC(): %d", r);
+*/
 		int uhs = IOS_Open("/dev/uhs/0", 0);	// Open /dev/uhs/0 IOS node
 		uhs_exploit_init();						// Init variables for the exploit
 												//------ROP CHAIN-------
