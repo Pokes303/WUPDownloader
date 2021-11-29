@@ -390,7 +390,7 @@ void update(char *newVersion)
 			
 aromaInstallation:
 			OSDynLoad_Module mod;
-			OSDynLoad_Error err = OSDynLoad_Acquire("homebrew_kernel", &mod);
+			OSDynLoad_Error err = OSDynLoad_Acquire("homebrew_rpx_loader", &mod);
 			if(err == OS_DYNLOAD_OK)
 			{
 				int(*RL_UnmountCurrentRunningBundle)();
@@ -403,6 +403,7 @@ aromaInstallation:
 					goto finishUpdate;
 				}
 			}
+			showUpdateError("Aroma version too old to allow auto-updates");
 			goto updateError;
 		}
 		// else
