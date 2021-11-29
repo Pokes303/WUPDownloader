@@ -29,9 +29,10 @@ To install the app, download and unzip the contents of the [latest release](http
 # Building
 - On Linux/WSL/Mac, install devkitPro.
 - Install WUT with devktpros pacman.
+- Install [libiosuhax](https://github.com/wiiu-env/libiosuhax) and [librpxloader](https://github.com/wiiu-env/librpxloader) from wiiu-env.
 - Clone the repo.
-- Open the folder in a terminal and type `make`.
-- If everything goes fine, you will have the resulting file "NUSspli.rpx".
+- Open the folder in a terminal and type `./build.sh`.
+- If everything goes fine, you will have the resulting folder "zips".
 
 # Info
-NUSspli is based on [WUPDownloader](https://github.com/Pokes303/WUPDownloader) by Poke303.
+NUSspli is based on [WUPDownloader](https://github.com/Pokes303/WUPDownloader) by Pokes303.
