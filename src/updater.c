@@ -42,6 +42,7 @@
 #include <coreinit/thread.h>
 
 #include <unzip.h>
+#include <rpxloader.h>
 
 #include <errno.h>
 #include <file.h>
@@ -388,6 +389,7 @@ void update(char *newVersion)
 				remove(UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
 			
 aromaInstallation:
+			RL_UnmountCurrentRunningBundle();
 			rename(UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
 			goto finishUpdate;
 		}
