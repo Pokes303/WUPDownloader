@@ -6,8 +6,6 @@ ifeq ($(strip $(DEVKITPRO)),)
 $(error "Please set DEVKITPRO in your environment. export DEVKITPRO=<path to>/devkitpro")
 endif
 
-WUMS_ROOT := $(DEVKITPRO)/wums
-
 TOPDIR ?= $(CURDIR)
 
 include $(DEVKITPRO)/wut/share/wut_rules
@@ -56,15 +54,15 @@ endif
 
 CXXFLAGS	:=	$(CFLAGS)
 ASFLAGS		:=	-g $(ARCH)
-LDFLAGS		:=	-g $(ARCH) $(RPXSPECS) $(CFLAGS) -Wl,-Map,$(notdir $*.map) -T$(WUMS_ROOT)/share/librpxloader.ld
+LDFLAGS		:=	-g $(ARCH) $(RPXSPECS) $(CFLAGS) -Wl,-Map,$(notdir $*.map)
 
-LIBS		:=	-lgui-sdl `$(PREFIX)pkg-config --libs SDL2_mixer SDL2_ttf SDL2_image` -lwut -liosuhax $(ROMFS_LIBS) -lrpxloader
+LIBS		:=	-lgui-sdl `$(PREFIX)pkg-config --libs SDL2_mixer SDL2_ttf SDL2_image` -lwut -liosuhax $(ROMFS_LIBS)
 
 #-------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level
 # containing include and lib
 #-------------------------------------------------------------------------------
-LIBDIRS	:= $(PORTLIBS) $(WUT_ROOT) $(WUMS_ROOT) $(TOPDIR)/libgui-sdl
+LIBDIRS	:= $(PORTLIBS) $(WUT_ROOT) $(TOPDIR)/libgui-sdl
 
 
 #-------------------------------------------------------------------------------
