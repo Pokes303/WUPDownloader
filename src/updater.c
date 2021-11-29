@@ -35,6 +35,7 @@
 #include <menu/update.h>
 #include <menu/utils.h>
 
+#include <coreinit/dynload.h>
 #include <coreinit/filesystem.h>
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
@@ -388,8 +389,21 @@ void update(char *newVersion)
 				remove(UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
 			
 aromaInstallation:
-			rename(UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
-			goto finishUpdate;
+			OSDynLoad_Module mod;
+			OSDynLoad_Error err = OSDynLoad_Acquire("homebrew_kernel", &mod);
+			if(err == OS_DYNLOAD_OK)
+			{
+				int(*RL_UnmountCurrentRunningBundle)();
+				err = OSDynLoad_FindExport(mod, false, "RL_UnmountCurrentRunningBundle", (void **)&RL_UnmountCurrentRunningBundle);
+				OSDynLoad_Release(mod);
+				if(err == OS_DYNLOAD_OK)
+				{
+					RL_UnmountCurrentRunningBundle();
+					rename(UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
+					goto finishUpdate;
+				}
+			}
+			goto updateError;
 		}
 		// else
 		if(!dirExists(UPDATE_HBL_FOLDER))
