@@ -117,7 +117,14 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	// Allright, let's set if we want to install to USB or NAND
 	MCPInstallTarget target = toUsb ? MCP_INSTALL_TARGET_USB : MCP_INSTALL_TARGET_MLC;
 	data.err = MCP_InstallSetTargetDevice(mcpHandle, target);
-	if(data.err != 0 || MCP_InstallSetTargetUsb(mcpHandle, target) != 0)
+	if(data.err == 0)
+	{
+		if(toUsb && isUSB01())
+			target++;
+		data.err = MCP_InstallSetTargetUsb(mcpHandle, target);
+	}
+
+	if(data.err != 0)
 	{
 		char *err = toUsb ? "Error opening USB device" : "Error opening internal memory";
 		debugPrintf(err);
