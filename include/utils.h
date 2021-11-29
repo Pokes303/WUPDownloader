@@ -38,9 +38,6 @@
 	#include <whb/log_udp.h>
 	#define shutdownDebug WHBLogUdpDeinit
 #else
-	// We need to initialize the socket API as we don't have network access without it, even if we use the AC network API to make sure we're connected.
-	// This is most likely a bug in devkitPPC or WUT.
-	#include <nsysnet/socket.h>
 	#define debugPrintf(...)
 	#define checkStacks(...)
 	#define debugInit()
