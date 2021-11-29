@@ -436,8 +436,6 @@ void resumeRenderer()
 	}
 }
 
-void *audioBuf = NULL;
-
 void initRenderer()
 {
 	if(window != NULL)
@@ -450,26 +448,7 @@ void initRenderer()
 	renderer = sys->getRenderer();
 	sdlRenderer = renderer->getRenderer();
 	
-	//TODO: Loading the file for ourself is faster than using SDL...
-//	backgroundMusic = new GuiSound(ROMFS_PATH "audio/bg.mp3");
-	FILE *f = fopen(ROMFS_PATH "audio/bg.mp3", "rb");
-	if(f != NULL)
-	{
-		int fs = getFilesize(f);
-		audioBuf = MEMAllocFromDefaultHeap(fs);
-		if(audioBuf != NULL)
-		{
-			if(fread(audioBuf, fs, 1, f) != 1)
-			{
-				MEMFreeToDefaultHeap(audioBuf);
-				audioBuf = NULL;
-			}
-			else
-				backgroundMusic = new GuiSound(audioBuf, fs, false); //TODO: This is still slower than it could be
-		}
-		fclose(f);
-	}
-
+	backgroundMusic = new GuiSound(ROMFS_PATH "audio/bg.mp3");
 	if(backgroundMusic != NULL)
 	{
 		backgroundMusic->SetLoop(true);
@@ -545,11 +524,6 @@ void shutdownRenderer()
 		backgroundMusic->Stop();
 		delete backgroundMusic;
 		backgroundMusic = NULL;
-	}
-	if(audioBuf != NULL)
-	{
-		MEMFreeToDefaultHeap(audioBuf);
-		audioBuf = NULL;
 	}
 }
 
