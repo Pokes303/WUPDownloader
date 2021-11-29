@@ -457,6 +457,5 @@ zipError1:
 	unzClose(zip);
 	clearRamBuf();
 updateError:
-	flushIOQueue();
 	removeDirectory(UPDATE_TEMP_FOLDER);
 }
