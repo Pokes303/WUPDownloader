@@ -72,7 +72,7 @@ char *generateKey(const TitleEntry *te)
 	while(tmp[0] == '0' && tmp[1] == '0')
 		tmp += 2;
 	
-	char h[1024];
+	char h[strlen(KEYGEN_SECRET) + 16 + 1];
 	strcpy(h, KEYGEN_SECRET);
 	strcat(h, tmp);
 	MEMFreeToDefaultHeap(tid);
@@ -101,15 +101,15 @@ char *generateKey(const TitleEntry *te)
 	AES_set_encrypt_key(getCommonKey(), 128, &aesk);
 	AES_cbc_encrypt(key, h, 16, &aesk, ct, AES_ENCRYPT);
 
-	char *ret = MEMAllocFromDefaultHeap(33);
-	if(ret == NULL)
+	tmp = MEMAllocFromDefaultHeap(33);
+	if(tmp == NULL)
 		return NULL;
-	ret[32] = '\0';
+	tmp[32] = '\0';
 
-	char *t = ret;
-	for(int i = 0; i < 16; i++, t += 2)
-		sprintf(t, "%02x", h[i]);
+	tid = tmp;
+	for(bhl = 0; bhl < 16; bhl++, tid += 2)
+		sprintf(tid, "%02x", h[bhl]);
 	
-	debugPrintf("Key: 0x%s", ret);
-	return ret;
+	debugPrintf("Key: 0x%s", tmp);
+	return tmp;
 }
