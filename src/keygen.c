@@ -19,8 +19,9 @@
 
 #include <wut-fixups.h>
 
+#include <openssl/md5.h>
+
 #include <aes.h>
-#include <md5.h>
 #include <otp.h>
 #include <pbkdf2.h>
 

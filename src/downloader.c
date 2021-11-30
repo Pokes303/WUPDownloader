@@ -293,7 +293,7 @@ static curl_off_t initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 	curl_off_t ret = CURL_SOCKOPT_OK;
 
 	// Activate WinScale
-	int r = RPLWRAP(setsockopt)(socket, SOL_SOCKET, SO_WINSCALE, &o, sizeof(o));
+	int r = setsockopt(socket, SOL_SOCKET, SO_WINSCALE, &o, sizeof(o));
 	if(r != 0)
 	{
 		debugPrintf("initSocket: Error settings WinScale: %d", r);
@@ -301,7 +301,7 @@ static curl_off_t initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 	}
 
 	//Activate TCP SAck
-	r = RPLWRAP(setsockopt)(socket, SOL_SOCKET, SO_TCPSACK, &o, sizeof(o));
+	r = setsockopt(socket, SOL_SOCKET, SO_TCPSACK, &o, sizeof(o));
 	if(r != 0)
 	{
 		debugPrintf("initSocket: Error settings TCP SAck: %d", r);
@@ -309,7 +309,7 @@ static curl_off_t initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 	}
 
 	// Activate userspace buffer (fom our socket optimizer)
-	r = RPLWRAP(setsockopt)(socket, SOL_SOCKET, 0x10000, &o, sizeof(o));
+	r = setsockopt(socket, SOL_SOCKET, 0x10000, &o, sizeof(o));
 	if(r != 0)
 	{
 		debugPrintf("initSocket: Error settings UB: %d", r);
@@ -318,7 +318,7 @@ static curl_off_t initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 
 	o = IO_BUFSIZE;
 	// Set send buffersize
-	r = RPLWRAP(setsockopt)(socket, SOL_SOCKET, SO_SNDBUF, &o, sizeof(o));
+	r = setsockopt(socket, SOL_SOCKET, SO_SNDBUF, &o, sizeof(o));
 	if(r != 0)
 	{
 		debugPrintf("initSocket: Error settings SBS: %d", r);
@@ -326,7 +326,7 @@ static curl_off_t initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 	}
 
 	// Set receive buffersize
-	r = RPLWRAP(setsockopt)(socket, SOL_SOCKET, SO_RCVBUF, &o, sizeof(o));
+	r = setsockopt(socket, SOL_SOCKET, SO_RCVBUF, &o, sizeof(o));
 	if(r != 0)
 	{
 		debugPrintf("initSocket: Error settings RBS: %d", r);

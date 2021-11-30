@@ -56,7 +56,7 @@ CXXFLAGS	:=	$(CFLAGS)
 ASFLAGS		:=	-g $(ARCH)
 LDFLAGS		:=	-g $(ARCH) $(RPXSPECS) $(CFLAGS) -Wl,-Map,$(notdir $*.map)
 
-LIBS		:=	-lgui-sdl `$(PREFIX)pkg-config --libs SDL2_mixer SDL2_ttf SDL2_image` -lwut -liosuhax $(ROMFS_LIBS)
+LIBS		:=	-lgui-sdl -lcurl -lssl -lcrypto `$(PREFIX)pkg-config --libs SDL2_mixer SDL2_ttf SDL2_image` -lwut -liosuhax $(ROMFS_LIBS)
 
 #-------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level
