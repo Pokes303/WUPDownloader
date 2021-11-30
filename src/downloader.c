@@ -57,18 +57,10 @@
 char *ramBuf = NULL;
 size_t ramBufSize = 0;
 
-char *downloading;
-bool downloadPaused = false;
-static OSTime lastDraw = 0;
-static OSTime lastInput = 0;
-static OSTime lastTransfair;
-
 static CURL *curl;
 static const char curlError[CURL_ERROR_SIZE];
 static OSThread dlbgThread;
 static uint8_t *dlbgThreadStack;
-
-static int dlo = -1;
 
 static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData)
 {
@@ -95,19 +87,19 @@ static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData
 	return size;
 }
 
-typedef enum
-{
-	CDE_OK,
-	CDE_TIMEOUT,
-	CDE_CANCELLED,
-} CURL_DATA_ERROR;
 
 typedef struct
 {
-	CURL_DATA_ERROR error;
+	CURLcode error;
 	downloadData *data;
 	uint32_t onDisc;
 	float downloaded;
+	int dlo;
+	bool paused;
+	char *name;
+	OSTime lastDraw;
+	OSTime lastInput;
+	OSTime lastTransfair;
 } curlProgressData;
 
 static int progressCallback(void *rawData, double dltotal, double dlnow, double ultotal, double ulnow)
@@ -115,7 +107,7 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 	curlProgressData *data = (curlProgressData *)rawData;
 	if(!AppRunning())
 	{
-		data->error = CDE_CANCELLED;
+		data->error = CURLE_ABORTED_BY_CALLBACK;
 		return 1;
 	}
 /*	else
@@ -123,16 +115,16 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 
 		if(app == APP_STATE_BACKGROUND)
 		{
-			if(!downloadPaused && curl_easy_pause(data->curl, CURLPAUSE_ALL) == CURLE_OK)
+			if(!data->paused && curl_easy_pause(data->curl, CURLPAUSE_ALL) == CURLE_OK)
 			{
-				downloadPaused = true;
+				!data->paused = true;
 				debugPrintf("Download paused!");
 			}
 			return 0;
 		}
-		if(downloadPaused && curl_easy_pause(data->curl, CURLPAUSE_CONT) == CURLE_OK)
+		if(!data->paused && curl_easy_pause(data->curl, CURLPAUSE_CONT) == CURLE_OK)
 		{
-			downloadPaused = false;
+			!data->paused = false;
 			lastDraw = lastTransfair = 0;
 			debugPrintf("Download resumed");
 		}
@@ -140,42 +132,42 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 */
 	OSTime now = OSGetSystemTime();
 
-	if(OSTicksToMilliseconds(now - lastInput) > (1000 / 60))
+	if(OSTicksToMilliseconds(now - data->lastInput) > (1000 / 60))
 	{
-		lastInput = now;
+		data->lastInput = now;
 		readInput();
-		if(dlo < 0)
+		if(data->dlo < 0)
 		{
 			if(vpad.trigger & VPAD_BUTTON_B)
-				dlo = addErrorOverlay("Do you really want to cancel?");
+				data->dlo = addErrorOverlay("Do you really want to cancel?");
 		}
 		else
 		{
 			if(vpad.trigger & VPAD_BUTTON_A)
 			{
-				removeErrorOverlay(dlo);
-				dlo = -1;
-				data->error = CDE_CANCELLED;
+				removeErrorOverlay(data->dlo);
+				data->dlo = -1;
+				data->error = CURLE_ABORTED_BY_CALLBACK;
 				return 1;
 			}
 			if(vpad.trigger & VPAD_BUTTON_B)
 			{
-				removeErrorOverlay(dlo);
-				dlo = -1;
+				removeErrorOverlay(data->dlo);
+				data->dlo = -1;
 			}
 		}
 	}
 
-	if(OSTicksToMilliseconds(now - lastDraw) < 1000)
+	if(OSTicksToMilliseconds(now - data->lastDraw) < 1000)
 		return 0;
 
-	lastDraw = now;
-	//debugPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", downloading, data->data->dcontent, data->data->contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
+	data->lastDraw = now;
+	//debugPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", data->name, data->data->dcontent, data->data->contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
 	startNewFrame();
 	bool dling = dltotal > 0.0d && !isinf(dltotal) && !isnan(dltotal);
 	char *tmpString = getToFrameBuffer();
 	strcpy(tmpString, dling ? "Downloading " : "Preparing ");
-	strcat(tmpString, downloading);
+	strcat(tmpString, data->name);
 	textToFrame(0, 0, tmpString);
 	
 	float multiplier;
@@ -215,22 +207,20 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 		float dls = dln - data->downloaded;
 		if(dls < 0.01f)
 		{
-			if(lastTransfair > 0 && OSTicksToSeconds(now - lastTransfair) > 30)
+			if(data->lastTransfair > 0 && OSTicksToSeconds(now - data->lastTransfair) > 30)
 			{
-				data->error = CDE_TIMEOUT;
+				data->error = CURLE_OPERATION_TIMEDOUT;
 				return 1;
 			}
 		}
 		else
-			lastTransfair = now;
+			data->lastTransfair = now;
 
 		getSpeedString(dls, tmpString);
 		textToFrame(0, ALIGNED_RIGHT, tmpString);
 
 		data->downloaded = dln;
 	}
-	else
-        lastTransfair = now;
 	
 	if(data->data != NULL)
 	{
@@ -348,7 +338,7 @@ static curl_off_t initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 	return ret;
 }
 
-int killDlbgThread()
+static int killDlbgThread()
 {
 	shutdownDebug();
 	int ret;
@@ -422,6 +412,15 @@ void deinitDownloader()
 	debugPrintf("Socket optimizer returned: %d", killDlbgThread());
 }
 
+#define setDefaultDataValues(x) 			\
+	x.error = CURLE_OK;						\
+	x.downloaded = 0.0f;					\
+	x.dlo = -1;								\
+	x.paused = false;						\
+	x.lastDraw = 0;							\
+	x.lastInput = 							\
+	x.lastTransfair = OSGetSystemTime();
+
 int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume)
 {
 	//Results: 0 = OK | 1 = Error | 2 = No ticket aviable | 3 = Exit
@@ -430,17 +429,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	
 	debugPrintf("Download URL: %s", url);
 	debugPrintf("Download PATH: %s", toRam ? "<RAM>" : file);
-	
-	if(toRam)
-		downloading = file;
-	else
-	{
-		int haystack;
-		for(haystack = strlen(file); file[haystack] != '/'; haystack--)
-		{
-		}
-		downloading = &file[++haystack];
-	}
 	
 	bool fileExist;
 	void *fp;
@@ -499,21 +487,27 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		return 1;
 	}
 
-	cdata.error = CDE_OK;
+	if(toRam)
+		cdata.name = file;
+	else
+	{
+		int haystack;
+		for(haystack = strlen(file); file[haystack] != '/'; haystack--)
+			;
+		cdata.name = file + haystack + 1;
+	}
+
 	cdata.data = data;
 	cdata.onDisc = fileSize;
-	cdata.downloaded = 0.0f;
+	setDefaultDataValues(cdata);
 	if(fileExist)
 		fseek(((NUSFILE *)fp)->fd, 0, SEEK_END);
 	
 	debugPrintf("Calling curl_easy_perform()");
-	lastTransfair = 0;
 	ret = curl_easy_perform(curl);
-	if(dlo >= 0)
-	{
-		removeErrorOverlay(dlo);
-		dlo = -1;
-	}
+	if(cdata.dlo >= 0)
+		removeErrorOverlay(cdata.dlo);
+
 	debugPrintf("curl_easy_perform() returned: %d", ret);
 	
 	if(toRam)
@@ -531,20 +525,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		char *toScreen = getToFrameBuffer();
 		sprintf(toScreen, "curl_easy_perform returned a non-valid value: %d\n\n", ret);
 		if(ret == CURLE_ABORTED_BY_CALLBACK)
-		{
-			switch(cdata.error)
-			{
-				case CDE_TIMEOUT:
-					ret = CURLE_OPERATION_TIMEDOUT;
-					break;
-				case CDE_OK:
-					ret = CURLE_OK;
-					break;
-				case CDE_CANCELLED:
-					// Do nothing
-					;
-			}
-		}
+			ret = cdata.error;
 		
 		switch(ret) {
 			case CURLE_RANGE_ERROR:
@@ -682,7 +663,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	}
 	
 	debugPrintf("The file was downloaded successfully");
-	addToScreenLog("Download %s finished!", downloading);
+	addToScreenLog("Download %s finished!", cdata.name);
 	
 	return 0;
 }
