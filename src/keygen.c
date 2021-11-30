@@ -20,10 +20,11 @@
 #include <wut-fixups.h>
 
 #include <openssl/aes.h>
-#include <openssl/evp.h>
+//#include <openssl/evp.h>
 #include <openssl/md5.h>
 
 #include <otp.h>
+#include <pbkdf2.h>
 #include <titles.h>
 #include <utils.h>
 
@@ -91,10 +92,13 @@ char *generateKey(const TitleEntry *te)
 	const char *pw = transformPassword(te->key);
 	debugPrintf("Using password \"%s\"", pw);
 
-	if(PKCS5_PBKDF2_HMAC_SHA1(pw, strlen(pw), ct, 16, 20, 16, key) == 0)
-		return NULL;
+//	if(PKCS5_PBKDF2_HMAC_SHA1(pw, strlen(pw), ct, 16, 20, 16, key) == 0)
+//		return NULL;
+=
+	pbkdf2_hmac_sha1((uint8_t *)pw, strlen(pw), ct, 16, 20, key, 16);
 	
 	hexToByte(tid, ct);
+	
 	OSBlockSet(ct + 8, 0, 8);
 
 	AES_KEY aesk;
