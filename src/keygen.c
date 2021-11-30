@@ -19,12 +19,11 @@
 
 #include <wut-fixups.h>
 
+#include <openssl/aes.h>
+#include <openssl/evp.h>
 #include <openssl/md5.h>
-#include <openssl/sha.h>
 
-#include <aes.h>
 #include <otp.h>
-
 #include <titles.h>
 #include <utils.h>
 
@@ -65,11 +64,6 @@ static inline const char *transformPassword(TITLE_KEY in)
 
 char *generateKey(const TitleEntry *te)
 {
-	char *ret = MEMAllocFromDefaultHeap(33);
-	if(ret == NULL)
-		return NULL;
-	ret[32] = '\0';
-	
 	char *tid = hex(te->tid, 16);
 	if(tid == NULL)
 		return NULL;
@@ -97,17 +91,25 @@ char *generateKey(const TitleEntry *te)
 	const char *pw = transformPassword(te->key);
 	debugPrintf("Using password \"%s\"", pw);
 
-	PKCS5_PBKDF2_HMAC(pw, strlen(pw), ct, 16, 20, EVP_sha1(), 16, key);
+	if(PKCS5_PBKDF2_HMAC_SHA1(pw, strlen(pw), ct, 16, 20, 16, key) == 0)
+		return NULL;
 	
 	hexToByte(tid, ct);
 	OSBlockSet(ct + 8, 0, 8);
-	struct AES_ctx aesc;
-	AES_init_ctx_iv(&aesc, getCommonKey(), ct);
-	AES_CBC_encrypt_buffer(&aesc, key, 16);
+
+	AES_KEY aesk;
+	AES_set_encrypt_key(getCommonKey(), 256, &aesk);
+	unsigned char out[16];
+	AES_cbc_encrypt(key, out, 16, &aesk, ct, AES_ENCRYPT);
 	
+	char *ret = MEMAllocFromDefaultHeap(33);
+	if(ret == NULL)
+		return NULL;
+	ret[32] = '\0';
+
 	char *t = ret;
 	for(int i = 0; i < 16; i++, t += 2)
-		sprintf(t, "%02x", key[i]);
+		sprintf(t, "%02x", out[i]);
 	
 	debugPrintf("Key: 0x%s", ret);
 	return ret;
