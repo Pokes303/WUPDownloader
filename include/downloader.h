@@ -40,9 +40,9 @@ typedef struct WUT_PACKED
 {
 	uint16_t contents; //Contents count
 	uint16_t dcontent; //Actual content number
-	double dlnow;
-	double dltotal;
-	double dltmp;
+	float dlnow;
+	float dltotal;
+	float dltmp;
 } downloadData;
 
 extern char *ramBuf;

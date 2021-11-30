@@ -54,24 +54,21 @@
 #define DLBGT_STACK_SIZE	0x2000
 #define SOCKLIB_BUFSIZE		(IO_BUFSIZE * 4) // For send & receive + double buffering
 
-double downloaded;
-double onDisc;
-
 char *ramBuf = NULL;
 size_t ramBufSize = 0;
 
 char *downloading;
 bool downloadPaused = false;
-OSTime lastDraw = 0;
-OSTime lastInput = 0;
-OSTime lastTransfair;
+static OSTime lastDraw = 0;
+static OSTime lastInput = 0;
+static OSTime lastTransfair;
 
 static CURL *curl;
 static const char curlError[CURL_ERROR_SIZE];
 static OSThread dlbgThread;
 static uint8_t *dlbgThreadStack;
 
-int dlo = -1;
+static int dlo = -1;
 
 static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData)
 {
@@ -109,6 +106,8 @@ typedef struct
 {
 	CURL_DATA_ERROR error;
 	downloadData *data;
+	uint32_t onDisc;
+	float downloaded;
 } curlProgressData;
 
 static int progressCallback(void *rawData, double dltotal, double dlnow, double ultotal, double ulnow)
@@ -179,25 +178,27 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 	strcat(tmpString, downloading);
 	textToFrame(0, 0, tmpString);
 	
-	int multiplier;
+	float multiplier;
 	char *multiplierName;
+	float dln = dlnow;
+	float dlt = dltotal;
 	if(dling)
 	{
-		dlnow += onDisc;
-		dltotal += onDisc;
-		barToFrame(1, 0, 30, (float)(dlnow / dltotal) * 100.0f);
+		dln += data->onDisc;
+		dlt += data->onDisc;
+		barToFrame(1, 0, 30, dln / dlt * 100.0f);
 
-		if(dltotal < 1024.0D)
+		if(dlt < 1024.0f)
 		{
-			multiplier = 1;
+			multiplier = 1.0f;
 			multiplierName = "B";
 		}
-		else if(dltotal < 1024.0D * 1024.0D)
+		else if(dlt < 1024.0f * 1024.0f)
 		{
 			multiplier = 1 << 10;
 			multiplierName = "KB";
 		}
-		else if(dltotal < 1024.0D * 1024.0D * 1024.0D)
+		else if(dlt < 1024.0f * 1024.0f * 1024.0f)
 		{
 			multiplier = 1 << 20;
 			multiplierName = "MB";
@@ -208,11 +209,11 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 			multiplierName = "GB";
 		}
 
-		sprintf(tmpString, "%.2f / %.2f %s", dlnow / multiplier, dltotal / multiplier, multiplierName);
+		sprintf(tmpString, "%.2f / %.2f %s", dln / multiplier, dlt / multiplier, multiplierName);
 		textToFrame(1, 31, tmpString);
 
-		double dls = dlnow - downloaded;
-		if(dls < 0.01d)
+		float dls = dln - data->downloaded;
+		if(dls < 0.01f)
 		{
 			if(lastTransfair > 0 && OSTicksToSeconds(now - lastTransfair) > 30)
 			{
@@ -226,7 +227,7 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 		getSpeedString(dls, tmpString);
 		textToFrame(0, ALIGNED_RIGHT, tmpString);
 
-		downloaded = dlnow;
+		data->downloaded = dln;
 	}
 	else
         lastTransfair = now;
@@ -236,17 +237,17 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 		sprintf(tmpString, "(%d/%d)", data->data->dcontent + 1, data->data->contents);
 		textToFrame(0, ALIGNED_CENTER, tmpString);
 		
-		if(data->data->dltotal < 1024.0D)
+		if(data->data->dltotal < 1024.0f)
 		{
-			multiplier = 1;
+			multiplier = 1.0f;
 			multiplierName = "B";
 		}
-		else if(data->data->dltotal < 1024.0D * 1024.0D)
+		else if(data->data->dltotal < 1024.0f * 1024.0f)
 		{
 			multiplier = 1 << 10;
 			multiplierName = "KB";
 		}
-		else if(data->data->dltotal < 1024.0D * 1024.0D * 1024.0D)
+		else if(data->data->dltotal < 1024.0f * 1024.0f * 1024.0f)
 		{
 			multiplier = 1 << 20;
 			multiplierName = "MB";
@@ -256,8 +257,8 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 			multiplier = 1 << 30;
 			multiplierName = "GB";
 		}
-		data->data->dlnow = data->data->dltmp + dlnow;
-		barToFrame(1, 65, 30, (float)(data->data->dlnow / data->data->dltotal) * 100.0f);
+		data->data->dlnow = data->data->dltmp + dln;
+		barToFrame(1, 65, 30, data->data->dlnow / data->data->dltotal * 100.0f);
 		sprintf(tmpString, "%.2f / %.2f %s", data->data->dlnow / multiplier, data->data->dltotal / multiplier, multiplierName);
 		textToFrame(1, 96, tmpString);
 	}
@@ -441,8 +442,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		downloading = &file[++haystack];
 	}
 	
-	downloaded = 0.0D;
-	
 	bool fileExist;
 	void *fp;
 	uint32_t fileSize;
@@ -467,7 +466,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	}
 	
 	uint32_t realFileSize = fileSize;
-	onDisc = fileSize;
 	curlProgressData cdata;
 
 	CURLcode ret = curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -503,6 +501,8 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
 	cdata.error = CDE_OK;
 	cdata.data = data;
+	cdata.onDisc = fileSize;
+	cdata.downloaded = 0.0f;
 	if(fileExist)
 		fseek(((NUSFILE *)fp)->fd, 0, SEEK_END);
 	
@@ -593,18 +593,18 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	}
 	debugPrintf("curl_easy_perform executed successfully");
 	
-	double dld;
+	float dld;
 	long resp;
 	if(!toRam && fileExist && fileSize == 0) // File skipped by headerCallback
 	{
-		dld = 0.0D;
+		dld = 0.0f;
 		resp = 200;
 	}
 	else
 	{
-		ret = curl_easy_getinfo(curl, CURLINFO_SIZE_DOWNLOAD, &dld);
-		if(ret != CURLE_OK)
-			dld = 0.0D;
+		double t;
+		ret = curl_easy_getinfo(curl, CURLINFO_SIZE_DOWNLOAD, &t);
+		dld = ret == CURLE_OK ? (float)t : 0.0f;
 		
 		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &resp);
 		switch(resp)
