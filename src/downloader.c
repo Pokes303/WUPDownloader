@@ -66,6 +66,7 @@ OSTime lastDraw = 0;
 OSTime lastInput = 0;
 OSTime lastTransfair;
 
+stati CURL *curl;
 static OSThread dlbgThread;
 static uint8_t *dlbgThreadStack;
 
@@ -103,7 +104,6 @@ typedef enum
 
 typedef struct
 {
-	CURL *curl;
 	CURL_DATA_ERROR error;
 	downloadData *data;
 } curlProgressData;
@@ -213,7 +213,7 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 		{
 			if(lastTransfair > 0 && OSTicksToSeconds(now - lastTransfair) > 30)
 			{
-				((curlProgressData *)rawData)->error = CDE_TIMEOUT;
+				data->error = CDE_TIMEOUT;
 				return 1;
 			}
 		}
@@ -289,26 +289,47 @@ int dlbgThreadMain(int argc, const char **argv)
 	return ret;
 }
 
+int killDlbgThread()
+{
+	shutdownDebug();
+	int ret;
+	__fini_wut_socket();
+	OSJoinThread(&dlbgThread, &ret);
+	MEMFreeToDefaultHeap(dlbgThreadStack);
+	return ret;
+}
+
 bool initDownloader()
 {
 	dlbgThreadStack = MEMAllocFromDefaultHeapEx(DLBGT_STACK_SIZE, 8);
-	
+
 	if(dlbgThreadStack == NULL || !OSCreateThread(&dlbgThread, dlbgThreadMain, 0, NULL, dlbgThreadStack + DLBGT_STACK_SIZE, DLBGT_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_ANY))
 		return false;
 	
 	OSSetThreadName(&dlbgThread, "NUSspli socket optimizer");
 	OSResumeThread(&dlbgThread);
-	return true;
+
+	if(curl_global_init(CURL_GLOBAL_DEFAULT) == CURLE_OK)
+	{
+		curl = curl_easy_init();
+		if(curl != NULL)
+			return true;
+		curl_global_cleanup();
+	}
+
+	killDlbgThread();
+	return false;
 }
 
 void deinitDownloader()
 {
-    int ret;
-	shutdownDebug();
-	__fini_wut_socket();
-	OSJoinThread(&dlbgThread, &ret);
-	MEMFreeToDefaultHeap(dlbgThreadStack);
-	debugPrintf("Socket optimizer returned: %d", ret);
+	if(curl != NULL)
+	{
+		curl_easy_cleanup(curl);
+		curl = NULL;
+	}
+	curl_global_cleanup();
+	debugPrintf("Socket optimizer returned: %d", killDlbgThread());
 }
 
 /*
@@ -410,36 +431,11 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 			fileSize = 0;
 	}
 	
-	CURL *curl = curl_easy_init();
-	if(curl == NULL)
-	{
-		if(toRam)
-			fclose((FILE *)fp);
-		else
-			addToIOQueue(NULL, 0, 0, (NUSFILE *)fp);
-		
-		char err[128];
-		sprintf(err, "ERROR: curl_easy_init failed\nFile: %s", file);
-		drawErrorFrame(err, B_RETURN);
-		
-		while(AppRunning())
-		{
-			if(app == APP_STATE_BACKGROUND)
-				continue;
-			if(app == APP_STATE_RETURNING)
-				drawErrorFrame(err, B_RETURN);
-		
-			showFrame();
-			if(vpad.trigger & VPAD_BUTTON_B)
-				break;
-		}
-		return 1;
-	}
-	
 	uint32_t realFileSize = fileSize;
     curlProgressData cdata;
     char curlError[CURL_ERROR_SIZE];
     curlError[0] = '\0';
+    curl_easy_reset();
 	CURLcode ret = curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curlError);
 	if(ret == CURLE_OK)
     {
@@ -502,7 +498,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		else
 			addToIOQueue(NULL, 0, 0, (NUSFILE *)fp);
 		
-		curl_easy_cleanup(curl);
 		debugPrintf("curl_easy_setopt error: %s", curlError);
 		return 1;
 	}
@@ -528,7 +523,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	if(ret != CURLE_OK && !(fileExist && ret == CURLE_WRITE_ERROR && fileSize == 0))
 	{
 		debugPrintf("curl_easy_perform returned an error: %s (%d)\nFile: %s\n\n", curlError, ret, toRam ? "<RAM>" : file);
-		curl_easy_cleanup(curl);
 		
 		char *toScreen = getToFrameBuffer();
 		sprintf(toScreen, "curl_easy_perform returned a non-valid value: %d\n\n", ret);
@@ -617,7 +611,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		}
 	}
 	
-	curl_easy_cleanup(curl);
 	debugPrintf("The download returned: %u", resp);
 	if(resp != 200)
 	{
