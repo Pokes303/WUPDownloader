@@ -67,6 +67,7 @@ OSTime lastInput = 0;
 OSTime lastTransfair;
 
 static CURL *curl;
+static const char curlError[CURL_ERROR_SIZE];
 static OSThread dlbgThread;
 static uint8_t *dlbgThreadStack;
 
@@ -75,23 +76,25 @@ int dlo = -1;
 static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData)
 {
 	size *= multi;
-	((char *)buf)[size - 1] = '\0'; //TODO: This should transform the newline at the end to a string terminator - but are we allowed to modify the buffer?
-	
-	toLowercase(buf);
-	uint32_t contentLength = 0;
-	if(sscanf(buf, "content-length: %u", &contentLength) != 1)
-		return size;
-	
-	debugPrintf("rawData: %d", *(uint32_t *)rawData);
-	debugPrintf("contentLength: %d", contentLength);
-	
-	if(*(uint32_t *)rawData == contentLength)
+	uint32_t data = *(uint32_t *)rawData;
+	if(data)
 	{
-		debugPrintf("equal!");
-		*(uint32_t *)rawData = 0;
-		return 0;
+		((char *)buf)[size - 1] = '\0';
+		toLowercase(buf);
+		uint32_t contentLength = 0;
+		if(sscanf(buf, "content-length: %u", &contentLength) == 1)
+		{
+			debugPrintf("rawData: %d", data);
+			debugPrintf("contentLength: %d", contentLength);
+
+			if(data == contentLength)
+			{
+				debugPrintf("equal!");
+				*(uint32_t *)rawData = 0;
+				return 0;
+			}
+		}
 	}
-		
 	return size;
 }
 
@@ -265,7 +268,7 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 	return 0;
 }
 
-int dlbgThreadMain(int argc, const char **argv)
+static int dlbgThreadMain(int argc, const char **argv)
 {
 	debugPrintf("Socket optimizer running!");
 	
@@ -286,6 +289,61 @@ int dlbgThreadMain(int argc, const char **argv)
 	
 	MEMFreeToDefaultHeap(buf);
 	debugPrintf("Socket optimizer finished!");
+	return ret;
+}
+
+/*
+ * We neither have to call __wut_get_nsysnet_fd(socket); nor use direct setsockopt here
+ * thanks to WUT bugs.
+ * Thanks to another WUT bug returning CURL_SOCKOPT_ERROR does not do what's described
+ * at https://curl.se/libcurl/c/CURLOPT_SOCKOPTFUNCTION.html
+ */
+static curl_off_t initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
+{
+	int o = 1;
+	curl_off_t ret = CURL_SOCKOPT_OK;
+
+	// Activate WinScale
+	int r = RPLWRAP(setsockopt)(socket, SOL_SOCKET, SO_WINSCALE, &o, sizeof(o));
+	if(r != 0)
+	{
+		debugPrintf("initSocket: Error settings WinScale: %d", r);
+		ret =  CURL_SOCKOPT_ERROR;
+	}
+
+	//Activate TCP SAck
+	r = RPLWRAP(setsockopt)(socket, SOL_SOCKET, SO_TCPSACK, &o, sizeof(o));
+	if(r != 0)
+	{
+		debugPrintf("initSocket: Error settings TCP SAck: %d", r);
+		ret = CURL_SOCKOPT_ERROR;
+	}
+
+	// Activate userspace buffer (fom our socket optimizer)
+	r = RPLWRAP(setsockopt)(socket, SOL_SOCKET, 0x10000, &o, sizeof(o));
+	if(r != 0)
+	{
+		debugPrintf("initSocket: Error settings UB: %d", r);
+		ret = CURL_SOCKOPT_ERROR;
+	}
+
+	o = IO_BUFSIZE;
+	// Set send buffersize
+	r = RPLWRAP(setsockopt)(socket, SOL_SOCKET, SO_SNDBUF, &o, sizeof(o));
+	if(r != 0)
+	{
+		debugPrintf("initSocket: Error settings SBS: %d", r);
+		ret = CURL_SOCKOPT_ERROR;
+	}
+
+	// Set receive buffersize
+	r = RPLWRAP(setsockopt)(socket, SOL_SOCKET, SO_RCVBUF, &o, sizeof(o));
+	if(r != 0)
+	{
+		debugPrintf("initSocket: Error settings RBS: %d", r);
+		ret = CURL_SOCKOPT_ERROR;
+	}
+
 	return ret;
 }
 
@@ -319,9 +377,33 @@ bool initDownloader()
 	{
 		curl = curl_easy_init();
 		if(curl != NULL)
-			return true;
+		{
+#ifdef NUSSPLI_DEBUG
+			if(curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curlError) == CURLE_OK)
+			{
+#endif
+				if(curl_easy_setopt(curl, CURLOPT_SOCKOPTFUNCTION, initSocket) == CURLE_OK &&
+					curl_easy_setopt(curl, CURLOPT_USERAGENT, USERAGENT) == CURLE_OK &&
+					curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerCallback) == CURLE_OK &&
+					curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressCallback) == CURLE_OK &&
+					curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L) == CURLE_OK &&
+					curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L) == CURLE_OK
+				)
+					return true;
+#ifdef NUSSPLI_DEBUG
+					debugPrintf("curl_easy_setopt() failed for CURLOPT_ERRORBUFFER!");
+			}
+			else
+				debugPrintf("curl_easy_setopt() failed: %s", curlError);
+#endif
+			curl_easy_cleanup(curl);
+			curl = NULL;
+		}
+#ifdef NUSSPLI_DEBUG
+		else
+			debugPrintf("curl_easy_init() failed!");
+#endif
 		curl_global_cleanup();
-		debugPrintf("curl_easy_init() failed!");
 	}
 
 	killDlbgThread();
@@ -337,61 +419,6 @@ void deinitDownloader()
 	}
 	curl_global_cleanup();
 	debugPrintf("Socket optimizer returned: %d", killDlbgThread());
-}
-
-/*
- * We neither have to call __wut_get_nsysnet_fd(socket); nor use direct setsockopt here
- * thanks to WUT bugs.
- * Thanks to another WUT bug returning CURL_SOCKOPT_ERROR does not do what's described
- * at https://curl.se/libcurl/c/CURLOPT_SOCKOPTFUNCTION.html
- */
-static curl_off_t initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
-{
-	int o = 1;
-	curl_off_t ret = CURL_SOCKOPT_OK;
-
-	// Activate WinScale
-	int r = RPLWRAP(setsockopt)(socket, SOL_SOCKET, SO_WINSCALE, &o, sizeof(o));
-	if(r != 0)
-	{
-		debugPrintf("initSocket: Error settings WinScale: %d", r);
-		ret =  CURL_SOCKOPT_ERROR;
-	}
-	
-	//Activate TCP SAck
-	r = RPLWRAP(setsockopt)(socket, SOL_SOCKET, SO_TCPSACK, &o, sizeof(o));
-	if(r != 0)
-	{
-		debugPrintf("initSocket: Error settings TCP SAck: %d", r);
-		ret = CURL_SOCKOPT_ERROR;
-	}
-	
-	// Activate userspace buffer (fom our socket optimizer)
-	r = RPLWRAP(setsockopt)(socket, SOL_SOCKET, 0x10000, &o, sizeof(o));
-	if(r != 0)
-	{
-		debugPrintf("initSocket: Error settings UB: %d", r);
-		ret = CURL_SOCKOPT_ERROR;
-	}
-	
-	o = IO_BUFSIZE;
-	// Set send buffersize
-	r = RPLWRAP(setsockopt)(socket, SOL_SOCKET, SO_SNDBUF, &o, sizeof(o));
-	if(r != 0)
-	{
-		debugPrintf("initSocket: Error settings SBS: %d", r);
-		ret = CURL_SOCKOPT_ERROR;
-	}
-	
-	// Set receive buffersize
-	r = RPLWRAP(setsockopt)(socket, SOL_SOCKET, SO_RCVBUF, &o, sizeof(o));
-	if(r != 0)
-	{
-		debugPrintf("initSocket: Error settings RBS: %d", r);
-		ret = CURL_SOCKOPT_ERROR;
-	}
-
-	return ret;
 }
 
 int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume)
@@ -414,7 +441,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		downloading = &file[++haystack];
 	}
 	
-	downloaded = onDisc = 0.0D;
+	downloaded = 0.0D;
 	
 	bool fileExist;
 	void *fp;
@@ -422,6 +449,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	if(toRam)
 	{
 		fileExist = false;
+		fileSize = 0;
 		fp = (void *)open_memstream(&ramBuf, &ramBufSize);
 	}
 	else
@@ -439,63 +467,32 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	}
 	
 	uint32_t realFileSize = fileSize;
-    curlProgressData cdata;
-    char curlError[CURL_ERROR_SIZE];
-    curlError[0] = '\0';
-    curl_easy_reset(curl);
-	CURLcode ret = curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curlError);
-	if(ret == CURLE_OK)
-    {
-        ret = curl_easy_setopt(curl, CURLOPT_URL, url);
-        if(ret == CURLE_OK)
-        {
-            ret = curl_easy_setopt(curl, CURLOPT_SOCKOPTFUNCTION, initSocket);
-            if(ret == CURLE_OK)
-            {
-                ret = curl_easy_setopt(curl, CURLOPT_USERAGENT, USERAGENT);
-                if(ret == CURLE_OK)
-                {
-                    if(fileExist)
-                    {
-                        if(resume)
-                        {
-                            onDisc = fileSize;
-                            ret |= curl_easy_setopt(curl, CURLOPT_RESUME_FROM, fileSize);
-                            fseek(((NUSFILE *)fp)->fd, 0, SEEK_END);
-                        }
-                        ret = curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerCallback);
-                        if(ret == CURLE_OK)
-                            ret = curl_easy_setopt(curl, CURLOPT_WRITEHEADER, &fileSize);
-                    }
+	onDisc = fileSize;
+	curlProgressData cdata;
 
-                    if(ret == CURLE_OK)
-                    {
-                        ret = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, toRam ? fwrite : (size_t (*)(const void *, size_t, size_t, FILE *))addToIOQueue);
-                        if(ret == CURLE_OK)
-                        {
-                            ret = curl_easy_setopt(curl, CURLOPT_WRITEDATA, (FILE *)fp);
-                            if(ret == CURLE_OK)
-                            {
-                                ret = curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressCallback);
-                                if(ret == CURLE_OK)
-                                {
-                                    cdata.error = CDE_OK;
-                                    cdata.data = data;
-                                    ret = curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &cdata);
-                                    if(ret == CURLE_OK)
-                                    {
-                                        ret = curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
-                                        if(ret == CURLE_OK)
-                                            ret = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+	CURLcode ret = curl_easy_setopt(curl, CURLOPT_URL, url);
+	if(ret == CURLE_OK)
+	{
+		ret = curl_easy_setopt(curl, CURLOPT_RESUME_FROM, fileSize);
+		if(ret == CURLE_OK)
+		{
+			ret = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, toRam ? fwrite : (size_t (*)(const void *, size_t, size_t, FILE *))addToIOQueue);
+			if(ret == CURLE_OK)
+			{
+				ret = curl_easy_setopt(curl, CURLOPT_WRITEDATA, (FILE *)fp);
+				if(ret == CURLE_OK)
+				{
+					ret = curl_easy_setopt(curl, CURLOPT_WRITEHEADER, &fileSize);
+					if(ret == CURLE_OK)
+					{
+						cdata.error = CDE_OK;
+						cdata.data = data;
+						ret = curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &cdata);
+					}
+				}
+			}
+		}
+	}
 	
 	if(ret != CURLE_OK)
 	{
@@ -507,6 +504,9 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		debugPrintf("curl_easy_setopt error: %s", curlError);
 		return 1;
 	}
+
+	if(fileExist)
+		fseek(((NUSFILE *)fp)->fd, 0, SEEK_END);
 	
 	debugPrintf("Calling curl_easy_perform()");
 	lastTransfair = 0;
