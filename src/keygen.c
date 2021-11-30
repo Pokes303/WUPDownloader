@@ -98,10 +98,9 @@ char *generateKey(const TitleEntry *te)
 	OSBlockSet(ct + 8, 0, 8);
 
 	AES_KEY aesk;
-	AES_set_encrypt_key(getCommonKey(), 256, &aesk);
-	unsigned char out[16];
-	AES_cbc_encrypt(key, out, 16, &aesk, ct, AES_ENCRYPT);
-	
+	AES_set_encrypt_key(getCommonKey(), 128, &aesk);
+	AES_cbc_encrypt(key, h, 16, &aesk, ct, AES_ENCRYPT);
+
 	char *ret = MEMAllocFromDefaultHeap(33);
 	if(ret == NULL)
 		return NULL;
@@ -109,7 +108,7 @@ char *generateKey(const TitleEntry *te)
 
 	char *t = ret;
 	for(int i = 0; i < 16; i++, t += 2)
-		sprintf(t, "%02x", out[i]);
+		sprintf(t, "%02x", h[i]);
 	
 	debugPrintf("Key: 0x%s", ret);
 	return ret;
