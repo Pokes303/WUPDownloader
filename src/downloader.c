@@ -58,7 +58,7 @@ char *ramBuf = NULL;
 size_t ramBufSize = 0;
 
 static CURL *curl;
-static const char curlError[CURL_ERROR_SIZE];
+static char curlError[CURL_ERROR_SIZE];
 static OSThread dlbgThread;
 static uint8_t *dlbgThreadStack;
 
@@ -451,6 +451,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 			fileSize = 0;
 	}
 	
+	curlError[0] = '\0';
 	uint32_t realFileSize = fileSize;
 	curlProgressData cdata;
 
@@ -481,7 +482,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		else
 			addToIOQueue(NULL, 0, 0, (NUSFILE *)fp);
 		
-		debugPrintf("curl_easy_setopt error: %s", curlError);
+		debugPrintf("curl_easy_setopt error: %s (%d / %ud)", curlError, ret, fileSize);
 		return 1;
 	}
 
