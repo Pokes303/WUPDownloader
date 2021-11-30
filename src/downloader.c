@@ -66,7 +66,7 @@ OSTime lastDraw = 0;
 OSTime lastInput = 0;
 OSTime lastTransfair;
 
-stati CURL *curl;
+static CURL *curl;
 static OSThread dlbgThread;
 static uint8_t *dlbgThreadStack;
 
@@ -303,8 +303,14 @@ bool initDownloader()
 {
 	dlbgThreadStack = MEMAllocFromDefaultHeapEx(DLBGT_STACK_SIZE, 8);
 
-	if(dlbgThreadStack == NULL || !OSCreateThread(&dlbgThread, dlbgThreadMain, 0, NULL, dlbgThreadStack + DLBGT_STACK_SIZE, DLBGT_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_ANY))
+	if(dlbgThreadStack == NULL)
 		return false;
+
+	if(!OSCreateThread(&dlbgThread, dlbgThreadMain, 0, NULL, dlbgThreadStack + DLBGT_STACK_SIZE, DLBGT_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_ANY))
+	{
+		MEMFreeToDefaultHeap(dlbgThreadStack);
+		return false;
+	}
 	
 	OSSetThreadName(&dlbgThread, "NUSspli socket optimizer");
 	OSResumeThread(&dlbgThread);
@@ -315,6 +321,7 @@ bool initDownloader()
 		if(curl != NULL)
 			return true;
 		curl_global_cleanup();
+		debugPrintf("curl_easy_init() failed!");
 	}
 
 	killDlbgThread();
@@ -435,7 +442,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
     curlProgressData cdata;
     char curlError[CURL_ERROR_SIZE];
     curlError[0] = '\0';
-    curl_easy_reset();
+    curl_easy_reset(curl);
 	CURLcode ret = curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curlError);
 	if(ret == CURLE_OK)
     {
@@ -472,7 +479,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                                 ret = curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressCallback);
                                 if(ret == CURLE_OK)
                                 {
-                                    cdata.curl = curl;
                                     cdata.error = CDE_OK;
                                     cdata.data = data;
                                     ret = curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &cdata);
