@@ -458,9 +458,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	CURLcode ret = curl_easy_setopt(curl, CURLOPT_URL, url);
 	if(ret == CURLE_OK)
 	{
-		ret = curl_easy_setopt(curl, CURLOPT_RESUME_FROM, fileSize);
-		if(ret != CURLE_OK) // Try again for files > 2 GB
-			ret = curl_easy_setopt(curl, CURLOPT_RESUME_FROM_LARGE, (curl_off_t)fileSize);
+		ret = curl_easy_setopt(curl, CURLOPT_RESUME_FROM_LARGE, (curl_off_t)fileSize);
 		if(ret == CURLE_OK)
 		{
 			ret = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, toRam ? fwrite : (size_t (*)(const void *, size_t, size_t, FILE *))addToIOQueue);

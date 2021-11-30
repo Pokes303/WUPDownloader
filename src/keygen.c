@@ -92,9 +92,9 @@ char *generateKey(const TitleEntry *te)
 	const char *pw = transformPassword(te->key);
 	debugPrintf("Using password \"%s\"", pw);
 
+// TODO
 //	if(PKCS5_PBKDF2_HMAC_SHA1(pw, strlen(pw), ct, 16, 20, 16, key) == 0)
 //		return NULL;
-=
 	pbkdf2_hmac_sha1((uint8_t *)pw, strlen(pw), ct, 16, 20, key, 16);
 	
 	hexToByte(tid, ct);
@@ -103,7 +103,7 @@ char *generateKey(const TitleEntry *te)
 
 	AES_KEY aesk;
 	AES_set_encrypt_key(getCommonKey(), 128, &aesk);
-	AES_cbc_encrypt(key, h, 16, &aesk, ct, AES_ENCRYPT);
+	AES_cbc_encrypt(key, (unsigned char *)h, 16, &aesk, ct, AES_ENCRYPT);
 
 	tmp = MEMAllocFromDefaultHeap(33);
 	if(tmp == NULL)
