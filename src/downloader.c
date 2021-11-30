@@ -484,11 +484,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				{
 					ret = curl_easy_setopt(curl, CURLOPT_WRITEHEADER, &fileSize);
 					if(ret == CURLE_OK)
-					{
-						cdata.error = CDE_OK;
-						cdata.data = data;
 						ret = curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &cdata);
-					}
 				}
 			}
 		}
@@ -505,6 +501,8 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		return 1;
 	}
 
+	cdata.error = CDE_OK;
+	cdata.data = data;
 	if(fileExist)
 		fseek(((NUSFILE *)fp)->fd, 0, SEEK_END);
 	
