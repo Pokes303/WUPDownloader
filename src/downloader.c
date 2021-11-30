@@ -93,7 +93,7 @@ typedef struct
 	CURLcode error;
 	downloadData *data;
 	uint32_t onDisc;
-	float downloaded;
+	double downloaded;
 	int dlo;
 	bool paused;
 	char *name;
@@ -170,27 +170,25 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 	strcat(tmpString, data->name);
 	textToFrame(0, 0, tmpString);
 	
-	float multiplier;
+	double multiplier;
 	char *multiplierName;
-	float dln = dlnow;
-	float dlt = dltotal;
 	if(dling)
 	{
-		dln += data->onDisc;
-		dlt += data->onDisc;
-		barToFrame(1, 0, 30, dln / dlt * 100.0f);
+		dlnow += data->onDisc;
+		dltotal += data->onDisc;
+		barToFrame(1, 0, 30, dlnow / dltotal * 100.0D);
 
-		if(dlt < 1024.0f)
+		if(dltotal < 1024.0D)
 		{
-			multiplier = 1.0f;
+			multiplier = 1.0D;
 			multiplierName = "B";
 		}
-		else if(dlt < 1024.0f * 1024.0f)
+		else if(dltotal < 1024.0D * 1024.0D)
 		{
 			multiplier = 1 << 10;
 			multiplierName = "KB";
 		}
-		else if(dlt < 1024.0f * 1024.0f * 1024.0f)
+		else if(dltotal < 1024.0f * 1024.0D * 1024.0D)
 		{
 			multiplier = 1 << 20;
 			multiplierName = "MB";
@@ -201,11 +199,11 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 			multiplierName = "GB";
 		}
 
-		sprintf(tmpString, "%.2f / %.2f %s", dln / multiplier, dlt / multiplier, multiplierName);
+		sprintf(tmpString, "%.2f / %.2f %s", dlnow / multiplier, dltotal / multiplier, multiplierName);
 		textToFrame(1, 31, tmpString);
 
-		float dls = dln - data->downloaded;
-		if(dls < 0.01f)
+		double dls = dlnow - data->downloaded;
+		if(dls < 0.01D)
 		{
 			if(data->lastTransfair > 0 && OSTicksToSeconds(now - data->lastTransfair) > 30)
 			{
@@ -219,7 +217,7 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 		getSpeedString(dls, tmpString);
 		textToFrame(0, ALIGNED_RIGHT, tmpString);
 
-		data->downloaded = dln;
+		data->downloaded = dlnow;
 	}
 	
 	if(data->data != NULL)
@@ -227,17 +225,17 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 		sprintf(tmpString, "(%d/%d)", data->data->dcontent + 1, data->data->contents);
 		textToFrame(0, ALIGNED_CENTER, tmpString);
 		
-		if(data->data->dltotal < 1024.0f)
+		if(data->data->dltotal < 1024.0D)
 		{
-			multiplier = 1.0f;
+			multiplier = 1.0D;
 			multiplierName = "B";
 		}
-		else if(data->data->dltotal < 1024.0f * 1024.0f)
+		else if(data->data->dltotal < 1024.0D * 1024.0f)
 		{
 			multiplier = 1 << 10;
 			multiplierName = "KB";
 		}
-		else if(data->data->dltotal < 1024.0f * 1024.0f * 1024.0f)
+		else if(data->data->dltotal < 1024.0D * 1024.0D * 1024.0D)
 		{
 			multiplier = 1 << 20;
 			multiplierName = "MB";
@@ -247,7 +245,7 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 			multiplier = 1 << 30;
 			multiplierName = "GB";
 		}
-		data->data->dlnow = data->data->dltmp + dln;
+		data->data->dlnow = data->data->dltmp + dlnow;
 		barToFrame(1, 65, 30, data->data->dlnow / data->data->dltotal * 100.0f);
 		sprintf(tmpString, "%.2f / %.2f %s", data->data->dlnow / multiplier, data->data->dltotal / multiplier, multiplierName);
 		textToFrame(1, 96, tmpString);
@@ -414,7 +412,7 @@ void deinitDownloader()
 
 #define setDefaultDataValues(x) 			\
 	x.error = CURLE_OK;						\
-	x.downloaded = 0.0f;					\
+	x.downloaded = 0.0D;					\
 	x.dlo = -1;								\
 	x.paused = false;						\
 	x.lastDraw = 0;							\
@@ -574,18 +572,18 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	}
 	debugPrintf("curl_easy_perform executed successfully");
 	
-	float dld;
+	double dld;
 	long resp;
 	if(!toRam && fileExist && fileSize == 0) // File skipped by headerCallback
 	{
-		dld = 0.0f;
+		dld = 0.0D;
 		resp = 200;
 	}
 	else
 	{
-		double t;
-		ret = curl_easy_getinfo(curl, CURLINFO_SIZE_DOWNLOAD, &t);
-		dld = ret == CURLE_OK ? (float)t : 0.0f;
+		ret = curl_easy_getinfo(curl, CURLINFO_SIZE_DOWNLOAD, &dld);
+		if(ret != CURLE_OK)
+			dld = 0.0D;
 		
 		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &resp);
 		switch(resp)

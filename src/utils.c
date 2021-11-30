@@ -103,25 +103,25 @@ void toLowercase(char *inOut)
 			inOut[i] += 32;
 }
 
-void getSpeedString(float bytePerSecond, char *out)
+void getSpeedString(double bytePerSecond, char *out)
 {
-	float bitPerSecond = bytePerSecond * 8.0f;
+	double bitPerSecond = bytePerSecond * 8.0D;
 	
-	if(bitPerSecond < 1024.0f)
+	if(bitPerSecond < 1024.0D)
 		sprintf(out, "%.2f b/s (", bitPerSecond);
-	else if(bitPerSecond < 1024.0f * 1024.0f)
-		sprintf(out, "%.2f Kb/s (", bitPerSecond / 1024.0f);
+	else if(bitPerSecond < 1024.0D * 1024.0D)
+		sprintf(out, "%.2f Kb/s (", bitPerSecond / 1024.0D);
 	else
-		sprintf(out, "%.2f Mb/s (", bitPerSecond / (1024.0f * 1024.0f));
+		sprintf(out, "%.2f Mb/s (", bitPerSecond / (1024.0D * 1024.0D));
 	
 	out += strlen(out);
 	
-	if(bytePerSecond < 1024.0f)
+	if(bytePerSecond < 1024.0D)
 		sprintf(out, "%.2f B/s)", bytePerSecond);
-	else if(bytePerSecond < 1024.0f * 1024.0f)
-		sprintf(out, "%.2f KB/s)", bytePerSecond / 1024.0f);
+	else if(bytePerSecond < 1024.0D * 1024.0D)
+		sprintf(out, "%.2f KB/s)", bytePerSecond / 1024.0D);
 	else
-		sprintf(out, "%.2f MB/s)", bytePerSecond / (1024.0f * 1024.0f));
+		sprintf(out, "%.2f MB/s)", bytePerSecond / (1024.0D * 1024.0D));
 }
 
 uint8_t charToByte(char c)
@@ -212,8 +212,9 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 				strcpy(toScreen, inst ? "Installing " : "Uninstalling ");
 				strcat(toScreen, game);
 				textToFrame(0, 0, toScreen);
-				barToFrame(1, 0, 40, progress->sizeProgress * 100.0f / progress->sizeTotal);
-				sprintf(toScreen, "%.2f / %.2f %s", ((float)progress->sizeProgress) / multiplier, ((float)progress->sizeTotal) / multiplier, multiplierName);
+                double prg = (double)progress->sizeProgress;
+				barToFrame(1, 0, 40, prg * 100.0f / progress->sizeTotal);
+				sprintf(toScreen, "%.2f / %.2f %s", prg / multiplier, ((double)progress->sizeTotal) / multiplier, multiplierName);
 				textToFrame(1, 41, toScreen);
 				
 				if(progress->sizeProgress != 0)
@@ -221,8 +222,8 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 					now = OSGetSystemTime();
 					if(OSTicksToMilliseconds(now - lastSpeedCalc) > 333)
 					{
-						getSpeedString(progress->sizeProgress - lsp, speedBuf);
-						lsp = progress->sizeProgress;
+						getSpeedString(prg - lsp, speedBuf);
+						lsp = prg;
 						lastSpeedCalc = now;
 					}
 					textToFrame(1, ALIGNED_RIGHT, speedBuf);

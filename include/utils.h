@@ -76,7 +76,7 @@ bool isLowercaseHexa(char c);
 bool isUppercaseHexa(char c);
 bool isHexa(char c);
 void toLowercase(char *inOut);
-void getSpeedString(float bytePerSecond, char *out);
+void getSpeedString(double bytePerSecond, char *out);
 void hexToByte(const char *hex, uint8_t *out);
 void glueMcpData(MCPInstallTitleInfo *info, McpData *data);
 void showMcpProgress(McpData *data, const char *game, const bool inst);

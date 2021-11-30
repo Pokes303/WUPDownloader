@@ -168,7 +168,7 @@ void boxToFrame(int lineStart, int lineEnd)
 	window->append(box);
 }
 
-void barToFrame(int line, int column, uint32_t width, float progress)
+void barToFrame(int line, int column, uint32_t width, double progress)
 {
 	if(window == NULL)
 		return;
@@ -188,7 +188,7 @@ void barToFrame(int line, int column, uint32_t width, float progress)
 	y += 2;
 	height -= 4;
 	width -= 4;
-	uint32_t barWidth = ((float)width) / 100.0f * progress; //TODO
+	uint32_t barWidth = ((double)width) / 100.0D * progress; //TODO
 	
 	bar = new GuiImage(barData);
 	bar->setScaleQuality(SCALE_LINEAR);
