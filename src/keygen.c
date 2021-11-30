@@ -20,10 +20,10 @@
 #include <wut-fixups.h>
 
 #include <openssl/md5.h>
+#include <openssl/sha.h>
 
 #include <aes.h>
 #include <otp.h>
-#include <pbkdf2.h>
 
 #include <titles.h>
 #include <utils.h>
@@ -96,10 +96,10 @@ char *generateKey(const TitleEntry *te)
 	uint8_t key[16];
 	const char *pw = transformPassword(te->key);
 	debugPrintf("Using password \"%s\"", pw);
-	pbkdf2_hmac_sha1((uint8_t *)pw, strlen(pw), ct, 16, 20, key, 16);
+
+	PKCS5_PBKDF2_HMAC(pw, strlen(pw), ct, 16, 20, EVP_sha1(), 16, key);
 	
 	hexToByte(tid, ct);
-	
 	OSBlockSet(ct + 8, 0, 8);
 	struct AES_ctx aesc;
 	AES_init_ctx_iv(&aesc, getCommonKey(), ct);
