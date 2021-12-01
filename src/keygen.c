@@ -86,20 +86,19 @@ bool generateKey(const TitleEntry *te, char *out)
 	MD5_Update(&md5c, bh, bhl);
 	MD5_Final(&ct[0], &md5c);
 	
-	uint8_t key[16];
 	const char *pw = transformPassword(te->key);
 	debugPrintf("Using password \"%s\"", pw);
 
-	uint8_t key2[16];
-	if(PKCS5_PBKDF2_HMAC_SHA1(pw, strlen(pw), ct, 16, 20, 16, key2) == 0)
-		return NULL;
+	uint8_t key[16];
+	if(PKCS5_PBKDF2_HMAC_SHA1(pw, strlen(pw), ct, 16, 20, 16, key) == 0)
+		return false;
 	
 	hexToByte(tid, ct);
 	OSBlockSet(ct + 8, 0, 8);
 
 	AES_KEY aesk;
 	AES_set_encrypt_key(getCommonKey(), 128, &aesk);
-	AES_cbc_encrypt(key2, (unsigned char *)h, 16, &aesk, ct, AES_ENCRYPT);
+	AES_cbc_encrypt(key, (unsigned char *)h, 16, &aesk, ct, AES_ENCRYPT);
 
 #ifdef NUSSPLI_DEBUG
 	tmp = out;
