@@ -287,10 +287,10 @@ static int dlbgThreadMain(int argc, const char **argv)
  * Thanks to another WUT bug returning CURL_SOCKOPT_ERROR does not do what's described
  * at https://curl.se/libcurl/c/CURLOPT_SOCKOPTFUNCTION.html
  */
-static curl_off_t initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
+static int initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 {
 	int o = 1;
-	curl_off_t ret = CURL_SOCKOPT_OK;
+	int ret = CURL_SOCKOPT_OK;
 
 	// Activate WinScale
 	int r = setsockopt(socket, SOL_SOCKET, SO_WINSCALE, &o, sizeof(o));
