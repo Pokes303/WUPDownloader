@@ -161,7 +161,7 @@ char *tid2name(const char *tid)
 	return e == NULL ? "UNKNOWN" : e->name;
 }
 
-char *name2tid(const char *name)
+bool name2tid(const char *name, char *out)
 {
 	size_t lower = 0;
 	size_t upper = getTitleEntriesSize(TITLE_CATEGORY_ALL);
@@ -172,7 +172,7 @@ char *name2tid(const char *name)
 	{
 		strret =  strcmp(titleEntry[current].name, name);
 		if(strret == 0)
-			return hex(titleEntry[current].tid, 16);
+			return hex(titleEntry[current].tid, 16, out);
 		
 		if(strret < 0)
 			upper = current;
@@ -188,7 +188,7 @@ char *name2tid(const char *name)
 		*/
 		current = ((upper - lower) / 2) + lower;
 	}
-	return NULL;
+	return false;
 }
 
 bool initTitles()

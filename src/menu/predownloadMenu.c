@@ -58,13 +58,12 @@ void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t siz
 	
 	char *toFrame = getToFrameBuffer();
 	strcpy(toFrame, entry->name);
-	char *tid = hex(entry->tid, 16);
-	if(tid != NULL)
+    char tid[17];
+	if(hex(entry->tid, 16, tid))
 	{
 		strcat(toFrame, " [");
 		strcat(toFrame, tid);
 		strcat(toFrame, "]");
-		MEMFreeToDefaultHeap(tid);
 	}
 	textToFrame(1, 3, toFrame);
 	
@@ -185,13 +184,12 @@ void predownloadMenu(const TitleEntry *entry)
 	bool uninstall = false;
 	bool redraw = false;
 	
-	char *tid;
+	char tid[17];
 	char downloadUrl[256];
 downloadTMD:
-	tid = hex(entry->tid, 16);
-	if(tid == NULL)
+	if(!hex(entry->tid, 16, tid))
 	{
-		debugPrintf("OUT OF MEMORY!");
+		debugPrintf("Internal error!");
 		return;
 	}
 	
@@ -199,7 +197,6 @@ downloadTMD:
 	strcpy(downloadUrl, DOWNLOAD_URL);
 	strcat(downloadUrl, tid);
 	strcat(downloadUrl, "/tmd");
-	MEMFreeToDefaultHeap(tid);
 	
 	if(strlen(titleVer) > 0)
 	{
@@ -318,9 +315,9 @@ downloadTMD:
 	
 	if(isDemo(entry))
 	{
-        uint64_t tid = entry->tid;
-		tid &= 0xFFFFFFF0FFFFFFF0; // TODO
-		const TitleEntry *te = getTitleEntryByTid(tid);
+        uint64_t t = entry->tid;
+		t &= 0xFFFFFFF0FFFFFFF0; // TODO
+		const TitleEntry *te = getTitleEntryByTid(t);
 		if(te != NULL)
 		{
 			drawPDDemoFrame(entry, inst);

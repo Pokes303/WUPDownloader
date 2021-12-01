@@ -679,7 +679,25 @@ void showPrepScreen(const char *gameName)
 
 bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles)
 {
-	char *tid = hex(tmd->tid, 16);
+	char tid[17];
+	if(!hex(tmd->tid, 16, tid))
+	{
+		drawErrorFrame("Internal error!", B_RETURN);
+
+		while(AppRunning())
+		{
+			if(app == APP_STATE_BACKGROUND)
+				continue;
+			if(app == APP_STATE_RETURNING)
+				drawErrorFrame("Internal error", B_RETURN);
+
+			showFrame();
+
+			if(vpad.trigger & VPAD_BUTTON_B)
+				break;
+		}
+		return false;
+	}
 	
 	showPrepScreen(titleEntry->name);
 	debugPrintf("Downloading title... tID: %s, tVer: %s, name: %s, folder: %s", tid, titleVer, titleEntry->name, folderName);
@@ -697,7 +715,6 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	strcpy(folderName + strlen(titleEntry->name), " [");
 	strcat(folderName, tid);
 	strcat(folderName, "]");
-	MEMFreeToDefaultHeap(tid);
 	
 	if(strlen(titleVer) > 0)
 	{
@@ -966,13 +983,31 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	data.dcontent = 0;
 	data.dlnow = data.dltmp = data.dltotal = 0.0D;
 	
-	char *apps[data.contents];
+	char apps[data.contents][9];
 	bool h3[data.contents];
 	
 	//Get .app and .h3 files
 	for(int i = 0; i < tmd->num_contents; i++)
 	{
-		apps[i] = hex(tmd->contents[i].cid, 8);
+		if(!hex(tmd->contents[i].cid, 8, apps[i]))
+		{
+			drawErrorFrame("Internal error!", B_RETURN);
+
+			while(AppRunning())
+			{
+				if(app == APP_STATE_BACKGROUND)
+					continue;
+				if(app == APP_STATE_RETURNING)
+					drawErrorFrame("Internal error!", B_RETURN);
+
+				showFrame();
+
+				if(vpad.trigger & VPAD_BUTTON_B)
+					break;
+			}
+			return false;
+		}
+
 		h3[i] = (tmd->contents[i].type & 0x0003) == 0x0003;
 		if(h3[i])
 		{
@@ -991,7 +1026,6 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		strcat(tDownloadUrl, apps[i]);
 		strcpy(tmpFileName, installDir);
 		strcat(tmpFileName, apps[i]);
-		MEMFreeToDefaultHeap(apps[i]);
 		
 		strcpy(tInstallDir, tmpFileName);
 		strcat(tInstallDir, ".app");
@@ -1002,8 +1036,6 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	
 		if(downloadFile(tDownloadUrl, tInstallDir, &data, ft, true) == 1)
 		{
-			for(int j = ++i; j < tmd->num_contents; j++)
-				MEMFreeToDefaultHeap(apps[j]);
 			enableApd();
 			return true;
 		}

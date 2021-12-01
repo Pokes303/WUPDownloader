@@ -45,12 +45,11 @@
 
 bool deinstall(MCPTitleListType title, bool channelHaxx)
 {
-	char *tids = hex(title.titleId, 16);
-	if(tids == NULL)
+	char tid[17];
+	if(!hex(title.titleId, 16, tid))
 		return false;
 	
-	char *game = tid2name(tids);
-	MEMFreeToDefaultHeap(tids);
+	char *game = tid2name(tid);
 	
 	startNewFrame();
 	textToFrame(0, 0, "Uninstalling");

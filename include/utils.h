@@ -66,7 +66,7 @@ typedef struct
 extern int mcpHandle;
 
 char* b_tostring(bool b);
-char* hex(uint64_t i, int digits); //ex: 000050D1
+bool hex(uint64_t i, int digits, char *out); //ex: 000050D1
 bool isNumber(char c);
 bool isLowercase(char c);
 bool isUppercase(char c);

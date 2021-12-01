@@ -103,7 +103,7 @@ TitleEntry *getTitleEntries(TITLE_CATEGORY cat);
 size_t getTitleEntriesSize(TITLE_CATEGORY cat);
 TitleEntry *getTitleEntryByTid(uint64_t tid);
 char *tid2name(const char *tid);
-char *name2tid(const char *name);
+bool name2tid(const char *name, char *out);
 bool initTitles();
 void clearTitles();
 

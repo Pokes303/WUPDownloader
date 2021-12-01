@@ -52,14 +52,13 @@ void generateTik(const char *path, const TitleEntry *titleEntry)
 	if(!generateKey(titleEntry, encKey))
 		return;
 	
-	char *tid = hex(titleEntry->tid, 16);
-	if(tid == NULL)
+	char tid[17];
+	if(!hex(titleEntry->tid, 16, tid))
 		return;
 	
 	NUSFILE *tik = openFile(path, "wb");
 	if(tik == NULL)
 	{
-		MEMFreeToDefaultHeap(tid);
 		char err[1044];
 		sprintf(err, "Could not open path\n%s", path);
 		drawErrorFrame(err, B_RETURN);
@@ -113,7 +112,6 @@ void generateTik(const char *path, const TitleEntry *titleEntry)
 	writeVoidBytes(tik, 0x60);
 	
 	addToIOQueue(NULL, 0, 0, tik);
-	MEMFreeToDefaultHeap(tid);
 }
 
 void drawTicketFrame(const char *titleID)

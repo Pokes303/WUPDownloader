@@ -28,6 +28,8 @@
 #include <titles.h>
 #include <utils.h>
 
+#include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <coreinit/memdefaultheap.h>
@@ -65,11 +67,8 @@ static inline const char *transformPassword(TITLE_KEY in)
 
 bool generateKey(const TitleEntry *te, char *out)
 {
-	if(sizeof(out) < 33)
-		return false;
-
-	char *tid = hex(te->tid, 16);
-	if(tid == NULL)
+	char tid[17];
+	if(!hex(te->tid, 16, tid))
 		return false;
 	
 	char *tmp = tid;
@@ -79,7 +78,6 @@ bool generateKey(const TitleEntry *te, char *out)
 	char h[strlen(KEYGEN_SECRET) + 16 + 1];
 	strcpy(h, KEYGEN_SECRET);
 	strcat(h, tmp);
-	MEMFreeToDefaultHeap(tid);
 	
 	size_t bhl = strlen(h) >> 1;
 	uint8_t bh[bhl];
@@ -112,6 +110,6 @@ bool generateKey(const TitleEntry *te, char *out)
 		sprintf(out, "%02x", h[bhl]);
 	h[++bhl] = '\0';
 	
-	debugPrintf("Key: 0x%s", tmp);
-	return tmp;
+	debugPrintf("Key: 0x%s", out);
+	return true;
 }

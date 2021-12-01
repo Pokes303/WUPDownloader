@@ -38,18 +38,14 @@
 
 int mcpHandle;
 
-char* hex(uint64_t i, int digits) {
-	if(digits > 16)
-		return NULL;
-	
+bool hex(uint64_t i, int digits, char *out) {
 	char x[16];
 	sprintf(x, "%%0%illx", digits);
-	char *result = MEMAllocFromDefaultHeap(sizeof(char) * (digits + 1));
-	if(result == NULL)
-		return NULL;
+    debugPrintf("DEBUG1: %s", x);
 	
-	sprintf(result, x, i);
-	return result;
+	sprintf(out, x, i);
+    debugPrintf("DEBUG2: %s", out);
+	return true;
 }
 
 bool isNumber(char c)
