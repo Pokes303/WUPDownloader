@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <file.h>
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 
@@ -68,10 +69,11 @@ static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData
 	uint32_t data = *(uint32_t *)rawData;
 	if(data)
 	{
-		((char *)buf)[size - 1] = '\0';
-		toLowercase(buf);
+		char *h = (char *)buf;
+		h[size - 1] = '\0';
+		toLowercase(h);
 		uint32_t contentLength = 0;
-		if(sscanf(buf, "content-length: %u", &contentLength) == 1)
+		if(sscanf(h, "content-length: %u", &contentLength) == 1)
 		{
 			debugPrintf("rawData: %d", data);
 			debugPrintf("contentLength: %d", contentLength);
@@ -86,7 +88,6 @@ static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData
 	}
 	return size;
 }
-
 
 typedef struct
 {
@@ -104,36 +105,36 @@ typedef struct
 
 static int progressCallback(void *rawData, double dltotal, double dlnow, double ultotal, double ulnow)
 {
-	curlProgressData *data = (curlProgressData *)rawData;
-	if(!AppRunning())
-	{
-		data->error = CURLE_ABORTED_BY_CALLBACK;
-		return 1;
-	}
-/*	else
-	{
-
-		if(app == APP_STATE_BACKGROUND)
-		{
-			if(!data->paused && curl_easy_pause(data->curl, CURLPAUSE_ALL) == CURLE_OK)
-			{
-				!data->paused = true;
-				debugPrintf("Download paused!");
-			}
-			return 0;
-		}
-		if(!data->paused && curl_easy_pause(data->curl, CURLPAUSE_CONT) == CURLE_OK)
-		{
-			!data->paused = false;
-			lastDraw = lastTransfair = 0;
-			debugPrintf("Download resumed");
-		}
-	}
-*/
 	OSTime now = OSGetSystemTime();
+	curlProgressData *data = (curlProgressData *)rawData;
 
 	if(OSTicksToMilliseconds(now - data->lastInput) > (1000 / 60))
 	{
+		if(!AppRunning())
+		{
+			data->error = CURLE_ABORTED_BY_CALLBACK;
+			return 1;
+		}
+		/*	else
+		{
+
+			if(app == APP_STATE_BACKGROUND)
+			{
+				if(!data->paused && curl_easy_pause(data->curl, CURLPAUSE_ALL) == CURLE_OK)
+				{
+					!data->paused = true;
+					debugPrintf("Download paused!");
+				}
+				return 0;
+			}
+			if(!data->paused && curl_easy_pause(data->curl, CURLPAUSE_CONT) == CURLE_OK)
+			{
+				!data->paused = false;
+				lastDraw = lastTransfair = 0;
+				debugPrintf("Download resumed");
+			}
+		}
+*/
 		data->lastInput = now;
 		readInput();
 		if(data->dlo < 0)
@@ -362,7 +363,7 @@ bool initDownloader()
 	OSSetThreadName(&dlbgThread, "NUSspli socket optimizer");
 	OSResumeThread(&dlbgThread);
 
-	if(curl_global_init(CURL_GLOBAL_DEFAULT) == CURLE_OK)
+	if(curl_global_init_mem(CURL_GLOBAL_DEFAULT, MEMAllocFromDefaultHeap, MEMFreeToDefaultHeap, realloc, strdup, calloc) == CURLE_OK)
 	{
 		curl = curl_easy_init();
 		if(curl != NULL)
@@ -407,7 +408,8 @@ void deinitDownloader()
 		curl = NULL;
 	}
 	curl_global_cleanup();
-	debugPrintf("Socket optimizer returned: %d", killDlbgThread());
+	int ret = killDlbgThread();
+	debugPrintf("Socket optimizer returned: %d", ret);
 }
 
 #define setDefaultDataValues(x) 			\
@@ -667,37 +669,18 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	return 0;
 }
 
-void showPrepScreen(const char *gameName)
-{
-	startNewFrame();
-	textToFrame(0, 0, "Preparing the download of");
-	textToFrame(1, 3, gameName == NULL ? "NULL" : gameName);
-	writeScreenLog();
-	drawFrame();
+#define showPrepScreen(x)										\
+	startNewFrame();											\
+	textToFrame(0, 0, "Preparing the download of");				\
+	textToFrame(1, 3, x == NULL ? "NULL" : x);	\
+	writeScreenLog();											\
+	drawFrame();												\
 	showFrame();
-}
 
 bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles)
 {
 	char tid[17];
-	if(!hex(tmd->tid, 16, tid))
-	{
-		drawErrorFrame("Internal error!", B_RETURN);
-
-		while(AppRunning())
-		{
-			if(app == APP_STATE_BACKGROUND)
-				continue;
-			if(app == APP_STATE_RETURNING)
-				drawErrorFrame("Internal error", B_RETURN);
-
-			showFrame();
-
-			if(vpad.trigger & VPAD_BUTTON_B)
-				break;
-		}
-		return false;
-	}
+	hex(tmd->tid, 16, tid);
 	
 	showPrepScreen(titleEntry->name);
 	debugPrintf("Downloading title... tID: %s, tVer: %s, name: %s, folder: %s", tid, titleVer, titleEntry->name, folderName);
@@ -989,25 +972,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	//Get .app and .h3 files
 	for(int i = 0; i < tmd->num_contents; i++)
 	{
-		if(!hex(tmd->contents[i].cid, 8, apps[i]))
-		{
-			drawErrorFrame("Internal error!", B_RETURN);
-
-			while(AppRunning())
-			{
-				if(app == APP_STATE_BACKGROUND)
-					continue;
-				if(app == APP_STATE_RETURNING)
-					drawErrorFrame("Internal error!", B_RETURN);
-
-				showFrame();
-
-				if(vpad.trigger & VPAD_BUTTON_B)
-					break;
-			}
-			return false;
-		}
-
+		hex(tmd->contents[i].cid, 8, apps[i]);
 		h3[i] = (tmd->contents[i].type & 0x0003) == 0x0003;
 		if(h3[i])
 		{

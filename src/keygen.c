@@ -68,9 +68,7 @@ static inline const char *transformPassword(TITLE_KEY in)
 bool generateKey(const TitleEntry *te, char *out)
 {
 	char tid[17];
-	if(!hex(te->tid, 16, tid))
-		return false;
-	
+	hex(te->tid, 16, tid);
 	char *tmp = tid;
 	while(tmp[0] == '0' && tmp[1] == '0')
 		tmp += 2;

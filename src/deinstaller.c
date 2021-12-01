@@ -46,9 +46,7 @@
 bool deinstall(MCPTitleListType title, bool channelHaxx)
 {
 	char tid[17];
-	if(!hex(title.titleId, 16, tid))
-		return false;
-	
+	hex(title.titleId, 16, tid);
 	char *game = tid2name(tid);
 	
 	startNewFrame();

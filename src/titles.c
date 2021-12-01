@@ -172,7 +172,10 @@ bool name2tid(const char *name, char *out)
 	{
 		strret =  strcmp(titleEntry[current].name, name);
 		if(strret == 0)
-			return hex(titleEntry[current].tid, 16, out);
+        {
+			hex(titleEntry[current].tid, 16, out);
+            return true;
+        }
 		
 		if(strret < 0)
 			upper = current;

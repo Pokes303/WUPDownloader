@@ -59,12 +59,10 @@ void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t siz
 	char *toFrame = getToFrameBuffer();
 	strcpy(toFrame, entry->name);
     char tid[17];
-	if(hex(entry->tid, 16, tid))
-	{
-		strcat(toFrame, " [");
-		strcat(toFrame, tid);
-		strcat(toFrame, "]");
-	}
+	hex(entry->tid, 16, tid);
+	strcat(toFrame, " [");
+	strcat(toFrame, tid);
+	strcat(toFrame, "]");
 	textToFrame(1, 3, toFrame);
 	
 	char *bs;
@@ -187,11 +185,7 @@ void predownloadMenu(const TitleEntry *entry)
 	char tid[17];
 	char downloadUrl[256];
 downloadTMD:
-	if(!hex(entry->tid, 16, tid))
-	{
-		debugPrintf("Internal error!");
-		return;
-	}
+	hex(entry->tid, 16, tid);
 	
 	debugPrintf("Downloading TMD...");
 	strcpy(downloadUrl, DOWNLOAD_URL);

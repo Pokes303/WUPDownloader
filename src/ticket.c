@@ -53,8 +53,7 @@ void generateTik(const char *path, const TitleEntry *titleEntry)
 		return;
 	
 	char tid[17];
-	if(!hex(titleEntry->tid, 16, tid))
-		return;
+	hex(titleEntry->tid, 16, tid);
 	
 	NUSFILE *tik = openFile(path, "wb");
 	if(tik == NULL)

@@ -38,65 +38,10 @@
 
 int mcpHandle;
 
-bool hex(uint64_t i, int digits, char *out) {
-	char x[16];
+void hex(uint64_t i, int digits, char *out) {
+	char x[8]; // max 99 digits!
 	sprintf(x, "%%0%illx", digits);
-    debugPrintf("DEBUG1: %s", x);
-	
 	sprintf(out, x, i);
-    debugPrintf("DEBUG2: %s", out);
-	return true;
-}
-
-bool isNumber(char c)
-{
-	return c >= '0' && c <= '9';
-}
-
-bool isLowercase(char c)
-{
-	return c >= 'a' && c <= 'z';
-}
-
-bool isUppercase(char c)
-{
-	return c >= 'A' && c <= 'Z';
-}
-
-bool isAlphanumerical(char c)
-{
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || isNumber(c);
-}
-
-// Keep it to ASCII for FTPiiU compat.
-bool isAllowedInFilename(char c)
-{
-	return c >= ' ' && c <= '~' && c != '/' && c != '\\' && c != '"' && c != '*' && c != ':' && c != '<' && c != '>' && c != '?' && c != '|';
-}
-
-bool isLowercaseHexa(char c)
-{
-	return isNumber(c) || (c >= 'a' && c <= 'f');
-}
-
-bool isUppercaseHexa(char c)
-{
-	return isNumber(c) || (c >= 'A' && c <= 'F');
-}
-
-bool isHexa(char c)
-{
-	return isLowercaseHexa(c) || (c >= 'A' && c <= 'F');
-}
-
-void toLowercase(char *inOut)
-{
-	if(inOut == NULL)
-		return;
-	
-	for(int i = 0; i < strlen(inOut); i++)
-		if(isUppercase(inOut[i]))
-			inOut[i] += 32;
 }
 
 void getSpeedString(double bytePerSecond, char *out)
