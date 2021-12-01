@@ -22,13 +22,15 @@
 
 #include <wut-fixups.h>
 
+#include <stdbool.h>
+
 #include <titles.h>
 
 #ifdef __cplusplus
 	extern "C" {
 #endif
 
-char *generateKey(const TitleEntry *te);
+bool generateKey(const TitleEntry *te, char *out);
 
 #ifdef __cplusplus
 	}

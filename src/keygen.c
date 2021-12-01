@@ -63,11 +63,14 @@ static inline const char *transformPassword(TITLE_KEY in)
 	}
 }
 
-char *generateKey(const TitleEntry *te)
+bool generateKey(const TitleEntry *te, char *out)
 {
+	if(sizeof(out) < 33)
+		return false;
+
 	char *tid = hex(te->tid, 16);
 	if(tid == NULL)
-		return NULL;
+		return false;
 	
 	char *tmp = tid;
 	while(tmp[0] == '0' && tmp[1] == '0')
@@ -105,14 +108,9 @@ char *generateKey(const TitleEntry *te)
 	AES_set_encrypt_key(getCommonKey(), 128, &aesk);
 	AES_cbc_encrypt(key, (unsigned char *)h, 16, &aesk, ct, AES_ENCRYPT);
 
-	tmp = MEMAllocFromDefaultHeap(33);
-	if(tmp == NULL)
-		return NULL;
-	tmp[32] = '\0';
-
-	tid = tmp;
-	for(bhl = 0; bhl < 16; bhl++, tid += 2)
-		sprintf(tid, "%02x", h[bhl]);
+	for(bhl = 0; bhl < 16; bhl++, out += 2)
+		sprintf(out, "%02x", h[bhl]);
+	h[++bhl] = '\0';
 	
 	debugPrintf("Key: 0x%s", tmp);
 	return tmp;

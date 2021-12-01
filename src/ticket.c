@@ -48,21 +48,17 @@
  */
 void generateTik(const char *path, const TitleEntry *titleEntry)
 {
-	char *encKey = generateKey(titleEntry);
-	if(encKey == NULL)
+    char encKey[33];
+	if(!generateKey(titleEntry, encKey))
 		return;
 	
 	char *tid = hex(titleEntry->tid, 16);
 	if(tid == NULL)
-	{
-		MEMFreeToDefaultHeap(encKey);
 		return;
-	}
 	
 	NUSFILE *tik = openFile(path, "wb");
 	if(tik == NULL)
 	{
-		MEMFreeToDefaultHeap(encKey);
 		MEMFreeToDefaultHeap(tid);
 		char err[1044];
 		sprintf(err, "Could not open path\n%s", path);
@@ -117,7 +113,6 @@ void generateTik(const char *path, const TitleEntry *titleEntry)
 	writeVoidBytes(tik, 0x60);
 	
 	addToIOQueue(NULL, 0, 0, tik);
-	MEMFreeToDefaultHeap(encKey);
 	MEMFreeToDefaultHeap(tid);
 }
 
