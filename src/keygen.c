@@ -20,11 +20,10 @@
 #include <wut-fixups.h>
 
 #include <openssl/aes.h>
-//#include <openssl/evp.h>
+#include <openssl/evp.h>
 #include <openssl/md5.h>
 
 #include <otp.h>
-#include <pbkdf2.h>
 #include <titles.h>
 #include <utils.h>
 
@@ -91,23 +90,23 @@ bool generateKey(const TitleEntry *te, char *out)
 	const char *pw = transformPassword(te->key);
 	debugPrintf("Using password \"%s\"", pw);
 
-// TODO
-//	if(PKCS5_PBKDF2_HMAC_SHA1(pw, strlen(pw), ct, 16, 20, 16, key) == 0)
-//		return NULL;
-	pbkdf2_hmac_sha1((uint8_t *)pw, strlen(pw), ct, 16, 20, key, 16);
+	uint8_t key2[16];
+	if(PKCS5_PBKDF2_HMAC_SHA1(pw, strlen(pw), ct, 16, 20, 16, key2) == 0)
+		return NULL;
 	
 	hexToByte(tid, ct);
-	
 	OSBlockSet(ct + 8, 0, 8);
 
 	AES_KEY aesk;
 	AES_set_encrypt_key(getCommonKey(), 128, &aesk);
-	AES_cbc_encrypt(key, (unsigned char *)h, 16, &aesk, ct, AES_ENCRYPT);
+	AES_cbc_encrypt(key2, (unsigned char *)h, 16, &aesk, ct, AES_ENCRYPT);
 
+#ifdef NUSSPLI_DEBUG
+	tmp = out;
+#endif
 	for(bhl = 0; bhl < 16; bhl++, out += 2)
 		sprintf(out, "%02x", h[bhl]);
-	h[++bhl] = '\0';
 	
-	debugPrintf("Key: 0x%s", out);
+	debugPrintf("Key: 0x%s", tmp);
 	return true;
 }
