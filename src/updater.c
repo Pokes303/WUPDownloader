@@ -203,6 +203,24 @@ bool createDirRecursive(char *dir)
 
 void update(char *newVersion)
 {
+	OSDynLoad_Module mod;
+	int(*RL_UnmountCurrentRunningBundle)();
+	if(isAroma())
+	{
+		OSDynLoad_Error err = OSDynLoad_Acquire("homebrew_rpx_loader", &mod);
+		if(err == OS_DYNLOAD_OK)
+		{
+			err = OSDynLoad_FindExport(mod, false, "RL_UnmountCurrentRunningBundle", (void **)&RL_UnmountCurrentRunningBundle);
+			if(err != OS_DYNLOAD_OK)
+				OSDynLoad_Release(mod);
+		}
+		if(err != OS_DYNLOAD_OK)
+		{
+			showUpdateError("Aroma version too old to allow auto-updates");
+			return;
+		}
+	}
+
 	disableShutdown();
 	removeDirectory(UPDATE_TEMP_FOLDER);
 	NUSFS_ERR err = createDirectory(UPDATE_TEMP_FOLDER, 777);
@@ -217,7 +235,7 @@ void update(char *newVersion)
 			strcat(toScreen, errStr);
 
 		showUpdateError(toScreen);
-		return;
+		goto preUpdateError;
 	}
 
 	char url[55 + (15 * 2) + 9 + 11 + 1];
@@ -235,7 +253,7 @@ void update(char *newVersion)
 	{
 		clearRamBuf();
 		showUpdateErrorf("Error downloading %s", url);
-		return;
+		goto preUpdateError;
 	}
 	
 	startNewFrame();
@@ -394,22 +412,10 @@ void update(char *newVersion)
 				remove(UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
 			
 aromaInstallation:
-			OSDynLoad_Module mod;
-			OSDynLoad_Error err = OSDynLoad_Acquire("homebrew_rpx_loader", &mod);
-			if(err == OS_DYNLOAD_OK)
-			{
-				int(*RL_UnmountCurrentRunningBundle)();
-				err = OSDynLoad_FindExport(mod, false, "RL_UnmountCurrentRunningBundle", (void **)&RL_UnmountCurrentRunningBundle);
-				OSDynLoad_Release(mod);
-				if(err == OS_DYNLOAD_OK)
-				{
-					RL_UnmountCurrentRunningBundle();
-					rename(UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
-					goto finishUpdate;
-				}
-			}
-			showUpdateError("Aroma version too old to allow auto-updates");
-			goto updateError;
+			RL_UnmountCurrentRunningBundle();
+			OSDynLoad_Release(mod);
+			rename(UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
+			goto finishUpdate;
 		}
 		// else
 		if(!dirExists(UPDATE_HBL_FOLDER))
@@ -463,4 +469,7 @@ zipError1:
 	clearRamBuf();
 updateError:
 	removeDirectory(UPDATE_TEMP_FOLDER);
+preUpdateError:
+	if(isAroma())
+		OSDynLoad_Release(mod);
 }
