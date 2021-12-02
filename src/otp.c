@@ -24,9 +24,8 @@
 #include <coreinit/ios.h>
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
-#include <iosuhax.h>
+//#include <iosuhax.h>
 
-#include <iosuhaxx.h>
 #include <otp.h>
 #include <utils.h>
 
@@ -358,33 +357,28 @@ uint8_t *getCommonKey()
 {
 	if(otp_common_key[0] == 0x00)
 	{
-		if(openIOSUhax())
+/*		int r = IOSUHAX_Open(NULL);
+		debugPrintf("IOSUHAX_Open(): %d", r);
+		uint32_t args[3] = { 0x38, (uint32_t)(((uint8_t *)ADDY_AU) - 0xF4000000), 16 };
+		r = IOSUHAX_SVC(0x22, args, 3);
+		IOSUHAX_Close();
+		debugPrintf("IOSUHAX_SVC(): %d", r);
+*/
+		int uhs = IOS_Open("/dev/uhs/0", 0);	// Open /dev/uhs/0 IOS node
+		if(uhs >= 0)
 		{
-			uint8_t buf[0x38 + 16];
-			if(IOSUHAX_read_otp(buf, 0x38 + 16) >= 0)
-				OSBlockMove(otp_common_key, buf + 0x38, 16, false);
-			closeIOSUhax();
-		}
+			uhs_exploit_init();						// Init variables for the exploit
+													//------ROP CHAIN-------
+			int buffer[32];
+			uhs_write32(buffer, CHAIN_START + 0x14, CHAIN_START + 0x14 + 0x4 + 0x20, uhs);
+			uhs_write32(buffer, CHAIN_START + 0x10, 0x1011814C, uhs);
+			uhs_write32(buffer, CHAIN_START + 0xC, SOURCE, uhs);
 
-		if(otp_common_key[0] == 0x00)
-		{
-			debugPrintf("CC: IOSUHAX failed, doing exploit...");
-			int uhs = IOS_Open("/dev/uhs/0", 0);	// Open /dev/uhs/0 IOS node
-			if(uhs >= 0)
-			{
-				uhs_exploit_init();						// Init variables for the exploit
-														//------ROP CHAIN-------
-				int buffer[32];
-				uhs_write32(buffer, CHAIN_START + 0x14, CHAIN_START + 0x14 + 0x4 + 0x20, uhs);
-				uhs_write32(buffer, CHAIN_START + 0x10, 0x1011814C, uhs);
-				uhs_write32(buffer, CHAIN_START + 0xC, SOURCE, uhs);
+			uhs_write32(buffer, CHAIN_START, 0x1012392b, uhs); // pop {R4-R6,PC}
+			IOS_Close(uhs);
 
-				uhs_write32(buffer, CHAIN_START, 0x1012392b, uhs); // pop {R4-R6,PC}
-				IOS_Close(uhs);
-
-				DCInvalidateRange(ADDY_AU, 16); // invalidate PPC cache / get data from RAM
-				OSBlockMove(otp_common_key, ADDY_AU, 16, false);  // Copy common key from transient to static addy
-			}
+			DCInvalidateRange(ADDY_AU, 16); // invalidate PPC cache / get data from RAM
+			OSBlockMove(&otp_common_key[0], ADDY_AU, 16, false);  // Copy common key from transient to static addy
 		}
 		
 #ifdef NUSSPLI_DEBUG

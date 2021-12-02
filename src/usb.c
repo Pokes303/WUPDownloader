@@ -20,7 +20,6 @@
 #include <wut-fixups.h>
 
 #include <file.h>
-#include <iosuhaxx.h>
 #include <status.h>
 #include <usb.h>
 #include <utils.h>
@@ -35,7 +34,30 @@
 #include <iosuhax_devoptab.h>
 
 int fsaHandle = -1;
+bool haxchi;
 bool usb01;
+
+static void iosuCallback(IOSError err, void *dummy)
+{
+	debugPrintf("IOSUHAX: Closing callback!");
+	// An IOSError can't be a positive integer but IOS_ERROR_OK == 0,
+	// so make sure we don't set fsaHandle to 0
+	fsaHandle = err == 0 ? -1 : err;
+}
+
+static inline void IOSUHAXHookClose()
+{
+	//close down wupserver, return control to mcp
+	IOSUHAX_Close();
+	//wait for mcp to return
+	if(haxchi)
+	{
+		while(fsaHandle >= 0)
+			OSSleepTicks(1024 << 10); //TODO: What's a good value here?
+	}
+	else
+		fsaHandle = -1;
+}
 
 bool isUSB01()
 {
@@ -48,13 +70,32 @@ bool mountUSB()
 		return true;
 	
 	// Try to open Aroma/Mocha iosuhax
-	if(!openIOSUhax())
-        return false;
+	if(IOSUHAX_Open(NULL) < 0)
+	{
+		// We're not on Mocha. So try the Haxchi method of taking over MCP
+		IOSError err = IOS_IoctlAsync(mcpHandle, 0x62, NULL, 0, NULL, 0, iosuCallback, NULL);
+		if(err != IOS_ERROR_OK)
+		{
+			debugPrintf("IOSUHAX: Error sending IOCTL: %d", err);
+			return false;
+		}
+		
+		//let wupserver start up
+		OSSleepTicks(OSMillisecondsToTicks(50)); // TODO: Extensively test this in release builds
+		if(IOSUHAX_Open("/dev/mcp") < 0)
+		{
+			debugPrintf("IOSUHAX: Error opening!");
+			return false;
+		}
+		haxchi = true;
+	}
+	else
+		haxchi = false;
 	
 	fsaHandle = IOSUHAX_FSA_Open();
 	if(fsaHandle < 0)
 	{
-		closeIOSUhax();
+		IOSUHAXHookClose();
 		debugPrintf("IOSUHAX: Error opening FSA!");
 		return false;
 	}
@@ -67,7 +108,7 @@ bool mountUSB()
 		if(ret != 0 || !dirExists("usb:/"))
 		{
 			IOSUHAX_FSA_Close(fsaHandle);
-			closeIOSUhax();
+			IOSUHAXHookClose();
 			debugPrintf("IOSUHAX: error mounting USB drive 2: %#010x", ret);
 			return false;
 		}
@@ -87,7 +128,7 @@ void unmountUSB()
 	
 	unmount_fs("usb");
 	IOSUHAX_FSA_Close(fsaHandle);
-	closeIOSUhax();
+	IOSUHAXHookClose();
 	
 	debugPrintf("IOSUHAX: USB drive unmounted!");
 }
