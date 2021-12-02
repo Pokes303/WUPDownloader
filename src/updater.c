@@ -219,11 +219,16 @@ void update(char *newVersion)
 		showUpdateError(toScreen);
 		return;
 	}
-	
+
+	char url[55 + (15 * 2) + 9 + 11 + 1];
+	strcpy(url, "https://github.com/V10lator/NUSspli/releases/download/v");
+	strcat(url, newVersion);
+	strcat(url, "/NUSspli-");
+	strcat(url, newVersion);
 #ifdef NUSSPLI_HBL
-	char *url = UPDATE_DL_URL "h";
+	strcat(url, "-HBL.zip");
 #else
-	char *url = isAroma() ? UPDATE_DL_URL "a" : UPDATE_DL_URL "c";
+	strcat(url, isAroma() ? "-Aroma.zip" : "-Channel.zip");
 #endif
 	
 	if(downloadFile(url, "NUSspli.zip", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)

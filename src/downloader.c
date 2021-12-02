@@ -37,6 +37,7 @@
 #include <menu/utils.h>
 #include <osdefs.h>
 #include <renderer.h>
+#include <romfs.h>
 #include <rumbleThread.h>
 #include <status.h>
 #include <ticket.h>
@@ -51,6 +52,10 @@
 #include <curl/curl.h>
 #include <nsysnet/_socket.h>
 
+#include <openssl/err.h>
+#include <openssl/rand.h>
+#include <openssl/ssl.h>
+
 #define USERAGENT		"NUSspli/" NUSSPLI_VERSION // TODO: Spoof eShop here?
 #define DLBGT_STACK_SIZE	0x2000
 #define SOCKLIB_BUFSIZE		(IO_BUFSIZE * 4) // For send & receive + double buffering
@@ -62,6 +67,9 @@ static CURL *curl;
 static char curlError[CURL_ERROR_SIZE];
 static OSThread dlbgThread;
 static uint8_t *dlbgThreadStack;
+
+uint32_t certSize;
+void *certBuf = NULL;
 
 static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData)
 {
@@ -337,6 +345,37 @@ static int initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 	return ret;
 }
 
+static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
+{
+	BIO *cbio = BIO_new_mem_buf(certBuf, certSize);
+	if(cbio != NULL)
+	{
+		X509_STORE  *cts = SSL_CTX_get_cert_store((SSL_CTX *)sslctx);
+		if(cts != NULL)
+		{
+			STACK_OF(X509_INFO) *inf = PEM_X509_INFO_read_bio(cbio, NULL, NULL, NULL);
+			if(inf != NULL)
+			{
+				X509_INFO *itmp;
+				for(int i = 0; i < sk_X509_INFO_num(inf); i++)
+				{
+					itmp = sk_X509_INFO_value(inf, i);
+					if(itmp->x509)
+						X509_STORE_add_cert(cts, itmp->x509);
+					if(itmp->crl)
+						X509_STORE_add_crl(cts, itmp->crl);
+				}
+
+				sk_X509_INFO_pop_free(inf, X509_INFO_free);
+				BIO_free(cbio);
+				return  CURLE_OK;
+			}
+		}
+		BIO_free(cbio);
+	}
+	return CURLE_ABORTED_BY_CALLBACK;
+}
+
 static int killDlbgThread()
 {
 	shutdownDebug();
@@ -363,28 +402,76 @@ bool initDownloader()
 	OSSetThreadName(&dlbgThread, "NUSspli socket optimizer");
 	OSResumeThread(&dlbgThread);
 
-	if(curl_global_init_mem(CURL_GLOBAL_DEFAULT, MEMAllocFromDefaultHeap, MEMFreeToDefaultHeap, realloc, strdup, calloc) == CURLE_OK)
+	uint32_t buf[64 / 4];
+	for(int i = 0; i < 64 / 4; i++)
+		buf[i] = rand();
+	RAND_seed(&buf, 64);
+
+	CURLcode ret = curl_global_init_mem(CURL_GLOBAL_DEFAULT, MEMAllocFromDefaultHeap, MEMFreeToDefaultHeap, realloc, strdup, calloc);
+	if(ret == CURLE_OK)
 	{
 		curl = curl_easy_init();
 		if(curl != NULL)
 		{
 #ifdef NUSSPLI_DEBUG
-			if(curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curlError) == CURLE_OK)
+			curlError[0] = '\0';
+			ret = curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curlError);
+			if(ret == CURLE_OK)
 			{
 #endif
-				if(curl_easy_setopt(curl, CURLOPT_SOCKOPTFUNCTION, initSocket) == CURLE_OK &&
-					curl_easy_setopt(curl, CURLOPT_USERAGENT, USERAGENT) == CURLE_OK &&
-					curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerCallback) == CURLE_OK &&
-					curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressCallback) == CURLE_OK &&
-					curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L) == CURLE_OK &&
-					curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L) == CURLE_OK
-				)
-					return true;
+				ret = curl_easy_setopt(curl, CURLOPT_SOCKOPTFUNCTION, initSocket);
+				if(ret == CURLE_OK)
+				{
+					ret = curl_easy_setopt(curl, CURLOPT_USERAGENT, USERAGENT);
+					if(ret == CURLE_OK)
+					{
+						ret = curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerCallback);
+						if(ret == CURLE_OK)
+						{
+							ret = curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressCallback);
+							if(ret == CURLE_OK)
+							{
+								ret = curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+								if(ret == CURLE_OK)
+								{
+									ret = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+									if(ret == CURLE_OK)
+									{
+										FILE *f = fopen(ROMFS_PATH "DigiCert_High_Assurance_EV_Root_CA.pem", "rb");
+										if(f != NULL)
+										{
+											certSize = getFilesize(f);
+											certBuf = MEMAllocFromDefaultHeap(certSize);
+											if(certBuf != NULL)
+											{
+												if(fread(certBuf, certSize, 1, f) == 1)
+												{
+													ret = curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, certloader);
+													if(ret == CURLE_OK)
+													{
+														fclose(f);
+														return true;
+													}
+												}
+												MEMFreeToDefaultHeap(certBuf);
+												certBuf = NULL;
+											}
+											fclose(f);
+										}
 #ifdef NUSSPLI_DEBUG
-					debugPrintf("curl_easy_setopt() failed for CURLOPT_ERRORBUFFER!");
+										else
+											debugPrintf("Failed opening certificate file!");
+#endif
+									}
+								}
+							}
+						}
+					}
+				}
+#ifdef NUSSPLI_DEBUG
 			}
-			else
-				debugPrintf("curl_easy_setopt() failed: %s", curlError);
+			if(ret != CURLE_OK)
+				debugPrintf("curl_easy_setopt() failed: %s (%d)", curlError, ret);
 #endif
 			curl_easy_cleanup(curl);
 			curl = NULL;
@@ -408,6 +495,11 @@ void deinitDownloader()
 		curl = NULL;
 	}
 	curl_global_cleanup();
+	if(certBuf != NULL)
+	{
+		MEMFreeToDefaultHeap(certBuf);
+		certBuf = NULL;
+	}
 	int ret = killDlbgThread();
 	debugPrintf("Socket optimizer returned: %d", ret);
 }
