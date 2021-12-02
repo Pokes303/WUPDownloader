@@ -55,9 +55,11 @@ int _main()
 	int(*disable_interrupts)() = (int(*)())0x0812E778;
 	int(*enable_interrupts)(int) = (int(*)(int))0x0812E78C;
 	void(*invalidate_dcache)(unsigned int, unsigned int) = (void(*)())0x08120164;
+	void(*flush_dcache)(unsigned int, unsigned int) = (void(*)())0x08120160;
 	char* (*kernel_memcpy)(void*, void*, int) = (char*(*)(void*, void*, int))0x08131D04;
 	int (*read_otp)(int, void *, unsigned int) = (int (*)(int, void *, unsigned int))0x08120248;
 
+	flush_dcache(0x081200F0, 0x4001); // giving a size >= 0x4000 flushes all cache
 	int level = disable_interrupts();
 	unsigned int control_register = disable_mmu();
 
@@ -83,7 +85,7 @@ int _main()
 
 	/* REENABLE MMU */
 	restore_mmu(control_register);
-	invalidate_dcache(0x081298BC, sizeof(repairData_set_fault_behavior));
+	invalidate_dcache(0x081298BC, 0x4001); // giving a size >= 0x4000 invalidates all cache
 	enable_interrupts(level);
 
     /* Finally copy the OTP */
