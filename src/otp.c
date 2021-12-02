@@ -28,6 +28,7 @@
 
 #include <iosuhaxx.h>
 #include <otp.h>
+#include <status.h>
 #include <utils.h>
 
 #define CHAIN_START         0x1016AD40
