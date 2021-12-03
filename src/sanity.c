@@ -68,7 +68,7 @@ bool sanityCheck()
 			return false;
 		}
 
-		char newPath[1024];
+		char newPath[64];
 		bool ret = false;
 		if(isUsb)
 		{
