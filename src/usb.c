@@ -88,6 +88,7 @@ void unmountUSB()
 	unmount_fs("usb");
 	IOSUHAX_FSA_Close(fsaHandle);
 	closeIOSUhax();
+	fsaHandle = -1;
 	
 	debugPrintf("IOSUHAX: USB drive unmounted!");
 }
