@@ -87,7 +87,7 @@ bool initConfig()
 	if(!ret)
 		fileSize = 1;
 	char fileContent[fileSize];
-	ret = ret && fread(fileContent, 1, fileSize, fp) == fileSize;
+	ret = ret && fread(fileContent, fileSize, 1, fp) == 1;
 	fclose(fp);
 	if(!ret)
 		return false;
