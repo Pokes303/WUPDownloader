@@ -75,7 +75,7 @@ static int ioThreadMain(int argc, const char **argv)
 		}
 
 		if(entry->size != 0) // WRITE command
-			fwrite(entry->buf, 1, entry->size, entry->file->fd);
+			fwrite(entry->buf, entry->size, 1, entry->file->fd);
 		else // Close command
 		{
 			fflush(entry->file->fd);
