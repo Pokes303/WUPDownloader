@@ -102,7 +102,6 @@ int main()
 	textToFrame(0, 0, "Loading MCP...");
 	writeScreenLog();
 	drawFrame();
-	showFrame();
 
 	char *lerr = NULL;
 	mcpHandle = MCP_Open();
@@ -114,7 +113,6 @@ int main()
 		textToFrame(0, 0, "Checking sanity...");
 		writeScreenLog();
 		drawFrame();
-		showFrame();
 
 		if(sanityCheck())
 		{
@@ -124,7 +122,6 @@ int main()
 			textToFrame(0, 0, "Seeding RNG...");
 			writeScreenLog();
 			drawFrame();
-			showFrame();
 
 			srand(OSGetTick());
 
@@ -133,7 +130,6 @@ int main()
 			textToFrame(0, 0, "Initializing rumble...");
 			writeScreenLog();
 			drawFrame();
-			showFrame();
 
 			if(initRumble())
 			{
@@ -143,7 +139,6 @@ int main()
 				textToFrame(0, 0, "Loading downloader...");
 				writeScreenLog();
 				drawFrame();
-				showFrame();
 
 				if(initDownloader())
 				{
@@ -153,7 +148,6 @@ int main()
 					textToFrame(0, 0, "Loading cJSON...");
 					writeScreenLog();
 					drawFrame();
-					showFrame();
 
 					cJSON_Hooks ch;
 					ch.malloc_fn = MEMAllocFromDefaultHeap;
@@ -165,7 +159,6 @@ int main()
 					textToFrame(0, 0, "Loading SWKBD...");
 					writeScreenLog();
 					drawFrame();
-					showFrame();
 
 					if(initConfig())
 					{
@@ -174,8 +167,6 @@ int main()
 						textToFrame(0, 0, "Loading SWKBD...");
 						writeScreenLog();
 						drawFrame();
-						showFrame();
-
 
 						if(SWKBD_Init())
 						{
@@ -184,7 +175,6 @@ int main()
 							textToFrame(0, 0, "Loading I/O thread...");
 							writeScreenLog();
 							drawFrame();
-							showFrame();
 
 							if(initIOThread())
 							{
@@ -193,7 +183,6 @@ int main()
 								textToFrame(0, 0, "Loading config file...");
 								writeScreenLog();
 								drawFrame();
-								showFrame();
 
 								KPADInit();
 								WPADEnableURCC(true);
