@@ -45,10 +45,16 @@ bool sanityCheck()
 	{
 		MCPTitleListType title;
 		if(MCP_GetTitleInfo(mcpHandle, OSGetTitleID(), &title))
+		{
+			debugPrintf("Sanity error: Can't get MCPTitleListType");
 			return false;
+		}
 
-		if(title.path == NULL || strlen(title.path) != 45)
+		if(title.path == NULL || strlen(title.path) != 46)
+		{
+			debugPrintf("Sanity error: Incorrect length of path");
 			return false;
+		}
 
 		title.path[16] = '\0';
 		bool isUsb;
@@ -57,16 +63,18 @@ bool sanityCheck()
 		else if(strcmp(title.path, "/vol/storage_mlc") == 0)
 			isUsb = false;
 		else
+		{
+			debugPrintf("Can't determine storage device (%s)", title.path);
 			return false;
+		}
 
 		char newPath[1024];
 		bool ret = false;
 		if(isUsb)
 		{
 			strcpy(newPath, "usb:");
-			strcat(newPath, title.path + 17);
+			strcat(newPath, title.path + 18);
 			strcat(newPath, "/meta/bootDrcTex.tga");
-
 			mountUSB();
 		}
 
@@ -92,6 +100,7 @@ bool sanityCheck()
 						{
 							if(m[i] != drcTexMd5[i])
 							{
+								debugPrintf("Sanity error: Data integrity error");
 								ret = false;
 								break;
 							}
