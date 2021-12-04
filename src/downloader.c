@@ -20,6 +20,7 @@
 
 #include <wut-fixups.h>
 
+#include <dirent.h>
 #include <errno.h>
 #include <file.h>
 #include <math.h>
@@ -60,6 +61,8 @@
 #define DLBGT_STACK_SIZE	0x2000
 #define SOCKLIB_BUFSIZE		(IO_BUFSIZE * 4) // For send & receive + double buffering
 
+#define MAX_CERTS	2
+
 char *ramBuf = NULL;
 size_t ramBufSize = 0;
 
@@ -68,8 +71,9 @@ static char curlError[CURL_ERROR_SIZE];
 static OSThread dlbgThread;
 static uint8_t *dlbgThreadStack;
 
-uint32_t certSize;
-void *certBuf = NULL;
+uint32_t certs = 0;
+uint32_t certSize[MAX_CERTS];
+void *certBuf[MAX_CERTS];
 
 static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData)
 {
@@ -347,32 +351,42 @@ static int initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 
 static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 {
-	BIO *cbio = BIO_new_mem_buf(certBuf, certSize);
-	if(cbio != NULL)
+	BIO *cbio;
+	X509_STORE *cts;
+	STACK_OF(X509_INFO) *inf;
+	X509_INFO *itmp;
+	for(int i = 0; i < certs; i++)
 	{
-		X509_STORE  *cts = SSL_CTX_get_cert_store((SSL_CTX *)sslctx);
-		if(cts != NULL)
-		{
-			STACK_OF(X509_INFO) *inf = PEM_X509_INFO_read_bio(cbio, NULL, NULL, NULL);
-			if(inf != NULL)
-			{
-				X509_INFO *itmp;
-				for(int i = 0; i < sk_X509_INFO_num(inf); i++)
-				{
-					itmp = sk_X509_INFO_value(inf, i);
-					if(itmp->x509)
-						X509_STORE_add_cert(cts, itmp->x509);
-					if(itmp->crl)
-						X509_STORE_add_crl(cts, itmp->crl);
-				}
+		cbio = BIO_new_mem_buf(certBuf[i], certSize[i]);
+		if(cbio == NULL)
+			goto certloadError1;
 
-				sk_X509_INFO_pop_free(inf, X509_INFO_free);
-				BIO_free(cbio);
-				return  CURLE_OK;
-			}
+		cts = SSL_CTX_get_cert_store((SSL_CTX *)sslctx);
+		if(cts == NULL)
+			goto certloadError2;
+
+		inf = PEM_X509_INFO_read_bio(cbio, NULL, NULL, NULL);
+		if(inf == NULL)
+			goto certloadError2;
+
+		for(int j = 0; j < sk_X509_INFO_num(inf); j++)
+		{
+			itmp = sk_X509_INFO_value(inf, j);
+			if(itmp->x509)
+				X509_STORE_add_cert(cts, itmp->x509);
+			if(itmp->crl)
+				X509_STORE_add_crl(cts, itmp->crl);
 		}
+
+		sk_X509_INFO_pop_free(inf, X509_INFO_free);
 		BIO_free(cbio);
 	}
+
+	return CURLE_OK;
+
+certloadError2:
+	BIO_free(cbio);
+certloadError1:
 	return CURLE_ABORTED_BY_CALLBACK;
 }
 
@@ -437,31 +451,65 @@ bool initDownloader()
 									ret = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 									if(ret == CURLE_OK)
 									{
-										FILE *f = fopen(ROMFS_PATH "DigiCert_High_Assurance_EV_Root_CA.pem", "rb");
-										if(f != NULL)
+										ret = curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, certloader);
+										if(ret == CURLE_OK)
 										{
-											certSize = getFilesize(f);
-											certBuf = MEMAllocFromDefaultHeap(certSize);
-											if(certBuf != NULL)
+											DIR *dir = opendir(ROMFS_PATH "ca-certificates");
+											if(dir != NULL)
 											{
-												if(fread(certBuf, certSize, 1, f) == 1)
+												char fn[1024];
+												strcpy(fn, ROMFS_PATH "ca-certificates/");
+												char *ptr = fn + strlen(fn);
+												FILE *f;
+												bool err = false;
+												for(struct dirent *entry = readdir(dir); entry != NULL && !err && certs < MAX_CERTS; entry = readdir(dir))
 												{
-													ret = curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, certloader);
-													if(ret == CURLE_OK)
+													if(entry->d_name[0] == '.')
+														continue;
+
+													strcpy(ptr, entry->d_name);
+													f = fopen(fn, "rb");
+													if(f != NULL)
 													{
+														certSize[certs] = getFilesize(f);
+														certBuf[certs] = MEMAllocFromDefaultHeap(certSize[certs]);
+														if(certBuf[certs] != NULL)
+														{
+															if(fread(certBuf[certs], certSize[certs], 1, f) != 1)
+															{
+																debugPrintf("Failed reading certificate file (%s)!", fn);
+																err = true;
+															}
+#ifdef NUSSPLI_DEBUG
+															else
+																debugPrintf("Cert %s loaded!", fn);
+#endif
+
+															certs++;
+														}
+														else
+															err = true;
+
 														fclose(f);
-														return true;
+													}
+													else
+													{
+														debugPrintf("Failed opening certificate file (%s)!", fn);
+														err = true;
 													}
 												}
-												MEMFreeToDefaultHeap(certBuf);
-												certBuf = NULL;
+												closedir(dir);
+
+												if(err)
+												{
+													for(int i = 0; i < certs; i++)
+														MEMFreeToDefaultHeap(certBuf[i]);
+													certs = 0;
+												}
+												else
+													return true;
 											}
-											fclose(f);
 										}
-#ifdef NUSSPLI_DEBUG
-										else
-											debugPrintf("Failed opening certificate file!");
-#endif
 									}
 								}
 							}
@@ -495,11 +543,9 @@ void deinitDownloader()
 		curl = NULL;
 	}
 	curl_global_cleanup();
-	if(certBuf != NULL)
-	{
-		MEMFreeToDefaultHeap(certBuf);
-		certBuf = NULL;
-	}
+	for(int i = 0; i < certs; i++)
+		MEMFreeToDefaultHeap(certBuf[i]);
+	certs = 0;
 	int ret = killDlbgThread();
 	debugPrintf("Socket optimizer returned: %d", ret);
 }
