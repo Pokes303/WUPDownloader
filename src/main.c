@@ -162,7 +162,7 @@ int main()
 
 					if(initConfig())
 					{
-						addToScreenLog("onfig loaded!");
+						addToScreenLog("Config loaded!");
 						startNewFrame();
 						textToFrame(0, 0, "Loading SWKBD...");
 						writeScreenLog();
