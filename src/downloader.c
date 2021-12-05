@@ -781,8 +781,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	textToFrame(0, 0, "Preparing the download of");				\
 	textToFrame(1, 3, x == NULL ? "NULL" : x);	\
 	writeScreenLog();											\
-	drawFrame();												\
-	showFrame();
+	drawFrame();
 
 bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles)
 {
@@ -997,7 +996,6 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 			textToFrame(0, 0, "Creating fake title.tik");
 			writeScreenLog();
 			drawFrame();
-			showFrame();
 			
 			generateTik(tInstallDir, titleEntry);
 			addToScreenLog("Fake ticket created successfully");
@@ -1019,7 +1017,6 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		textToFrame(0, 0, "Creating CERT");
 		writeScreenLog();
 		drawFrame();
-		showFrame();
 		
 		NUSFILE *cert = openFile(tInstallDir, "wb");
 		
@@ -1147,7 +1144,6 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	textToFrame(1, 0, "Downloaded successfully!");
 	writeScreenLog();
 	drawFrame();
-	showFrame();
 	
 	startRumble();
 	enableApd();
