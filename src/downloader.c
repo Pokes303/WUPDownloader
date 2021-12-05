@@ -700,11 +700,12 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	debugPrintf("curl_easy_perform executed successfully");
 	
 	double dld;
-	long resp;
+	char *toScreen = getToFrameBuffer();
+	sprintf(toScreen, "Download %s ", cdata.name);
 	if(!toRam && fileExist && fileSize == 0) // File skipped by headerCallback
 	{
 		dld = 0.0D;
-		resp = 200;
+		strcat(toScreen, "skipped!");
 	}
 	else
 	{
@@ -712,6 +713,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		if(ret != CURLE_OK)
 			dld = 0.0D;
 		
+		long resp;
 		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &resp);
 		switch(resp)
 		{
@@ -719,64 +721,65 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 			case 416: // Invalid range request (we assume file already completely on disc)
 				resp = 200;
 		}
-	}
-	
-	debugPrintf("The download returned: %u", resp);
-	if(resp != 200)
-	{
-		if(!toRam)
-		{
-			flushIOQueue();
-			remove(file);
-		}
-		
-		if(resp == 404 && (type & FILE_TYPE_TMD) == FILE_TYPE_TMD) //Title.tmd not found
-		{
-			drawErrorFrame("The download of title.tmd failed with error: 404\n\nThe title cannot be found on the NUS, maybe the provided title ID doesn't exists or\nthe TMD was deleted", B_RETURN | Y_RETRY);
-			
-			while(AppRunning())
-			{
-				if(app == APP_STATE_BACKGROUND)
-					continue;
-				if(app == APP_STATE_RETURNING)
-					drawErrorFrame("The download of title.tmd failed with error: 404\n\nThe title cannot be found on the NUS, maybe the provided title ID doesn't exists or\nthe TMD was deleted", B_RETURN | Y_RETRY);
-				
-				showFrame();
 
-				if(vpad.trigger & VPAD_BUTTON_B)
-					break;
-				if(vpad.trigger & VPAD_BUTTON_Y)
-					return downloadFile(url, file, data, type, resume);
-			}
-			return 1;
-		}
-		else if (resp == 404 && (type & FILE_TYPE_TIK) == FILE_TYPE_TIK) { //Fake ticket needed
-			return 2;
-		}
-		else
+		debugPrintf("The download returned: %u", resp);
+		if(resp != 200)
 		{
-			char *toScreen = getToFrameBuffer();
-			sprintf(toScreen, "The download returned a result different to 200 (OK): %ld\nFile: %s\n\n", resp, file);
-			if(resp == 400)
-				strcat(toScreen, "Request failed. Try again\n\n");
-			drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
-			
-			while(AppRunning())
+			if(!toRam)
 			{
-				if(app == APP_STATE_BACKGROUND)
-					continue;
-				if(app == APP_STATE_RETURNING)
-					drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
-				
-				showFrame();
-				
-				if(vpad.trigger & VPAD_BUTTON_B)
-					break;
-				if(vpad.trigger & VPAD_BUTTON_Y)
-					return downloadFile(url, file, data, type, resume);
+				flushIOQueue();
+				remove(file);
 			}
-			return 1;
+
+			if(resp == 404 && (type & FILE_TYPE_TMD) == FILE_TYPE_TMD) //Title.tmd not found
+			{
+				drawErrorFrame("The download of title.tmd failed with error: 404\n\nThe title cannot be found on the NUS, maybe the provided title ID doesn't exists or\nthe TMD was deleted", B_RETURN | Y_RETRY);
+
+				while(AppRunning())
+				{
+					if(app == APP_STATE_BACKGROUND)
+						continue;
+					if(app == APP_STATE_RETURNING)
+						drawErrorFrame("The download of title.tmd failed with error: 404\n\nThe title cannot be found on the NUS, maybe the provided title ID doesn't exists or\nthe TMD was deleted", B_RETURN | Y_RETRY);
+
+					showFrame();
+
+					if(vpad.trigger & VPAD_BUTTON_B)
+						break;
+					if(vpad.trigger & VPAD_BUTTON_Y)
+						return downloadFile(url, file, data, type, resume);
+				}
+				return 1;
+			}
+			else if (resp == 404 && (type & FILE_TYPE_TIK) == FILE_TYPE_TIK) { //Fake ticket needed
+				return 2;
+			}
+			else
+			{
+				sprintf(toScreen, "The download returned a result different to 200 (OK): %ld\nFile: %s\n\n", resp, file);
+				if(resp == 400)
+					strcat(toScreen, "Request failed. Try again\n\n");
+				drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
+
+				while(AppRunning())
+				{
+					if(app == APP_STATE_BACKGROUND)
+						continue;
+					if(app == APP_STATE_RETURNING)
+						drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
+
+					showFrame();
+
+					if(vpad.trigger & VPAD_BUTTON_B)
+						break;
+					if(vpad.trigger & VPAD_BUTTON_Y)
+						return downloadFile(url, file, data, type, resume);
+				}
+				return 1;
+			}
 		}
+
+		strcat(toScreen, "finished!");
 	}
 	
 	if(data != NULL)
@@ -787,9 +790,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		data->dltmp += dld;
 	}
 	
-	debugPrintf("The file was downloaded successfully");
-	addToScreenLog("Download %s finished!", cdata.name);
-	
+	addToScreenLog(toScreen);
 	return 0;
 }
 
