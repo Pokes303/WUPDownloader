@@ -65,6 +65,8 @@
 #include <sysapp/launch.h>
 #include <whb/crash.h>
 
+#include <openssl/ssl.h>
+
 int main()
 {
 	initStatus();
@@ -114,6 +116,7 @@ int main()
 		writeScreenLog();
 		drawFrame();
 
+		SSL_library_init();
 		if(sanityCheck())
 		{
 			addToScreenLog("Sanity checked!");
