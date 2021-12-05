@@ -477,7 +477,8 @@ bool initDownloader()
 									if(ret == CURLE_OK)
 									{
 										ret = curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, certloader);
-										return true;
+										if(ret == CURLE_OK)
+											return true;
 									}
 								}
 							}
