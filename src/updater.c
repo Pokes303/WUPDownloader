@@ -58,6 +58,12 @@
 #define UPDATE_AROMA_FILE "NUSspli.wuhb"
 #define UPDATE_HBL_FOLDER "fs:/vol/external01/wiiu/apps/NUSspli"
 
+#ifdef NUSSPLI_DEBUG
+	#define NUSSPLI_DLVER "-DEBUG"
+#else
+	#define NUSSPLI_DLVER ""
+#endif
+
 void showUpdateError(const char* msg)
 {
 	enableShutdown();
@@ -244,9 +250,9 @@ void update(char *newVersion)
 	strcat(url, "/NUSspli-");
 	strcat(url, newVersion);
 #ifdef NUSSPLI_HBL
-	strcat(url, "-HBL.zip");
+	strcat(url, "-HBL" NUSSPLI_DLVER ".zip");
 #else
-	strcat(url, isAroma() ? "-Aroma.zip" : "-Channel.zip");
+	strcat(url, isAroma() ? "-Aroma" NUSSPLI_DLVER ".zip" : "-Channel" NUSSPLI_DLVER ".zip");
 #endif
 	
 	if(downloadFile(url, "NUSspli.zip", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
