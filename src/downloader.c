@@ -1138,8 +1138,6 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 			
 			if(downloadFile(tDownloadUrl, tmpFileName, &data, ft, true) == 1)
 			{
-				for(int j = ++i; j < tmd->num_contents; j++)
-					MEMFreeToDefaultHeap(apps[j]);
 				enableApd();
 				return true;
 			}
