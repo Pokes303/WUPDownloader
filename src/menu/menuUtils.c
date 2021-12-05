@@ -111,7 +111,6 @@ void writeScreenLog()
 
 void drawErrorFrame(const char *text, ErrorOptions option)
 {
-	debugPrintf("Error frame");
 	colorStartNewFrame(SCREEN_COLOR_RED);
 	
 	size_t size;
