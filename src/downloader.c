@@ -628,35 +628,43 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	
 	if(ret != CURLE_OK && !(fileExist && ret == CURLE_WRITE_ERROR && fileSize == 0))
 	{
-		debugPrintf("curl_easy_perform returned an error: %s (%d)\nFile: %s\n\n", curlError, ret, toRam ? "<RAM>" : file);
+		debugPrintf("curl_easy_perform returned an error: %s (%d/d)\nFile: %s\n\n", curlError, ret, cdata.error, toRam ? "<RAM>" : file);
 		
-		char *toScreen = getToFrameBuffer();
-		sprintf(toScreen, "curl_easy_perform returned a non-valid value: %d\n\n", ret);
 		if(ret == CURLE_ABORTED_BY_CALLBACK)
-			ret = cdata.error;
+		{
+			switch(cdata.error)
+			{
+				case CURLE_ABORTED_BY_CALLBACK:
+					return 1;
+				case CURLE_OK:
+					break;
+				default:
+					ret = cdata.error;
+			}
+		}
+		char *toScreen = getToFrameBuffer();
+		sprintf(toScreen, "curl_easy_perform returned a non-valid value: %d\n\n---> ", ret);
 		
-		switch(ret) {
+		switch(ret)
+		{
 			case CURLE_RANGE_ERROR:
 				return downloadFile(url, file, data, type, false);
 			case CURLE_FAILED_INIT:
 			case CURLE_COULDNT_RESOLVE_HOST:
-				strcat(toScreen, "---> Network error\nYour WiiU is not connected to the internet,\ncheck the network settings and try again");
+				strcat(toScreen, "Network error\nYour WiiU is not connected to the internet,\ncheck the network settings and try again");
 				break;
 			case CURLE_WRITE_ERROR:
-				strcat(toScreen, "---> Error from SD Card\nThe SD Card was extracted or invalid to write data,\nre-insert it or use another one and restart the app");
+				strcat(toScreen, "Error from SD Card\nThe SD Card was extracted or invalid to write data,\nre-insert it or use another one and restart the app");
 				break;
 			case CURLE_OPERATION_TIMEDOUT:
 			case CURLE_GOT_NOTHING:
 			case CURLE_SEND_ERROR:
 			case CURLE_RECV_ERROR:
 			case CURLE_PARTIAL_FILE:
-				strcat(toScreen, "---> Network error\nFailed while trying to download data, probably your router was turned off,\ncheck the internet connection and try again");
+				strcat(toScreen, "Network error\nFailed while trying to download data, probably your router was turned off,\ncheck the internet connection and try again");
 				break;
-			case CURLE_ABORTED_BY_CALLBACK:
-				debugPrintf("CURLE_ABORTED_BY_CALLBACK");
-				return 1;
 			default:
-				strcat(toScreen, "---> Unknown error\n");
+				strcat(toScreen, "Unknown error\n");
 				strcat(toScreen, curlError);
 				break;
 		}
