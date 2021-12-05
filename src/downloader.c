@@ -446,7 +446,7 @@ bool initDownloader()
 		buf[i] = rand();
 	RAND_seed(&buf, 64);
 
-	CURLcode ret = curl_global_init_mem(CURL_GLOBAL_DEFAULT, MEMAllocFromDefaultHeap, MEMFreeToDefaultHeap, realloc, strdup, calloc);
+	CURLcode ret = curl_global_init_mem(CURL_GLOBAL_DEFAULT | CURL_GLOBAL_SSL, MEMAllocFromDefaultHeap, MEMFreeToDefaultHeap, realloc, strdup, calloc);
 	if(ret == CURLE_OK)
 	{
 		curl = curl_easy_init();
