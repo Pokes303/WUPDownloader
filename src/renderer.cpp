@@ -34,6 +34,7 @@
 #include <gui/video/Renderer.h>
 
 #include <coreinit/thread.h>
+#include <coreinit/time.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 
@@ -61,6 +62,7 @@ SDL_Renderer *sdlRenderer;
 GuiFont *font = NULL;
 uint32_t width, height;
 GuiSound *backgroundMusic = NULL;
+OSTime lastTick;
 
 int32_t spaceWidth;
 
@@ -434,6 +436,8 @@ void resumeRenderer()
 		}
 		flagData[i] = new GuiTextureData(tex);
 	}
+
+	lastTick = OSGetSystemTime();
 }
 
 void initRenderer()
@@ -553,21 +557,17 @@ void colorStartNewFrame(uint32_t color)
 	}
 }
 
-uint32_t lastTick = 0;
 void showFrame()
 {
 	if(window == NULL)
 		return;
+
+	OSTime passed = OSGetSystemTime();
+	passed -= lastTick;
+	if(passed < (OSTime)OSMillisecondsToTicks(1000 / 60))
+		OSSleepTicks(OSMillisecondsToTicks(1000 / 60) - passed);
 	
-	uint32_t now;
-	do
-	{
-		SDL_Delay(5);
-		now = SDL_GetTicks();
-	}
-	while(now - lastTick < 1000 / 60);
-	
-	lastTick = now;
+	lastTick = OSGetSystemTime();
 	readInput();
 }
 

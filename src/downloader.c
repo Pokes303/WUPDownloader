@@ -300,14 +300,13 @@ static int dlbgThreadMain(int argc, const char **argv)
 static int initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 {
 	int o = 1;
-	int ret = CURL_SOCKOPT_OK;
 
 	// Activate WinScale
 	int r = setsockopt(socket, SOL_SOCKET, SO_WINSCALE, &o, sizeof(o));
 	if(r != 0)
 	{
 		debugPrintf("initSocket: Error settings WinScale: %d", r);
-		ret =  CURL_SOCKOPT_ERROR;
+		return CURL_SOCKOPT_ERROR;
 	}
 
 	//Activate TCP SAck
@@ -315,7 +314,7 @@ static int initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 	if(r != 0)
 	{
 		debugPrintf("initSocket: Error settings TCP SAck: %d", r);
-		ret = CURL_SOCKOPT_ERROR;
+		return CURL_SOCKOPT_ERROR;
 	}
 
 	// Activate userspace buffer (fom our socket optimizer)
@@ -323,7 +322,7 @@ static int initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 	if(r != 0)
 	{
 		debugPrintf("initSocket: Error settings UB: %d", r);
-		ret = CURL_SOCKOPT_ERROR;
+		return CURL_SOCKOPT_ERROR;
 	}
 
 	o = IO_BUFSIZE;
@@ -332,7 +331,7 @@ static int initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 	if(r != 0)
 	{
 		debugPrintf("initSocket: Error settings SBS: %d", r);
-		ret = CURL_SOCKOPT_ERROR;
+		return CURL_SOCKOPT_ERROR;
 	}
 
 	// Set receive buffersize
@@ -340,10 +339,10 @@ static int initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 	if(r != 0)
 	{
 		debugPrintf("initSocket: Error settings RBS: %d", r);
-		ret = CURL_SOCKOPT_ERROR;
+		return CURL_SOCKOPT_ERROR;
 	}
 
-	return ret;
+	return CURL_SOCKOPT_OK;
 }
 
 static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
@@ -411,6 +410,8 @@ static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 			sk_X509_INFO_pop_free(inf, X509_INFO_free);
 		}
 	}
+	else
+		debugPrintf("SSL_CTX_get_cert_store failed!");
 
 	return ret;
 }
