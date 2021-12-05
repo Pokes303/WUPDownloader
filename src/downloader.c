@@ -669,16 +669,28 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				break;
 		}
 		
-		drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
-		size_t framesLeft = 30 * 60; // 30 seconds with 60 FPS
+		size_t framesLeft;
+		char *p;
+		if(autoResumeEnabled())
+		{
+			framesLeft = 9 * 60; // 9 seconds with 60 FPS
+			strcat(toScreen, "\n\n");
+			p = toScreen + strlen(toScreen) + 12;
+			strcat(toScreen, "Next try in _ seconds.");
+		}
+		else
+			drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
 		
 		while(AppRunning())
 		{
 			if(app == APP_STATE_BACKGROUND)
 				continue;
-			if(app == APP_STATE_RETURNING)
+
+			if(autoResumeEnabled())
+				*p = '1' + (framesLeft / 60);
+			if(autoResumeEnabled() || app == APP_STATE_RETURNING)
 				drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
-			
+
 			showFrame();
 			
 			if(vpad.trigger & VPAD_BUTTON_B)
