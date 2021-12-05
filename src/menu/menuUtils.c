@@ -116,17 +116,19 @@ void drawErrorFrame(const char *text, ErrorOptions option)
 	
 	size_t size;
 	int line = 0;
-	while(text != NULL)
+	for(; text != NULL; line++)
 	{
 		const char *l = strchr(text, '\n');
 		size = l == NULL ? strlen(text) : (l - text);
+		if(size == 0)
+			continue;
 		
 		char tmp[size + 1];
 		for(int i = 0; i < size; i++)
 			tmp[i] = text[i];
 		
 		tmp[size] = '\0';
-		textToFrame(line++, 0, tmp);
+		textToFrame(line, 0, tmp);
 		
 		text = l == NULL ? NULL : (l + 1);
 	}
