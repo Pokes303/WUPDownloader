@@ -100,139 +100,154 @@ int main()
 		addToScreenLog("WARNING: Error changing main thread priority!");
 
 	startNewFrame();
-	textToFrame(0, 0, "Loading MCP...");
+	textToFrame(0, 0, "Loading OpenSSL...");
 	writeScreenLog();
 	drawFrame();
 
 	char *lerr = NULL;
-	mcpHandle = MCP_Open();
-	if(mcpHandle != 0)
+	if(initSSL())
 	{
-		addToScreenLog("MCP initialized!");
+		addToScreenLog("OpenSSL initialized!");
 
 		startNewFrame();
-		textToFrame(0, 0, "Checking sanity...");
+		textToFrame(0, 0, "Loading MCP...");
 		writeScreenLog();
 		drawFrame();
 
-		if(initSSL() && sanityCheck())
+		mcpHandle = MCP_Open();
+		if(mcpHandle != 0)
 		{
-			addToScreenLog("Sanity checked!");
+			addToScreenLog("MCP initialized!");
 
 			startNewFrame();
-			textToFrame(0, 0, "Initializing rumble...");
+			textToFrame(0, 0, "Checking sanity...");
 			writeScreenLog();
 			drawFrame();
 
-			if(initRumble())
+			if(sanityCheck())
 			{
-				addToScreenLog("Rumble initialized!");
+				addToScreenLog("Sanity checked!");
 
 				startNewFrame();
-				textToFrame(0, 0, "Loading downloader...");
+				textToFrame(0, 0, "Initializing rumble...");
 				writeScreenLog();
 				drawFrame();
 
-				if(initDownloader())
+				if(initRumble())
 				{
-					addToScreenLog("Downloader initialized!");
+					addToScreenLog("Rumble initialized!");
 
 					startNewFrame();
-					textToFrame(0, 0, "Loading cJSON...");
+					textToFrame(0, 0, "Loading downloader...");
 					writeScreenLog();
 					drawFrame();
 
-					cJSON_Hooks ch;
-					ch.malloc_fn = MEMAllocFromDefaultHeap;
-					ch.free_fn = MEMFreeToDefaultHeap;
-					cJSON_InitHooks(&ch);
-
-					addToScreenLog("cJSON initialized!");
-					startNewFrame();
-					textToFrame(0, 0, "Loading SWKBD...");
-					writeScreenLog();
-					drawFrame();
-
-					if(initConfig())
+					if(initDownloader())
 					{
-						addToScreenLog("Config loaded!");
+						addToScreenLog("Downloader initialized!");
+
+						startNewFrame();
+						textToFrame(0, 0, "Loading cJSON...");
+						writeScreenLog();
+						drawFrame();
+
+						cJSON_Hooks ch;
+						ch.malloc_fn = MEMAllocFromDefaultHeap;
+						ch.free_fn = MEMFreeToDefaultHeap;
+						cJSON_InitHooks(&ch);
+
+						addToScreenLog("cJSON initialized!");
 						startNewFrame();
 						textToFrame(0, 0, "Loading SWKBD...");
 						writeScreenLog();
 						drawFrame();
 
-						if(SWKBD_Init())
+						if(initConfig())
 						{
-							addToScreenLog("SWKBD initialized!");
+							addToScreenLog("Config loaded!");
 							startNewFrame();
-							textToFrame(0, 0, "Loading I/O thread...");
+							textToFrame(0, 0, "Loading SWKBD...");
 							writeScreenLog();
 							drawFrame();
 
-							if(initIOThread())
+							if(SWKBD_Init())
 							{
-								addToScreenLog("I/O thread initialized!");
+								addToScreenLog("SWKBD initialized!");
 								startNewFrame();
-								textToFrame(0, 0, "Loading config file...");
+								textToFrame(0, 0, "Loading I/O thread...");
 								writeScreenLog();
 								drawFrame();
 
-								KPADInit();
-								WPADEnableURCC(true);
-
-								checkStacks("main()");
-
-								if(!updateCheck())
+								if(initIOThread())
 								{
-									initTitles();
+									addToScreenLog("I/O thread initialized!");
+									startNewFrame();
+									textToFrame(0, 0, "Loading config file...");
+									writeScreenLog();
+									drawFrame();
 
-									checkStacks("main");
+									KPADInit();
+									WPADEnableURCC(true);
 
-									mainMenu(); // main loop
+									checkStacks("main()");
 
-									debugPrintf("Deinitializing libraries...");
-									clearTitles();
-									saveConfig();
+									if(!updateCheck())
+									{
+										initTitles();
 
-									checkStacks("main");
+										checkStacks("main");
+
+										mainMenu(); // main loop
+
+										debugPrintf("Deinitializing libraries...");
+										clearTitles();
+										saveConfig();
+
+										checkStacks("main");
+									}
+
+									KPADShutdown();
+									shutdownIOThread();
+									debugPrintf("I/O thread closed");
 								}
+								else
+									lerr = "Couldn't load I/O thread!";
 
-								KPADShutdown();
-								shutdownIOThread();
-								debugPrintf("I/O thread closed");
+								SWKBD_Shutdown();
+								debugPrintf("SWKBD closed");
 							}
 							else
-								lerr = "Couldn't load I/O thread!";
-
-							SWKBD_Shutdown();
-							debugPrintf("SWKBD closed");
+								lerr = "Couldn't initialize SWKBD!";
 						}
 						else
-							lerr = "Couldn't initialize SWKBD!";
+							lerr = "Couldn't load config file!";
+
+						deinitDownloader();
 					}
 					else
-						lerr = "Couldn't load config file!";
+						lerr = "Couldn't initialize downloader!";
 
-					deinitDownloader();
+					deinitRumble();
+					debugPrintf("Rumble closed");
 				}
 				else
-					lerr = "Couldn't initialize downloader!";
-
-				deinitRumble();
-				debugPrintf("Rumble closed");
+					lerr = "Couldn't initialize rumble!";
 			}
 			else
-				lerr = "Couldn't initialize rumble!";
+				lerr = "No support for rebrands, use original NUSspli!";
+
+			unmountUSB();
+			MCP_Close(mcpHandle);
+			debugPrintf("MCP closed");
 		}
 		else
-			lerr = "No support for rebrands, use original NUSspli!";
+			lerr = "Couldn't initialize MCP!";
 
-		unmountUSB();
-		MCP_Close(mcpHandle);
-		debugPrintf("MCP closed");
+		deinitSSL();
+		debugPrintf("OpenSSL closed");
 	}
 	else
-		lerr = "Couldn't initialize MCP!";
+		lerr = "Couldn't initialize OpenSSL!";
 	
 	if(lerr != NULL)
 	{
