@@ -38,6 +38,7 @@
 #include <osdefs.h>
 #include <renderer.h>
 #include <rumbleThread.h>
+#include <ssl.h>
 #include <status.h>
 #include <usb.h>
 #include <utils.h>
@@ -70,6 +71,7 @@ bool deinstall(MCPTitleListType title, bool channelHaxx)
 	//err = MCP_UninstallTitleAsync(mcpHandle, title.path, &info);
 	// The above crashes MCP, so let's leave WUT:
 	debugPrintf("Deleting %s", title.path);
+	OSTime t = OSGetSystemTime();
 	MCPError err = MCP_DeleteTitleAsync(mcpHandle, title.path, &info);
 	if(err != 0)
 	{
@@ -81,6 +83,7 @@ bool deinstall(MCPTitleListType title, bool channelHaxx)
 	
 	if(!channelHaxx)
 		showMcpProgress(&data, game, false);
+	addEntropy(OSGetSystemTime() - t);
 	addToScreenLog("Deinstallation finished!");
 	
 	if(channelHaxx)

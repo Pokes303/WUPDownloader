@@ -40,6 +40,7 @@
 #include <renderer.h>
 #include <romfs.h>
 #include <rumbleThread.h>
+#include <ssl.h>
 #include <status.h>
 #include <ticket.h>
 #include <titles.h>
@@ -74,6 +75,7 @@ static uint8_t *dlbgThreadStack;
 
 static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData)
 {
+	addEntropy(OSGetTick());
 	size *= multi;
 	uint32_t data = *(uint32_t *)rawData;
 	if(data)
@@ -115,6 +117,7 @@ typedef struct
 static int progressCallback(void *rawData, double dltotal, double dlnow, double ultotal, double ulnow)
 {
 	OSTime now = OSGetSystemTime();
+	addEntropy(now);
 	curlProgressData *data = (curlProgressData *)rawData;
 
 	if(OSTicksToMilliseconds(now - data->lastInput) > (1000 / 60))
@@ -363,12 +366,15 @@ static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 				char *ptr = fn + strlen(fn);
 				STACK_OF(X509_INFO) *inft;
 				bool err = false;
+				OSTime t = OSGetSystemTime();
+				OSTime t2;
 				for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
 				{
 					if(entry->d_name[0] == '.')
 						continue;
 
 					strcpy(ptr, entry->d_name);
+					t2 = OSGetSystemTime();
 					f = fopen(fn, "rb");
 					if(f == NULL)
 					{
@@ -377,9 +383,9 @@ static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 						break;
 					}
 
-
 					inft = PEM_X509_INFO_read(f, inf, NULL, NULL);
 					fclose(f);
+					addEntropy(OSGetSystemTime() - t2);
 					if(inft == NULL)
 					{
 						err = true;
@@ -388,6 +394,7 @@ static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 					debugPrintf("Cert %s loaded!", fn);
 				}
 				closedir(dir);
+				addEntropy(OSGetSystemTime() - t);
 
 				if(!err)
 				{
@@ -428,6 +435,7 @@ static int killDlbgThread()
 
 bool initDownloader()
 {
+	OSTime t = OSGetSystemTime();
 	dlbgThreadStack = MEMAllocFromDefaultHeapEx(DLBGT_STACK_SIZE, 8);
 
 	if(dlbgThreadStack == NULL)
@@ -474,7 +482,10 @@ bool initDownloader()
 									{
 										ret = curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, certloader);
 										if(ret == CURLE_OK)
+										{
+											addEntropy(OSGetSystemTime() - t);
 											return true;
+										}
 									}
 								}
 							}
@@ -604,7 +615,9 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		fseek(((NUSFILE *)fp)->fd, 0, SEEK_END);
 	
 	debugPrintf("Calling curl_easy_perform()");
+	OSTime t = OSGetSystemTime();
 	ret = curl_easy_perform(curl);
+	addEntropy(OSGetSystemTime() - t);
 	if(cdata.dlo >= 0)
 		removeErrorOverlay(cdata.dlo);
 
@@ -786,6 +799,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	}
 	
 	addToScreenLog(toScreen);
+	reseed();
 	return 0;
 }
 

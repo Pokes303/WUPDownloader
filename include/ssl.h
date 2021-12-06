@@ -23,6 +23,7 @@
 #include <wut-fixups.h>
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 	extern "C" {
@@ -31,6 +32,8 @@
 #define deinitSSL()
 
 bool initSSL();
+void reseed();
+void addEntropy(uint32_t e);
 
 #ifdef __cplusplus
 	}

@@ -48,6 +48,7 @@
 #include <input.h>
 #include <renderer.h>
 #include <romfs.h>
+#include <ssl.h>
 #include <swkbd_wrapper.h>
 #include <utils.h>
 #include <menu/utils.h>
@@ -327,6 +328,7 @@ void tabToFrame(int line, int column, char *label, bool active)
 
 int addErrorOverlay(const char *err)
 {
+	addEntropy(OSGetTick());
 	if(window == NULL)
 		return -1;
 
@@ -371,6 +373,7 @@ int addErrorOverlay(const char *err)
 
 void removeErrorOverlay(int id)
 {
+	addEntropy(OSGetTick());
 	if(errorOverlay[id] == NULL)
 		return;
 	
@@ -404,6 +407,7 @@ void resumeRenderer()
 	spaceWidth = space->getWidth();
 	delete space;
 	
+	OSTime t = OSGetSystemTime();
 	arrowData = new GuiTextureData(ROMFS_PATH "textures/arrow.png"); //TODO: Error handling...
 	checkmarkData = new GuiTextureData(ROMFS_PATH "textures/checkmark.png");
 	tabData = new GuiTextureData(ROMFS_PATH "textures/tab.png");
@@ -438,6 +442,7 @@ void resumeRenderer()
 	}
 
 	lastTick = OSGetSystemTime();
+	addEntropy(lastTick - t);
 }
 
 void initRenderer()
@@ -452,6 +457,7 @@ void initRenderer()
 	renderer = sys->getRenderer();
 	sdlRenderer = renderer->getRenderer();
 	
+	OSTime t = OSGetSystemTime();
 	backgroundMusic = new GuiSound(ROMFS_PATH "audio/bg.mp3");
 	if(backgroundMusic != NULL)
 	{
@@ -459,6 +465,7 @@ void initRenderer()
 		backgroundMusic->SetVolume(15);
 		backgroundMusic->Play();
 	}
+	addEntropy(OSGetSystemTime() - t);
 	
 	resumeRenderer();
 	
@@ -567,6 +574,8 @@ void showFrame()
 	if(passed < (OSTime)OSMillisecondsToTicks(1000 / 60))
 		OSSleepTicks(OSMillisecondsToTicks(1000 / 60) - passed);
 	
+	passed += lastTick;
+	addEntropy(OSGetSystemTime() - passed);
 	lastTick = OSGetSystemTime();
 	readInput();
 }

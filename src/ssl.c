@@ -20,6 +20,7 @@
 #include <wut-fixups.h>
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include <ssl.h>
 
@@ -29,9 +30,11 @@
 #include <openssl/rand_drbg.h>
 #include <openssl/ssl.h>
 
+uint32_t entropy;
+
 static int osslSeed(const void *buf, int num)
 {
-	srand(OSGetTick());
+	reseed();
 	return 1;
 }
 
@@ -67,8 +70,19 @@ static const RAND_METHOD srm = {
 	.status = osslStatus,
 };
 
+void reseed()
+{
+	srand(entropy);
+}
+
+void addEntropy(uint32_t e)
+{
+	entropy ^= e;
+}
+
 bool initSSL()
 {
+	entropy = OSGetTick();
 	osslSeed(NULL, 0);
 	return OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS, NULL) == 1 &&
 		RAND_set_rand_method(&srm) == 1 &&

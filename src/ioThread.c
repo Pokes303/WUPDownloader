@@ -30,6 +30,7 @@
 
 #include <file.h>
 #include <ioThread.h>
+#include <ssl.h>
 #include <utils.h>
 
 #define IOT_STACK_SIZE		0x2000
@@ -64,6 +65,7 @@ static int ioThreadMain(int argc, const char **argv)
 #endif
 	uint32_t asl;
 	WriteQueueEntry *entry;
+	OSTime t;
 	while(ioRunning)
 	{
 		asl = activeWriteBuffer;
@@ -78,10 +80,12 @@ static int ioThreadMain(int argc, const char **argv)
 			fwrite(entry->buf, entry->size, 1, entry->file->fd);
 		else // Close command
 		{
+			t = OSGetSystemTime();
 			fflush(entry->file->fd);
 			fclose(entry->file->fd);
 			MEMFreeToDefaultHeap(entry->file->buffer);
 			MEMFreeToDefaultHeap((void *)entry->file);
+			addEntropy(OSGetSystemTime() - t);
 		}
 
 		if(++asl == MAX_IO_QUEUE_ENTRIES)
@@ -96,6 +100,7 @@ static int ioThreadMain(int argc, const char **argv)
 
 bool initIOThread()
 {
+	OSTime t = OSGetSystemTime();
 	ioThreadStack = MEMAllocFromDefaultHeapEx(IOT_STACK_SIZE, 8);
 	if(ioThreadStack == NULL)
 		return false;
@@ -123,6 +128,7 @@ bool initIOThread()
 	
 	ioRunning = true;
 	OSResumeThread(&ioThread);
+	addEntropy(OSGetSystemTime() - t);
 	return true;
 
 initExit2:
@@ -234,6 +240,7 @@ void flushIOQueue()
 
 NUSFILE *openFile(const char *path, const char *mode)
 {
+	OSTime t = OSGetSystemTime();
 	NUSFILE *ret = MEMAllocFromDefaultHeap(sizeof(NUSFILE));
 	if(ret == NULL)
 		return NULL;
@@ -256,5 +263,6 @@ NUSFILE *openFile(const char *path, const char *mode)
 	if(setvbuf(ret->fd, ret->buffer, _IOFBF, IO_MAX_FILE_BUFFER) != 0)
 		debugPrintf("Error setting buffer!");
 	
+	addEntropy(OSGetSystemTime() - t);
 	return ret;
 }

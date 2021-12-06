@@ -23,6 +23,7 @@
 #include <file.h>
 #include <input.h>
 #include <renderer.h>
+#include <ssl.h>
 #include <status.h>
 #include <usb.h>
 #include <menu/filebrowser.h>
@@ -81,6 +82,7 @@ char *fileBrowserMenu()
 	DIR *dir;
 	
 refreshDirList:
+    OSTime t = OSGetSystemTime();
 	usbMounted = mountUSB();
 	if(!usbMounted)
 		onUSB = false;
@@ -106,6 +108,7 @@ refreshDirList:
 			}
 		closedir(dir);
 	}
+	addEntropy(OSGetSystemTime() - t);
 	
 	drawFBMenuFrame(folders, foldersSize, pos, cursor, onUSB);
 	

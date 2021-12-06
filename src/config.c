@@ -29,11 +29,13 @@
 #include <input.h>
 #include <osdefs.h>
 #include <renderer.h>
+#include <ssl.h>
 #include <swkbd_wrapper.h>
 #include <utils.h>
 #include <menu/utils.h>
 
 #include <coreinit/memdefaultheap.h>
+#include <coreinit/time.h>
 
 #define CONFIG_VERSION 1
 
@@ -78,6 +80,7 @@ bool initConfig()
 			return false;
 	}
 	
+	OSTime t = OSGetSystemTime();
 	FILE *fp = fopen(CONFIG_PATH, "rb");
 	if(fp == NULL)
 		return false;
@@ -89,6 +92,7 @@ bool initConfig()
 	char fileContent[fileSize];
 	ret = ret && fread(fileContent, fileSize, 1, fp) == 1;
 	fclose(fp);
+	addEntropy(OSGetSystemTime() - t);
 	if(!ret)
 		return false;
 	
@@ -300,6 +304,7 @@ bool saveConfig()
 	if(configString == NULL)
 		return false;
 	
+	OSTime t = OSGetSystemTime();
 	FILE *fp = fopen(CONFIG_PATH, "w");
 	if(fp == NULL)
 		return false;
@@ -307,6 +312,7 @@ bool saveConfig()
 	fwrite(configString, strlen(configString), 1, fp);
 	debugPrintf("Config written!");
 	fclose(fp);
+	addEntropy(OSGetSystemTime() - t);
 	
 	changed = false;
 	return true;

@@ -37,6 +37,7 @@
 #include <ioThread.h>
 #include <renderer.h>
 #include <rumbleThread.h>
+#include <ssl.h>
 #include <status.h>
 #include <usb.h>
 #include <utils.h>
@@ -78,7 +79,9 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	}
 	
 	// Let's see if MCP is able to parse the TMD...
+	OSTime t = OSGetSystemTime();
 	data.err = MCP_InstallGetInfo(mcpHandle, newPath, (MCPInstallInfo *)&info);
+	addEntropy(OSGetSystemTime() - t);
 	if(data.err != 0)
 	{
 		char toScreen[2048];
@@ -160,6 +163,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 		flushIOQueue(); // Make sure all game files are on disc
 	
 	// Start the installation process
+	t = OSGetSystemTime();
 	MCPError err = MCP_InstallTitleAsync(mcpHandle, newPath, &info);
 	
 	if(err != 0)
@@ -186,6 +190,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	}
 	
 	showMcpProgress(&data, game, true);
+	addEntropy(OSGetSystemTime() - t);
 	// Quarkys ASAN catched this / seems like MCP already frees it for us
 //	MEMFreeToDefaultHeap(progress);
 	
