@@ -33,6 +33,7 @@
 #include <romfs-wiiu.h>
 #include <rumbleThread.h>
 #include <sanity.h>
+#include <ssl.h>
 #include <status.h>
 #include <ticket.h>
 #include <titles.h>
@@ -64,8 +65,6 @@
 #include <proc_ui/procui.h>
 #include <sysapp/launch.h>
 #include <whb/crash.h>
-
-#include <openssl/ssl.h>
 
 int main()
 {
@@ -116,23 +115,10 @@ int main()
 		writeScreenLog();
 		drawFrame();
 
-		SSL_library_init();
-		uint32_t buf[64 / 4];
-		for(int i = 0; i < 64 / 4; i++)
-			buf[i] = rand() ^ rand() ^ rand();
-		RAND_seed(&buf, 64);
-		if(sanityCheck())
+		if(initSSL() && sanityCheck())
 		{
 			addToScreenLog("Sanity checked!");
 
-			startNewFrame();
-			textToFrame(0, 0, "Seeding RNG...");
-			writeScreenLog();
-			drawFrame();
-
-			srand(OSGetTick());
-
-			addToScreenLog("RNG seeded!");
 			startNewFrame();
 			textToFrame(0, 0, "Initializing rumble...");
 			writeScreenLog();
