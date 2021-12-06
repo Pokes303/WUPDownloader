@@ -53,11 +53,6 @@ static int osslAdd(const void *buf, int num, double entropy)
 	return 1;
 }
 
-static int osslPsr(unsigned char *buf, int num)
-{
-	return osslBytes(buf, num);
-}
-
 static int osslStatus()
 {
 	return 1;
@@ -68,7 +63,7 @@ static const RAND_METHOD srm = {
 	.bytes = osslBytes,
 	.cleanup = osslCleanup,
 	.add = osslAdd,
-	.pseudorand = osslPsr,
+	.pseudorand = osslBytes,
 	.status = osslStatus,
 };
 
@@ -78,9 +73,4 @@ bool initSSL()
 	return OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS, NULL) == 1 &&
 		RAND_set_rand_method(&srm) == 1 &&
 		RAND_DRBG_set_reseed_defaults(0, 0, 0, 0) == 1;
-}
-
-void deinitSSL()
-{
-	// STUB
 }

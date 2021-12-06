@@ -28,6 +28,8 @@
 	extern "C" {
 #endif
 
+#define deinitSSL()
+
 bool initSSL();
 
 #ifdef __cplusplus
