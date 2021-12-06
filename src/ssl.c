@@ -30,7 +30,7 @@
 #include <openssl/rand_drbg.h>
 #include <openssl/ssl.h>
 
-uint32_t entropy;
+static uint32_t entropy;
 
 static int osslSeed(const void *buf, int num)
 {
