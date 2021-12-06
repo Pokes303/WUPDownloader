@@ -38,7 +38,7 @@ static int osslSeed(const void *buf, int num)
 static int osslBytes(unsigned char *buf, int num)
 {
 	for(int i = 0; i < num; i++)
-		buf[i] = rand() ^ rand() ^ rand();
+		buf[i] = rand();
 
 	return 1;
 }
