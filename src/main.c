@@ -117,6 +117,10 @@ int main()
 		drawFrame();
 
 		SSL_library_init();
+		uint32_t buf[64 / 4];
+		for(int i = 0; i < 64 / 4; i++)
+			buf[i] = rand() ^ rand() ^ rand();
+		RAND_seed(&buf, 64);
 		if(sanityCheck())
 		{
 			addToScreenLog("Sanity checked!");

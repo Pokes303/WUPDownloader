@@ -442,11 +442,6 @@ bool initDownloader()
 	OSSetThreadName(&dlbgThread, "NUSspli socket optimizer");
 	OSResumeThread(&dlbgThread);
 
-	uint32_t buf[64 / 4];
-	for(int i = 0; i < 64 / 4; i++)
-		buf[i] = rand();
-	RAND_seed(&buf, 64);
-
 	CURLcode ret = curl_global_init(CURL_GLOBAL_DEFAULT & ~(CURL_GLOBAL_SSL));
 	if(ret == CURLE_OK)
 	{
