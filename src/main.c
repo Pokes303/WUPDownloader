@@ -21,6 +21,7 @@
 #include <wut-fixups.h>
 
 #include <config.h>
+#include <crypto.h>
 #include <downloader.h>
 #include <file.h>
 #include <input.h>
@@ -33,7 +34,6 @@
 #include <romfs-wiiu.h>
 #include <rumbleThread.h>
 #include <sanity.h>
-#include <ssl.h>
 #include <status.h>
 #include <ticket.h>
 #include <titles.h>
@@ -105,7 +105,7 @@ int main()
 	drawFrame();
 
 	char *lerr = NULL;
-	if(initSSL())
+	if(initCrypto())
 	{
 		addToScreenLog("OpenSSL initialized!");
 
@@ -243,7 +243,7 @@ int main()
 		else
 			lerr = "Couldn't initialize MCP!";
 
-		deinitSSL();
+		deinitCrypto();
 		debugPrintf("OpenSSL closed");
 	}
 	else

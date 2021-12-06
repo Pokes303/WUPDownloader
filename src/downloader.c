@@ -29,6 +29,7 @@
 #include <sys/stat.h>
 
 #include <config.h>
+#include <crypto.h>
 #include <downloader.h>
 #include <file.h>
 #include <input.h>
@@ -40,7 +41,6 @@
 #include <renderer.h>
 #include <romfs.h>
 #include <rumbleThread.h>
-#include <ssl.h>
 #include <status.h>
 #include <ticket.h>
 #include <titles.h>

@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_SSL_H
-#define NUSSPLI_SSL_H
+#ifndef NUSSPLI_CRYPTO_H
+#define NUSSPLI_CRYPTO_H
 
 #include <wut-fixups.h>
 
@@ -29,9 +29,9 @@
 	extern "C" {
 #endif
 
-#define deinitSSL()
+#define deinitCrypto()
 
-bool initSSL();
+bool initCrypto();
 void reseed();
 void addEntropy(uint32_t e);
 
@@ -39,4 +39,4 @@ void addEntropy(uint32_t e);
 	}
 #endif
 
-#endif // NUSSPLI_SSL_H
+#endif // NUSSPLI_CRYPTO_H

@@ -22,7 +22,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <ssl.h>
+#include <crypto.h>
 
 #include <coreinit/time.h>
 
@@ -80,7 +80,7 @@ void addEntropy(uint32_t e)
 	entropy ^= e;
 }
 
-bool initSSL()
+bool initCrypto()
 {
 	entropy = OSGetTick();
 	osslSeed(NULL, 0);

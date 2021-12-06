@@ -20,10 +20,10 @@
 
 #include <wut-fixups.h>
 
+#include <crypto.h>
 #include <file.h>
 #include <input.h>
 #include <renderer.h>
-#include <ssl.h>
 #include <status.h>
 #include <usb.h>
 #include <menu/filebrowser.h>

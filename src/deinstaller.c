@@ -31,6 +31,7 @@
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
 
+#include <crypto.h>
 #include <deinstaller.h>
 #include <file.h>
 #include <input.h>
@@ -38,7 +39,6 @@
 #include <osdefs.h>
 #include <renderer.h>
 #include <rumbleThread.h>
-#include <ssl.h>
 #include <status.h>
 #include <usb.h>
 #include <utils.h>

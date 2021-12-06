@@ -44,11 +44,11 @@
 #include <string>
 #include <wchar.h>
 
+#include <crypto.h>
 #include <file.h>
 #include <input.h>
 #include <renderer.h>
 #include <romfs.h>
-#include <ssl.h>
 #include <swkbd_wrapper.h>
 #include <utils.h>
 #include <menu/utils.h>

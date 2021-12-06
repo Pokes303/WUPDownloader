@@ -28,9 +28,9 @@
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
 
+#include <crypto.h>
 #include <file.h>
 #include <ioThread.h>
-#include <ssl.h>
 #include <utils.h>
 
 #define IOT_STACK_SIZE		0x2000

@@ -25,11 +25,11 @@
 
 #include <cJSON.h>
 #include <config.h>
+#include <crypto.h>
 #include <file.h>
 #include <input.h>
 #include <osdefs.h>
 #include <renderer.h>
-#include <ssl.h>
 #include <swkbd_wrapper.h>
 #include <utils.h>
 #include <menu/utils.h>
