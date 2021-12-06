@@ -80,11 +80,8 @@ bool generateKey(const TitleEntry *te, char *out)
 	uint8_t bh[bhl];
 	hexToByte(h, bh);
 	
-	MD5_CTX md5c;
 	uint8_t ct[16];
-	MD5_Init(&md5c);
-	MD5_Update(&md5c, bh, bhl);
-	MD5_Final(&ct[0], &md5c);
+	MD5(bh, bhl, ct);
 	
 	const char *pw = transformPassword(te->key);
 	debugPrintf("Using password \"%s\"", pw);

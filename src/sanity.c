@@ -89,7 +89,6 @@ bool sanityCheck()
 		FILE *f;
 		uint32_t s;
 		void *buf;
-		MD5_CTX md5c;
 		uint8_t m[16];
 		bool ret = true;
 		bool br = false;
@@ -131,10 +130,7 @@ bool sanityCheck()
 				break;
 			}
 
-			MD5_Init(&md5c);
-			MD5_Update(&md5c, buf, s);
-			MD5_Final(&m[0], &md5c);
-
+			MD5(buf, s, m);
 			for(int j = 0; j < 16; j++)
 			{
 				if(m[j] != md5[i][j])
