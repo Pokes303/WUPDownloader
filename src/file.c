@@ -24,6 +24,7 @@
 #include <ioThread.h>
 #include <utils.h>
 
+#include <crypto.h>
 #include <dirent.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -137,6 +138,7 @@ void removeDirectory(const char *path)
 	}
 	
 	char *inSentence = newPath + len;
+	OSTime t = OSGetSystemTime();
 	DIR *dir = opendir(newPath);
 	if(dir != NULL)
 	{
@@ -158,6 +160,8 @@ void removeDirectory(const char *path)
 	}
 	else
 		debugPrintf("Path \"%s\" not found!", newPath);
+
+	addEntropy(OSGetSystemTime() - t);
 }
 
 NUSFS_ERR moveDirectory(const char *src, const char *dest)
@@ -170,6 +174,7 @@ NUSFS_ERR moveDirectory(const char *src, const char *dest)
 		newSrc[len++] = '/';
 	
 	char *inSrc = newSrc + len;
+	OSTime t = OSGetSystemTime();
 	DIR *dir = opendir(src);
 	if(dir == NULL)
 		return NUSFS_ERR_DONTEXIST;
@@ -198,11 +203,13 @@ NUSFS_ERR moveDirectory(const char *src, const char *dest)
 	}
 	closedir(dir);
 	remove(src);
+	addEntropy(OSGetSystemTime() - t);
 	return NUSFS_ERR_NOERR;
 }
 
 long getFilesize(FILE *fp)
 {
+	OSTime t = OSGetSystemTime();
 	off_t i = ftello(fp);
 	if(fseek(fp, 0, SEEK_END) != 0)
 		return -1;
@@ -212,13 +219,16 @@ long getFilesize(FILE *fp)
 		debugPrintf("ftello() failed: %s", strerror(errno));
 	
 	fseeko(fp, i, SEEK_SET);
+	addEntropy(OSGetSystemTime() - t);
 	return fileSize;
 }
 
 NUSFS_ERR createDirectory(const char *path, mode_t mode)
 {
+	OSTime t = OSGetSystemTime();
     if(mkdir(path, mode) == 0)
 		return NUSFS_ERR_NOERR;
+	addEntropy(OSGetSystemTime() - t);
 
 	int ie = errno;
 	switch(ie)

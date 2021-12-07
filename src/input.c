@@ -21,6 +21,7 @@
 #include <wut-fixups.h>
 
 #include <config.h>
+#include <crypto.h>
 #include <input.h>
 #include <messages.h>
 #include <renderer.h>
@@ -39,6 +40,7 @@
 #include <coreinit/memory.h>
 #include <coreinit/messagequeue.h>
 #include <coreinit/thread.h>
+#include <coreinit/time.h>
 #include <padscore/kpad.h>
 #include <padscore/wpad.h>
 
@@ -67,14 +69,16 @@ static void *calcThreadStack;
 OSMessageQueue swkbd_queue;
 OSMessage swkbd_msg[SWKBD_QUEUE_SIZE];
 
-bool isUrl(char c)
+static OSTime lastButtonPress = 0;
+
+static bool isUrl(char c)
 {
 	return isNumber(c) || isLowercase(c) || isUppercase(c) || c == '.' || c == '/' || c == ':' || c == '%' || c == '-' || c == '_'; //TODO
 }
 
 typedef bool (*checkingFunction)(char);
 
-int calcThreadMain(int argc, const char **argv)
+static int calcThreadMain(int argc, const char **argv)
 {
 	OSMessage msg;
 	do
@@ -461,6 +465,14 @@ void readInput()
 		if(vpad.trigger != 0 && kbdHidden)
 			lastUsedController = i;
 	}
+
+	if(vpad.trigger != 0)
+	{
+		OSTime t = OSGetSystemTime();
+		addEntropy(t -lastButtonPress);
+		lastButtonPress = t;
+
+	}
 	
 	if(!altCon && vError == VPAD_READ_INVALID_CONTROLLER)
 	{
@@ -498,6 +510,7 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 	}
 	
 	bool dummy;
+	OSTime t = OSGetSystemTime();
 	while(true)
 	{
 		VPADGetTPCalibratedPoint(VPAD_CHAN_0, &vpad.tpFiltered1, &vpad.tpNormal);
@@ -527,6 +540,7 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 				MEMFreeToDefaultHeap(outputStr);
 			}
 			SWKBD_Hide();
+			addEntropy(OSGetSystemTime() - t);
 			return true;
 		}
 		
@@ -553,6 +567,7 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 		if(close || Swkbd_IsDecideCancelButton(&dummy)) {
 			debugPrintf("SWKBD Cancel button pressed");
 			SWKBD_Hide();
+			addEntropy(OSGetSystemTime() - t);
 			return false;
 		}
 	}

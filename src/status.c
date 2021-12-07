@@ -20,6 +20,7 @@
 
 #include <wut-fixups.h>
 
+#include <crypto.h>
 #include <ioThread.h>
 #include <renderer.h>
 #include <status.h>
@@ -31,6 +32,7 @@
 #include <coreinit/energysaver.h>
 #include <coreinit/foreground.h>
 #include <coreinit/systeminfo.h>
+#include <coreinit/time.h>
 #include <coreinit/title.h>
 #include <proc_ui/procui.h>
 
@@ -118,6 +120,7 @@ uint32_t homeButtonCallback(void *dummy)
 void initStatus()
 {
 	ProcUIInit(&OSSavesDone_ReadyToRelease);
+	OSTime t = OSGetSystemTime();
 	
 	app = APP_STATE_RUNNING;
 	
@@ -144,6 +147,7 @@ void initStatus()
 		apdEnabled = false;
 	}
 	debugPrintf("APD enabled by sys settings: %s (%d)", apdEnabled ? "true" : "false", (uint32_t)ime);
+	addEntropy(OSGetSystemTime() - t);
 }
 
 bool AppRunning()

@@ -77,13 +77,23 @@ void reseed()
 
 void addEntropy(uint32_t e)
 {
-	entropy ^= e;
+	uint8_t *ea = (uint8_t *)&e;
+	uint32_t ee;
+	int s;
+	for(int i = 0; i < 4; i++)
+	{
+		ee = ea[i];
+		s = rand() % 25;
+		if(s)
+			ee = ee << s;
+		entropy ^= ee;
+	}
 }
 
 bool initCrypto()
 {
-	entropy = OSGetTick();
-	osslSeed(NULL, 0);
+	entropy ^= OSGetTick();
+	reseed();
 	return OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS, NULL) == 1 &&
 		RAND_set_rand_method(&srm) == 1 &&
 		RAND_DRBG_set_reseed_defaults(0, 0, 0, 0) == 1;

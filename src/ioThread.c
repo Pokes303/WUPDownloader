@@ -65,7 +65,6 @@ static int ioThreadMain(int argc, const char **argv)
 #endif
 	uint32_t asl;
 	WriteQueueEntry *entry;
-	OSTime t;
 	while(ioRunning)
 	{
 		asl = activeWriteBuffer;
@@ -80,12 +79,10 @@ static int ioThreadMain(int argc, const char **argv)
 			fwrite(entry->buf, entry->size, 1, entry->file->fd);
 		else // Close command
 		{
-			t = OSGetSystemTime();
 			fflush(entry->file->fd);
 			fclose(entry->file->fd);
 			MEMFreeToDefaultHeap(entry->file->buffer);
 			MEMFreeToDefaultHeap((void *)entry->file);
-			addEntropy(OSGetSystemTime() - t);
 		}
 
 		if(++asl == MAX_IO_QUEUE_ENTRIES)

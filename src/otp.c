@@ -24,8 +24,10 @@
 #include <coreinit/ios.h>
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
+#include <coreinit/time.h>
 #include <iosuhax.h>
 
+#include <crypto.h>
 #include <iosuhaxx.h>
 #include <otp.h>
 #include <status.h>
@@ -359,6 +361,7 @@ uint8_t *getCommonKey()
 {
 	if(otp_common_key[0] == 0x00)
 	{
+		OSTime t = OSGetSystemTime();
 #ifndef NUSSPLI_HBL
 		if(isAroma() && openIOSUhax())
 		{
@@ -396,6 +399,7 @@ uint8_t *getCommonKey()
 			sprintf(tmp, "%02x", otp_common_key[i]);
 		debugPrintf("CC: %s", ret);
 #endif
+		addEntropy(OSGetSystemTime() - t);
 	}
 	return otp_common_key;
 }

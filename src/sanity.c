@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <crypto.h>
 #include <file.h>
 #include <status.h>
 #include <usb.h>
@@ -34,6 +35,7 @@
 
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
+#include <coreinit/time.h>
 #include <coreinit/title.h>
 
 #define MD5_FILES 6
@@ -61,6 +63,7 @@ bool sanityCheck()
 	if(isChannel())
 	{
 		MCPTitleListType title;
+		OSTime t = OSGetSystemTime();
 		if(MCP_GetTitleInfo(mcpHandle, OSGetTitleID(), &title))
 		{
 			debugPrintf("Sanity error: Can't get MCPTitleListType");
@@ -149,6 +152,7 @@ bool sanityCheck()
 		if(isUsb)
 			unmountUSB();
 
+		addEntropy(OSGetSystemTime() - t);
 		return ret;
 	}
 
