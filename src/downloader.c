@@ -627,7 +627,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	
 	if(ret != CURLE_OK && !(fileExist && ret == CURLE_WRITE_ERROR && fileSize == 0))
 	{
-		debugPrintf("curl_easy_perform returned an error: %s (%d/d)\nFile: %s\n\n", curlError, ret, cdata.error, toRam ? "<RAM>" : file);
+		debugPrintf("curl_easy_perform returned an error: %s (%d/%d)\nFile: %s\n\n", curlError, ret, cdata.error, toRam ? "<RAM>" : file);
 		
 		if(ret == CURLE_ABORTED_BY_CALLBACK)
 		{
@@ -663,7 +663,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				strcat(toScreen, "Network error\nFailed while trying to download data, probably your router was turned off,\ncheck the internet connection and try again");
 				break;
 			case CURLE_PEER_FAILED_VERIFICATION:
-				strcat(toScreen, "SSL error\nThe servers certificate seems to be invalid,\ncheck our Wii Us date and time settings");
+				strcat(toScreen, "SSL error\nThe servers certificate seems to be invalid,\ncheck your Wii Us date and time settings");
 				break;
 			default:
 				strcat(toScreen, "Unknown error\n");
