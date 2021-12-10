@@ -698,7 +698,10 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 			if(vpad.trigger & VPAD_BUTTON_B)
 				break;
 			if(vpad.trigger & VPAD_BUTTON_Y || (autoResumeEnabled() && --framesLeft == 0))
+			{
+				flushIOQueue(); // We flush here so the last file is completely on disc and closed before we retry.
 				return downloadFile(url, file, data, type, resume);
+			}
 		}
 		return 1;
 	}
