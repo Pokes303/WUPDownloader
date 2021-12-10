@@ -668,6 +668,9 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 			case CURLE_PARTIAL_FILE:
 				strcat(toScreen, "Network error\nFailed while trying to download data, probably your router was turned off,\ncheck the internet connection and try again");
 				break;
+			case CURLE_PEER_FAILED_VERIFICATION:
+				strcat(toScreen, "SSL error\nThe servers certificate seems to be invalid,\ncheck our Wii Us date and time settings");
+				break;
 			default:
 				strcat(toScreen, "Unknown error\n");
 				strcat(toScreen, curlError);
