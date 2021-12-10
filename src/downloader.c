@@ -815,7 +815,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	showPrepScreen(titleEntry->name);
 	debugPrintf("Downloading title... tID: %s, tVer: %s, name: %s, folder: %s", tid, titleVer, titleEntry->name, folderName);
 	
-	char downloadUrl[128];
+	char downloadUrl[256];
 	strcpy(downloadUrl, DOWNLOAD_URL);
 	strcat(downloadUrl, tid);
 	strcat(downloadUrl, "/");
@@ -913,12 +913,10 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	else
 		addToScreenLog("WARNING: The download directory already exists");
 	
-	debugPrintf("Saving TMD...");
-	char tmdp[FILENAME_MAX + 37];
-	strcpy(tmdp, installDir);
-	strcat(tmdp, "title.tmd");
+	char *idp = installDir + strlen(installDir);
+	strcpy(idp, "title.tmd");
 	
-	NUSFILE *fp = openFile(tmdp, "wb");
+	NUSFILE *fp = openFile(installDir, "wb");
 	if(fp == NULL)
 	{
 		drawErrorFrame("Can't save TMD file!", B_RETURN);
@@ -994,35 +992,34 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 			break;
 	}
 	addToScreenLog(toScreen);
-	char tDownloadUrl[256];
-	strcpy(tDownloadUrl, downloadUrl);
-	strcat(tDownloadUrl, "cetk");
-	
-	char tInstallDir[FILENAME_MAX + 37];
-	strcpy(tInstallDir, installDir);
-	strcat(tInstallDir, "title.tik");
+
+	char *dup = downloadUrl + strlen(downloadUrl);
+	strcpy(dup, "cetk");
+	strcpy(idp, "title.tik");
 	FileType ft;
-	if(!fileExists(tInstallDir))
+	if(!fileExists(installDir))
 	{
 		ft = FILE_TYPE_TIK;
 		if(dlToUSB)
 			ft |= FILE_TYPE_TOUSB;
 		
-		int tikRes = downloadFile(tDownloadUrl, tInstallDir, NULL, ft, true);
-		if(tikRes == 1)
+		int tikRes = downloadFile(downloadUrl, installDir, NULL, ft, true);
+		switch(tikRes)
 		{
-			return true;
-		}
-		if(tikRes == 2)
-		{
-			addToScreenLog("title.tik not found on the NUS. Generating...");
-			startNewFrame();
-			textToFrame(0, 0, "Creating fake title.tik");
-			writeScreenLog();
-			drawFrame();
-			
-			generateTik(tInstallDir, titleEntry);
-			addToScreenLog("Fake ticket created successfully");
+			case 2:
+				addToScreenLog("title.tik not found on the NUS. Generating...");
+				startNewFrame();
+				textToFrame(0, 0, "Creating fake title.tik");
+				writeScreenLog();
+				drawFrame();
+
+				generateTik(installDir, titleEntry);
+				addToScreenLog("Fake ticket created successfully");
+				break;
+			case 1:
+				return true;
+			default:
+				break;
 		}
 	}
 	else
@@ -1031,10 +1028,8 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	if(!AppRunning())
 		return true;
 	
-	strcpy(tInstallDir, installDir);
-	strcat(tInstallDir, "title.cert");
-	
-	if(!fileExists(tInstallDir))
+	strcpy(idp, "title.cert");
+	if(!fileExists(installDir))
 	{
 		debugPrintf("Creating CERT...");
 		startNewFrame();
@@ -1042,7 +1037,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		writeScreenLog();
 		drawFrame();
 		
-		NUSFILE *cert = openFile(tInstallDir, "wb");
+		NUSFILE *cert = openFile(installDir, "wb");
 		
 		// NUSspli adds its own header.
 		writeHeader(cert, FILE_TYPE_CERT);
@@ -1112,22 +1107,19 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	}
 	
 	disableApd();
-	char tmpFileName[FILENAME_MAX + 37];
+	char *dupp = dup + 8;
+	char *idpp = idp + 8;
 	for(int i = 0; i < tmd->num_contents && AppRunning(); i++)
 	{
-		strcpy(tDownloadUrl, downloadUrl);
-		strcat(tDownloadUrl, apps[i]);
-		strcpy(tmpFileName, installDir);
-		strcat(tmpFileName, apps[i]);
-		
-		strcpy(tInstallDir, tmpFileName);
-		strcat(tInstallDir, ".app");
+		strcpy(dup, apps[i]);
+		strcpy(idp, apps[i]);
+		strcpy(idpp, ".app");
 		
 		ft = FILE_TYPE_APP;
 		if(dlToUSB)
 			ft |= FILE_TYPE_TOUSB;
 	
-		if(downloadFile(tDownloadUrl, tInstallDir, &data, ft, true) == 1)
+		if(downloadFile(downloadUrl, installDir, &data, ft, true) == 1)
 		{
 			enableApd();
 			return true;
@@ -1136,14 +1128,14 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		
 		if(h3[i])
 		{
-			strcat(tDownloadUrl, ".h3");
-			strcat(tmpFileName, ".h3");
+			strcpy(dupp, ".h3");
+			strcpy(idpp, ".h3");
 			
 			ft = FILE_TYPE_H3;
 			if(dlToUSB)
 				ft |= FILE_TYPE_TOUSB;
 			
-			if(downloadFile(tDownloadUrl, tmpFileName, &data, ft, true) == 1)
+			if(downloadFile(downloadUrl, installDir, &data, ft, true) == 1)
 			{
 				enableApd();
 				return true;
@@ -1159,7 +1151,10 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	}
 	
 	if(inst)
+	{
+		*idp = '\0';
 		return install(titleEntry->name, hasDependencies, dlToUSB, installDir, toUSB, keepFiles);
+	}
 	
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 	textToFrame(0, 0, titleEntry->name);
