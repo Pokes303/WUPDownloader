@@ -84,8 +84,6 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	addEntropy(OSGetSystemTime() - t);
 	if(data.err != 0)
 	{
-		char toScreen[2048];
-		
 		switch(data.err)
 		{
 			case 0xfffbf3e2:
