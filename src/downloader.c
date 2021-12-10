@@ -1186,13 +1186,3 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	
 	return true;
 }
-
-void clearRamBuf()
-{
-	if(ramBuf == NULL)
-		return;
-	
-	ramBufSize = 0;
-	MEMFreeToDefaultHeap(ramBuf);
-	ramBuf = NULL;
-}

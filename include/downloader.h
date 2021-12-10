@@ -30,6 +30,7 @@
 #include <tmd.h>
 #include <menu/download.h>
 
+#include <coreinit/memdefaultheap.h>
 #include <wut_structsize.h>
 
 #ifdef __cplusplus
@@ -50,11 +51,18 @@ extern size_t ramBufSize;
 
 #define DOWNLOAD_URL "http://ccs.cdn.wup.shop.nintendo.net/ccs/download/"
 
+#define clearRamBuf() 					\
+	if(ramBuf != NULL)					\
+	{									\
+		ramBufSize = 0;					\
+		MEMFreeToDefaultHeap(ramBuf);	\
+		ramBuf = NULL;					\
+	}
+
 bool initDownloader();
 void deinitDownloader();
 int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume);
 bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles);
-void clearRamBuf();
 
 #ifdef __cplusplus
 	}
