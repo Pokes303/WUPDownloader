@@ -294,12 +294,6 @@ static int dlbgThreadMain(int argc, const char **argv)
 	return ret;
 }
 
-/*
- * We neither have to call __wut_get_nsysnet_fd(socket); nor use direct setsockopt here
- * thanks to WUT bugs.
- * Thanks to another WUT bug returning CURL_SOCKOPT_ERROR does not do what's described
- * at https://curl.se/libcurl/c/CURLOPT_SOCKOPTFUNCTION.html
- */
 static int initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 {
 	int o = 1;
