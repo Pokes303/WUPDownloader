@@ -63,9 +63,9 @@ void drawMainMenuFrame()
 	textToFrame(15, MAX_CHARS - 24, "Beta testers:");
 	textToFrame(16, MAX_CHARS - 23, "• Anonym");
 	textToFrame(17, MAX_CHARS - 23, "• carcaschoi");
-	textToFrame(18, MAX_CHARS - 23, "• GABO1423");
-	textToFrame(19, MAX_CHARS - 23, "• huma_dawii");
-	textToFrame(20, MAX_CHARS - 23, "• jacobsson");
+	textToFrame(18, MAX_CHARS - 23, "• huma_dawii");
+	textToFrame(19, MAX_CHARS - 23, "• jacobsson");
+	textToFrame(20, MAX_CHARS - 23, "• LuckyDingo");
 	textToFrame(21, MAX_CHARS - 23, "• pirate");
 	textToFrame(22, MAX_CHARS - 23, "• Vague Rant");
 	
