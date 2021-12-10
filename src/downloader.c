@@ -71,7 +71,7 @@ size_t ramBufSize = 0;
 static CURL *curl;
 static char curlError[CURL_ERROR_SIZE];
 static OSThread dlbgThread;
-static uint8_t *dlbgThreadStack;
+static uint8_t *dlbgThreadStack = NULL;
 
 static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData)
 {
@@ -417,32 +417,32 @@ static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 	return ret;
 }
 
-static int killDlbgThread()
-{
-	shutdownDebug();
-	__fini_wut_socket();
-	int ret;
-	OSJoinThread(&dlbgThread, &ret);
-	MEMFreeToDefaultHeap(dlbgThreadStack);
-	return ret;
-}
-
-static inline bool initNetwork()
-{
-	dlbgThreadStack = MEMAllocFromDefaultHeapEx(DLBGT_STACK_SIZE, 8);
-	if(dlbgThreadStack == NULL)
-		return false;
-
-	if(!OSCreateThread(&dlbgThread, dlbgThreadMain, 0, NULL, dlbgThreadStack + DLBGT_STACK_SIZE, DLBGT_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_ANY))
-	{
-		MEMFreeToDefaultHeap(dlbgThreadStack);
-		return false;
+#define killDlbgThread()						\
+	if(dlbgThreadStack != NULL)					\
+	{											\
+		shutdownDebug();						\
+		__fini_wut_socket();					\
+		int ret;								\
+		OSJoinThread(&dlbgThread, &ret);		\
+		MEMFreeToDefaultHeap(dlbgThreadStack);	\
+		dlbgThreadStack = NULL;					\
 	}
 
-	OSSetThreadName(&dlbgThread, "NUSspli socket optimizer");
-	OSResumeThread(&dlbgThread);
-	return true;
-}
+#define initNetwork()																																		\
+	dlbgThreadStack = MEMAllocFromDefaultHeapEx(DLBGT_STACK_SIZE, 8);																						\
+	if(dlbgThreadStack != NULL)																																\
+	{																																						\
+		if(OSCreateThread(&dlbgThread, dlbgThreadMain, 0, NULL, dlbgThreadStack + DLBGT_STACK_SIZE, DLBGT_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_ANY))	\
+		{																																					\
+			OSSetThreadName(&dlbgThread, "NUSspli socket optimizer");																						\
+			OSResumeThread(&dlbgThread);																													\
+		}																																					\
+		else																																				\
+		{																																					\
+			MEMFreeToDefaultHeap(dlbgThreadStack);																											\
+			dlbgThreadStack = NULL;																															\
+		}																																					\
+	}
 
 #define resetNetwork()	\
 	killDlbgThread();	\
@@ -450,7 +450,8 @@ static inline bool initNetwork()
 
 bool initDownloader()
 {
-	if(!initNetwork())
+	initNetwork();
+	if(dlbgThreadStack == NULL)
 		return false;
 
 	OSTime t = OSGetSystemTime();
@@ -522,8 +523,7 @@ void deinitDownloader()
 		curl = NULL;
 	}
 	curl_global_cleanup();
-	int ret = killDlbgThread();
-	debugPrintf("Socket optimizer returned: %d", ret);
+	killDlbgThread();
 }
 
 #define setDefaultDataValues(x) 			\
