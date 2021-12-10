@@ -218,19 +218,41 @@ bool initTitles()
 	writeScreenLog();
 	drawFrame();
 	showFrame();
-	
-	FILE *f = fopen(ROMFS_PATH "titleDB.json", "rb"); //TODO: Error handling...
-	size_t fileSize = getFilesize(f);
-	void *raw = MEMAllocFromDefaultHeap(fileSize);
-	fread(raw, fileSize, 1, f); //TODO: Error handling...
-	fclose(f);
-	cJSON *json = cJSON_ParseWithLength(useOnline ? ramBuf : (char *)raw, useOnline ? ramBufSize : fileSize);
+
+	cJSON *json;
+	void *raw;
+	if(useOnline)
+	{
+		json = cJSON_ParseWithLength(ramBuf, ramBufSize);
+		raw = NULL;
+	}
+	else
+	{
+		FILE *f = fopen(ROMFS_PATH "titleDB.json", "rb");
+		if(f == NULL)
+			return false;
+
+		size_t fileSize = getFilesize(f);
+		raw = MEMAllocFromDefaultHeap(fileSize);
+		if(raw == NULL)
+		{
+			fclose(f);
+			return false;
+		}
+		if(fread(raw, fileSize, 1, f) != 1)
+		{
+			MEMFreeToDefaultHeap(raw);
+			fclose(f);
+			return false;
+		}
+		fclose(f);
+		json = cJSON_ParseWithLength((char *)raw, fileSize);
+	}
+
 	if(json == NULL)
 	{
-		clearRamBuf();
-		MEMFreeToDefaultHeap(raw);
 		debugPrintf("json == NULL");
-		return false;
+		goto titleError;
 	}
 	
 	cJSON *curr[3];
@@ -268,23 +290,11 @@ bool initTitles()
 	
 	titleMemArea = MEMAllocFromDefaultHeap(ma);
 	if(titleMemArea == NULL)
-	{
-		cJSON_Delete(json);
-		clearRamBuf();
-		clearTitles();
-		MEMFreeToDefaultHeap(raw);
-		return false;
-	}
+		goto titleError;
 	
 	titleEntry = MEMAllocFromDefaultHeap(sizeof(TitleEntry) * entries);
 	if(titleEntry == NULL)
-	{
-		cJSON_Delete(json);
-		clearRamBuf();
-		clearTitles();
-		MEMFreeToDefaultHeap(raw);
-		return false;
-	}
+		goto titleError;
 	
 	char *ptr = titleMemArea;
 	entries = 0;
@@ -360,11 +370,27 @@ bool initTitles()
 	}
 	
 	cJSON_Delete(json);
-	clearRamBuf();
-	MEMFreeToDefaultHeap(raw);
+	if(useOnline)
+	{
+		clearRamBuf();
+	}
+	else
+		MEMFreeToDefaultHeap(raw);
 	addToScreenLog("title database parsed!");
 	debugPrintf("%d titles parsed", getTitleEntriesSize(TITLE_CATEGORY_ALL));
 	return true;
+
+titleError:
+	cJSON_Delete(json);
+	if(useOnline)
+	{
+		clearRamBuf();
+	}
+	else
+		MEMFreeToDefaultHeap(raw);
+
+	clearTitles();
+	return false;
 }
 
 void clearTitles()
