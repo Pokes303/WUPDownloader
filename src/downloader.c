@@ -420,18 +420,16 @@ static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 static int killDlbgThread()
 {
 	shutdownDebug();
-	int ret;
 	__fini_wut_socket();
+	int ret;
 	OSJoinThread(&dlbgThread, &ret);
 	MEMFreeToDefaultHeap(dlbgThreadStack);
 	return ret;
 }
 
-bool initDownloader()
+static inline bool initNetwork()
 {
-	OSTime t = OSGetSystemTime();
 	dlbgThreadStack = MEMAllocFromDefaultHeapEx(DLBGT_STACK_SIZE, 8);
-
 	if(dlbgThreadStack == NULL)
 		return false;
 
@@ -440,10 +438,22 @@ bool initDownloader()
 		MEMFreeToDefaultHeap(dlbgThreadStack);
 		return false;
 	}
-	
+
 	OSSetThreadName(&dlbgThread, "NUSspli socket optimizer");
 	OSResumeThread(&dlbgThread);
+	return true;
+}
 
+#define resetNetwork()	\
+	killDlbgThread();	\
+	initNetwork();
+
+bool initDownloader()
+{
+	if(!initNetwork())
+		return false;
+
+	OSTime t = OSGetSystemTime();
 	CURLcode ret = curl_global_init(CURL_GLOBAL_DEFAULT & ~(CURL_GLOBAL_SSL));
 	if(ret == CURLE_OK)
 	{
@@ -700,9 +710,11 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 			if(vpad.trigger & VPAD_BUTTON_Y || (autoResumeEnabled() && --framesLeft == 0))
 			{
 				flushIOQueue(); // We flush here so the last file is completely on disc and closed before we retry.
+				resetNetwork(); // Recover from network errors.
 				return downloadFile(url, file, data, type, resume);
 			}
 		}
+		resetNetwork();
 		return 1;
 	}
 	debugPrintf("curl_easy_perform executed successfully");
