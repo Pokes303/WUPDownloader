@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu type="complex" access="777">
-  <version type="unsignedInt" length="4">1</version>
+  <version type="unsignedInt" length="4">33</version>
   <product_code type="string" length="32">WUP-P-NUSS</product_code>
   <content_platform type="string" length="32">WUP</content_platform>
   <company_code type="string" length="8">0001</company_code>
@@ -18,7 +18,7 @@
   <title_id type="hexBinary" length="8">0005000010155373</title_id>
   <group_id type="hexBinary" length="4">00000812</group_id>
   <boss_id type="hexBinary" length="8">0000000000000000</boss_id>
-  <os_version type="hexBinary" length="8">000500101000400A</os_version>
+  <os_version type="hexBinary" length="8">000500101000800A</os_version>
   <app_size type="hexBinary" length="8">0000000000000000</app_size>
   <common_save_size type="hexBinary" length="8">0000000001790000</common_save_size>
   <account_save_size type="hexBinary" length="8">0000000000000000</account_save_size>
@@ -61,7 +61,7 @@
   <network_use type="unsignedInt" length="4">1</network_use>
   <online_account_use type="unsignedInt" length="4">0</online_account_use>
   <direct_boot type="unsignedInt" length="4">0</direct_boot>
-  <reserved_flag0 type="hexBinary" length="4">00010001</reserved_flag0>
+  <reserved_flag0 type="hexBinary" length="4">00010002</reserved_flag0>
   <reserved_flag1 type="hexBinary" length="4">00000000</reserved_flag1>
   <reserved_flag2 type="hexBinary" length="4">00000000</reserved_flag2>
   <reserved_flag3 type="hexBinary" length="4">00000000</reserved_flag3>
