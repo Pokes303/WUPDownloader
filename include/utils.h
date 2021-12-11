@@ -30,6 +30,7 @@
 #include <uchar.h>
 
 #include <coreinit/mcp.h>
+#include <coreinit/thread.h>
 
 #define NAPI_URL		"https://napi.nbg01.v10lator.de/v2/"
 #define NUSSPLI_COPYRIGHT	"© 2020-2021 V10lator <v10lator@myway.de>"
@@ -64,6 +65,13 @@ typedef struct
 	MCPError err;
 } McpData;
 
+typedef enum
+{
+    THREAD_PRIORITY_HIGH = 17,
+    THREAD_PRIORITY_MEDIUM = 16,
+    THREAD_PRIORITY_LOW = 15,
+} THREAD_PRIORITY;
+
 extern int mcpHandle;
 
 #define isNumber(x) (x >= '0' && x <= '9')
@@ -79,6 +87,7 @@ extern int mcpHandle;
 
 #define toLowercase(x) for(int y = 0; y < strlen(x); y++) if(isUppercase(x[y])) x[y] += 32;
 
+bool startThread(OSThread *thread, const char *name, THREAD_PRIORITY priority, void **stackPtr, size_t stacksize, OSThreadEntryPointFn mainfunc, OSThreadAttributes attribs);
 char* b_tostring(bool b);
 void hex(uint64_t i, int digits, char *out); //ex: 000050D1
 void getSpeedString(double bytePerSecond, char *out);

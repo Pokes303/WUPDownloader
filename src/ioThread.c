@@ -46,7 +46,7 @@ typedef struct
 } WriteQueueEntry;
 
 static OSThread ioThread;
-static uint8_t *ioThreadStack;
+static void *ioThreadStack;
 static volatile bool ioRunning = false;
 #ifdef NUSSPLI_DEBUG
 static volatile uint32_t ioWriteLock = true;
@@ -97,41 +97,32 @@ static int ioThreadMain(int argc, const char **argv)
 
 bool initIOThread()
 {
-	OSTime t = OSGetSystemTime();
-	ioThreadStack = MEMAllocFromDefaultHeapEx(IOT_STACK_SIZE, 8);
-	if(ioThreadStack == NULL)
-		return false;
-	
-	if(!OSCreateThread(&ioThread, ioThreadMain, 0, NULL, ioThreadStack + IOT_STACK_SIZE, IOT_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_CPU0)) // We move this to core 0 for maximum performance. Later on move it back to core 1 as we want download threads on core 0 and 2.
-		goto initExit1;
-
-	OSSetThreadName(&ioThread, "NUSspli I/O");
-	
 	queueEntries = MEMAllocFromDefaultHeap(MAX_IO_QUEUE_ENTRIES * sizeof(WriteQueueEntry));
 	if(queueEntries == NULL)
-		goto initExit1;
-	
+		return false;
+
 	uint8_t *ptr = (uint8_t *)MEMAllocFromDefaultHeap(MAX_IO_QUEUE_ENTRIES * IO_BUFSIZE);
 	if(ptr == NULL)
-		goto initExit2;
-	
+		goto initExit1;
+
 	for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; i++, ptr += IO_BUFSIZE)
 	{
 		queueEntries[i].buf = (void *)ptr;
 		queueEntries[i].inUse = false;
 	}
-	
+
 	activeReadBuffer = activeWriteBuffer = 0;
-	
 	ioRunning = true;
-	OSResumeThread(&ioThread);
-	addEntropy(OSGetSystemTime() - t);
+
+    if(!startThread(&ioThread, "NUSspli I/O", THREAD_PRIORITY_HIGH, &ioThreadStack, IOT_STACK_SIZE, ioThreadMain, OS_THREAD_ATTRIB_AFFINITY_CPU0)) // We move this to core 0 for maximum performance. Later on move it back to core 1 as we want download threads on core 0 and 2.
+		goto initExit2;
+
 	return true;
 
 initExit2:
-    MEMFreeToDefaultHeap(queueEntries);
+    MEMFreeToDefaultHeap(queueEntries[0].buf);
 initExit1:
-    MEMFreeToDefaultHeap(ioThreadStack);
+    MEMFreeToDefaultHeap(queueEntries);
     return false;
 }
 

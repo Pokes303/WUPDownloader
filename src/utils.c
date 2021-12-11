@@ -20,11 +20,13 @@
 
 #include <wut-fixups.h>
 
+#include <crypto.h>
 #include <renderer.h>
 #include <status.h>
 #include <utils.h>
 #include <menu/utils.h>
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,8 +37,27 @@
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
+#include <coreinit/time.h>
 
 int mcpHandle;
+
+bool startThread(OSThread *thread, const char *name, THREAD_PRIORITY priority, void **stackPtr, size_t stacksize, OSThreadEntryPointFn mainfunc, OSThreadAttributes attribs)
+{
+	OSTime t = OSGetSystemTime();
+	*stackPtr = MEMAllocFromDefaultHeapEx(stacksize, 8);
+	if(*stackPtr != NULL)
+	{
+		if(OSCreateThread(thread, mainfunc, 0, NULL, ((uint8_t* )*stackPtr) + stacksize, stacksize, priority, attribs))
+		{
+			OSSetThreadName(thread, name);
+			OSResumeThread(thread);
+			addEntropy(OSGetSystemTime() - t);
+			return true;
+		}
+		MEMFreeToDefaultHeap(*stackPtr);
+	}
+	return false;
+}
 
 void hex(uint64_t i, int digits, char *out) {
 	char x[8]; // max 99 digits!

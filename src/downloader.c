@@ -73,7 +73,7 @@ size_t ramBufSize = 0;
 static CURL *curl;
 static char curlError[CURL_ERROR_SIZE];
 static OSThread dlbgThread;
-static uint8_t *dlbgThreadStack = NULL;
+static void *dlbgThreadStack = NULL;
 
 static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData)
 {
@@ -455,21 +455,9 @@ static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 		dlbgThreadStack = NULL;					\
 	}
 
-#define initNetwork()																																		\
-	dlbgThreadStack = MEMAllocFromDefaultHeapEx(DLBGT_STACK_SIZE, 8);																						\
-	if(dlbgThreadStack != NULL)																																\
-	{																																						\
-		if(OSCreateThread(&dlbgThread, dlbgThreadMain, 0, NULL, dlbgThreadStack + DLBGT_STACK_SIZE, DLBGT_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_ANY))	\
-		{																																					\
-			OSSetThreadName(&dlbgThread, "NUSspli socket optimizer");																						\
-			OSResumeThread(&dlbgThread);																													\
-		}																																					\
-		else																																				\
-		{																																					\
-			MEMFreeToDefaultHeap(dlbgThreadStack);																											\
-			dlbgThreadStack = NULL;																															\
-		}																																					\
-	}
+#define initNetwork()																																					\
+	if(!startThread(&dlbgThread, "NUSspli socket optimizer", THREAD_PRIORITY_LOW, &dlbgThreadStack, DLBGT_STACK_SIZE, dlbgThreadMain, OS_THREAD_ATTRIB_AFFINITY_ANY))	\
+		dlbgThreadStack = NULL;
 
 #define resetNetwork()	\
 	killDlbgThread();	\

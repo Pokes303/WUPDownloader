@@ -94,7 +94,7 @@ int main()
 	MEMFreeToDefaultHeap(asanHeapTrigger);
 	MEMFreeToDefaultHeap(asanHeapTrigger);*/
 	
-	if(OSSetThreadPriority(mainThread, 1))
+	if(OSSetThreadPriority(mainThread, THREAD_PRIORITY_HIGH))
 		addToScreenLog("Changed main thread priority!");
 	else
 		addToScreenLog("WARNING: Error changing main thread priority!");

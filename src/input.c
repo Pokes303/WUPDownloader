@@ -292,28 +292,18 @@ bool SWKBD_Init()
 		debugPrintf("SWKBD: Can't allocate memory!");
 		return false;
 	}
-	
-	calcThreadStack = MEMAllocFromDefaultHeapEx(CT_STACK_SIZE, 8);
-	if(calcThreadStack == NULL)
-	{
-		MEMFreeToDefaultHeap(createArg.workMemory);
-		createArg.workMemory = NULL;
-		debugPrintf("SWKBD: Can't allocate memory!");
-		return false;
-	}
-	if(!OSCreateThread(&calcThread, calcThreadMain, 0, NULL, calcThreadStack + CT_STACK_SIZE, CT_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_ANY))
-	{
-		MEMFreeToDefaultHeap(calcThreadStack);
-		MEMFreeToDefaultHeap(createArg.workMemory);
-		calcThreadStack = createArg.workMemory = NULL;
-		debugPrintf("SWKBD: Can't create thread!");
-		return false;
-	}
-	
+
 	OSBlockSet(swkbd_msg, 0, sizeof(OSMessage) * SWKBD_QUEUE_SIZE);
 	OSInitMessageQueueEx(&swkbd_queue, swkbd_msg, SWKBD_QUEUE_SIZE, "NUSspli SWKBD calc queue");
-	OSSetThreadName(&calcThread, "NUSspli SWKBD font calculator");
-	OSResumeThread(&calcThread);
+
+	if(!startThread(&calcThread, "NUSspli SWKBD font calculator", THREAD_PRIORITY_MEDIUM, &calcThreadStack, CT_STACK_SIZE, calcThreadMain, OS_THREAD_ATTRIB_AFFINITY_ANY))
+    {
+        MEMFreeToDefaultHeap(createArg.workMemory);
+		createArg.workMemory = NULL;
+        calcThreadStack = NULL;
+		debugPrintf("SWKBD: Can't allocate memory!");
+		return false;
+    }
 	
 	switch(getKeyboardLanguage())
 	{

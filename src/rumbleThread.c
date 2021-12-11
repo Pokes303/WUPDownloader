@@ -35,7 +35,7 @@
 #define RUMBLE_QUEUE_SIZE 2
 
 static OSThread rumbleThread;
-static uint8_t *rumbleThreadStack = NULL;
+static void *rumbleThreadStack = NULL;
 static uint8_t pattern[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 OSMessageQueue rumble_queue;
 OSMessage rumble_msg[2];
@@ -73,20 +73,12 @@ static int rumbleThreadMain(int argc, const char **argv)
 
 bool initRumble()
 {
-	rumbleThreadStack = MEMAllocFromDefaultHeapEx(RUMBLE_STACK_SIZE, 8);
-	if(rumbleThreadStack == NULL)
+    OSInitMessageQueueEx(&rumble_queue, rumble_msg, RUMBLE_QUEUE_SIZE, "NUSspli rumble queue");
+    if(!startThread(&rumbleThread, "NUSspli Rumble", THREAD_PRIORITY_LOW, &rumbleThreadStack, RUMBLE_STACK_SIZE, rumbleThreadMain, OS_THREAD_ATTRIB_AFFINITY_ANY))
+    {
+        rumbleThreadStack = NULL;
 		return false;
-	
-	if(!OSCreateThread(&rumbleThread, rumbleThreadMain, 0, NULL, rumbleThreadStack + RUMBLE_STACK_SIZE, RUMBLE_STACK_SIZE, 0, OS_THREAD_ATTRIB_AFFINITY_ANY))
-	{
-		MEMFreeToDefaultHeap(rumbleThreadStack);
-		rumbleThreadStack = NULL;
-		return false;
-	}
-	
-	OSInitMessageQueueEx(&rumble_queue, rumble_msg, RUMBLE_QUEUE_SIZE, "NUSspli rumble queue");
-	OSSetThreadName(&rumbleThread, "NUSspli Rumble");
-	OSResumeThread(&rumbleThread);
+    }
 	return true;
 }
 
