@@ -73,6 +73,8 @@ int main()
 	
 	OSThread *mainThread = OSGetCurrentThread();
 	OSSetThreadName(mainThread, "NUSspli");
+	addEntropy(&(mainThread->id), sizeof(uint16_t));
+	addEntropy(mainThread->stackStart, 4);
 	
 	checkStacks("main");
 	
@@ -201,7 +203,7 @@ int main()
 
 										debugPrintf("Deinitializing libraries...");
 										clearTitles();
-										saveConfig();
+										saveConfig(true);
 
 										checkStacks("main");
 									}

@@ -23,6 +23,7 @@
 #include <wut-fixups.h>
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -33,7 +34,8 @@
 
 bool initCrypto();
 void reseed();
-void addEntropy(uint32_t e);
+void addEntropy(void *e, size_t len);
+uint32_t getEntropy();
 
 #ifdef __cplusplus
 	}

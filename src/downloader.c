@@ -77,7 +77,9 @@ static void *dlbgThreadStack = NULL;
 
 static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData)
 {
-	addEntropy(OSGetTick());
+	OSTick t = OSGetTick();
+	addEntropy(&t, sizeof(OSTick));
+
 	size *= multi;
 	uint32_t data = *(uint32_t *)rawData;
 	if(data)
@@ -119,7 +121,7 @@ typedef struct
 static int progressCallback(void *rawData, double dltotal, double dlnow, double ultotal, double ulnow)
 {
 	OSTime now = OSGetSystemTime();
-	addEntropy(now);
+	addEntropy(&now, sizeof(OSTime));
 	curlProgressData *data = (curlProgressData *)rawData;
 
 	if(OSTicksToMilliseconds(now - data->lastInput) > (1000 / 60))
@@ -406,7 +408,8 @@ static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 
 					inft = PEM_X509_INFO_read(f, inf, NULL, NULL);
 					fclose(f);
-					addEntropy(OSGetSystemTime() - t2);
+					t2 = OSGetSystemTime() - t2;
+					addEntropy(&t2, sizeof(OSTime));
 					if(inft == NULL)
 					{
 						err = true;
@@ -415,7 +418,8 @@ static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 					debugPrintf("Cert %s loaded!", fn);
 				}
 				closedir(dir);
-				addEntropy(OSGetSystemTime() - t);
+				t = OSGetSystemTime() - t;
+				addEntropy(&t, sizeof(OSTime));
 
 				if(!err)
 				{
@@ -469,7 +473,6 @@ bool initDownloader()
 	if(dlbgThreadStack == NULL)
 		return false;
 
-	OSTime t = OSGetSystemTime();
 	CURLcode ret = curl_global_init(CURL_GLOBAL_DEFAULT & ~(CURL_GLOBAL_SSL));
 	if(ret == CURLE_OK)
 	{
@@ -502,10 +505,7 @@ bool initDownloader()
 									{
 										ret = curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, certloader);
 										if(ret == CURLE_OK)
-										{
-											addEntropy(OSGetSystemTime() - t);
 											return true;
-										}
 									}
 								}
 							}
@@ -636,7 +636,8 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	debugPrintf("Calling curl_easy_perform()");
 	OSTime t = OSGetSystemTime();
 	ret = curl_easy_perform(curl);
-	addEntropy(OSGetSystemTime() - t);
+	t = OSGetSystemTime() - t;
+	addEntropy(&t, sizeof(OSTime));
 	if(cdata.dlo >= 0)
 		removeErrorOverlay(cdata.dlo);
 

@@ -251,6 +251,7 @@ NUSFILE *openFile(const char *path, const char *mode)
 	if(setvbuf(ret->fd, ret->buffer, _IOFBF, IO_MAX_FILE_BUFFER) != 0)
 		debugPrintf("Error setting buffer!");
 	
-	addEntropy(OSGetSystemTime() - t);
+	t = OSGetSystemTime() - t;
+	addEntropy(&t, sizeof(OSTime));
 	return ret;
 }

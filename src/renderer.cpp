@@ -329,7 +329,8 @@ void tabToFrame(int line, int column, char *label, bool active)
 
 int addErrorOverlay(const char *err)
 {
-	addEntropy(OSGetTick());
+	OSTick t = OSGetTick();
+	addEntropy(&t, sizeof(OSTick));
 	if(window == NULL)
 		return -1;
 
@@ -374,7 +375,8 @@ int addErrorOverlay(const char *err)
 
 void removeErrorOverlay(int id)
 {
-	addEntropy(OSGetTick());
+	OSTick t = OSGetTick();
+	addEntropy(&t, sizeof(OSTick));
 	if(errorOverlay[id] == NULL)
 		return;
 	
@@ -443,7 +445,8 @@ void resumeRenderer()
 	}
 
 	lastTick = OSGetSystemTime();
-	addEntropy(lastTick - t);
+	t = lastTick - t;
+	addEntropy(&t, sizeof(OSTime));
 }
 
 void initRenderer()
@@ -467,7 +470,8 @@ void initRenderer()
 		backgroundMusic->SetVolume(15);
 		backgroundMusic->Play();
 	}
-	addEntropy(OSGetSystemTime() - t);
+	t = OSGetSystemTime() - t;
+	addEntropy(&t, sizeof(OSTime));
 	
 	resumeRenderer();
 	
@@ -579,7 +583,8 @@ void showFrame()
 	
 	passed += lastTick;
 	lastTick = OSGetSystemTime();
-	addEntropy(lastTick - passed);
+	passed = lastTick - passed;
+	addEntropy(&passed, sizeof(OSTime));
 	readInput();
 }
 

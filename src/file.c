@@ -161,7 +161,8 @@ void removeDirectory(const char *path)
 	else
 		debugPrintf("Path \"%s\" not found!", newPath);
 
-	addEntropy(OSGetSystemTime() - t);
+    t = OSGetSystemTime() - t;
+	addEntropy(&t, sizeof(OSTime));
 }
 
 NUSFS_ERR moveDirectory(const char *src, const char *dest)
@@ -203,7 +204,8 @@ NUSFS_ERR moveDirectory(const char *src, const char *dest)
 	}
 	closedir(dir);
 	remove(src);
-	addEntropy(OSGetSystemTime() - t);
+    t = OSGetSystemTime() - t;
+	addEntropy(&t, sizeof(OSTime));
 	return NUSFS_ERR_NOERR;
 }
 
@@ -219,7 +221,8 @@ long getFilesize(FILE *fp)
 		debugPrintf("ftello() failed: %s", strerror(errno));
 	
 	fseeko(fp, i, SEEK_SET);
-	addEntropy(OSGetSystemTime() - t);
+    t = OSGetSystemTime() - t;
+	addEntropy(&t, sizeof(OSTime));
 	return fileSize;
 }
 
@@ -228,7 +231,8 @@ NUSFS_ERR createDirectory(const char *path, mode_t mode)
 	OSTime t = OSGetSystemTime();
     if(mkdir(path, mode) == 0)
 		return NUSFS_ERR_NOERR;
-	addEntropy(OSGetSystemTime() - t);
+    t = OSGetSystemTime() - t;
+	addEntropy(&t, sizeof(OSTime));
 
 	int ie = errno;
 	switch(ie)

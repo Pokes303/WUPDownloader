@@ -202,7 +202,7 @@ downloadTMD:
 	{
 		clearRamBuf();
 		debugPrintf("Error downloading TMD");
-		saveConfig();
+		saveConfig(false);
 		return;
 	}
 	
@@ -230,7 +230,7 @@ downloadTMD:
 		if(vpad.trigger & VPAD_BUTTON_B)
 		{
 			clearRamBuf();
-			saveConfig();
+			saveConfig(false);
 			return;
 		}
 		
@@ -300,12 +300,12 @@ downloadTMD:
 	if(uninstall)
 	{
 		clearRamBuf();
-		saveConfig();
+		saveConfig(false);
 		deinstall(titleList, false);
 		return;
 	}
 	
-	saveConfig();
+	saveConfig(false);
 	
 	if(isDemo(entry))
 	{

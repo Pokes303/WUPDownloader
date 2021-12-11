@@ -147,7 +147,8 @@ void initStatus()
 		apdEnabled = false;
 	}
 	debugPrintf("APD enabled by sys settings: %s (%d)", apdEnabled ? "true" : "false", (uint32_t)ime);
-	addEntropy(OSGetSystemTime() - t);
+    t = OSGetSystemTime() - t;
+	addEntropy(&t, sizeof(OSTime));
 }
 
 bool AppRunning()

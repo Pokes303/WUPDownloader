@@ -83,7 +83,8 @@ bool deinstall(MCPTitleListType title, bool channelHaxx)
 	
 	if(!channelHaxx)
 		showMcpProgress(&data, game, false);
-	addEntropy(OSGetSystemTime() - t);
+    t = OSGetSystemTime() - t;
+	addEntropy(&t, sizeof(OSTime));
 	addToScreenLog("Deinstallation finished!");
 	
 	if(channelHaxx)

@@ -81,7 +81,8 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	// Let's see if MCP is able to parse the TMD...
 	OSTime t = OSGetSystemTime();
 	data.err = MCP_InstallGetInfo(mcpHandle, newPath, (MCPInstallInfo *)&info);
-	addEntropy(OSGetSystemTime() - t);
+    t = OSGetSystemTime() - t;
+	addEntropy(&t, sizeof(OSTime));
 	if(data.err != 0)
 	{
 		switch(data.err)
@@ -188,7 +189,8 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	}
 	
 	showMcpProgress(&data, game, true);
-	addEntropy(OSGetSystemTime() - t);
+    t = OSGetSystemTime() - t;
+	addEntropy(&t, sizeof(OSTime));
 	// Quarkys ASAN catched this / seems like MCP already frees it for us
 //	MEMFreeToDefaultHeap(progress);
 	

@@ -111,7 +111,7 @@ void configMenu()
 		}*/
 		if(vpad.trigger & VPAD_BUTTON_B)
 		{
-			saveConfig();
+			saveConfig(false);
 			clearTitles();
 			initTitles();
 			return;

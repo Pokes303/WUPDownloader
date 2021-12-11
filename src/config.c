@@ -62,6 +62,7 @@ Swkbd_LanguageType sysLang;
 int configInitTries = 0;
 bool dlToUSB = true;
 
+
 bool initConfig()
 {
 	if(++configInitTries == 10)
@@ -75,8 +76,7 @@ bool initConfig()
 	if(!fileExists(CONFIG_PATH))
 	{
 		debugPrintf("\tFile not found!");
-		changed = true;
-		if(!saveConfig())
+		if(!saveConfig(true))
 			return false;
 	}
 	
@@ -92,7 +92,8 @@ bool initConfig()
 	char fileContent[fileSize];
 	ret = ret && fread(fileContent, fileSize, 1, fp) == 1;
 	fclose(fp);
-	addEntropy(OSGetSystemTime() - t);
+	t = OSGetSystemTime() - t;
+	addEntropy(&t, sizeof(OSTime));
 	if(!ret)
 		return false;
 	
@@ -154,11 +155,15 @@ bool initConfig()
 		dlToUSB = cJSON_IsTrue(configEntry);
 	else
 		changed = true;
+
+	configEntry = cJSON_GetObjectItemCaseSensitive(json, "Seed");
+	if(configEntry != NULL && cJSON_IsNumber(configEntry))
+		addEntropy(&(configEntry->valueint), sizeof(int));
 	
 	cJSON_Delete(json);
 	
 	if(changed)
-		saveConfig();
+		saveConfig(false);
 	
 	IOSHandle handle = UCOpen();
 	if(handle < 1)
@@ -241,10 +246,10 @@ char *getLanguageString(Swkbd_LanguageType language)
 	}
 }
 
-bool saveConfig()
+bool saveConfig(bool force)
 {
 	debugPrintf("saveConfig()");
-	if(!changed)
+	if(!changed && !force)
 		return true;
 	
 	cJSON *config = cJSON_CreateObject();
@@ -298,6 +303,9 @@ bool saveConfig()
 		return false;
 	}
 	cJSON_AddItemToObject(config, "Download to USB", entry);
+
+	entry = cJSON_CreateNumber(getEntropy());
+		cJSON_AddItemToObject(config, "Seed", entry);
 	
 	char *configString = cJSON_Print(config);
 	cJSON_Delete(config);
@@ -312,7 +320,8 @@ bool saveConfig()
 	fwrite(configString, strlen(configString), 1, fp);
 	debugPrintf("Config written!");
 	fclose(fp);
-	addEntropy(OSGetSystemTime() - t);
+	t = OSGetSystemTime() - t;
+	addEntropy(&t, sizeof(OSTime));
 	
 	changed = false;
 	return true;

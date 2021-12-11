@@ -20,6 +20,7 @@
 #include <wut-fixups.h>
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include <crypto.h>
@@ -75,17 +76,17 @@ void reseed()
 	srand(entropy);
 }
 
-void addEntropy(uint32_t e)
+void addEntropy(void *e, size_t l)
 {
-	uint8_t *ea = (uint8_t *)&e;
+	uint8_t *buf = (uint8_t *)e;
 	uint32_t ee;
 	int s;
-	for(int i = 0; i < 4; i++)
+	for(size_t i = 0; i < l; i++)
 	{
-		ee = ea[i];
+		ee = buf[i];
 		s = rand() % 25;
 		if(s)
-			ee = ee << s;
+			ee <<= s;
 		entropy ^= ee;
 	}
 }
@@ -97,4 +98,9 @@ bool initCrypto()
 	return OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS, NULL) == 1 &&
 		RAND_set_rand_method(&srm) == 1 &&
 		RAND_DRBG_set_reseed_defaults(0, 0, 0, 0) == 1;
+}
+
+uint32_t getEntropy()
+{
+    return entropy;
 }

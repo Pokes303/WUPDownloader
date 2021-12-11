@@ -399,7 +399,8 @@ uint8_t *getCommonKey()
 			sprintf(tmp, "%02x", otp_common_key[i]);
 		debugPrintf("CC: %s", ret);
 #endif
-		addEntropy(OSGetSystemTime() - t);
+        t = OSGetSystemTime() - t;
+		addEntropy(&t, sizeof(OSTime));
 	}
 	return otp_common_key;
 }

@@ -108,7 +108,8 @@ refreshDirList:
 			}
 		closedir(dir);
 	}
-	addEntropy(OSGetSystemTime() - t);
+	t = OSGetSystemTime() - t;
+	addEntropy(&t, sizeof(OSTime));
 	
 	drawFBMenuFrame(folders, foldersSize, pos, cursor, onUSB);
 	

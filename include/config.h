@@ -34,7 +34,7 @@
 #endif
 
 bool initConfig();
-bool saveConfig();
+bool saveConfig(bool force);
 bool useOnlineTitleDB();
 void setUseOnlineTitleDB(bool use);
 bool updateCheckEnabled();

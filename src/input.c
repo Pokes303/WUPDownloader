@@ -458,8 +458,8 @@ void readInput()
 
 	if(vpad.trigger != 0)
 	{
-		OSTime t = OSGetSystemTime();
-		addEntropy(t -lastButtonPress);
+		OSTime t = OSGetSystemTime() - lastButtonPress;
+		addEntropy(&t, sizeof(OSTime));
 		lastButtonPress = t;
 
 	}
@@ -530,7 +530,8 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 				MEMFreeToDefaultHeap(outputStr);
 			}
 			SWKBD_Hide();
-			addEntropy(OSGetSystemTime() - t);
+            t = OSGetSystemTime() - t;
+			addEntropy(&t, sizeof(OSTime));
 			return true;
 		}
 		
@@ -557,7 +558,8 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 		if(close || Swkbd_IsDecideCancelButton(&dummy)) {
 			debugPrintf("SWKBD Cancel button pressed");
 			SWKBD_Hide();
-			addEntropy(OSGetSystemTime() - t);
+            t = OSGetSystemTime() - t;
+			addEntropy(&t, sizeof(OSTime));
 			return false;
 		}
 	}

@@ -43,7 +43,10 @@ int mcpHandle;
 
 bool startThread(OSThread *thread, const char *name, THREAD_PRIORITY priority, void **stackPtr, size_t stacksize, OSThreadEntryPointFn mainfunc, OSThreadAttributes attribs)
 {
-	OSTime t = OSGetSystemTime();
+	OSTime t;
+	addEntropy(&t, sizeof(OSTime));
+	t = OSGetSystemTime();
+	addEntropy(stackPtr, 4);
 	*stackPtr = MEMAllocFromDefaultHeapEx(stacksize, 8);
 	if(*stackPtr != NULL)
 	{
@@ -51,7 +54,9 @@ bool startThread(OSThread *thread, const char *name, THREAD_PRIORITY priority, v
 		{
 			OSSetThreadName(thread, name);
 			OSResumeThread(thread);
-			addEntropy(OSGetSystemTime() - t);
+			t = OSGetSystemTime() - t;
+			addEntropy(&t, sizeof(OSTime));
+			addEntropy(&(thread->id), sizeof(uint16_t));
 			return true;
 		}
 		MEMFreeToDefaultHeap(*stackPtr);

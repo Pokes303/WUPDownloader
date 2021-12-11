@@ -152,7 +152,8 @@ bool sanityCheck()
 		if(isUsb)
 			unmountUSB();
 
-		addEntropy(OSGetSystemTime() - t);
+        t = OSGetSystemTime() - t;
+		addEntropy(&t, sizeof(OSTime));
 		return ret;
 	}
 
