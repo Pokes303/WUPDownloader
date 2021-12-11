@@ -24,8 +24,10 @@
 #include <errno.h>
 #include <file.h>
 #include <math.h>
+#include <netinet/tcp.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 
 #include <config.h>
@@ -61,7 +63,7 @@
 
 #define USERAGENT		"NUSspli/" NUSSPLI_VERSION // TODO: Spoof eShop here?
 #define DLBGT_STACK_SIZE	0x2000
-#define SOCKLIB_BUFSIZE		(IO_BUFSIZE * 4) // For send & receive + double buffering
+#define SOCKLIB_BUFSIZE		(IO_BUFSIZE * 2) // double buffering
 
 #define MAX_CERTS	2
 
@@ -314,6 +316,22 @@ static int initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 		return CURL_SOCKOPT_ERROR;
 	}
 
+	// Activate TCP nodelay - libCURL default
+	r = setsockopt(socket, IPPROTO_TCP, TCP_NODELAY, &o, sizeof(o));
+	if(r != 0)
+	{
+		debugPrintf("initSocket: Error settings TCP nodelay: %d", r);
+		return CURL_SOCKOPT_ERROR;
+	}
+
+	// Disable slowstart. Should be more important fo a server but doesn't hurt a client, too
+	r = setsockopt(socket, SOL_SOCKET, 0x4000, &o, sizeof(o));
+	if(r != 0)
+	{
+		debugPrintf("initSocket: Error settings Noslowstart: %d", r);
+		return CURL_SOCKOPT_ERROR;
+	}
+
 	// Activate userspace buffer (fom our socket optimizer)
 	r = setsockopt(socket, SOL_SOCKET, 0x10000, &o, sizeof(o));
 	if(r != 0)
@@ -322,15 +340,24 @@ static int initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 		return CURL_SOCKOPT_ERROR;
 	}
 
+	o = 0;
+	// Disable TCP keepalive - libCURL default
+	r = setsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, &o, sizeof(o));
+	if(r != 0)
+	{
+		debugPrintf("initSocket: Error settings TCP nodelay: %d", r);
+		return CURL_SOCKOPT_ERROR;
+	}
+
 	o = IO_BUFSIZE;
 	// Set send buffersize
-	r = setsockopt(socket, SOL_SOCKET, SO_SNDBUF, &o, sizeof(o));
+/*	r = setsockopt(socket, SOL_SOCKET, SO_SNDBUF, &o, sizeof(o));
 	if(r != 0)
 	{
 		debugPrintf("initSocket: Error settings SBS: %d", r);
 		return CURL_SOCKOPT_ERROR;
 	}
-
+*/
 	// Set receive buffersize
 	r = setsockopt(socket, SOL_SOCKET, SO_RCVBUF, &o, sizeof(o));
 	if(r != 0)
