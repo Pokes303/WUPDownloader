@@ -76,6 +76,7 @@ GuiTextureData *tabData;
 GuiTextureData *flagData[6];
 GuiTextureData *barData;
 GuiTextureData *bgData;
+GuiTextureData *byeData;
 
 static inline SDL_Color screenColorToSDLcolor(uint32_t color)
 {
@@ -458,6 +459,7 @@ void initRenderer()
 	sdlRenderer = renderer->getRenderer();
 	
 	OSTime t = OSGetSystemTime();
+	byeData = new GuiTextureData(ROMFS_PATH "textures/goodbye.png");
 	backgroundMusic = new GuiSound(ROMFS_PATH "audio/bg.mp3");
 	if(backgroundMusic != NULL)
 	{
@@ -519,14 +521,15 @@ void shutdownRenderer()
 	
 	colorStartNewFrame(SCREEN_COLOR_BLUE);
 	
-	GuiTextureData byeData(ROMFS_PATH "textures/goodbye.png");
-	GuiImage *bye = new GuiImage(&byeData);
+	GuiImage *bye = new GuiImage(byeData);
 	bye->setBlendMode(SDL_BLENDMODE_BLEND);
 	bye->setAlignment(ALIGN_CENTERED);
 	window->append(bye);
 	
 	drawFrame();
 	showFrame();
+	clearFrame();
+	delete(byeData);
 	pauseRenderer();
 	
 	if(backgroundMusic != NULL)
@@ -575,8 +578,8 @@ void showFrame()
 		OSSleepTicks(OSMillisecondsToTicks(1000 / 60) - passed);
 	
 	passed += lastTick;
-	addEntropy(OSGetSystemTime() - passed);
 	lastTick = OSGetSystemTime();
+	addEntropy(lastTick - passed);
 	readInput();
 }
 
