@@ -65,10 +65,16 @@ typedef struct
 	MCPError err;
 } McpData;
 
+/*
+ * Default Wii U thread priority is 16.
+ * SDL changes its audio thread priority one lower, so to 15.
+ * We want the SDL audio thread to be at THREAD_PRIORITY_LOW,
+ * so that has to be 15, too
+ */
 typedef enum
 {
-    THREAD_PRIORITY_HIGH = 17,
-    THREAD_PRIORITY_MEDIUM = 16,
+    THREAD_PRIORITY_HIGH = 13,
+    THREAD_PRIORITY_MEDIUM = 14,
     THREAD_PRIORITY_LOW = 15,
 } THREAD_PRIORITY;
 
