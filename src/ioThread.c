@@ -28,6 +28,7 @@
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
 
+#include <renderer.h>
 #include <crypto.h>
 #include <file.h>
 #include <ioThread.h>
@@ -210,6 +211,7 @@ queueExit:
 
 void flushIOQueue()
 {
+	int ovl = addErrorOverlay("Flushing queue, please wait...");
 #ifdef NUSSPLI_DEBUG
 	debugPrintf("Flushing...");
 	while(!OSCompareAndSwapAtomic(ioWriteLockPtr, false, true))
@@ -220,6 +222,7 @@ void flushIOQueue()
 	
 #ifdef NUSSPLI_DEBUG
 	ioWriteLock = false;
+	removeErrorOverlay(ovl);
 #endif
 }
 
