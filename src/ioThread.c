@@ -98,32 +98,28 @@ static int ioThreadMain(int argc, const char **argv)
 bool initIOThread()
 {
 	queueEntries = MEMAllocFromDefaultHeap(MAX_IO_QUEUE_ENTRIES * sizeof(WriteQueueEntry));
-	if(queueEntries == NULL)
-		return false;
-
-	uint8_t *ptr = (uint8_t *)MEMAllocFromDefaultHeap(MAX_IO_QUEUE_ENTRIES * IO_BUFSIZE);
-	if(ptr == NULL)
-		goto initExit1;
-
-	for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; i++, ptr += IO_BUFSIZE)
+	if(queueEntries != NULL)
 	{
-		queueEntries[i].buf = (void *)ptr;
-		queueEntries[i].inUse = false;
+		uint8_t *ptr = (uint8_t *)MEMAllocFromDefaultHeap(MAX_IO_QUEUE_ENTRIES * IO_BUFSIZE);
+		if(ptr != NULL)
+		{
+			for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; i++, ptr += IO_BUFSIZE)
+			{
+				queueEntries[i].buf = (void *)ptr;
+				queueEntries[i].inUse = false;
+			}
+
+			activeReadBuffer = activeWriteBuffer = 0;
+			ioRunning = true;
+
+			if(startThread(&ioThread, "NUSspli I/O", THREAD_PRIORITY_HIGH, &ioThreadStack, IOT_STACK_SIZE, ioThreadMain, OS_THREAD_ATTRIB_AFFINITY_CPU0)) // We move this to core 0 for maximum performance. Later on move it back to core 1 as we want download threads on core 0 and 2.
+				return true;
+
+			MEMFreeToDefaultHeap(queueEntries[0].buf);
+		}
+		MEMFreeToDefaultHeap(queueEntries);
 	}
-
-	activeReadBuffer = activeWriteBuffer = 0;
-	ioRunning = true;
-
-    if(!startThread(&ioThread, "NUSspli I/O", THREAD_PRIORITY_HIGH, &ioThreadStack, IOT_STACK_SIZE, ioThreadMain, OS_THREAD_ATTRIB_AFFINITY_CPU0)) // We move this to core 0 for maximum performance. Later on move it back to core 1 as we want download threads on core 0 and 2.
-		goto initExit2;
-
-	return true;
-
-initExit2:
-    MEMFreeToDefaultHeap(queueEntries[0].buf);
-initExit1:
-    MEMFreeToDefaultHeap(queueEntries);
-    return false;
+	return false;
 }
 
 void shutdownIOThread()
@@ -143,7 +139,7 @@ void shutdownIOThread()
 	OSJoinThread(&ioThread, &ret);
 	MEMFreeToDefaultHeap(ioThreadStack);
 	MEMFreeToDefaultHeap(queueEntries[0].buf);
-	MEMFreeToDefaultHeap((void *)queueEntries);
+	MEMFreeToDefaultHeap(queueEntries);
 	debugPrintf("I/O thread returned: %d", ret);
 }
 
@@ -228,30 +224,26 @@ void flushIOQueue()
 
 NUSFILE *openFile(const char *path, const char *mode)
 {
-	OSTime t = OSGetSystemTime();
 	NUSFILE *ret = MEMAllocFromDefaultHeap(sizeof(NUSFILE));
 	if(ret == NULL)
 		return NULL;
 	
+	OSTime t = OSGetSystemTime();
 	ret->fd = fopen(path, mode);
-	if(ret->fd == NULL)
+	if(ret->fd != NULL)
 	{
-		MEMFreeToDefaultHeap(ret);
-		return NULL;
-	}
-	
-	ret->buffer = MEMAllocFromDefaultHeapEx(IO_MAX_FILE_BUFFER, 0x40);
-	if(ret->buffer == NULL)
-	{
+		t = OSGetSystemTime() - t;
+		addEntropy(&t, sizeof(OSTime));
+		ret->buffer = MEMAllocFromDefaultHeapEx(IO_MAX_FILE_BUFFER, 0x40);
+		if(ret->buffer != NULL)
+		{
+			if(setvbuf(ret->fd, ret->buffer, _IOFBF, IO_MAX_FILE_BUFFER) != 0)
+				debugPrintf("Error setting buffer!");
+
+			return ret;
+		}
 		fclose(ret->fd);
-		MEMFreeToDefaultHeap(ret);
-		return NULL;
 	}
-	
-	if(setvbuf(ret->fd, ret->buffer, _IOFBF, IO_MAX_FILE_BUFFER) != 0)
-		debugPrintf("Error setting buffer!");
-	
-	t = OSGetSystemTime() - t;
-	addEntropy(&t, sizeof(OSTime));
-	return ret;
+	MEMFreeToDefaultHeap(ret);
+	return NULL;
 }
