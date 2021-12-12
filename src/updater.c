@@ -23,6 +23,7 @@
 #include <deinstaller.h>
 #include <downloader.h>
 #include <file.h>
+#include <filesystem.h>
 #include <input.h>
 #include <installer.h>
 #include <ioThread.h>
@@ -403,7 +404,7 @@ void update(char *newVersion)
 		strcpy(installPath, UPDATE_TEMP_FOLDER);
 		strcat(installPath, "NUSspli");
 		
-		install("Update", false, false, installPath, ownInfo.indexedDevice[0] == 'u', true);
+		install("Update", false, NUSDEV_SD, installPath, ownInfo.indexedDevice[0] == 'u', true);
 		removeDirectory(UPDATE_TEMP_FOLDER);
 		enableShutdown();
 	}

@@ -22,13 +22,15 @@
 
 #include <wut-fixups.h>
 
+#include <filesystem.h>
+
 #include <stdbool.h>
 
 #ifdef __cplusplus
 	extern "C" {
 #endif
 
-bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, bool toUsb, bool keepFiles);
+bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool toUsb, bool keepFiles);
 
 #ifdef __cplusplus
 	}

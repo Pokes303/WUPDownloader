@@ -1184,7 +1184,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	if(inst)
 	{
 		*idp = '\0';
-		return install(titleEntry->name, hasDependencies, dlToUSB, installDir, toUSB, keepFiles);
+		return install(titleEntry->name, hasDependencies, dlToUSB ? NUSDEV_USB : NUSDEV_SD, installDir, toUSB, keepFiles);
 	}
 	
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);

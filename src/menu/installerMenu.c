@@ -27,7 +27,7 @@
 
 #include <string.h>
 
-void drawInstallerMenuFrame(const char *name, bool fromUSB, bool keepFiles)
+void drawInstallerMenuFrame(const char *name, NUSDEV dev, bool keepFiles)
 {
 	startNewFrame();
 	
@@ -39,8 +39,8 @@ void drawInstallerMenuFrame(const char *name, bool fromUSB, bool keepFiles)
 	textToFrame(MAX_LINES - 3, 0, "Press \uE001 to return");
 	
 	lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
-	if(fromUSB)
-		textToFrame(MAX_LINES - 1, 0, "WARNING: Files on USB will always be deleted after installing!");
+	if(dev != NUSDEV_SD)
+		textToFrame(MAX_LINES - 1, 0, "WARNING: Files on USB/MLC will always be deleted after installing!");
 	else
 	{
 		char *toFrame = getToFrameBuffer();
@@ -55,45 +55,49 @@ void drawInstallerMenuFrame(const char *name, bool fromUSB, bool keepFiles)
 
 void installerMenu(const char *dir)
 {
-	bool fromUSB = dir[3] == ':';
-	bool keepFiles = !fromUSB;
+	NUSDEV dev = dir[3] == ':' ? dev = dir[1] == 'u' ? NUSDEV_USB : NUSDEV_MLC : NUSDEV_SD;
+	bool keepFiles;
 	char name[strlen(dir) + 1];
-	if(fromUSB)
-		strcpy(name, dir);
-	else
+	if(dev == NUSDEV_SD)
 	{
+		keepFiles = true;
 		strcpy(name, "SD:");
 		strcat(name, dir + 18);
 	}
+	else
+	{
+		keepFiles = false;
+		strcpy(name, dir);
+	}
 	
-	drawInstallerMenuFrame(name, fromUSB, keepFiles);
+	drawInstallerMenuFrame(name, dev, keepFiles);
 	
 	while(AppRunning())
 	{
 		if(app == APP_STATE_BACKGROUND)
 			continue;
 		if(app == APP_STATE_RETURNING)
-			drawInstallerMenuFrame(name, fromUSB, keepFiles);
+			drawInstallerMenuFrame(name, dev, keepFiles);
 		
 		showFrame();
 		
 		if(vpad.trigger & VPAD_BUTTON_A)
 		{
-			install(name, false, fromUSB, dir, true, keepFiles);
+			install(name, false, dev, dir, true, keepFiles);
 			return;
 		}
 		if(vpad.trigger & VPAD_BUTTON_B)
 			return;
 		if(vpad.trigger & VPAD_BUTTON_X)
 		{
-			install(name, false, fromUSB, dir, false, keepFiles);
+			install(name, false, dev, dir, false, keepFiles);
 			return;
 		}
 		
 		if(vpad.trigger & VPAD_BUTTON_LEFT)
 		{
 			keepFiles = !keepFiles;
-			drawInstallerMenuFrame(name, fromUSB, keepFiles);
+			drawInstallerMenuFrame(name, dev, keepFiles);
 		}
 	}
 }

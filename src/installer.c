@@ -43,7 +43,7 @@
 #include <utils.h>
 #include <menu/utils.h>
 
-bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, bool toUsb, bool keepFiles)
+bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool toUsb, bool keepFiles)
 {
 	startNewFrame();
 	char *toScreen = getToFrameBuffer();
@@ -57,16 +57,19 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	showFrame();
 	
 	char newPath[0x27F]; // MCP mounts the card at another point, so we have to adjust the path -  The length of 0x27F is important!
-	if(fromUSB)
+	switch(dev)
 	{
-		//TODO
-		strcpy(newPath, isUSB01() ? "/vol/storage_usb01" : "/vol/storage_usb02");
-		strcat(newPath, path + 4);
-	}
-	else
-	{
-		strcpy(newPath, "/vol/app_sd");
-		strcat(newPath, path + 18);
+		case NUSDEV_USB:
+			strcpy(newPath, isUSB01() ? "/vol/storage_usb01" : "/vol/storage_usb02");
+			strcpy(newPath + 18, path + 4);
+			break;
+		case NUSDEV_SD:
+			strcpy(newPath, "/vol/app_sd");
+			strcpy(newPath + 11, path + 18);
+			break;
+		case NUSDEV_MLC:
+			strcpy(newPath, "/vol/storage_mlc01");
+			strcpy(newPath + 18, path + 4);
 	}
 	
 	MCPInstallTitleInfo info;
@@ -253,7 +256,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 
 	addToScreenLog("Installation finished!");
 	
-	if(!fromUSB && !keepFiles)
+	if(!keepFiles && dev == NUSDEV_SD)
 	{
 		debugPrintf("Removing installation files...");
 		removeDirectory(path);
