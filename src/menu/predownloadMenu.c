@@ -51,7 +51,7 @@ static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
 	return MCP_GetTitleInfo(mcpHandle, entry->tid, out) == 0;
 }
 
-void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t size, bool installed, const char *folderName, bool usbMounted, bool dlToUSB, bool keepFiles)
+void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t size, bool installed, const char *folderName, bool usbMounted, NUSDEV dlDev, bool keepFiles)
 {
 	startNewFrame();
 	textToFrame(0, 0, "Name:");
@@ -104,14 +104,23 @@ void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t siz
 	textToFrame(MAX_LINES - 1, 0, toFrame); //Thinking to change this to activate HOME Button led
 	
 	int line = MAX_LINES - 2;
-	if(usbMounted)
+	strcpy(toFrame, "Press \uE046 to download to ");
+	switch(dlDev)
 	{
-		strcpy(toFrame, "Press \uE046 to download to ");
-		strcat(toFrame, dlToUSB ? "SD" : "USB");
-		textToFrame(line--, 0, toFrame);
+		case NUSDEV_USB:
+			strcat(toFrame, "SD");
+			break;
+		case NUSDEV_SD:
+			strcat(toFrame, "NAND");
+			break;
+		case NUSDEV_MLC:
+			strcat(toFrame, usbMounted ? "USB" : "SD");
 	}
-	if(dlToUSB)
-		textToFrame(line--, 0, "WARNING: Files on USB will always be deleted after installing!");
+	textToFrame(line--, 0, toFrame);
+
+
+	if(dlDev != NUSDEV_SD)
+		textToFrame(line--, 0, "WARNING: Files on USB/NAND will always be deleted after installing!");
 	else
 	{
 		strcpy(toFrame, "Press \uE07B to ");
@@ -129,7 +138,7 @@ void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t siz
 	textToFrame(line--, 0, "Press \uE001 to return");
 	
 	strcpy(toFrame, "Press \uE003 to download to ");
-	strcat(toFrame, dlToUSB ? "USB" : "SD");
+	strcat(toFrame, dlDev == NUSDEV_USB ? "USB" : dlDev == NUSDEV_SD ? "SD" : "MLC");
 	strcat(toFrame, " only");
 	textToFrame(line--, 0, toFrame);
 	
@@ -169,7 +178,8 @@ void predownloadMenu(const TitleEntry *entry)
 	MCPTitleListType titleList;
 	bool installed = isInstalled(entry, &titleList);
 	bool usbMounted = mountUSB();
-	bool dlToUSB = usbMounted && dlToUSBenabled();
+    mountMLC();
+    NUSDEV dlDev = usbMounted && dlToUSBenabled() ? NUSDEV_USB : NUSDEV_SD;
 	bool keepFiles = true;
 	char folderName[FILENAME_MAX - 11];
 	char titleVer[33];
@@ -216,14 +226,14 @@ downloadTMD:
 		dls += tmd->contents[i].size;
 	}
 	
-	drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlToUSB, keepFiles);
+	drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, keepFiles);
 	
 	while(loop && AppRunning())
 	{
 		if(app == APP_STATE_BACKGROUND)
 			continue;
 		if(app == APP_STATE_RETURNING)
-			drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlToUSB, keepFiles);
+			drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, keepFiles);
 		
 		showFrame();
 		
@@ -261,11 +271,32 @@ downloadTMD:
 			redraw = true;
 		}
 		
-		if(usbMounted && vpad.trigger & VPAD_BUTTON_MINUS)
+		if(vpad.trigger & VPAD_BUTTON_MINUS)
 		{
-			dlToUSB = !dlToUSB;
-			keepFiles = !dlToUSB;
-			setDlToUSB(dlToUSB);
+			switch(dlDev)
+			{
+				case NUSDEV_USB:
+					dlDev = NUSDEV_SD;
+					keepFiles = true;
+					setDlToUSB(true);
+					break;
+				case NUSDEV_SD:
+					dlDev = NUSDEV_MLC;
+					keepFiles = false;
+					setDlToUSB(false);
+					break;
+				case NUSDEV_MLC:
+					if(usbMounted)
+					{
+						dlDev = NUSDEV_USB;
+						keepFiles = false;
+					}
+					else
+					{
+						dlDev = NUSDEV_SD;
+						keepFiles = false;
+					}
+			}
 			redraw = true;
 		}
 		if(vpad.trigger & VPAD_BUTTON_PLUS)
@@ -273,7 +304,7 @@ downloadTMD:
 			vibrateWhenFinished = !vibrateWhenFinished;
 			redraw = true;
 		}
-		if(!dlToUSB && vpad.trigger & VPAD_BUTTON_LEFT)
+		if(vpad.trigger & VPAD_BUTTON_LEFT && dlDev == NUSDEV_SD)
 		{
 			keepFiles = !keepFiles;
 			redraw = true;
@@ -286,7 +317,7 @@ downloadTMD:
 		
 		if(redraw)
 		{
-			drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlToUSB, keepFiles);
+			drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, keepFiles);
 			redraw = false;
 		}
 	}
@@ -337,6 +368,6 @@ downloadTMD:
 		}
 	}
 	
-	downloadTitle(tmd, ramBufSize, entry, titleVer, folderName, inst, dlToUSB, toUSB, keepFiles);
+	downloadTitle(tmd, ramBufSize, entry, titleVer, folderName, inst, dlDev, toUSB, keepFiles);
 	clearRamBuf();
 }

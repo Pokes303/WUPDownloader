@@ -838,7 +838,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	writeScreenLog();											\
 	drawFrame();
 
-bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, bool dlToUSB, bool toUSB, bool keepFiles)
+bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, NUSDEV dlDev, bool toUSB, bool keepFiles)
 {
 	char tid[17];
 	hex(tmd->tid, 16, tid);
@@ -867,7 +867,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	}
 	
 	char installDir[FILENAME_MAX + 37];
-	strcpy(installDir, dlToUSB ? INSTALL_DIR_USB : INSTALL_DIR_SD);
+	strcpy(installDir, dlDev == NUSDEV_USB ? INSTALL_DIR_USB : dlDev == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC);
 	if(!dirExists(installDir))
 	{
 		debugPrintf("Creating directory \"%s\"", installDir);
@@ -877,7 +877,6 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		else
 		{
 			char *toScreen = getToFrameBuffer();
-			strcpy(toScreen, "Error creating temporary directory!\n\n");
 			const char *errStr = translateNusfsErr(err);
 			if(errStr == NULL)
 				sprintf(toScreen, "Error creating directory: %d", err);
@@ -906,7 +905,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	strcat(installDir, "/");
 	
 	addToScreenLog("Started the download of \"%s\"", titleEntry->name);
-	addToScreenLog("The content will be saved on \"%s:/install/%s\"", dlToUSB ? "usb" : "sd", folderName);
+	addToScreenLog("The content will be saved on \"%s:/install/%s\"", dlDev == NUSDEV_USB ? "usb" : dlDev == NUSDEV_SD ? "sd" : "mlc", folderName);
 	
 	if(!dirExists(installDir))
 	{
@@ -1027,14 +1026,9 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	char *dup = downloadUrl + strlen(downloadUrl);
 	strcpy(dup, "cetk");
 	strcpy(idp, "title.tik");
-	FileType ft;
 	if(!fileExists(installDir))
 	{
-		ft = FILE_TYPE_TIK;
-		if(dlToUSB)
-			ft |= FILE_TYPE_TOUSB;
-		
-		int tikRes = downloadFile(downloadUrl, installDir, NULL, ft, true);
+		int tikRes = downloadFile(downloadUrl, installDir, NULL, FILE_TYPE_TIK, true);
 		switch(tikRes)
 		{
 			case 2:
@@ -1146,11 +1140,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		strcpy(idp, apps[i]);
 		strcpy(idpp, ".app");
 		
-		ft = FILE_TYPE_APP;
-		if(dlToUSB)
-			ft |= FILE_TYPE_TOUSB;
-	
-		if(downloadFile(downloadUrl, installDir, &data, ft, true) == 1)
+		if(downloadFile(downloadUrl, installDir, &data, FILE_TYPE_APP, true) == 1)
 		{
 			enableApd();
 			return true;
@@ -1162,11 +1152,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 			strcpy(dupp, ".h3");
 			strcpy(idpp, ".h3");
 			
-			ft = FILE_TYPE_H3;
-			if(dlToUSB)
-				ft |= FILE_TYPE_TOUSB;
-			
-			if(downloadFile(downloadUrl, installDir, &data, ft, true) == 1)
+			if(downloadFile(downloadUrl, installDir, &data, FILE_TYPE_H3, true) == 1)
 			{
 				enableApd();
 				return true;
@@ -1184,7 +1170,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	if(inst)
 	{
 		*idp = '\0';
-		return install(titleEntry->name, hasDependencies, dlToUSB ? NUSDEV_USB : NUSDEV_SD, installDir, toUSB, keepFiles);
+		return install(titleEntry->name, hasDependencies, dlDev, installDir, toUSB, keepFiles);
 	}
 	
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
