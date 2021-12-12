@@ -40,7 +40,7 @@ typedef enum
 	
 } APP_STATE;
 
-extern volatile APP_STATE app;
+extern APP_STATE app;
 
 void initStatus();
 void enableApd();

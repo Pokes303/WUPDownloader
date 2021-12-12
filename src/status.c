@@ -37,8 +37,8 @@
 
 #include <stdbool.h>
 
-volatile APP_STATE app;
-volatile bool shutdownEnabled = true;
+APP_STATE app;
+bool shutdownEnabled = true;
 #ifndef NUSSPLI_HBL
 bool channel;
 #endif

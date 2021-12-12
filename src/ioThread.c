@@ -39,29 +39,30 @@
 
 typedef struct
 {
-	volatile NUSFILE *file;
+	NUSFILE *file;
 	void *buf;
-	volatile size_t size;
-	volatile bool inUse;
+	size_t size;
+	bool inUse;
 } WriteQueueEntry;
 
 static OSThread ioThread;
 static void *ioThreadStack;
-static volatile bool ioRunning = false;
+static bool ioRunning = false;
 #ifdef NUSSPLI_DEBUG
-static volatile uint32_t ioWriteLock = true;
-static volatile uint32_t *ioWriteLockPtr = &ioWriteLock;
+static uint32_t ioWriteLock = true;
+static uint32_t *ioWriteLockPtr = &ioWriteLock;
 #endif
 
 static WriteQueueEntry *queueEntries;
-static volatile uint32_t activeReadBuffer;
-static volatile uint32_t activeWriteBuffer;
+static uint32_t activeReadBuffer;
+static uint32_t activeWriteBuffer;
 
 static int ioThreadMain(int argc, const char **argv)
 {
 #ifdef NUSSPLI_DEBUG
 	debugPrintf("I/O queue running!");
 	ioWriteLock = false;
+
 #endif
 	uint32_t asl;
 	WriteQueueEntry *entry;
