@@ -54,7 +54,7 @@
 #include <menu/utils.h>
 
 #define SSAA            8
-#define MAX_OVERLAYS    4
+#define MAX_OVERLAYS    8
 
 SDLSystem *sys;
 GuiFrame *window = NULL;
