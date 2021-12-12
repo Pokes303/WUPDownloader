@@ -47,7 +47,9 @@ include $(PORTLIBS_PATH)/wiiu/share/romfs-wiiu.mk
 CFLAGS		:=	$(MACHDEP) -Ofast -flto=auto -fno-fat-lto-objects \
 				-fuse-linker-plugin -pipe -D__WIIU__ -D__WUT__ \
 				-DNUSSPLI_VERSION=\"$(NUSSPLI_VERSION)\" \
-				-DIOAPI_NO_64 $(ROMFS_CFLAGS)
+				-DIOAPI_NO_64 $(ROMFS_CFLAGS) \
+				-mnewlib -mabi=elfv1
+
 ifeq ($(strip $(HBL)), 1)
 CFLAGS		+=	-DNUSSPLI_HBL
 endif
@@ -90,7 +92,7 @@ real: $(CURDIR)/payload/arm_kernel_bin.h
 	@cd zlib && git apply ../minizip.patch || true
 	@mv $(CURDIR)/src/cJSON/test.c $(CURDIR)/src/cJSON/test.c.old 2>/dev/null || true
 	@sed -i 's/-save-temps/-pipe/g' libgui-sdl/Makefile.wiiu
-	@sed -i '/			-ffunction-sections -fdata-sections \\/d' libgui-sdl/Makefile.wiiu
+	@sed -i 's/-ffunction-sections -fdata-sections/-mnewlib -mabi=elfv1/g' libgui-sdl/Makefile.wiiu
 	@sed -i 's/$$(ARCH) -/$$(ARCH) $$(CFLAGS) -/g' libgui-sdl/Makefile.wiiu
 	@sed -i 's/-DNDEBUG=1 -O2 -s/$(LIBGUIFLAGS)/g' libgui-sdl/Makefile.wiiu
 #	@cd libgui-sdl && $(MAKE) -f Makefile.wiiu
