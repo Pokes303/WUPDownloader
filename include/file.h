@@ -49,7 +49,6 @@ typedef enum
 	
 	// Extra flags, OR them to the real file type.
 	FILE_TYPE_TORAM = 1 << 6,	// 01000000
-	FILE_TYPE_TOUSB = 1 << 7,	// 10000000
 } FileType;
 
 typedef enum

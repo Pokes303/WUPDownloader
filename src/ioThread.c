@@ -19,6 +19,7 @@
 
 #include <wut-fixups.h>
 
+#include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -78,7 +79,10 @@ static int ioThreadMain(int argc, const char **argv)
 		}
 
 		if(entry->size != 0) // WRITE command
-			fwrite(entry->buf, entry->size, 1, entry->file->fd);
+		{
+			if(fwrite(entry->buf, entry->size, 1, entry->file->fd) != 1)
+				debugPrintf("fwrite() error: %d", errno);
+		}
 		else // Close command
 		{
 			fflush(entry->file->fd);
