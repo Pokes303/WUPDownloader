@@ -225,7 +225,8 @@ downloadTMD:
 		
 		dls += tmd->contents[i].size;
 	}
-	
+
+naNedNa:
 	drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, keepFiles);
 	
 	while(loop && AppRunning())
@@ -367,7 +368,33 @@ downloadTMD:
 			}
 		}
 	}
-	
+
+	if(dlDev == NUSDEV_MLC)
+	{
+		int ovl = addErrorOverlay(
+			"Downloading to NAND is dangerous,\n"
+			"it could brick your Wii U!\n\n"
+
+			"Are you sure you want to do this?"
+		);
+
+		while(AppRunning())
+		{
+			showFrame();
+
+			if(vpad.trigger & VPAD_BUTTON_B)
+			{
+				removeErrorOverlay(ovl);
+				loop = true;
+				goto naNedNa;
+			}
+			if(vpad.trigger & VPAD_BUTTON_A)
+				break;
+		}
+
+		removeErrorOverlay(ovl);
+	}
+
 	downloadTitle(tmd, ramBufSize, entry, titleVer, folderName, inst, dlDev, toUSB, keepFiles);
 	clearRamBuf();
 }
