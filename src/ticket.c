@@ -24,13 +24,13 @@
 
 #include <utils.h>
 #include <file.h>
+#include <filesystem.h>
 #include <input.h>
 #include <ioThread.h>
 #include <keygen.h>
 #include <renderer.h>
 #include <status.h>
 #include <titles.h>
-#include <usb.h>
 #include <utils.h>
 #include <menu/filebrowser.h>
 #include <menu/utils.h>

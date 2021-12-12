@@ -22,10 +22,10 @@
 
 #include <crypto.h>
 #include <file.h>
+#include <filesystem.h>
 #include <input.h>
 #include <renderer.h>
 #include <status.h>
-#include <usb.h>
 #include <menu/filebrowser.h>
 
 #include <coreinit/memdefaultheap.h>
@@ -36,7 +36,7 @@
 
 #define MAX_FILEBROWSER_LINES (MAX_LINES - 5)
 
-void drawFBMenuFrame(char **folders, size_t foldersSize, const size_t pos, const size_t cursor, const bool onUSB)
+void drawFBMenuFrame(char **folders, size_t foldersSize, const size_t pos, const size_t cursor, const NUSDEV activeDevice, bool usbMounted)
 {
 	startNewFrame();
 	textToFrame(0, 6, "Select a folder:");
@@ -45,12 +45,12 @@ void drawFBMenuFrame(char **folders, size_t foldersSize, const size_t pos, const
 	
 	char toWrite[512];
 	strcpy(toWrite, "Press \uE000 to select || \uE001 to return || \uE002 to switch to ");
-	strcat(toWrite, onUSB ? "SD" : "USB");
+	strcat(toWrite, activeDevice == NUSDEV_USB ? "SD" : activeDevice == NUSDEV_SD ? "NAND" : usbMounted ? "USB" : "SD");
 	strcat(toWrite, " || \uE003 to refresh");
 	textToFrame(MAX_LINES - 2, ALIGNED_CENTER, toWrite);
 	
 	strcpy(toWrite, "Searching on => ");
-	strcat(toWrite, onUSB ? "USB" : "SD");
+	strcat(toWrite, activeDevice == NUSDEV_USB ? "USB" : activeDevice == NUSDEV_SD ? "SD" : "NAND");
 	strcat(toWrite, ":/install/");
 	textToFrame(MAX_LINES - 1, ALIGNED_CENTER, toWrite);
 	
@@ -77,22 +77,19 @@ char *fileBrowserMenu()
 	size_t foldersSize = 1;
 	size_t cursor, pos;
 	bool usbMounted = mountUSB();
-	bool onUSB = usbMounted;
+	NUSDEV activeDevice = usbMounted ? NUSDEV_USB : NUSDEV_SD;
+	mountMLC();
 	bool mov;
 	DIR *dir;
 	
 refreshDirList:
     OSTime t = OSGetSystemTime();
-	usbMounted = mountUSB();
-	if(!usbMounted)
-		onUSB = false;
-	
 	for(int i = 1; i < foldersSize; i++)
 		MEMFreeToDefaultHeap(folders[i]);
 	foldersSize = 1;
 	cursor = pos = 0;
 	
-	dir = opendir(onUSB ? INSTALL_DIR_USB : INSTALL_DIR_SD);
+	dir = opendir(activeDevice == NUSDEV_USB ? INSTALL_DIR_USB : activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC);
 	if(dir != NULL)
 	{
 		size_t len;
@@ -111,7 +108,7 @@ refreshDirList:
 	t = OSGetSystemTime() - t;
 	addEntropy(&t, sizeof(OSTime));
 	
-	drawFBMenuFrame(folders, foldersSize, pos, cursor, onUSB);
+	drawFBMenuFrame(folders, foldersSize, pos, cursor, activeDevice, usbMounted);
 	
 	mov = foldersSize >= MAX_FILEBROWSER_LINES;
 	char *ret = NULL;
@@ -121,7 +118,7 @@ refreshDirList:
 		if(app == APP_STATE_BACKGROUND)
 			continue;
 		if(app == APP_STATE_RETURNING)
-			drawFBMenuFrame(folders, foldersSize, pos, cursor, onUSB);
+			drawFBMenuFrame(folders, foldersSize, pos, cursor, activeDevice, usbMounted);
 		
 		showFrame();
 		if(vpad.trigger & VPAD_BUTTON_B)
@@ -130,11 +127,11 @@ refreshDirList:
 		{
 			if(dir != NULL)
 			{
-				size_t len = strlen(onUSB ? INSTALL_DIR_USB : INSTALL_DIR_SD) + strlen(folders[cursor + pos]) + 1;
+				size_t len = strlen(activeDevice == NUSDEV_USB ? INSTALL_DIR_USB : activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC) + strlen(folders[cursor + pos]) + 1;
 				ret = MEMAllocFromDefaultHeap(len); //TODO: Free
 				if(ret != NULL)
 				{
-					strcpy(ret, onUSB ? INSTALL_DIR_USB : INSTALL_DIR_SD);
+					strcpy(ret, activeDevice == NUSDEV_USB ? INSTALL_DIR_USB : activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC);
 					strcat(ret, folders[cursor + pos]);
 				}
 				goto exitFileBrowserMenu;
@@ -200,7 +197,17 @@ refreshDirList:
 		
 		if(vpad.trigger & VPAD_BUTTON_X)
 		{
-			onUSB = !onUSB;
+			switch(activeDevice)
+			{
+				case NUSDEV_USB:
+					activeDevice = NUSDEV_SD;
+					break;
+				case NUSDEV_SD:
+					activeDevice = NUSDEV_MLC;
+					break;
+				case NUSDEV_MLC:
+					activeDevice = usbMounted ? NUSDEV_USB : NUSDEV_SD;
+			}
 			goto refreshDirList;
 		}
 		if(vpad.trigger & VPAD_BUTTON_Y)
@@ -208,7 +215,7 @@ refreshDirList:
 		
 		if(redraw)
 		{
-			drawFBMenuFrame(folders, foldersSize, pos, cursor, onUSB);
+			drawFBMenuFrame(folders, foldersSize, pos, cursor, activeDevice, usbMounted);
 			redraw = false;
 		}
 	}

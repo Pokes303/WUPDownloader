@@ -20,11 +20,11 @@
 
 #include <wut-fixups.h>
 
+#include <filesystem.h>
 #include <input.h>
 #include <renderer.h>
 #include <status.h>
 #include <titles.h>
-#include <usb.h>
 #include <utils.h>
 #include <menu/download.h>
 #include <menu/predownload.h>
@@ -50,7 +50,7 @@ size_t filteredTitleEntrySize;
 void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cursor, char16_t *search)
 {
 	if(!isAroma())
-		unmountUSB();
+		unmountAll();
 	
 	startNewFrame();
 	

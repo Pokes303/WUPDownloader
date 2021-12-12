@@ -20,9 +20,9 @@
 #include <wut-fixups.h>
 
 #include <file.h>
+#include <filesystem.h>
 #include <iosuhaxx.h>
 #include <status.h>
-#include <usb.h>
 #include <utils.h>
 
 #include <stdbool.h>
@@ -35,6 +35,8 @@
 #include <iosuhax_devoptab.h>
 
 int fsaHandle = -1;
+bool usbMounted = false;
+bool mlcMounted = false;
 bool usb01;
 
 bool isUSB01()
@@ -42,15 +44,14 @@ bool isUSB01()
 	return usb01;
 }
 
-bool mountUSB()
+static bool initFsa()
 {
 	if(fsaHandle >= 0)
 		return true;
-	
-	// Try to open Aroma/Mocha iosuhax
+
 	if(!openIOSUhax())
         return false;
-	
+
 	fsaHandle = IOSUHAX_FSA_Open();
 	if(fsaHandle < 0)
 	{
@@ -58,7 +59,17 @@ bool mountUSB()
 		debugPrintf("IOSUHAX: Error opening FSA!");
 		return false;
 	}
-	
+	return true;
+}
+
+bool mountUSB()
+{
+	if(usbMounted)
+		return true;
+
+	if(!initFsa())
+		return false;
+
 	int ret = mount_fs("usb", fsaHandle, NULL, "/vol/storage_usb01");
 	if(ret != 0 || !dirExists("usb:/"))
 	{
@@ -75,20 +86,61 @@ bool mountUSB()
 	}
 	else
 		usb01 = true;
-	
+
 	debugPrintf("IOSUHAX: USB drive %s mounted!", usb01 ? "1" : "2");
+	usbMounted = true;
 	return true;
+}
+
+bool mountMLC()
+{
+	if(mlcMounted)
+		return true;
+
+	if(!initFsa())
+		return false;
+
+	int ret = mount_fs("mlc", fsaHandle, NULL, "/vol/storage_mlc01");
+	if(ret != 0 || !dirExists("mlc:/"))
+	{
+		debugPrintf("IOSUHAX: error mounting MLC: %#010x", ret);
+		return false;
+	}
+
+	debugPrintf("IOSUHAX: MLC mounted!");
+	mlcMounted = true;
+	return true;
+}
+
+static void closeFsa()
+{
+	IOSUHAX_FSA_Close(fsaHandle);
+	closeIOSUhax();
+	fsaHandle = -1;
 }
 
 void unmountUSB()
 {
-	if(fsaHandle < 0)
+	if(!usbMounted)
 		return;
-	
+
 	unmount_fs("usb");
-	IOSUHAX_FSA_Close(fsaHandle);
-	closeIOSUhax();
-	fsaHandle = -1;
-	
+	usbMounted = false;
+	if(!mlcMounted)
+		closeFsa();
+
 	debugPrintf("IOSUHAX: USB drive unmounted!");
+}
+
+void unmountMLC()
+{
+	if(!mlcMounted)
+		return;
+
+	unmount_fs("mlc");
+	mlcMounted = false;
+	if(!usbMounted)
+		closeFsa();
+
+	debugPrintf("IOSUHAX: MLC unmounted!");
 }

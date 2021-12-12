@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_USB_H
-#define NUSSPLI_USB_H
+#ifndef NUSSPLI_FILESYSTEM_H
+#define NUSSPLI_FILESYSTEM_H
 
 #include <wut-fixups.h>
 
@@ -28,12 +28,27 @@
 	extern "C" {
 #endif
 
+typedef enum
+{
+	NUSDEV_USB,
+	NUSDEV_SD,
+	NUSDEV_MLC,
+} NUSDEV;
+
+bool mountMLC();
+void unmountMLC();
 bool mountUSB();
 void unmountUSB();
 bool isUSB01();
+
+#define unmountAll()	\
+{						\
+	unmountUSB();		\
+	unmountMLC();		\
+}
 
 #ifdef __cplusplus
 	}
 #endif
 
-#endif // ifndef NUSSPLI_USB_H
+#endif // ifndef NUSSPLI_FILESYSTEM_H

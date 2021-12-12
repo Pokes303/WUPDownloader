@@ -24,7 +24,6 @@
 #include <ioThread.h>
 #include <renderer.h>
 #include <status.h>
-#include <usb.h>
 #include <utils.h>
 
 #include <coreinit/core.h>

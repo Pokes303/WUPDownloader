@@ -33,13 +33,13 @@
 
 #include <crypto.h>
 #include <file.h>
+#include <filesystem.h>
 #include <input.h>
 #include <installer.h>
 #include <ioThread.h>
 #include <renderer.h>
 #include <rumbleThread.h>
 #include <status.h>
-#include <usb.h>
 #include <utils.h>
 #include <menu/utils.h>
 
@@ -75,7 +75,7 @@ bool install(const char *game, bool hasDeps, bool fromUSB, const char *path, boo
 	if(!isAroma())
 	{
 		flushIOQueue(); // Make sure all game files are on disc
-		unmountUSB(); // Get MCP ready
+		unmountAll(); // Get MCP ready
 	}
 	
 	// Let's see if MCP is able to parse the TMD...

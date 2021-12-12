@@ -24,6 +24,7 @@
 #include <crypto.h>
 #include <downloader.h>
 #include <file.h>
+#include <filesystem.h>
 #include <input.h>
 #include <installer.h>
 #include <ioThread.h>
@@ -38,7 +39,6 @@
 #include <ticket.h>
 #include <titles.h>
 #include <updater.h>
-#include <usb.h>
 #include <utils.h>
 #include <cJSON.h>
 #include <menu/download.h>
@@ -238,7 +238,7 @@ int main()
 			else
 				lerr = "No support for rebrands, use original NUSspli!";
 
-			unmountUSB();
+			unmountAll();
 			MCP_Close(mcpHandle);
 			debugPrintf("MCP closed");
 		}

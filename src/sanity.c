@@ -29,8 +29,8 @@
 
 #include <crypto.h>
 #include <file.h>
+#include <filesystem.h>
 #include <status.h>
-#include <usb.h>
 #include <utils.h>
 
 #include <coreinit/mcp.h>
@@ -102,9 +102,12 @@ bool sanityCheck()
 			strcpy(newPath, "usb:");
 		}
 		else
-			return true; // TODO
+		{
+			mountMLC();
+			strcpy(newPath, "mlc:");
+		}
 
-		strcat(newPath, title.path + 18);
+		strcpy(newPath + 4, title.path + 18);
 		strcat(newPath, "/meta/");
 
 		for(int i = 0; !br && i < MD5_FILES; i++)
@@ -151,6 +154,8 @@ bool sanityCheck()
 
 		if(isUsb)
 			unmountUSB();
+		else
+			unmountMLC();
 
         t = OSGetSystemTime() - t;
 		addEntropy(&t, sizeof(OSTime));

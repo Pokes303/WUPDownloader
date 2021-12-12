@@ -34,13 +34,13 @@
 #include <crypto.h>
 #include <deinstaller.h>
 #include <file.h>
+#include <filesystem.h>
 #include <input.h>
 #include <ioThread.h>
 #include <osdefs.h>
 #include <renderer.h>
 #include <rumbleThread.h>
 #include <status.h>
-#include <usb.h>
 #include <utils.h>
 #include <menu/utils.h>
 
@@ -63,7 +63,7 @@ bool deinstall(MCPTitleListType title, bool channelHaxx)
 	glueMcpData(&info, &data);
 	
 	if(!isAroma())
-		unmountUSB();
+		unmountAll();
 	
 	if(!channelHaxx)
 		disableShutdown();
