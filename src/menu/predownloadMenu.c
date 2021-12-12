@@ -138,7 +138,7 @@ void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t siz
 	textToFrame(line--, 0, "Press \uE001 to return");
 	
 	strcpy(toFrame, "Press \uE003 to download to ");
-	strcat(toFrame, dlDev == NUSDEV_USB ? "USB" : dlDev == NUSDEV_SD ? "SD" : "MLC");
+	strcat(toFrame, dlDev == NUSDEV_USB ? "USB" : dlDev == NUSDEV_SD ? "SD" : "NAND");
 	strcat(toFrame, " only");
 	textToFrame(line--, 0, toFrame);
 	

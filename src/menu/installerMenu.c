@@ -40,7 +40,7 @@ void drawInstallerMenuFrame(const char *name, NUSDEV dev, bool keepFiles)
 	
 	lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
 	if(dev != NUSDEV_SD)
-		textToFrame(MAX_LINES - 1, 0, "WARNING: Files on USB/MLC will always be deleted after installing!");
+		textToFrame(MAX_LINES - 1, 0, "WARNING: Files on USB/NAND will always be deleted after installing!");
 	else
 	{
 		char *toFrame = getToFrameBuffer();
