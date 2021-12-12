@@ -149,6 +149,9 @@ void shutdownIOThread()
 	debugPrintf("I/O thread returned: %d", ret);
 }
 
+#ifdef NUSSPLI_DEBUG
+bool queueStalled = false;
+#endif
 size_t addToIOQueue(const void *buf, size_t size, size_t n, NUSFILE *file)
 {
     WriteQueueEntry *entry;
@@ -166,11 +169,23 @@ retryAddingToQueue:
 	{
 #ifdef NUSSPLI_DEBUG
 		ioWriteLock = false;
+		if(!queueStalled)
+		{
+			debugPrintf("Waiting for free slot...");
+			queueStalled = true;
+		}
 #endif
-		debugPrintf("Waiting for free slot...");
 		OSSleepTicks(256);
 		goto retryAddingToQueue; // We use goto here instead of just calling addToIOQueue again to not overgrow the stack.
 	}
+
+#ifdef NUSSPLI_DEBUG
+	if(queueStalled)
+	{
+		debugPrintf("Slot free!");
+		queueStalled = false;
+	}
+#endif
 	
 	if(buf != NULL)
 	{
