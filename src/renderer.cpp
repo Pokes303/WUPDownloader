@@ -379,7 +379,7 @@ void removeErrorOverlay(int id)
 	if(id < 0 || id >= MAX_OVERLAYS || errorOverlay[id] == NULL)
 		return;
 	
-	for(int i = 0; i < 3; i++)
+	for(int32_t i = errorOverlay[id]->getSize() - 1; i > -1; i--)
 		delete errorOverlay[id]->getGuiElementAt(i);
 	
 	delete errorOverlay[id];
