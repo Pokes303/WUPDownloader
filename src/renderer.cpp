@@ -37,6 +37,7 @@
 #include <coreinit/time.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
+#include <whb/gfx.h>
 
 #include <cstring>
 #include <stdbool.h>
@@ -560,6 +561,12 @@ void colorStartNewFrame(uint32_t color)
 		background = new GuiImage(screenColorToSDLcolor(color), width, height);
 
 	window->append(background);
+}
+
+void showFrame()
+{
+	WHBGfxBeginRender();
+	readInput();
 }
 
 // We need to draw the DRC before the TV, else the DRC is always one frame behind

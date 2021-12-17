@@ -26,7 +26,6 @@
 #include <stdint.h>
 #include <wchar.h>
 
-#include <input.h>
 #include <titles.h>
 
 #define FONT_SIZE 28
@@ -62,8 +61,6 @@
 	extern "C" {
 #endif
 
-#define showFrame() readInput()
-
 void initRenderer();
 void shutdownRenderer();
 void pauseRenderer();
@@ -74,6 +71,7 @@ static inline void startNewFrame()
 	colorStartNewFrame(SCREEN_COLOR_BLUE);
 }
 void startNewFrame();
+void showFrame();
 void drawFrame();
 void drawKeyboard(bool tv);
 void textToFrame(int row, int column, const char* str);
