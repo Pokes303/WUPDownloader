@@ -241,8 +241,8 @@ void flushIOQueue()
 	
 #ifdef NUSSPLI_DEBUG
 	ioWriteLock = false;
-	removeErrorOverlay(ovl);
 #endif
+	removeErrorOverlay(ovl);
 }
 
 NUSFILE *openFile(const char *path, const char *mode)
