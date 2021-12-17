@@ -66,8 +66,6 @@ GuiSound *backgroundMusic = NULL;
 
 int32_t spaceWidth;
 
-void *backgroundMusicRaw = NULL;
-
 GuiFrame *errorOverlay[MAX_OVERLAYS];
 GuiTextureData *arrowData;
 GuiTextureData *checkmarkData;
