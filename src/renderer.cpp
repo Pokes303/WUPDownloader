@@ -63,7 +63,6 @@ SDL_Renderer *sdlRenderer;
 GuiFont *font = NULL;
 uint32_t width, height;
 GuiSound *backgroundMusic = NULL;
-OSTime lastTick;
 
 int32_t spaceWidth;
 
@@ -444,8 +443,7 @@ void resumeRenderer()
 		flagData[i] = new GuiTextureData(tex);
 	}
 
-	lastTick = OSGetSystemTime();
-	t = lastTick - t;
+	t = OSGetSystemTime() - t;
 	addEntropy(&t, sizeof(OSTime));
 }
 
@@ -555,37 +553,15 @@ void colorStartNewFrame(uint32_t color)
 	GuiImage *background;
 	if(color == SCREEN_COLOR_BLUE)
 	{
-		for(int i = 0; i < 10; i++)
-		{
-			background = new GuiImage(bgData);
-			background->setScaleQuality(SCALE_LINEAR);
-			background->setScaleX(((float)width) / 2.0f);
-			background->setScaleY(((float)height) / 2.0f);
-			window->append(background);
-		}
+		background = new GuiImage(bgData);
+		background->setScaleQuality(SCALE_LINEAR);
+		background->setScaleX(((float)width) / 2.0f);
+		background->setScaleY(((float)height) / 2.0f);
 	}
 	else
-	{
 		background = new GuiImage(screenColorToSDLcolor(color), width, height);
-		window->append(background);
-	}
-}
 
-void showFrame()
-{
-	if(window == NULL)
-		return;
-
-	OSTime passed = OSGetSystemTime();
-	passed -= lastTick;
-	if(passed < (OSTime)OSMillisecondsToTicks(1000 / 60))
-		OSSleepTicks(OSMillisecondsToTicks(1000 / 60) - passed);
-	
-	passed += lastTick;
-	lastTick = OSGetSystemTime();
-	passed = lastTick - passed;
-	addEntropy(&passed, sizeof(OSTime));
-	readInput();
+	window->append(background);
 }
 
 // We need to draw the DRC before the TV, else the DRC is always one frame behind
@@ -594,7 +570,6 @@ void drawFrame()
 	if(window == NULL)
 		return;
 	
-	SDL_RenderClear(sdlRenderer);
 	window->draw(renderer);
 	for(int i = 0; i < MAX_OVERLAYS; i++)
 		if(errorOverlay[i] != NULL)
@@ -607,8 +582,7 @@ void drawKeyboard(bool tv)
 {
 	if(window == NULL)
 		return;
-	
-	SDL_RenderClear(sdlRenderer);
+
 	window->draw(renderer);
 	if(tv)
 		Swkbd_DrawTV();
