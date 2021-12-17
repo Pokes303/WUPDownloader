@@ -376,7 +376,7 @@ void removeErrorOverlay(int id)
 {
 	OSTick t = OSGetTick();
 	addEntropy(&t, sizeof(OSTick));
-	if(errorOverlay[id] == NULL)
+	if(id < 0 || id >= MAX_OVERLAYS || errorOverlay[id] == NULL)
 		return;
 	
 	for(int i = 0; i < 3; i++)
