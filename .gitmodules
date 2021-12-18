@@ -4,6 +4,6 @@
 [submodule "zlib"]
 	path = zlib
 	url = https://github.com/madler/zlib.git
-[submodule "libgui-sdl"]
-	path = libgui-sdl
-	url = https://github.com/Maschell/libgui-sdl.git
+[submodule "SDL_FontCache"]
+	path = SDL_FontCache
+	url = https://github.com/grimfang4/SDL_FontCache.git

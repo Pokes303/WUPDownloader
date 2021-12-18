@@ -29,8 +29,7 @@ DATA		:=
 INCLUDES	:=	include \
 				payload \
 				src/cJSON \
-				zlib/contrib/minizip \
-				libgui-sdl/include/gui-sdl
+				zlib/contrib/minizip
 
 ifeq ($(strip $(HBL)), 1)
 ROMFS		:=	data
@@ -58,13 +57,13 @@ CXXFLAGS	:=	$(CFLAGS)
 ASFLAGS		:=	-g $(ARCH)
 LDFLAGS		:=	-g $(ARCH) $(RPXSPECS) $(CFLAGS) -Wl,-Map,$(notdir $*.map)
 
-LIBS		:=	-lgui-sdl -lcurl -lssl -lcrypto `$(PREFIX)pkg-config --libs SDL2_mixer SDL2_ttf SDL2_image` -lwut -liosuhax $(ROMFS_LIBS)
+LIBS		:=	-lcurl -lssl -lcrypto `$(PREFIX)pkg-config --libs SDL2_mixer SDL2_ttf SDL2_image` -lwut -liosuhax $(ROMFS_LIBS)
 
 #-------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level
 # containing include and lib
 #-------------------------------------------------------------------------------
-LIBDIRS	:= $(PORTLIBS) $(WUT_ROOT) $(TOPDIR)/libgui-sdl
+LIBDIRS	:= $(PORTLIBS) $(WUT_ROOT)
 
 
 #-------------------------------------------------------------------------------
@@ -84,19 +83,13 @@ NUSSPLI_VERSION	:=	$(shell grep \<version\> meta/hbl/meta.xml | sed 's/.*<versio
 all: debug
 
 real: $(CURDIR)/payload/arm_kernel_bin.h
-	@git submodule deinit --force libgui-sdl
 	@git submodule update --init --recursive
 	@rm -f data/titleDB.json
 	@wget -U "NUSspli builder" -O data/titleDB.json https://napi.nbg01.v10lator.de/v2/t
 	@rm -f zlib/contrib/minizip/iowin* zlib/contrib/minizip/mini* zlib/contrib/minizip/zip.? zlib/contrib/minizip/mztools.? zlib/contrib/minizip/configure.ac zlib/contrib/minizip/Makefile zlib/contrib/minizip/Makefile.am zlib/contrib/minizip/*.com zlib/contrib/minizip/*.txt
 	@cd zlib && git apply ../minizip.patch || true
+	@cd SDL_FontCache && git apply ../SDL_FontCache.patch || true
 	@mv $(CURDIR)/src/cJSON/test.c $(CURDIR)/src/cJSON/test.c.old 2>/dev/null || true
-	@sed -i 's/-save-temps/-pipe/g' libgui-sdl/Makefile.wiiu
-	@sed -i 's/-ffunction-sections -fdata-sections/-mnewlib -mabi=elfv1/g' libgui-sdl/Makefile.wiiu
-	@sed -i 's/$$(ARCH) -/$$(ARCH) $$(CFLAGS) -/g' libgui-sdl/Makefile.wiiu
-	@sed -i 's/-DNDEBUG=1 -O2 -s/$(LIBGUIFLAGS)/g' libgui-sdl/Makefile.wiiu
-#	@cd libgui-sdl && $(MAKE) -f Makefile.wiiu
-	@cd libgui-sdl && for patch in $(TOPDIR)/libgui-sdl-patches/*.patch; do echo Applying $$patch && git apply $$patch; done && $(MAKE) -f Makefile.wiiu
 	@[ -d $(BUILD) ] || mkdir -p $(BUILD)
 	@$(MAKE) -C $(BUILD) -f $(CURDIR)/Makefile BUILD=$(BUILD) NUSSPLI_VERSION=$(NUSSPLI_VERSION) $(MAKE_CMD)
 
@@ -121,14 +114,11 @@ clean:
 
 #-------------------------------------------------------------------------------
 debug:		MAKE_CMD	:=	debug
-debug:		LIBGUIFLAGS	:=	-O0 -g
 debug:		export V	:=	1
 debug:		real
 
 #-------------------------------------------------------------------------------
 release:	MAKE_CMD	:=	all
-release:	LIBGUIFLAGS	:=	-Ofast -flto=auto -fno-fat-lto-objects \
-							-fuse-linker-plugin -s -DNDEBUG=1
 release:	BUILD		:=	release
 release:	real
 
