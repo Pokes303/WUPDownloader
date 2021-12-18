@@ -1,8 +1,218 @@
 diff --git a/SDL_FontCache.c b/SDL_FontCache.c
-index e534622..9551c32 100644
+index e534622..9b9414d 100644
 --- a/SDL_FontCache.c
 +++ b/SDL_FontCache.c
-@@ -463,14 +463,11 @@ static FC_Rect FC_RenderCenter(FC_Font* font, FC_Target* dest, float x, float y,
+@@ -82,16 +82,30 @@ __inline int c99_snprintf(char *outBuf, size_t size, const char *format, ...)
+ 
+ 
+ 
+-static Uint8 has_clip(FC_Target* dest)
+-{
+-    #ifdef FC_USE_SDL_GPU
+-    return dest->use_clip_rect;
+-    #elif defined(ENABLE_SDL_CLIPPING)
+-    return SDL_RenderIsClipEnabled(dest);
++#ifdef FC_USE_SDL_GPU
++    #define has_clip(dest) dest->use_clip_rec
++    #define set_clip(dest, rect)            \
++    {                                       \
++        if(rect != NULL)                    \
++            GPU_SetClipRect(dest, *rect);   \
++        else                                \
++            GPU_UnsetClip(dest);            \
++    }
++    #define set_color(src, r, g, b, a) GPU_SetRGBA(src, r, g, b, a);
++#else
++    #define set_color(src, r, g, b, a)          \
++    {                                           \
++        SDL_SetTextureColorMod(src, r, g, b);   \
++        SDL_SetTextureAlphaMod(src, a);         \
++    }
++    #if defined(ENABLE_SDL_CLIPPING)
++        #define has_clip(dest) SDL_RenderIsClipEnabled(dest)
++        #define set_clip(dest, rect) SDL_RenderSetClipRect(dest, rect)
+     #else
+-    return 0;
++        #define has_clip(dest) 0
++        #define set_clip(dest, rect)
+     #endif
+-}
++#endif
+ 
+ static FC_Rect get_clip(FC_Target* dest)
+ {
+@@ -107,39 +121,17 @@ static FC_Rect get_clip(FC_Target* dest)
+     #endif
+ }
+ 
+-static void set_clip(FC_Target* dest, FC_Rect* rect)
+-{
+-    #ifdef FC_USE_SDL_GPU
+-    if(rect != NULL)
+-        GPU_SetClipRect(dest, *rect);
+-    else
+-        GPU_UnsetClip(dest);
+-    #elif defined(ENABLE_SDL_CLIPPING)
+-    SDL_RenderSetClipRect(dest, rect);
+-    #endif
+-}
+-
+-static void set_color(FC_Image* src, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+-{
+-    #ifdef FC_USE_SDL_GPU
+-    GPU_SetRGBA(src, r, g, b, a);
+-    #else
+-    SDL_SetTextureColorMod(src, r, g, b);
+-    SDL_SetTextureAlphaMod(src, a);
+-    #endif
+-}
+-
+ 
+ 
+ static char* new_concat(const char* a, const char* b)
+ {
+     // Create new buffer
+-    unsigned int size = strlen(a) + strlen(b);
+-    char* new_string = (char*)malloc(size+1);
++    unsigned int size = strlen(a);
++    char* new_string = (char*)malloc(size + strlen(b) + 1);
+ 
+     // Concatenate strings in the new buffer
+     strcpy(new_string, a);
+-    strcat(new_string, b);
++    strcpy(new_string + size, b);
+ 
+     return new_string;
+ }
+@@ -176,18 +168,17 @@ char* FC_GetStringASCII(void)
+     {
+         int i;
+         char c;
+-        ASCII_STRING = (char*)malloc(512);
+-        memset(ASCII_STRING, 0, 512);
++        ASCII_STRING = (char*)malloc(127 - 32);
+         i = 0;
+         c = 32;
+         while(1)
+         {
+-            ASCII_STRING[i] = c;
++            ASCII_STRING[++i] = c;
+             if(c == 126)
+                 break;
+-            ++i;
+             ++c;
+         }
++        ASCII_STRING[i] = '\0';
+     }
+     return U8_strdup(ASCII_STRING);
+ }
+@@ -198,30 +189,29 @@ char* FC_GetStringLatin1(void)
+     {
+         int i;
+         unsigned char c;
+-        LATIN_1_STRING = (char*)malloc(512);
++        LATIN_1_STRING = (char*)malloc(((0xA1 - 0xA0) + (0xC4 - 0x80)) << 1);
+         memset(LATIN_1_STRING, 0, 512);
+         i = 0;
+         c = 0xA0;
+         while(1)
+         {
+-            LATIN_1_STRING[i] = 0xC2;
+-            LATIN_1_STRING[i+1] = c;
++            LATIN_1_STRING[i++] = 0xC2;
++            LATIN_1_STRING[i++] = c;
+             if(c == 0xBF)
+                 break;
+-            i += 2;
+             ++c;
+         }
+-        i += 2;
+         c = 0x80;
+         while(1)
+         {
+-            LATIN_1_STRING[i] = 0xC3;
+-            LATIN_1_STRING[i+1] = c;
++            LATIN_1_STRING[i++] = 0xC3;
++            LATIN_1_STRING[i++] = c;
+             if(c == 0xBF)
+                 break;
+-            i += 2;
+             ++c;
+         }
++        LATIN_1_STRING[i++] = '\0';
++        LATIN_1_STRING[i] = '\0';
+     }
+     return U8_strdup(LATIN_1_STRING);
+ }
+@@ -234,26 +224,6 @@ char* FC_GetStringASCII_Latin1(void)
+     return U8_strdup(ASCII_LATIN_1_STRING);
+ }
+ 
+-FC_Rect FC_MakeRect(float x, float y, float w, float h)
+-{
+-    FC_Rect r = {x, y, w, h};
+-    return r;
+-}
+-
+-FC_Scale FC_MakeScale(float x, float y)
+-{
+-    FC_Scale s = {x, y};
+-
+-    return s;
+-}
+-
+-SDL_Color FC_MakeColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+-{
+-    SDL_Color c = {r, g, b, a};
+-
+-    return c;
+-}
+-
+ FC_Effect FC_MakeEffect(FC_AlignEnum alignment, FC_Scale scale, SDL_Color color)
+ {
+     FC_Effect e;
+@@ -297,18 +267,14 @@ typedef struct FC_Map
+ 
+ 
+ 
+-static FC_Map* FC_MapCreate(int num_buckets)
++static inline FC_Map* FC_MapCreate(int num_buckets)
+ {
+-    int i;
+     FC_Map* map = (FC_Map*)malloc(sizeof(FC_Map));
+ 
+     map->num_buckets = num_buckets;
+-    map->buckets = (FC_MapNode**)malloc(num_buckets * sizeof(FC_MapNode*));
+-
+-    for(i = 0; i < num_buckets; ++i)
+-    {
+-        map->buckets[i] = NULL;
+-    }
++    num_buckets *= sizeof(FC_MapNode*);
++    map->buckets = (FC_MapNode**)malloc(num_buckets);
++    memset(map->buckets, 0, num_buckets);
+ 
+     return map;
+ }
+@@ -335,7 +301,7 @@ static FC_Map* FC_MapCreate(int num_buckets)
+     }
+ }*/
+ 
+-static void FC_MapFree(FC_Map* map)
++static inline void FC_MapFree(FC_Map* map)
+ {
+     int i;
+     if(map == NULL)
+@@ -397,7 +363,7 @@ static FC_GlyphData* FC_MapInsert(FC_Map* map, Uint32 codepoint, FC_GlyphData gl
+     return NULL;
+ }
+ 
+-static FC_GlyphData* FC_MapFind(FC_Map* map, Uint32 codepoint)
++static inline FC_GlyphData* FC_MapFind(FC_Map* map, Uint32 codepoint)
+ {
+     Uint32 index;
+     FC_MapNode* node;
+@@ -463,14 +429,11 @@ static FC_Rect FC_RenderCenter(FC_Font* font, FC_Target* dest, float x, float y,
  static FC_Rect FC_RenderRight(FC_Font* font, FC_Target* dest, float x, float y, FC_Scale scale, const char* text);
  
  
@@ -22,7 +232,128 @@ index e534622..9551c32 100644
  
  
  char* U8_alloc(unsigned int size)
-@@ -1223,7 +1220,13 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
+@@ -485,19 +448,15 @@ char* U8_alloc(unsigned int size)
+     return result;
+ }
+ 
+-void U8_free(char* string)
+-{
+-    free(string);
+-}
+-
+ char* U8_strdup(const char* string)
+ {
+     char* result;
+     if(string == NULL)
+         return NULL;
+ 
+-    result = (char*)malloc(strlen(string)+1);
+-    strcpy(result, string);
++    unsigned int len = strlen(string)+1;
++    result = (char*)malloc(len);
++    memcpy(result, string, len);
+ 
+     return result;
+ }
+@@ -522,15 +481,15 @@ int U8_charsize(const char* character)
+     if(character == NULL)
+         return 0;
+ 
+-    if((unsigned char)*character <= 0x7F)
++    char c = *character;
++    if(c <= 0x7F)
+         return 1;
+-    else if((unsigned char)*character < 0xE0)
++    if(c < 0xE0)
+         return 2;
+-    else if((unsigned char)*character < 0xF0)
++    if(c < 0xF0)
+         return 3;
+-    else
+-        return 4;
+-    return 1;
++
++    return 4;
+ }
+ 
+ int U8_charcpy(char* buffer, const char* source, int buffer_size)
+@@ -547,11 +506,6 @@ int U8_charcpy(char* buffer, const char* source, int buffer_size)
+     return charsize;
+ }
+ 
+-const char* U8_next(const char* string)
+-{
+-    return string + U8_charsize(string);
+-}
+-
+ int U8_strinsert(char* string, int position, const char* source, int max_bytes)
+ {
+     int pos_u8char;
+@@ -675,40 +629,46 @@ static_inline FC_Rect FC_RectIntersect(FC_Rect A, FC_Rect B)
+ 
+ FC_Rect FC_DefaultRenderCallback(FC_Image* src, FC_Rect* srcrect, FC_Target* dest, float x, float y, float xscale, float yscale)
+ {
+-    float w = srcrect->w * xscale;
+-    float h = srcrect->h * yscale;
+-    FC_Rect result;
++    FC_Rect result =
++    {
++        .x = x,
++        .y = y,
++        .w = srcrect->w * xscale,
++        .h = srcrect->h * yscale,
++    };
+ 
+     // FIXME: Why does the scaled offset look so wrong?
+     #ifdef FC_USE_SDL_GPU
+-    {
+         GPU_Rect r = *srcrect;
+         GPU_BlitScale(src, &r, dest, x + xscale*r.w/2.0f, y + r.h/2.0f, xscale, yscale);
+-    }
+     #else
+-    {
+-        SDL_RendererFlip flip = SDL_FLIP_NONE;
++        SDL_Rect r = *srcrect;
++        SDL_Rect dr = {(int)x, (int)y, (int)(xscale*r.w), (int)(yscale*r.h)};
++
++
++        if(xscale == 0.0f && yscale == 0.0f)
++        {
++            SDL_RenderCopy(dest, src, &r, &dr);
++            return result;
++        }
++
++        SDL_RendererFlip flip;
+         if(xscale < 0)
+         {
+             xscale = -xscale;
+-            flip = (SDL_RendererFlip) ((int)flip | (int)SDL_FLIP_HORIZONTAL);
++            flip = SDL_FLIP_HORIZONTAL;
+         }
++        else
++            flip = SDL_FLIP_NONE;
++
+         if(yscale < 0)
+         {
+             yscale = -yscale;
+-            flip = (SDL_RendererFlip) ((int)flip | (int)SDL_FLIP_VERTICAL);
++            flip |= SDL_FLIP_VERTICAL;
+         }
+ 
+-        SDL_Rect r = *srcrect;
+-        SDL_Rect dr = {(int)x, (int)y, (int)(xscale*r.w), (int)(yscale*r.h)};
+         SDL_RenderCopyEx(dest, src, &r, &dr, 0, NULL, flip);
+-    }
+     #endif
+-
+-    result.x = x;
+-    result.y = y;
+-    result.w = w;
+-    result.h = h;
+     return result;
+ }
+ 
+@@ -1223,7 +1183,13 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
          unsigned int h = font->height*12;
          SDL_Surface* surfaces[FC_LOAD_MAX_SURFACES];
          int num_surfaces = 1;
@@ -36,7 +367,7 @@ index e534622..9551c32 100644
          font->last_glyph.rect.x = FC_CACHE_PADDING;
          font->last_glyph.rect.y = FC_CACHE_PADDING;
          font->last_glyph.rect.w = 0;
-@@ -1240,15 +1243,13 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
+@@ -1240,15 +1206,13 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
                  continue;
  
              // Try packing.  If it fails, create a new surface for the next cache level.
@@ -53,7 +384,7 @@ index e534622..9551c32 100644
                      break;
                  }
  
-@@ -1264,22 +1265,23 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
+@@ -1264,22 +1228,23 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
  
                  surfaces[num_surfaces] = FC_CreateSurface32(w, h);
                  num_surfaces++;
@@ -81,7 +412,7 @@ index e534622..9551c32 100644
              SDL_FreeSurface(surfaces[i]);
              #ifndef FC_USE_SDL_GPU
 diff --git a/SDL_FontCache.h b/SDL_FontCache.h
-index 77f5fb4..878570f 100644
+index 77f5fb4..30dd130 100644
 --- a/SDL_FontCache.h
 +++ b/SDL_FontCache.h
 @@ -33,11 +33,11 @@ THE SOFTWARE.
@@ -112,3 +443,36 @@ index 77f5fb4..878570f 100644
  #endif
  
  
+@@ -113,11 +114,11 @@ typedef struct FC_GlyphData
+ 
+ // Object creation
+ 
+-FC_Rect FC_MakeRect(float x, float y, float w, float h);
++#define FC_MakeRect(x, y, w, h) (FC_Rect){x, y, w, h}
+ 
+-FC_Scale FC_MakeScale(float x, float y);
++#define FC_MakeScale(x, y) (FC_Scale){x, y}
+ 
+-SDL_Color FC_MakeColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a);
++#define FC_MakeColor(r, g, b, a) (FC_Color){r, g, b, a}
+ 
+ FC_Effect FC_MakeEffect(FC_AlignEnum alignment, FC_Scale scale, SDL_Color color);
+ 
+@@ -186,7 +187,7 @@ void FC_GetUTF8FromCodepoint(char* result, Uint32 codepoint);
+ char* U8_alloc(unsigned int size);
+ 
+ /*! Deallocates the given string. */
+-void U8_free(char* string);
++#define U8_free(string) free(string)
+ 
+ /*! Allocates a copy of the given string. */
+ char* U8_strdup(const char* string);
+@@ -201,7 +202,7 @@ int U8_charsize(const char* character);
+ int U8_charcpy(char* buffer, const char* source, int buffer_size);
+ 
+ /*! Returns a pointer to the next UTF-8 character. */
+-const char* U8_next(const char* string);
++#define U8_next(string) (string + U8_charsize(string))
+ 
+ /*! Inserts a UTF-8 string into 'string' at the given position.  Use a position of -1 to append.  Returns 0 when unable to insert the string. */
+ int U8_strinsert(char* string, int position, const char* source, int max_bytes);
