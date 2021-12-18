@@ -349,6 +349,7 @@ int addErrorOverlay(const char *err)
 	if(errorOverlay[i] == NULL)
 		return -5;
 
+	SDL_SetTextureBlendMode(errorOverlay[i], SDL_BLENDMODE_BLEND);
 	SDL_SetRenderTarget(renderer, errorOverlay[i]);
 
 	SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_BLACK);
