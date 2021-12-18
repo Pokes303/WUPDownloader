@@ -341,7 +341,8 @@ int addErrorOverlay(const char *err)
 		return -2;
 
 	int w = FC_GetWidth(font, err);
-	if(w == 0)
+	int h = FC_GetColumnHeight(font, w, err);
+	if(w == 0 || h == 0)
 		return -4;
 
 	errorOverlay[i] = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, screen.x, screen.y);
@@ -356,14 +357,14 @@ int addErrorOverlay(const char *err)
 	SDL_RenderFillRect(renderer, NULL);
 
 	int x = (screen.x >> 1) - (w >> 1);
-	int y = (screen.y >> 1) - (FONT_SIZE >> 1);
+	int y = (screen.y >> 1) - (h >> 1);
 
 	SDL_Rect text =
 	{
 		.x = x,
 		.y = y,
 		.w = w,
-		.h = FONT_SIZE,
+		.h = h,
 	};
 
 	text.x -= FONT_SIZE >> 1;
@@ -385,7 +386,7 @@ int addErrorOverlay(const char *err)
 	text.x = x;
 	text.y = y;
 	text.w = w;
-	text.h = FONT_SIZE;
+	text.h = h;
 	FC_DrawBoxColor(font, renderer, text, screenColorToSDLcolor(SCREEN_COLOR_WHITE), err);
 
 	SDL_SetRenderTarget(renderer, NULL);
