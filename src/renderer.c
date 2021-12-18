@@ -613,10 +613,9 @@ void shutdownRenderer()
 		SDL_QueryTexture(byeTex, NULL, NULL, &(bye.w), &(bye.h));
 		bye.x = (screen.x >> 1) - (bye.w >> 1);
 		bye.y = (screen.y >> 1) - (bye.h >> 1);
-		SDL_RenderCopy(renderer, byeTex, NULL, &bye);
 
-		drawFrame();
-		showFrame();
+		SDL_RenderCopy(renderer, byeTex, NULL, &bye);
+		SDL_RenderPresent(renderer);
 		clearFrame();
 		pauseRenderer();
 	}
