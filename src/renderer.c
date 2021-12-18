@@ -354,8 +354,7 @@ int addErrorOverlay(const char *err)
 
 	SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_BLACK);
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, 0xC0);
-//	SDL_RenderClear(renderer);
-	SDL_RenderFillRect(renderer, NULL);
+	SDL_RenderClear(renderer);
 
 	int x = (screen.x >> 1) - (w >> 1);
 	int y = (screen.y >> 1) - (h >> 1);
