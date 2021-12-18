@@ -58,6 +58,7 @@ static Mix_Chunk *backgroundMusic = NULL;
 
 static int32_t spaceWidth;
 
+static SDL_Texture *frameBuffer;
 static SDL_Texture *errorOverlay[MAX_OVERLAYS];
 static SDL_Texture *arrowTex;
 static SDL_Texture *checkmarkTex;
@@ -324,12 +325,9 @@ void tabToFrame(int line, int column, char *label, bool active)
 
 int addErrorOverlay(const char *err)
 {
-	if(font == NULL)
-		return -99;
-
 	OSTick t = OSGetTick();
 	addEntropy(&t, sizeof(OSTick));
-	if(renderer == NULL)
+	if(font == NULL)
 		return -1;
 
 	int i = 0;
@@ -390,9 +388,9 @@ int addErrorOverlay(const char *err)
 	text2.h = h;
 	FC_DrawBoxColor(font, renderer, text2, screenColorToSDLcolor(SCREEN_COLOR_WHITE), err);
 
-	SDL_SetRenderTarget(renderer, NULL);
+	SDL_SetRenderTarget(renderer, frameBuffer);
 	drawFrame();
-    return i;
+	return i;
 }
 
 void removeErrorOverlay(int id)
@@ -404,7 +402,7 @@ void removeErrorOverlay(int id)
 	
 	SDL_DestroyTexture(errorOverlay[id]);
 	errorOverlay[id] = NULL;
-//	drawFrame();
+	drawFrame();
 }
 
 static inline bool loadTexture(const char *path, SDL_Texture **out)
@@ -513,7 +511,13 @@ void initRenderer()
 	if(renderer == NULL)
 		return;
 
-	SDL_SetRenderTarget(renderer, NULL);
+	if(frameBuffer == NULL)
+		frameBuffer = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, screen.x, screen.y);
+
+	if(frameBuffer == NULL)
+		return;
+
+	SDL_SetRenderTarget(renderer, frameBuffer);
 
 	OSTime t = OSGetSystemTime();
 	if(Mix_Init(MIX_INIT_MP3))
@@ -602,6 +606,7 @@ void shutdownRenderer()
 	
 	if(font != NULL)
 	{
+		SDL_SetRenderTarget(renderer, NULL);
 		colorStartNewFrame(SCREEN_COLOR_BLUE);
 
 		SDL_Rect bye;
@@ -614,6 +619,12 @@ void shutdownRenderer()
 		showFrame();
 		clearFrame();
 		pauseRenderer();
+	}
+
+	if(frameBuffer != NULL)
+	{
+		SDL_DestroyTexture(frameBuffer);
+		frameBuffer = NULL;
 	}
 
 	if(renderer != NULL)
@@ -676,12 +687,16 @@ void drawFrame()
 {
 	if(font == NULL)
 		return;
+
+	SDL_SetRenderTarget(renderer, NULL);
+	SDL_RenderCopy(renderer, frameBuffer, NULL, NULL);
 	
 	for(int i = 0; i < MAX_OVERLAYS; i++)
 		if(errorOverlay[i] != NULL)
 			SDL_RenderCopy(renderer, errorOverlay[i], NULL, NULL);
 	
 	SDL_RenderPresent(renderer);
+	SDL_SetRenderTarget(renderer, frameBuffer);
 }
 
 void drawKeyboard(bool tv)

@@ -123,7 +123,6 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 	OSTime now = OSGetSystemTime();
 	addEntropy(&now, sizeof(OSTime));
 	curlProgressData *data = (curlProgressData *)rawData;
-	bool forceDraw = false;
 
 	if(OSTicksToMilliseconds(now - data->lastInput) > (1000 / 60))
 	{
@@ -172,12 +171,11 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 			{
 				removeErrorOverlay(data->dlo);
 				data->dlo = -1;
-				forceDraw = true;
 			}
 		}
 	}
 
-	if(!forceDraw && OSTicksToMilliseconds(now - data->lastDraw) < 1000)
+	if(OSTicksToMilliseconds(now - data->lastDraw) < 1000)
 		return 0;
 
 	data->lastDraw = now;
