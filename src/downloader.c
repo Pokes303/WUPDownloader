@@ -269,6 +269,12 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 		sprintf(tmpString, "%.2f / %.2f %s", data->data->dlnow / multiplier, data->data->dltotal / multiplier, multiplierName);
 		textToFrame(1, 96, tmpString);
 	}
+
+#ifdef NUSSPLI_DEBUG
+	OSTime end = OSGetSystemTime();
+	sprintf(tmpString, "Frame time: %4llums", OSTicksToMilliseconds(end - now));
+	textToFrame(MAX_LINES - 1, ALIGNED_RIGHT, tmpString);
+#endif
 	
 	writeScreenLog();
 	drawFrame();
