@@ -279,23 +279,24 @@ naNedNa:
 				case NUSDEV_USB:
 					dlDev = NUSDEV_SD;
 					keepFiles = true;
-					setDlToUSB(true);
+					setDlToUSB(false);
 					break;
 				case NUSDEV_SD:
 					dlDev = NUSDEV_MLC;
 					keepFiles = false;
-					setDlToUSB(false);
 					break;
 				case NUSDEV_MLC:
 					if(usbMounted)
 					{
 						dlDev = NUSDEV_USB;
 						keepFiles = false;
+						setDlToUSB(true);
 					}
 					else
 					{
 						dlDev = NUSDEV_SD;
 						keepFiles = false;
+						setDlToUSB(false);
 					}
 			}
 			redraw = true;
