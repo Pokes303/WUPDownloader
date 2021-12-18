@@ -1,5 +1,5 @@
 diff --git a/SDL_FontCache.c b/SDL_FontCache.c
-index e534622..9b9414d 100644
+index e534622..1519ed4 100644
 --- a/SDL_FontCache.c
 +++ b/SDL_FontCache.c
 @@ -82,16 +82,30 @@ __inline int c99_snprintf(char *outBuf, size_t size, const char *format, ...)
@@ -411,6 +411,14 @@ index e534622..9b9414d 100644
              FC_UploadGlyphCache(font, i, surfaces[i]);
              SDL_FreeSurface(surfaces[i]);
              #ifndef FC_USE_SDL_GPU
+@@ -2852,6 +2817,7 @@ int FC_GetWrappedText(FC_Font* font, char* result, int max_result_size, Uint16 w
+         int num_bytes = FC_MIN(len, size_remaining);
+         memcpy(&result[size_so_far], iter->value, num_bytes);
+         size_so_far += num_bytes;
++        size_remaining -= num_bytes;
+ 
+         // If there's another line, add newline character
+         if(size_remaining > 0 && iter->next != NULL)
 diff --git a/SDL_FontCache.h b/SDL_FontCache.h
 index 77f5fb4..30dd130 100644
 --- a/SDL_FontCache.h
