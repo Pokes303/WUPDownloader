@@ -421,72 +421,63 @@ void resumeRenderer()
 	void *ttf;
 	size_t size;
 	OSGetSharedData(OS_SHAREDDATATYPE_FONT_STANDARD, 0, &ttf, &size);
-	SDL_RWops *rw = SDL_RWFromMem(ttf, size);
-	TTF_Font *tf = TTF_OpenFontRW(rw, 0, FONT_SIZE);
-	if(tf != NULL)
+	font = FC_CreateFont();
+	if(font != NULL)
 	{
-		font = FC_CreateFont();
-		if(font != NULL)
+		SDL_RWops *rw = SDL_RWFromMem(ttf, size);
+		if(FC_LoadFont_RW(font, renderer, rw, 1, FONT_SIZE, screenColorToSDLcolor(SCREEN_COLOR_WHITE), TTF_STYLE_NORMAL))
 		{
-			if(FC_LoadFontFromTTF(font, renderer, tf, screenColorToSDLcolor(SCREEN_COLOR_WHITE)))
-//			if(FC_LoadFont_RW(font, renderer, rw, 1, size, screenColorToSDLcolor(SCREEN_COLOR_WHITE), TTF_STYLE_NORMAL))
+			FC_GlyphData spaceGlyph;
+			FC_GetGlyphData(font, &spaceGlyph, ' ');
+			spaceWidth = spaceGlyph.rect.w;
+
+			OSTime t = OSGetSystemTime();
+			loadTexture(ROMFS_PATH "textures/arrow.png", &arrowTex); //TODO: Error handling...
+			loadTexture(ROMFS_PATH "textures/checkmark.png", &checkmarkTex);
+			loadTexture(ROMFS_PATH "textures/tab.png", &tabTex);
+			loadTexture(ROMFS_PATH "textures/bar.png", &barTex);
+			loadTexture(ROMFS_PATH "textures/bg.png", &bgTex);
+
+			const char *tex;
+			for(int i = 0; i < 6; i++)
 			{
-				FC_GlyphData spaceGlyph;
-				FC_GetGlyphData(font, &spaceGlyph, ' ');
-				spaceWidth = spaceGlyph.rect.w;
-
-				OSTime t = OSGetSystemTime();
-				loadTexture(ROMFS_PATH "textures/arrow.png", &arrowTex); //TODO: Error handling...
-				loadTexture(ROMFS_PATH "textures/checkmark.png", &checkmarkTex);
-				loadTexture(ROMFS_PATH "textures/tab.png", &tabTex);
-				loadTexture(ROMFS_PATH "textures/bar.png", &barTex);
-				loadTexture(ROMFS_PATH "textures/bg.png", &bgTex);
-
-				const char *tex;
-				for(int i = 0; i < 6; i++)
+				switch(i)
 				{
-					switch(i)
-					{
-						case 0:
-							tex = ROMFS_PATH "textures/flags/multi.png";
-							break;
-						case 1:
-							tex = ROMFS_PATH "textures/flags/eur.png";
-							break;
-						case 2:
-							tex = ROMFS_PATH "textures/flags/usa.png";
-							break;
-						case 3:
-							tex = ROMFS_PATH "textures/flags/jap.png";
-							break;
-						case 4:
-							tex = ROMFS_PATH "textures/flags/eurUsa.png";
-							break;
-						case 5:
-							tex = ROMFS_PATH "textures/flags/unk.png";
-							break;
-					}
-					loadTexture(tex, flagTex + i);
+					case 0:
+						tex = ROMFS_PATH "textures/flags/multi.png";
+						break;
+					case 1:
+						tex = ROMFS_PATH "textures/flags/eur.png";
+						break;
+					case 2:
+						tex = ROMFS_PATH "textures/flags/usa.png";
+						break;
+					case 3:
+						tex = ROMFS_PATH "textures/flags/jap.png";
+						break;
+					case 4:
+						tex = ROMFS_PATH "textures/flags/eurUsa.png";
+						break;
+					case 5:
+						tex = ROMFS_PATH "textures/flags/unk.png";
+						break;
 				}
-
-				t = OSGetSystemTime() - t;
-				addEntropy(&t, sizeof(OSTime));
-				return;
+				loadTexture(tex, flagTex + i);
 			}
 
-			debugPrintf("Font: Error loading!");
-			FC_FreeFont(font);
-			font = NULL;
+			t = OSGetSystemTime() - t;
+			addEntropy(&t, sizeof(OSTime));
+			return;
 		}
-		else
-			debugPrintf("Font: Error loading RW!");
 
-		TTF_CloseFont(tf);
+		debugPrintf("Font: Error loading RW!");
+		SDL_RWclose(rw);
 	}
 	else
-		debugPrintf("Error creating font cache!");
+		debugPrintf("Font: Error loading!");
 
-	SDL_RWclose(rw);
+	FC_FreeFont(font);
+	font = NULL;
 }
 
 void initRenderer()
