@@ -376,19 +376,20 @@ int addErrorOverlay(const char *err)
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
 	SDL_RenderFillRect(renderer, &text);
 
-	text.x += 2;
-	text.y += 2;
-	text.w -= 4;
-	text.h -= 4;
+	SDL_Rect text2 = text; // For some reason transparent pixels will corrupt if we don't copy
+	text2.x += 2;
+	text2.y += 2;
+	text2.w -= 4;
+	text2.h -= 4;
 	co = screenColorToSDLcolor(SCREEN_COLOR_D_RED);
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
-	SDL_RenderFillRect(renderer, &text);
+	SDL_RenderFillRect(renderer, &text2);
 
-	text.x = x;
-	text.y = y;
-	text.w = w;
-	text.h = h;
-	FC_DrawBoxColor(font, renderer, text, screenColorToSDLcolor(SCREEN_COLOR_WHITE), err);
+	text2.x = x;
+	text2.y = y;
+	text2.w = w;
+	text2.h = h;
+	FC_DrawBoxColor(font, renderer, text2, screenColorToSDLcolor(SCREEN_COLOR_WHITE), err);
 
 	SDL_SetRenderTarget(renderer, NULL);
 	drawFrame();
