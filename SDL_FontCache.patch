@@ -1,5 +1,5 @@
 diff --git a/SDL_FontCache.c b/SDL_FontCache.c
-index e534622..1519ed4 100644
+index e534622..2f78354 100644
 --- a/SDL_FontCache.c
 +++ b/SDL_FontCache.c
 @@ -82,16 +82,30 @@ __inline int c99_snprintf(char *outBuf, size_t size, const char *format, ...)
@@ -289,7 +289,7 @@ index e534622..1519ed4 100644
  int U8_strinsert(char* string, int position, const char* source, int max_bytes)
  {
      int pos_u8char;
-@@ -675,40 +629,46 @@ static_inline FC_Rect FC_RectIntersect(FC_Rect A, FC_Rect B)
+@@ -675,40 +629,23 @@ static_inline FC_Rect FC_RectIntersect(FC_Rect A, FC_Rect B)
  
  FC_Rect FC_DefaultRenderCallback(FC_Image* src, FC_Rect* srcrect, FC_Target* dest, float x, float y, float xscale, float yscale)
  {
@@ -313,37 +313,22 @@ index e534622..1519ed4 100644
      #else
 -    {
 -        SDL_RendererFlip flip = SDL_FLIP_NONE;
-+        SDL_Rect r = *srcrect;
-+        SDL_Rect dr = {(int)x, (int)y, (int)(xscale*r.w), (int)(yscale*r.h)};
-+
-+
-+        if(xscale == 0.0f && yscale == 0.0f)
-+        {
-+            SDL_RenderCopy(dest, src, &r, &dr);
-+            return result;
-+        }
-+
-+        SDL_RendererFlip flip;
-         if(xscale < 0)
-         {
-             xscale = -xscale;
+-        if(xscale < 0)
+-        {
+-            xscale = -xscale;
 -            flip = (SDL_RendererFlip) ((int)flip | (int)SDL_FLIP_HORIZONTAL);
-+            flip = SDL_FLIP_HORIZONTAL;
-         }
-+        else
-+            flip = SDL_FLIP_NONE;
-+
-         if(yscale < 0)
-         {
-             yscale = -yscale;
+-        }
+-        if(yscale < 0)
+-        {
+-            yscale = -yscale;
 -            flip = (SDL_RendererFlip) ((int)flip | (int)SDL_FLIP_VERTICAL);
-+            flip |= SDL_FLIP_VERTICAL;
-         }
- 
--        SDL_Rect r = *srcrect;
--        SDL_Rect dr = {(int)x, (int)y, (int)(xscale*r.w), (int)(yscale*r.h)};
-         SDL_RenderCopyEx(dest, src, &r, &dr, 0, NULL, flip);
+-        }
+-
+         SDL_Rect r = *srcrect;
+         SDL_Rect dr = {(int)x, (int)y, (int)(xscale*r.w), (int)(yscale*r.h)};
+-        SDL_RenderCopyEx(dest, src, &r, &dr, 0, NULL, flip);
 -    }
++        SDL_RenderCopy(dest, src, &r, &dr);
      #endif
 -
 -    result.x = x;
@@ -353,7 +338,7 @@ index e534622..1519ed4 100644
      return result;
  }
  
-@@ -1223,7 +1183,13 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
+@@ -1223,7 +1160,13 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
          unsigned int h = font->height*12;
          SDL_Surface* surfaces[FC_LOAD_MAX_SURFACES];
          int num_surfaces = 1;
@@ -367,7 +352,7 @@ index e534622..1519ed4 100644
          font->last_glyph.rect.x = FC_CACHE_PADDING;
          font->last_glyph.rect.y = FC_CACHE_PADDING;
          font->last_glyph.rect.w = 0;
-@@ -1240,15 +1206,13 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
+@@ -1240,15 +1183,13 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
                  continue;
  
              // Try packing.  If it fails, create a new surface for the next cache level.
@@ -384,7 +369,7 @@ index e534622..1519ed4 100644
                      break;
                  }
  
-@@ -1264,22 +1228,23 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
+@@ -1264,22 +1205,23 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
  
                  surfaces[num_surfaces] = FC_CreateSurface32(w, h);
                  num_surfaces++;
@@ -411,7 +396,7 @@ index e534622..1519ed4 100644
              FC_UploadGlyphCache(font, i, surfaces[i]);
              SDL_FreeSurface(surfaces[i]);
              #ifndef FC_USE_SDL_GPU
-@@ -2852,6 +2817,7 @@ int FC_GetWrappedText(FC_Font* font, char* result, int max_result_size, Uint16 w
+@@ -2852,6 +2794,7 @@ int FC_GetWrappedText(FC_Font* font, char* result, int max_result_size, Uint16 w
          int num_bytes = FC_MIN(len, size_remaining);
          memcpy(&result[size_so_far], iter->value, num_bytes);
          size_so_far += num_bytes;
