@@ -52,22 +52,22 @@ void drawMainMenuFrame()
 	textToFrame(16, 0, "Press \uE07B for options");
 	textToFrame(17, 0, "Press \uE044 or \uE001 to exit");
 	
-	textToFrame(7, MAX_CHARS - 22, "Thanks to:");
-	textToFrame(8, MAX_CHARS - 21, "• cJSON");
-	textToFrame(9, MAX_CHARS - 21, "• E1ite007");
-	textToFrame(10, MAX_CHARS - 21, "• libgui-sdl");
-	textToFrame(11, MAX_CHARS - 21, "• Pokes303");
-	textToFrame(12, MAX_CHARS - 21, "• Simone Z.");
-	textToFrame(13, MAX_CHARS - 21, "• WUP installer");
+	textToFrame(7, MAX_CHARS - 27, "Thanks to:");
+	textToFrame(8, MAX_CHARS - 26, "• cJSON");
+	textToFrame(9, MAX_CHARS - 26, "• E1ite007");
+	textToFrame(10, MAX_CHARS - 26, "• libgui-sdl");
+	textToFrame(11, MAX_CHARS - 26, "• Pokes303");
+	textToFrame(12, MAX_CHARS - 26, "• Simone Z.");
+	textToFrame(13, MAX_CHARS - 26, "• WUP installer");
 	
-	textToFrame(15, MAX_CHARS - 22, "Beta testers:");
-	textToFrame(16, MAX_CHARS - 21, "• carcaschoi");
-	textToFrame(17, MAX_CHARS - 21, "• DaThinkingChair");
-	textToFrame(18, MAX_CHARS - 21, "• huma_dawii");
-	textToFrame(19, MAX_CHARS - 21, "• jacobsson");
-	textToFrame(20, MAX_CHARS - 21, "• LuckyDingo");
-	textToFrame(21, MAX_CHARS - 21, "• pirate");
-	textToFrame(22, MAX_CHARS - 21, "• Vague Rant");
+	textToFrame(15, MAX_CHARS - 27, "Beta testers:");
+	textToFrame(16, MAX_CHARS - 26, "• carcaschoi");
+	textToFrame(17, MAX_CHARS - 26, "• DaThinkingChair");
+	textToFrame(18, MAX_CHARS - 26, "• huma_dawii");
+	textToFrame(19, MAX_CHARS - 26, "• jacobsson");
+	textToFrame(20, MAX_CHARS - 26, "• LuckyDingo");
+	textToFrame(21, MAX_CHARS - 26, "• pirate");
+	textToFrame(22, MAX_CHARS - 26, "• Vague Rant");
 	
 	textToFrame(MAX_LINES - 3, 0, "WARNING:");
 	textToFrame(MAX_LINES - 2, 1, "• Don't eject the SD Card / USB drive or the application will crash!");
