@@ -536,6 +536,7 @@ void initRenderer()
 							backgroundMusic = NULL;
 						}
 						SDL_RWclose(rw);
+						Mix_CloseAudio();
 					}
 				}
 				MEMFreeToDefaultHeap(buf);
@@ -646,6 +647,9 @@ void shutdownRenderer()
 		Mix_CloseAudio();
 
 // TODO:
+	TTF_Quit();
+	SDL_QuitSubSystem(SDL_INIT_AUDIO);
+//	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 //	SDL_Quit();
 }
 
