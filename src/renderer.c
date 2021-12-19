@@ -672,36 +672,37 @@ void showFrame()
 	readInput();
 }
 
+#define predrawFrame()									\
+	if(font == NULL)									\
+		return;											\
+														\
+	SDL_SetRenderTarget(renderer, NULL);				\
+	SDL_RenderCopy(renderer, frameBuffer, NULL, NULL);
+
+#define postdrawFrame()												\
+	for(int i = 0; i < MAX_OVERLAYS; i++)							\
+		if(errorOverlay[i] != NULL)									\
+			SDL_RenderCopy(renderer, errorOverlay[i], NULL, NULL);	\
+																	\
+	SDL_RenderPresent(renderer);									\
+	SDL_SetRenderTarget(renderer, frameBuffer);
+
 // We need to draw the DRC before the TV, else the DRC is always one frame behind
 void drawFrame()
 {
-	if(font == NULL)
-		return;
-
-	SDL_SetRenderTarget(renderer, NULL);
-	SDL_RenderCopy(renderer, frameBuffer, NULL, NULL);
-	
-	for(int i = 0; i < MAX_OVERLAYS; i++)
-		if(errorOverlay[i] != NULL)
-			SDL_RenderCopy(renderer, errorOverlay[i], NULL, NULL);
-	
-	SDL_RenderPresent(renderer);
-	SDL_SetRenderTarget(renderer, frameBuffer);
+	predrawFrame();
+	postdrawFrame();
 }
 
 void drawKeyboard(bool tv)
 {
-	if(font == NULL)
-		return;
+	predrawFrame();
 
 	if(tv)
 		Swkbd_DrawTV();
 	else
 		Swkbd_DrawDRC();
-	for(int i = 0; i < MAX_OVERLAYS; i++)
-		if(errorOverlay[i] != NULL)
-			SDL_RenderCopy(renderer, errorOverlay[i], NULL, NULL);
-	
-	SDL_RenderPresent(renderer);
+
+	postdrawFrame();
 	showFrame();
 }
