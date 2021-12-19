@@ -153,7 +153,7 @@ void boxToFrame(int lineStart, int lineEnd)
 	// Horizontal lines
 	SDL_RenderFillRect(renderer, &box);
 
-	box.y = ((lineEnd + 1) * FONT_SIZE) + ((FONT_SIZE >> 1) - 1),
+	box.y = ((lineEnd + 1) * FONT_SIZE) + ((FONT_SIZE >> 1) - 1) - 3,
 	SDL_RenderFillRect(renderer, &box);
 	
 	// Vertical lines
@@ -162,7 +162,7 @@ void boxToFrame(int lineStart, int lineEnd)
 	box.h = (lineEnd - lineStart) * FONT_SIZE;
 	SDL_RenderFillRect(renderer, &box);
 
-	box.x += tw;
+	box.x += tw - 3;
 	SDL_RenderFillRect(renderer, &box);
 	
 	// Background - we paint it on top of the gray lines as they look better that way
