@@ -22,6 +22,7 @@
 
 #include <input.h>
 #include <installer.h>
+#include <iosuhaxx.h>
 #include <renderer.h>
 #include <status.h>
 #include <ticket.h>
@@ -36,6 +37,8 @@
 #include <coreinit/memdefaultheap.h>
 
 #include <string.h>
+
+bool cfwWarningShown = false;
 
 void drawMainMenuFrame()
 {
@@ -78,6 +81,31 @@ void drawMainMenuFrame()
 void mainMenu()
 {
 	drawMainMenuFrame();
+
+	int ovl;
+	if(isAroma())
+		ovl = 0;
+	else if(openIOSUhax())
+	{
+		closeIOSUhax();
+		ovl = 0;
+	}
+	else if(!cfwWarningShown)
+	{
+		ovl = addErrorOverlay(
+			"No CFW detected!\n"
+			"\n"
+			"NUSspli won't work correctly without a CFW.\n"
+			"Have a look at https://wiiu.hacks.guide/#/cfw-choice\n"
+			"\n"
+			"Press any button to close this warning."
+		);
+
+		if(ovl < 0)
+			ovl = 0;
+		else
+			cfwWarningShown = true;
+	}
 	
 	while(AppRunning())
 	{
@@ -88,32 +116,43 @@ void mainMenu()
 		
 		showFrame();
 		
-		if(vpad.trigger & VPAD_BUTTON_A)
+		if(ovl != 0)
 		{
-			titleBrowserMenu();
-			drawMainMenuFrame();
-		}
-		else if(vpad.trigger & VPAD_BUTTON_X)
-		{
-			char *dir = fileBrowserMenu();
-			if(dir != NULL)
+			if(vpad.trigger)
 			{
-				installerMenu(dir);
-				MEMFreeToDefaultHeap(dir);
+				removeErrorOverlay(ovl);
+				ovl = 0;
 			}
-			drawMainMenuFrame();
 		}
-		else if(vpad.trigger & VPAD_BUTTON_LEFT)
+		else
 		{
-			configMenu();
-			drawMainMenuFrame();
+			if(vpad.trigger & VPAD_BUTTON_A)
+			{
+				titleBrowserMenu();
+				drawMainMenuFrame();
+			}
+			else if(vpad.trigger & VPAD_BUTTON_X)
+			{
+				char *dir = fileBrowserMenu();
+				if(dir != NULL)
+				{
+					installerMenu(dir);
+					MEMFreeToDefaultHeap(dir);
+				}
+				drawMainMenuFrame();
+			}
+			else if(vpad.trigger & VPAD_BUTTON_LEFT)
+			{
+				configMenu();
+				drawMainMenuFrame();
+			}
+			else if(vpad.trigger & VPAD_BUTTON_Y)
+			{
+				generateFakeTicket();
+				drawMainMenuFrame();
+			}
+			else if(vpad.trigger & VPAD_BUTTON_B)
+				return;
 		}
-		else if(vpad.trigger & VPAD_BUTTON_Y)
-		{
-			generateFakeTicket();
-			drawMainMenuFrame();
-		}
-		else if(vpad.trigger & VPAD_BUTTON_B)
-			return;
 	}
 }
