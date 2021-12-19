@@ -84,11 +84,11 @@ void mainMenu()
 
 	int ovl;
 	if(isAroma() || cfwWarningShown)
-		ovl = 0;
+		ovl = -1;
 	else if(openIOSUhax())
 	{
 		closeIOSUhax();
-		ovl = 0;
+		ovl = -1;
 	}
 	else
 	{
@@ -101,9 +101,7 @@ void mainMenu()
 			"Press any button to close this warning."
 		);
 
-		if(ovl < 0)
-			ovl = 0;
-		else
+		if(ovl >= 0)
 			cfwWarningShown = true;
 	}
 	
@@ -116,15 +114,7 @@ void mainMenu()
 		
 		showFrame();
 		
-		if(ovl != 0)
-		{
-			if(vpad.trigger)
-			{
-				removeErrorOverlay(ovl);
-				ovl = 0;
-			}
-		}
-		else
+		if(ovl < 0)
 		{
 			if(vpad.trigger & VPAD_BUTTON_A)
 			{
@@ -153,6 +143,11 @@ void mainMenu()
 			}
 			else if(vpad.trigger & VPAD_BUTTON_B)
 				return;
+		}
+		else if(vpad.trigger)
+		{
+			removeErrorOverlay(ovl);
+			ovl = -1;
 		}
 	}
 }
