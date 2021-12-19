@@ -230,7 +230,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 				break;
 			default:
 				if ((data.err & 0xFFFF0000) == 0xFFFB0000)
-					strcat(toScreen, "Verify WUP files are correct & complete.\nDLC/E-shop require Sig Patch");
+					strcat(toScreen, "Verify WUP files are correct & complete.\nPaid content requires a CFW. See https://wiiu.hacks.guide/#/cfw-choice");
 				else
 					sprintf(toScreen + 12, "Unknown Error: %#010x", data.err);
 		}
