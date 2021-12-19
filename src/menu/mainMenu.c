@@ -83,14 +83,14 @@ void mainMenu()
 	drawMainMenuFrame();
 
 	int ovl;
-	if(isAroma())
+	if(isAroma() || cfwWarningShown)
 		ovl = 0;
 	else if(openIOSUhax())
 	{
 		closeIOSUhax();
 		ovl = 0;
 	}
-	else if(!cfwWarningShown)
+	else
 	{
 		ovl = addErrorOverlay(
 			"No CFW detected!\n"
