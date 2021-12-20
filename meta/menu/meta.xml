@@ -18,7 +18,7 @@
   <title_id type="hexBinary" length="8">0005000010155373</title_id>
   <group_id type="hexBinary" length="4">00000812</group_id>
   <boss_id type="hexBinary" length="8">0000000000000000</boss_id>
-  <os_version type="hexBinary" length="8">000500101000800A</os_version>
+  <os_version type="hexBinary" length="8">000500101000400A</os_version>
   <app_size type="hexBinary" length="8">0000000000000000</app_size>
   <common_save_size type="hexBinary" length="8">0000000001790000</common_save_size>
   <account_save_size type="hexBinary" length="8">0000000000000000</account_save_size>
