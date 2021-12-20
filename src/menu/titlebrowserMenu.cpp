@@ -268,9 +268,14 @@ void titleBrowserMenu()
 		}
 		if(vpad.trigger & VPAD_BUTTON_Y)
 		{
+			char16_t oldSearch[sizeof(search)];
+			str16cpy(oldSearch, search);
 			showKeyboard(KEYBOARD_LAYOUT_NORMAL, KEYBOARD_TYPE_NORMAL, (char *)search, CHECK_NONE, 128, false, (const char *)search, "Search");
-			cursor = pos = 0;
-			redraw = true;
+			if(str16cmp(oldSearch, search) != 0)
+			{
+				cursor = pos = 0;
+				redraw = true;
+			}
 		}
 		
 		if(vpad.trigger & VPAD_BUTTON_R || vpad.trigger & VPAD_BUTTON_ZR || vpad.trigger & VPAD_BUTTON_PLUS)

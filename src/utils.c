@@ -252,6 +252,34 @@ char16_t tolower16(char16_t in)
 	return in;
 }
 
+char16_t *str16cpy(char16_t *target, const char16_t *source)
+{
+	size_t i = 0;
+	while(source[i] != u'\0')
+	{
+		target[i] = source[i];
+		i++;
+	}
+
+	target[i] = u'\0';
+	return target;
+}
+
+int str16cmp(const char16_t *s1, const char16_t *s2)
+{
+	size_t i = 0;
+	while(true)
+	{
+		if(s1[i] == u'\0')
+			return s2[i] == u'\0' ? 0 : -1;
+
+		if(s2[i] == u'\0')
+			return 1;
+
+		i++;
+	}
+}
+
 #ifdef NUSSPLI_DEBUG
 
 #include <stdarg.h>
