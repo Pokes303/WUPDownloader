@@ -70,13 +70,36 @@ static SDL_Texture *byeTex;
 
 #define screenColorToSDLcolor(color) (SDL_Color){ .a = color & 0xFFu, .b = (color & 0x0000FF00u) >> 8, .g = (color & 0x00FF0000u) >> 16, .r = (color & 0xFF000000u) >> 24 }
 
-void textToFrame(int line, int column, const char *str)
+void textToFrameCut(int line, int column, const char *str, int maxWidth)
 {
 	if(font == NULL)
 		return;
 
 	SDL_Rect text;
 	text.w = FC_GetWidth(font, str);
+
+	int i = strlen(str);
+	char cpy[i + 1];
+
+	if(maxWidth != 0 && text.w > maxWidth)
+	{
+		strcpy(cpy, str);
+		cpy[i--] = '\0';
+		cpy[i--] = '.';
+		cpy[i--] = '.';
+		cpy[i] = '.';
+		text.w = FC_GetWidth(font, cpy);
+
+		while(text.w > maxWidth)
+		{
+			cpy[i + 2] = '\0';
+			cpy[--i] = '.';
+			text.w = FC_GetWidth(font, cpy);
+		}
+
+		str = cpy;
+	}
+
 	text.h = FONT_SIZE;
 	if(text.w == 0 || text.h == 0)
 		return;
@@ -731,4 +754,9 @@ void drawKeyboard(bool tv)
 
 	postdrawFrame();
 	showFrame();
+}
+
+uint32_t getSpaceWidth()
+{
+	return spaceWidth;
 }

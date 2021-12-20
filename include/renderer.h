@@ -70,11 +70,10 @@ static inline void startNewFrame()
 {
 	colorStartNewFrame(SCREEN_COLOR_BLUE);
 }
-void startNewFrame();
 void showFrame();
 void drawFrame();
 void drawKeyboard(bool tv);
-void textToFrame(int row, int column, const char* str);
+void textToFrameCut(int line, int column, const char *str, int maxWidth);
 void lineToFrame(int column, uint32_t color);
 void boxToFrame(int lineStart, int lineEnd);
 void barToFrame(int line, int column, uint32_t width, double progress);
@@ -84,9 +83,13 @@ void tabToFrame(int line, int column, char *label, bool active);
 void flagToFrame(int line, int column, TITLE_REGION flag);
 int addErrorOverlay(const char *err);
 void removeErrorOverlay(int id);
+uint32_t getSpaceWidth();
 
 #ifdef __cplusplus
 	}
 #endif
+
+//#define startNewFrame					colorStartNewFrame(SCREEN_COLOR_BLUE)
+#define textToFrame(line, column, str)	textToFrameCut(line, column, str, 0)
 
 #endif // ifndef NUSSPLI_RENDERER_H
