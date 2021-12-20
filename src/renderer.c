@@ -435,8 +435,39 @@ void resumeRenderer()
 			loadTexture(ROMFS_PATH "textures/arrow.png", &arrowTex); //TODO: Error handling...
 			loadTexture(ROMFS_PATH "textures/checkmark.png", &checkmarkTex);
 			loadTexture(ROMFS_PATH "textures/tab.png", &tabTex);
-			loadTexture(ROMFS_PATH "textures/bar.png", &barTex);
-			loadTexture(ROMFS_PATH "textures/bg.png", &bgTex);
+
+			barTex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, 2, 1);
+			SDL_SetRenderTarget(renderer, barTex);
+			SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_GREEN);
+			SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
+			SDL_RenderClear(renderer);
+			co = screenColorToSDLcolor(SCREEN_COLOR_D_GREEN);
+			SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
+			SDL_Rect r = { .x = 1, .y = 0, .w = 1, .h = 1, };
+			SDL_RenderFillRect(renderer, &r);
+// TODO: This doesn't work for some SDL bug reason
+//			SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
+//			SDL_RenderDrawPoint(renderer, 1, 0);
+
+			SDL_Texture *tt = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, 2, 2);
+			SDL_SetRenderTarget(renderer, tt);
+			SDL_SetRenderDrawColor(renderer, 0x91, 0x1E, 0xFF, 0xFF);
+			SDL_RenderClear(renderer);
+			SDL_SetRenderDrawColor(renderer, 0x52, 0x05, 0xFF, 0xFF);
+			SDL_RenderFillRect(renderer, &r);
+			SDL_SetRenderDrawColor(renderer, 0x83, 0x18, 0xFF, 0xFF);
+			r.x = 0;
+			r.y = 1;
+			SDL_RenderFillRect(renderer, &r);
+			SDL_SetRenderDrawColor(renderer, 0x61, 0x0a, 0xFF, 0xFF);
+			r.x = 1;
+			SDL_RenderFillRect(renderer, &r);
+			bgTex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, screen.x, screen.y);
+			SDL_SetRenderTarget(renderer, bgTex);
+			SDL_RenderCopy(renderer, tt, NULL, NULL);
+			SDL_DestroyTexture(tt);
+
+			SDL_SetRenderTarget(renderer, frameBuffer);
 
 			const char *tex;
 			for(int i = 0; i < 6; i++)
