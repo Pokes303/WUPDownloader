@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu type="complex" access="777">
-  <version type="unsignedInt" length="4">33</version>
+  <version type="unsignedInt" length="4">1</version>
   <product_code type="string" length="32">WUP-P-NUSS</product_code>
   <content_platform type="string" length="32">WUP</content_platform>
   <company_code type="string" length="8">0001</company_code>

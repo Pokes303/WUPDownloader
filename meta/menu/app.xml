@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <app type="complex" access="777">
-  <version type="unsignedInt" length="4">16</version>
+  <version type="unsignedInt" length="4">1</version>
   <os_version type="hexBinary" length="8">000500101000800A</os_version>
   <title_id type="hexBinary" length="8">0005000010155373</title_id>
   <title_version type="hexBinary" length="2">0000</title_version>
