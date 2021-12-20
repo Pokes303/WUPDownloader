@@ -68,20 +68,7 @@ static SDL_Texture *barTex;
 static SDL_Texture *bgTex;
 static SDL_Texture *byeTex;
 
-static inline SDL_Color screenColorToSDLcolor(uint32_t color)
-{
-	SDL_Color gx2color;
-	
-	gx2color.a = color & 0xFF;
-	color >>= 8;
-	gx2color.b = color & 0xFF;
-	color >>= 8;
-	gx2color.g = color & 0xFF;
-	color >>= 8;
-	gx2color.r = color & 0xFF;
-	
-	return gx2color;
-}
+#define screenColorToSDLcolor(color) (SDL_Color){ .a = color & 0xFFu, .b = (color & 0x0000FF00u) >> 8, .g = (color & 0x00FF0000u) >> 16, .r = (color & 0xFF000000u) >> 24 }
 
 void textToFrame(int line, int column, const char *str)
 {
