@@ -41,6 +41,7 @@
 #include <crypto.h>
 #include <file.h>
 #include <input.h>
+#include <osdefs.h>
 #include <renderer.h>
 #include <romfs.h>
 #include <swkbd_wrapper.h>
@@ -593,6 +594,9 @@ void initRenderer()
 audioRunning:
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
+	GX2SetTVGamma(2.0f);
+	GX2SetDRCGamma(1.0f);
 
 	loadTexture(ROMFS_PATH "textures/goodbye.png", &byeTex);
 

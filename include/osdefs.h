@@ -45,6 +45,12 @@ extern void WPADControlMotor(int controller, int onOff);
 // SO
 extern int somemopt (int type, void *buf, size_t bufsize, int unk);
 
+// GX2
+extern void GX2SetDRCGamma(float gamma);
+extern void GX2SetDRCGammaEx(float gamma);
+extern void GX2SetTVGamma(float gamma);
+extern void GX2SetTVGammaEx(float gamma);
+
 // UC - From:
 // https://github.com/decaf-emu/decaf-emu/blob/master/src/libdecaf/src/cafe/libraries/coreinit/coreinit_userconfig.h
 // https://github.com/decaf-emu/decaf-emu/blob/master/src/libdecaf/src/cafe/libraries/coreinit/coreinit_userconfig.cpp
