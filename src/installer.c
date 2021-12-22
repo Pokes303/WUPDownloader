@@ -51,7 +51,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	strcat(toScreen, game);
 	textToFrame(0, 0, toScreen);
 	barToFrame(1, 0, 40, 0);
-	textToFrame(1, 41, "Preparing...");
+	textToFrame(1, 41, "Preparing. This might take some time. Please be patient.");
 	writeScreenLog();
 	drawFrame();
 	showFrame();
