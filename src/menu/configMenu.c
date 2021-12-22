@@ -33,22 +33,19 @@
 void drawConfigMenu()
 {
 	startNewFrame();
-//	textToFrame(0, 0, "That Title Key Site:");
-//	textToFrame(1, 0, getTitleKeySite());
-//	textToFrame(4, 0, "Press \uE000 to change");
 	char *toScreen = getToFrameBuffer();
 	int i = 0;
-	strcpy(toScreen, "Press \uE000 to ");
+	strcpy(toScreen, "Press " BUTTON_A " to ");
 	strcat(toScreen, useOnlineTitleDB() ? "disable" : "enable");
 	strcat(toScreen, " the online title database");
 	textToFrame(i++, 0, toScreen);
 	
-	strcpy(toScreen, "Press \uE002 to ");
+	strcpy(toScreen, "Press " BUTTON_X " to ");
 	strcat(toScreen, updateCheckEnabled() ? "disable" : "enable");
 	strcat(toScreen, " online updates");
 	textToFrame(i++, 0, toScreen);
 	
-	strcpy(toScreen, "Press \uE003 to ");
+	strcpy(toScreen, "Press " BUTTON_Y " to ");
 	strcat(toScreen, autoResumeEnabled() ? "disable" : "enable");
 	strcat(toScreen, " auto resuming of failed downloads");
 	textToFrame(i++, 0, toScreen);
@@ -58,7 +55,7 @@ void drawConfigMenu()
 	strcat(toScreen, ")");
 	textToFrame(i++, 0, toScreen);
 	*/
-	textToFrame(++i, 0, "Press \uE001 to go back");
+	textToFrame(++i, 0, "Press " BUTTON_B " to go back");
 	drawFrame();
 }
 

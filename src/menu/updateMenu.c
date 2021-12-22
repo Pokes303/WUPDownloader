@@ -43,10 +43,10 @@ void drawUpdateMenuFrame(char *newVersion)
 	
 	textToFrame(7, 0, "Update available!");
 	lineToFrame(MAX_LINES - 3, SCREEN_COLOR_WHITE);
-	strcpy(toScreen, "Press \uE000 to update to ");
+	strcpy(toScreen, "Press " BUTTON_A " to update to ");
 	strcat(toScreen, newVersion);
 	textToFrame(MAX_LINES - 2, 0, toScreen);
-	textToFrame(MAX_LINES - 1, 0, "Press \uE001 to cancel");
+	textToFrame(MAX_LINES - 1, 0, "Press " BUTTON_B " to cancel");
 	drawFrame();
 }
 

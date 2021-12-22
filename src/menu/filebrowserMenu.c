@@ -44,9 +44,9 @@ void drawFBMenuFrame(char **folders, size_t foldersSize, const size_t pos, const
 	boxToFrame(1, MAX_LINES - 3);
 	
 	char toWrite[512];
-	strcpy(toWrite, "Press \uE000 to select || \uE001 to return || \uE002 to switch to ");
+	strcpy(toWrite, "Press " BUTTON_A " to select || " BUTTON_B " to return || " BUTTON_X " to switch to ");
 	strcat(toWrite, activeDevice == NUSDEV_USB ? "SD" : activeDevice == NUSDEV_SD ? "NAND" : usbMounted ? "USB" : "SD");
-	strcat(toWrite, " || \uE003 to refresh");
+	strcat(toWrite, " || " BUTTON_Y " to refresh");
 	textToFrame(MAX_LINES - 2, ALIGNED_CENTER, toWrite);
 	
 	strcpy(toWrite, "Searching on => ");

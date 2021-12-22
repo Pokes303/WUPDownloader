@@ -25,6 +25,7 @@
 
 #include <coreinit/memdefaultheap.h>
 
+#include <input.h>
 #include <renderer.h>
 #include <utils.h>
 #include <menu/utils.h>
@@ -135,11 +136,11 @@ void drawErrorFrame(const char *text, ErrorOptions option)
 	
 	line = MAX_LINES - 1;
 	if((option & B_RETURN) == B_RETURN)
-		textToFrame(line--, 0, "Press \uE001 to return");
+		textToFrame(line--, 0, "Press " BUTTON_B " to return");
 	if((option & Y_RETRY) == Y_RETRY)
-		textToFrame(line--, 0, "Press \uE003 to retry");
+		textToFrame(line--, 0, "Press " BUTTON_Y " to retry");
 	if((option & A_CONTINUE) == A_CONTINUE)
-		textToFrame(line--, 0, "Press \uE000 to continue");
+		textToFrame(line--, 0, "Press " BUTTON_A " to continue");
 	lineToFrame(line, SCREEN_COLOR_WHITE);
 	
 	drawFrame();

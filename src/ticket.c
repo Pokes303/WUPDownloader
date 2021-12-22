@@ -123,13 +123,13 @@ void drawTicketFrame(const char *titleID)
 		textToFrame(3, 0, "You need to set the title ID to generate a fake ticket");
 	
 	int line = MAX_LINES - 3;
-	textToFrame(line--, 0, "Press \uE001 to return");
+	textToFrame(line--, 0, "Press " BUTTON_B " to return");
 	if(titleID[0] != '\0')
-		textToFrame(line--, 0, "Press \uE000 to continue");
+		textToFrame(line--, 0, "Press " BUTTON_A " to continue");
 	lineToFrame(line, SCREEN_COLOR_WHITE);
 	
 	lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
-	textToFrame(MAX_LINES - 1, 0, "Press \uE07B to set the title ID");
+	textToFrame(MAX_LINES - 1, 0, "Press " BUTTON_LEFT " to set the title ID");
 	drawFrame();
 }
 
@@ -221,7 +221,7 @@ bool generateFakeTicket()
 					textToFrame(1, 0, tikPath);
 				}
 				
-				textToFrame(3, 0, "Press \uE000 to return");
+				textToFrame(3, 0, "Press " BUTTON_A " to return");
 				drawFrame();
 				
 				while(AppRunning())

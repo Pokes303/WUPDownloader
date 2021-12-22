@@ -61,7 +61,7 @@ void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cu
 	
 	boxToFrame(1, MAX_LINES - 2);
 	
-	textToFrame(MAX_LINES - 1, ALIGNED_CENTER, "Press \uE000 to select || \uE001 to return || \uE002 to enter a title ID || \uE003 to search");
+	textToFrame(MAX_LINES - 1, ALIGNED_CENTER, "Press " BUTTON_A " to select || " BUTTON_B " to return || " BUTTON_X " to enter a title ID || " BUTTON_Y " to search");
 	
 	filteredTitleEntrySize = getTitleEntriesSize(tab);
 	TitleEntry *titleEntrys = getTitleEntries(tab);

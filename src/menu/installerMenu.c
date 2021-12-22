@@ -34,9 +34,9 @@ void drawInstallerMenuFrame(const char *name, NUSDEV dev, bool keepFiles)
 	textToFrame(0, 0, name);
 	
 	lineToFrame(MAX_LINES - 6, SCREEN_COLOR_WHITE);
-	textToFrame(MAX_LINES - 5, 0, "Press \uE000 to install to USB");
-	textToFrame(MAX_LINES - 4, 0, "Press \uE002 to install to NAND");
-	textToFrame(MAX_LINES - 3, 0, "Press \uE001 to return");
+	textToFrame(MAX_LINES - 5, 0, "Press " BUTTON_A " to install to USB");
+	textToFrame(MAX_LINES - 4, 0, "Press " BUTTON_X " to install to NAND");
+	textToFrame(MAX_LINES - 3, 0, "Press " BUTTON_B " to return");
 	
 	lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
 	if(dev != NUSDEV_SD)
@@ -44,7 +44,7 @@ void drawInstallerMenuFrame(const char *name, NUSDEV dev, bool keepFiles)
 	else
 	{
 		char *toFrame = getToFrameBuffer();
-		strcpy(toFrame, "Press \uE07B to ");
+		strcpy(toFrame, "Press " BUTTON_LEFT " to ");
 		strcat(toFrame, keepFiles ? "delete" : "keep");
 		strcat(toFrame, " files after the installation");
 		textToFrame(MAX_LINES - 1, 0, toFrame);

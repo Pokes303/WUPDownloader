@@ -28,6 +28,21 @@
 #include <padscore/wpad.h>
 #include <vpad/input.h>
 
+#define BUTTON_A		"\uE000"
+#define BUTTON_B		"\uE001"
+#define BUTTON_X		"\uE002"
+#define BUTTON_Y		"\uE003"
+
+#define BUTTON_PLUS		"\uE045"
+#define BUTTON_MINUS	"\uE046"
+
+#define BUTTON_LEFT		"\uE07B"
+#define BUTTON_RIGHT	"\uE07C"
+#define BUTTON_UP		"\uE079"
+#define BUTTON_DOWN		"\uE07A"
+
+#define BUTTON_HOME		"\uE044"
+
 #ifdef __cplusplus
 	extern "C" {
 #endif
