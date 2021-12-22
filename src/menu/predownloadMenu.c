@@ -98,13 +98,13 @@ void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t siz
 	textToFrame(6, 0, "Custom folder name [ASCII only]:");
 	textToFrame(7, 3, folderName);
 	
-	strcpy(toFrame, "Press \uE045 to ");
+	strcpy(toFrame, "Press " BUTTON_PLUS " to ");
 	strcat(toFrame, vibrateWhenFinished ? "deactivate" : "activate");
 	strcat(toFrame, " the vibration after installing");
 	textToFrame(MAX_LINES - 1, 0, toFrame); //Thinking to change this to activate HOME Button led
 	
 	int line = MAX_LINES - 2;
-	strcpy(toFrame, "Press \uE046 to download to ");
+	strcpy(toFrame, "Press " BUTTON_MINUS " to download to ");
 	switch(dlDev)
 	{
 		case NUSDEV_USB:
@@ -123,7 +123,7 @@ void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t siz
 		textToFrame(line--, 0, "WARNING: Files on USB/NAND will always be deleted after installing!");
 	else
 	{
-		strcpy(toFrame, "Press \uE07B to ");
+		strcpy(toFrame, "Press " BUTTON_LEFT " to ");
 		strcat(toFrame, keepFiles ? "delete" : "keep");
 		strcat(toFrame, " downloaded files after the installation");
 		textToFrame(line--, 0, toFrame);
@@ -131,20 +131,20 @@ void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t siz
 	
 	lineToFrame(line--, SCREEN_COLOR_WHITE);
 	
-	textToFrame(line--, 0, "Press \uE07A to set a custom name to the download folder");
-	textToFrame(line--, 0, "Press \uE07C to set the title version");
+	textToFrame(line--, 0, "Press " BUTTON_DOWN " to set a custom name to the download folder");
+	textToFrame(line--, 0, "Press " BUTTON_RIGHT " to set the title version");
 	lineToFrame(line--, SCREEN_COLOR_WHITE);
 	
-	textToFrame(line--, 0, "Press \uE001 to return");
+	textToFrame(line--, 0, "Press " BUTTON_B " to return");
 	
-	strcpy(toFrame, "Press \uE003 to download to ");
+	strcpy(toFrame, "Press " BUTTON_Y " to download to ");
 	strcat(toFrame, dlDev == NUSDEV_USB ? "USB" : dlDev == NUSDEV_SD ? "SD" : "NAND");
 	strcat(toFrame, " only");
 	textToFrame(line--, 0, toFrame);
 	
-	textToFrame(line--, 0, "Press \uE002 to install to NAND");
+	textToFrame(line--, 0, "Press " BUTTON_X " to install to NAND");
 	if(usbMounted)
-		textToFrame(line--, 0, "Press \uE000 to install to USB");
+		textToFrame(line--, 0, "Press " BUTTON_A " to install to USB");
 	
 	if(installed)
 		textToFrame(line--, 0, "Press \uE079 to uninstall");
@@ -208,7 +208,7 @@ downloadTMD:
 		strcat(downloadUrl, titleVer);
 	}
 	
-	if(downloadFile(downloadUrl, "TMD", NULL, FILE_TYPE_TMD | FILE_TYPE_TORAM, true))
+	if(downloadFile(downloadUrl, "TMD", NULL, FILE_TYPE_TMD | FILE_TYPE_TORAM, true, false))
 	{
 		clearRamBuf();
 		debugPrintf("Error downloading TMD");

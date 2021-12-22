@@ -110,7 +110,7 @@ bool updateCheck()
 	char *updateChkUrl = isAroma() ? UPDATE_CHECK_URL "a" : UPDATE_CHECK_URL "c";
 #endif
 	
-	if(downloadFile(updateChkUrl, "JSON", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
+	if(downloadFile(updateChkUrl, "JSON", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false, false) != 0)
 	{
 		clearRamBuf();
 		debugPrintf("Error downloading %s", updateChkUrl);
@@ -256,7 +256,7 @@ void update(char *newVersion)
 	strcat(url, isAroma() ? "-Aroma" NUSSPLI_DLVER ".zip" : "-Channel" NUSSPLI_DLVER ".zip");
 #endif
 	
-	if(downloadFile(url, "NUSspli.zip", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
+	if(downloadFile(url, "NUSspli.zip", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false, false) != 0)
 	{
 		clearRamBuf();
 		showUpdateErrorf("Error downloading %s", url);

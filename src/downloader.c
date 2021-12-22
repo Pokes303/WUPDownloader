@@ -75,6 +75,8 @@ static char curlError[CURL_ERROR_SIZE];
 static OSThread dlbgThread;
 static void *dlbgThreadStack = NULL;
 
+static int cancelOverlayId = -1;
+
 static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData)
 {
 	OSTick t = OSGetTick();
@@ -110,13 +112,18 @@ typedef struct
 	downloadData *data;
 	uint32_t onDisc;
 	double downloaded;
-	int dlo;
 	bool paused;
 	char *name;
 	OSTime lastDraw;
 	OSTime lastInput;
 	OSTime lastTransfair;
 } curlProgressData;
+
+#define closeCancelOverlay()				\
+{											\
+	removeErrorOverlay(cancelOverlayId);	\
+	cancelOverlayId = -1;					\
+}
 
 static int progressCallback(void *rawData, double dltotal, double dlnow, double ultotal, double ulnow)
 {
@@ -153,10 +160,10 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 */
 		data->lastInput = now;
 		readInput();
-		if(data->dlo < 0)
+		if(cancelOverlayId < 0)
 		{
 			if(vpad.trigger & VPAD_BUTTON_B)
-				data->dlo = addErrorOverlay(
+				cancelOverlayId = addErrorOverlay(
 					"Do you really want to cancel?\n"
 					"\n"
 					BUTTON_A " Yes || " BUTTON_B " No"
@@ -166,15 +173,13 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 		{
 			if(vpad.trigger & VPAD_BUTTON_A)
 			{
-				removeErrorOverlay(data->dlo);
-				data->dlo = -1;
+				closeCancelOverlay();
 				data->error = CURLE_ABORTED_BY_CALLBACK;
 				return 1;
 			}
-			if(vpad.trigger & VPAD_BUTTON_B)
+			else if(vpad.trigger & VPAD_BUTTON_B)
 			{
-				removeErrorOverlay(data->dlo);
-				data->dlo = -1;
+				closeCancelOverlay();
 			}
 		}
 	}
@@ -554,13 +559,12 @@ void deinitDownloader()
 #define setDefaultDataValues(x) 			\
 	x.error = CURLE_OK;						\
 	x.downloaded = 0.0D;					\
-	x.dlo = -1;								\
 	x.paused = false;						\
 	x.lastDraw = 0;							\
 	x.lastInput = 							\
 	x.lastTransfair = OSGetSystemTime();
 
-int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume)
+int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume, bool multiDownload)
 {
 	//Results: 0 = OK | 1 = Error | 2 = No ticket aviable | 3 = Exit
 	//Types: 0 = .app | 1 = .h3 | 2 = title.tmd | 3 = tilte.tik
@@ -648,8 +652,8 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	ret = curl_easy_perform(curl);
 	t = OSGetSystemTime() - t;
 	addEntropy(&t, sizeof(OSTime));
-	if(cdata.dlo >= 0)
-		removeErrorOverlay(cdata.dlo);
+	if(!multiDownload && cancelOverlayId >= 0)
+		closeCancelOverlay();
 
 	debugPrintf("curl_easy_perform() returned: %d", ret);
 	
@@ -683,7 +687,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		switch(ret)
 		{
 			case CURLE_RANGE_ERROR:
-				return downloadFile(url, file, data, type, false);
+				return downloadFile(url, file, data, type, false, multiDownload);
 			case CURLE_FAILED_INIT:
 			case CURLE_COULDNT_RESOLVE_HOST:
 				strcat(toScreen, "Network error\nYour WiiU is not connected to the internet,\ncheck the network settings and try again");
@@ -706,6 +710,9 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				strcat(toScreen, curlError);
 				break;
 		}
+
+		if(multiDownload)
+			closeCancelOverlay();
 		
 		size_t framesLeft;
 		char *p;
@@ -737,7 +744,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 			{
 				flushIOQueue(); // We flush here so the last file is completely on disc and closed before we retry.
 				resetNetwork(); // Recover from network errors.
-				return downloadFile(url, file, data, type, resume);
+				return downloadFile(url, file, data, type, resume, multiDownload);
 			}
 		}
 		resetNetwork();
@@ -793,7 +800,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 					if(vpad.trigger & VPAD_BUTTON_B)
 						break;
 					if(vpad.trigger & VPAD_BUTTON_Y)
-						return downloadFile(url, file, data, type, resume);
+						return downloadFile(url, file, data, type, resume, multiDownload);
 				}
 				return 1;
 			}
@@ -819,7 +826,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 					if(vpad.trigger & VPAD_BUTTON_B)
 						break;
 					if(vpad.trigger & VPAD_BUTTON_Y)
-						return downloadFile(url, file, data, type, resume);
+						return downloadFile(url, file, data, type, resume, multiDownload);
 				}
 				return 1;
 			}
@@ -1038,7 +1045,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	strcpy(idp, "title.tik");
 	if(!fileExists(installDir))
 	{
-		int tikRes = downloadFile(downloadUrl, installDir, NULL, FILE_TYPE_TIK, true);
+		int tikRes = downloadFile(downloadUrl, installDir, NULL, FILE_TYPE_TIK, true, true);
 		switch(tikRes)
 		{
 			case 2:
@@ -1150,7 +1157,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		strcpy(idp, apps[i]);
 		strcpy(idpp, ".app");
 		
-		if(downloadFile(downloadUrl, installDir, &data, FILE_TYPE_APP, true) == 1)
+		if(downloadFile(downloadUrl, installDir, &data, FILE_TYPE_APP, true, true) == 1)
 		{
 			enableApd();
 			return true;
@@ -1162,7 +1169,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 			strcpy(dupp, ".h3");
 			strcpy(idpp, ".h3");
 			
-			if(downloadFile(downloadUrl, installDir, &data, FILE_TYPE_H3, true) == 1)
+			if(downloadFile(downloadUrl, installDir, &data, FILE_TYPE_H3, true, true) == 1)
 			{
 				enableApd();
 				return true;
@@ -1170,6 +1177,9 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 			data.dcontent++;
 		}
 	}
+
+	if(cancelOverlayId >= 0)
+		closeCancelOverlay();
 	
 	if(!AppRunning())
 	{
