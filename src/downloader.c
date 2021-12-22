@@ -156,7 +156,11 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 		if(data->dlo < 0)
 		{
 			if(vpad.trigger & VPAD_BUTTON_B)
-				data->dlo = addErrorOverlay("Do you really want to cancel?");
+				data->dlo = addErrorOverlay(
+					"Do you really want to cancel?\n"
+					"\n"
+					"\uE000 Yes || \uE001 No"
+				);
 		}
 		else
 		{
