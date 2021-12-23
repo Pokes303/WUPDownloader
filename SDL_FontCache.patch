@@ -1,5 +1,5 @@
 diff --git a/SDL_FontCache.c b/SDL_FontCache.c
-index e534622..abc7dd3 100644
+index e534622..cbb76c3 100644
 --- a/SDL_FontCache.c
 +++ b/SDL_FontCache.c
 @@ -82,16 +82,30 @@ __inline int c99_snprintf(char *outBuf, size_t size, const char *format, ...)
@@ -84,7 +84,15 @@ index e534622..abc7dd3 100644
  
      return new_string;
  }
-@@ -176,18 +168,17 @@ char* FC_GetStringASCII(void)
+@@ -170,24 +162,25 @@ static char* ASCII_STRING = NULL;
+ static char* LATIN_1_STRING = NULL;
+ static char* ASCII_LATIN_1_STRING = NULL;
+ 
++static SDL_Color oldColor = { 0x00, 0x00, 0x00, 0x00 };
++
+ char* FC_GetStringASCII(void)
+ {
+     if(ASCII_STRING == NULL)
      {
          int i;
          char c;
@@ -106,7 +114,7 @@ index e534622..abc7dd3 100644
      }
      return U8_strdup(ASCII_STRING);
  }
-@@ -198,30 +189,29 @@ char* FC_GetStringLatin1(void)
+@@ -198,30 +191,29 @@ char* FC_GetStringLatin1(void)
      {
          int i;
          unsigned char c;
@@ -144,7 +152,7 @@ index e534622..abc7dd3 100644
      }
      return U8_strdup(LATIN_1_STRING);
  }
-@@ -234,26 +224,6 @@ char* FC_GetStringASCII_Latin1(void)
+@@ -234,26 +226,6 @@ char* FC_GetStringASCII_Latin1(void)
      return U8_strdup(ASCII_LATIN_1_STRING);
  }
  
@@ -171,7 +179,7 @@ index e534622..abc7dd3 100644
  FC_Effect FC_MakeEffect(FC_AlignEnum alignment, FC_Scale scale, SDL_Color color)
  {
      FC_Effect e;
-@@ -297,18 +267,14 @@ typedef struct FC_Map
+@@ -297,18 +269,14 @@ typedef struct FC_Map
  
  
  
@@ -194,7 +202,7 @@ index e534622..abc7dd3 100644
  
      return map;
  }
-@@ -335,7 +301,7 @@ static FC_Map* FC_MapCreate(int num_buckets)
+@@ -335,7 +303,7 @@ static FC_Map* FC_MapCreate(int num_buckets)
      }
  }*/
  
@@ -203,7 +211,7 @@ index e534622..abc7dd3 100644
  {
      int i;
      if(map == NULL)
-@@ -397,7 +363,7 @@ static FC_GlyphData* FC_MapInsert(FC_Map* map, Uint32 codepoint, FC_GlyphData gl
+@@ -397,7 +365,7 @@ static FC_GlyphData* FC_MapInsert(FC_Map* map, Uint32 codepoint, FC_GlyphData gl
      return NULL;
  }
  
@@ -212,7 +220,7 @@ index e534622..abc7dd3 100644
  {
      Uint32 index;
      FC_MapNode* node;
-@@ -463,14 +429,11 @@ static FC_Rect FC_RenderCenter(FC_Font* font, FC_Target* dest, float x, float y,
+@@ -463,14 +431,11 @@ static FC_Rect FC_RenderCenter(FC_Font* font, FC_Target* dest, float x, float y,
  static FC_Rect FC_RenderRight(FC_Font* font, FC_Target* dest, float x, float y, FC_Scale scale, const char* text);
  
  
@@ -232,7 +240,7 @@ index e534622..abc7dd3 100644
  
  
  char* U8_alloc(unsigned int size)
-@@ -485,19 +448,15 @@ char* U8_alloc(unsigned int size)
+@@ -485,19 +450,15 @@ char* U8_alloc(unsigned int size)
      return result;
  }
  
@@ -255,7 +263,7 @@ index e534622..abc7dd3 100644
  
      return result;
  }
-@@ -522,15 +481,15 @@ int U8_charsize(const char* character)
+@@ -522,15 +483,15 @@ int U8_charsize(const char* character)
      if(character == NULL)
          return 0;
  
@@ -277,7 +285,7 @@ index e534622..abc7dd3 100644
  }
  
  int U8_charcpy(char* buffer, const char* source, int buffer_size)
-@@ -547,11 +506,6 @@ int U8_charcpy(char* buffer, const char* source, int buffer_size)
+@@ -547,11 +508,6 @@ int U8_charcpy(char* buffer, const char* source, int buffer_size)
      return charsize;
  }
  
@@ -289,7 +297,7 @@ index e534622..abc7dd3 100644
  int U8_strinsert(char* string, int position, const char* source, int max_bytes)
  {
      int pos_u8char;
-@@ -675,40 +629,23 @@ static_inline FC_Rect FC_RectIntersect(FC_Rect A, FC_Rect B)
+@@ -675,40 +631,23 @@ static_inline FC_Rect FC_RectIntersect(FC_Rect A, FC_Rect B)
  
  FC_Rect FC_DefaultRenderCallback(FC_Image* src, FC_Rect* srcrect, FC_Target* dest, float x, float y, float xscale, float yscale)
  {
@@ -338,7 +346,7 @@ index e534622..abc7dd3 100644
      return result;
  }
  
-@@ -1223,7 +1160,13 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
+@@ -1223,7 +1162,13 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
          unsigned int h = font->height*12;
          SDL_Surface* surfaces[FC_LOAD_MAX_SURFACES];
          int num_surfaces = 1;
@@ -352,7 +360,7 @@ index e534622..abc7dd3 100644
          font->last_glyph.rect.x = FC_CACHE_PADDING;
          font->last_glyph.rect.y = FC_CACHE_PADDING;
          font->last_glyph.rect.w = 0;
-@@ -1240,15 +1183,13 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
+@@ -1240,15 +1185,13 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
                  continue;
  
              // Try packing.  If it fails, create a new surface for the next cache level.
@@ -369,7 +377,7 @@ index e534622..abc7dd3 100644
                      break;
                  }
  
-@@ -1264,22 +1205,23 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
+@@ -1264,22 +1207,23 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
  
                  surfaces[num_surfaces] = FC_CreateSurface32(w, h);
                  num_surfaces++;
@@ -396,7 +404,7 @@ index e534622..abc7dd3 100644
              FC_UploadGlyphCache(font, i, surfaces[i]);
              SDL_FreeSurface(surfaces[i]);
              #ifndef FC_USE_SDL_GPU
-@@ -1712,6 +1654,20 @@ static FC_Rect FC_RenderLeft(FC_Font* font, FC_Target* dest, float x, float y, F
+@@ -1712,6 +1656,20 @@ static FC_Rect FC_RenderLeft(FC_Font* font, FC_Target* dest, float x, float y, F
          }
  
          codepoint = FC_GetCodepointFromUTF8(&c, 1);  // Increments 'c' to skip the extra UTF-8 bytes
@@ -417,7 +425,19 @@ index e534622..abc7dd3 100644
          if(!FC_GetGlyphData(font, &glyph, codepoint))
          {
              codepoint = ' ';
-@@ -2852,6 +2808,7 @@ int FC_GetWrappedText(FC_Font* font, char* result, int max_result_size, Uint16 w
+@@ -1751,6 +1709,11 @@ static FC_Rect FC_RenderLeft(FC_Font* font, FC_Target* dest, float x, float y, F
+ 
+ static void set_color_for_all_caches(FC_Font* font, SDL_Color color)
+ {
++    if(color.r == oldColor.r && color.g == oldColor.g && color.b == oldColor.b && color.a == oldColor.a)
++        return;
++
++    oldColor = color;
++
+     // TODO: How can I predict which glyph caches are to be used?
+     FC_Image* img;
+     int i;
+@@ -2852,6 +2815,7 @@ int FC_GetWrappedText(FC_Font* font, char* result, int max_result_size, Uint16 w
          int num_bytes = FC_MIN(len, size_remaining);
          memcpy(&result[size_so_far], iter->value, num_bytes);
          size_so_far += num_bytes;
