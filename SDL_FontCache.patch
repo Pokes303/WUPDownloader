@@ -1,5 +1,5 @@
 diff --git a/SDL_FontCache.c b/SDL_FontCache.c
-index e534622..cbb76c3 100644
+index e534622..63a7f26 100644
 --- a/SDL_FontCache.c
 +++ b/SDL_FontCache.c
 @@ -82,16 +82,30 @@ __inline int c99_snprintf(char *outBuf, size_t size, const char *format, ...)
@@ -84,6 +84,15 @@ index e534622..cbb76c3 100644
  
      return new_string;
  }
+@@ -158,7 +150,7 @@ static unsigned int fc_tab_width = 4;
+ 
+ // Shared buffer for variadic text
+ static char* fc_buffer = NULL;
+-static unsigned int fc_buffer_size = 1024;
++static unsigned int fc_buffer_size = 0xFFFF;
+ 
+ static Uint8 fc_has_render_target_support = 0;
+ 
 @@ -170,24 +162,25 @@ static char* ASCII_STRING = NULL;
  static char* LATIN_1_STRING = NULL;
  static char* ASCII_LATIN_1_STRING = NULL;
