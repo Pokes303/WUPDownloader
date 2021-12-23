@@ -45,7 +45,6 @@ typedef struct WUT_PACKED
 	double dlnow;
 	double dltotal;
 	double dltmp;
-	int dlo;
 } downloadData;
 
 extern char *ramBuf;
