@@ -62,7 +62,7 @@ extern size_t ramBufSize;
 
 bool initDownloader();
 void deinitDownloader();
-int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume, bool multiDownload);
+int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume);
 bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, NUSDEV dlDev, bool toUSB, bool keepFiles);
 
 #ifdef __cplusplus
