@@ -178,9 +178,7 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 				return 1;
 			}
 			else if(vpad.trigger & VPAD_BUTTON_B)
-			{
 				closeCancelOverlay();
-			}
 		}
 	}
 
@@ -711,7 +709,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				break;
 		}
 
-		if(data != NULL)
+		if(data != NULL && cancelOverlayId >= 0)
 			closeCancelOverlay();
 		
 		size_t framesLeft;
