@@ -43,11 +43,10 @@ endif
 #-------------------------------------------------------------------------------
 include $(PORTLIBS_PATH)/wiiu/share/romfs-wiiu.mk
 
-CFLAGS		:=	$(MACHDEP) -Ofast -flto=auto -fno-fat-lto-objects \
+CFLAGS		:=	$(MACHDEP) -O3 -flto=auto -fno-fat-lto-objects \
 				-fuse-linker-plugin -pipe -D__WIIU__ -D__WUT__ \
 				-DNUSSPLI_VERSION=\"$(NUSSPLI_VERSION)\" \
-				-DIOAPI_NO_64 $(ROMFS_CFLAGS) \
-				-mnewlib -mabi=elfv1
+				-DIOAPI_NO_64 $(ROMFS_CFLAGS)
 
 ifeq ($(strip $(HBL)), 1)
 CFLAGS		+=	-DNUSSPLI_HBL
@@ -177,11 +176,9 @@ $(OUTPUT).elf	:	$(OFILES)
 $(OFILES_SRC)	: $(HFILES_BIN)
 
 #-------------------------------------------------------------------------------
-debug: CFLAGS	+=	-g -Wall -O0 -fno-lto \
-					-fno-use-linker-plugin -DNUSSPLI_DEBUG
-debug: CXXFLAGS	+=	-g -Wall -O0 -fno-lto \
-					-fno-use-linker-plugin -DNUSSPLI_DEBUG
-debug: LDFLAGS	+=	-g -Wall -O0 -fno-lto -fno-use-linker-plugin -DNUSSPLI_DEBUG
+debug: CFLAGS	+=	-Wall -DNUSSPLI_DEBUG
+debug: CXXFLAGS	+=	-Wall -DNUSSPLI_DEBUG
+debug: LDFLAGS	+=	-Wall -DNUSSPLI_DEBUG
 debug: all
 
 #-------------------------------------------------------------------------------
