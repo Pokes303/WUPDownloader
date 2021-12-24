@@ -41,9 +41,11 @@ static int osslSeed(const void *buf, int num)
 
 static int osslBytes(unsigned char *buf, int num)
 {
+	uint32_t en = entropy;
 	for(int i = 0; i < num; i++)
-		buf[i] = rand_r(&entropy);
+		buf[i] = rand_r(&en);
 
+	entropy ^= rand_r(&en);
 	return 1;
 }
 
@@ -88,9 +90,8 @@ void addEntropy(void *e, size_t l)
 		s = rand_r(&en) % 25;
 		if(s)
 			ee <<= s;
-		en ^= ee;
+		entropy ^= ee;
 	}
-	entropy = en;
 }
 
 bool initCrypto()

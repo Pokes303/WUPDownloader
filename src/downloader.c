@@ -49,6 +49,7 @@
 #include <tmd.h>
 #include <utils.h>
 
+#include <coreinit/atomic.h>
 #include <coreinit/filesystem.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/thread.h>
@@ -63,10 +64,12 @@
 
 #define USERAGENT		"NUSspli/" NUSSPLI_VERSION // TODO: Spoof eShop here?
 #define DLBGT_STACK_SIZE	0x2000
-#define DLT_STACK_SIZE		0x100000 // This needs a large stack for OpenSSL to be able to load the ca-certs
+#define DLT_STACK_SIZE		0xC0000 // This needs a large stack for OpenSSL to be able to load the ca-certs
 #define SOCKLIB_BUFSIZE		(IO_BUFSIZE * 2) // double buffering
 
 #define MAX_CERTS	2
+
+static STACK_OF(X509_INFO) *inf;
 
 static char *ramBuf = NULL;
 static size_t ramBufSize = 0;
@@ -110,9 +113,12 @@ static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData
 typedef struct
 {
 	CURLcode error;
+	uint32_t lock;
+	uint32_t *lockPtr;
 	bool paused;
-	double dltotal;
 	double dlnow;
+	double dltotal;
+	OSTime ts;
 } curlProgressData;
 
 #define closeCancelOverlay()				\
@@ -123,22 +129,23 @@ typedef struct
 
 static int progressCallback(void *rawData, double dltotal, double dlnow, double ultotal, double ulnow)
 {
-	if(!AppRunning())
-		return 1;
-
 	curlProgressData *data = (curlProgressData *)rawData;
+	if(!AppRunning())
+		data->error = CURLE_ABORTED_BY_CALLBACK;
+
 	if(data->error != CURLE_OK)
 		return 1;
 
-	if(dltotal > 0.0d && !isinf(dltotal) && !isnan(dltotal))
+	if(dltotal > 0.1D && !isinf(dltotal) && !isnan(dltotal))
 	{
 		OSTime now = OSGetSystemTime();
-		addEntropy(&now, sizeof(OSTime));
-
-		//debugPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", data->name, data->data->dcontent, data->data->contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
+		while(!OSCompareAndSwapAtomic(&data->lock, false, true))
+		{}
 
 		data->dlnow = dlnow;
 		data->dltotal = dltotal;
+		data->ts = now;
+		data->lock = false;
 	}
 
 	return 0;
@@ -243,73 +250,28 @@ static int initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 
 static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 {
-	CURLcode ret = CURLE_ABORTED_BY_CALLBACK;
+	if(inf == NULL)
+		return CURLE_OK;
+
 	X509_STORE *cts = SSL_CTX_get_cert_store((SSL_CTX *)sslctx);
 	if(cts != NULL)
 	{
-		STACK_OF(X509_INFO) *inf = sk_X509_INFO_new_null();
-		if(inf != NULL)
+		X509_INFO *itmp;
+		int i = 0;
+		for(; i < sk_X509_INFO_num(inf); i++)
 		{
-			char fn[1024];
-			strcpy(fn, ROMFS_PATH "ca-certificates/");
-			FILE *f;
-			DIR *dir = opendir(fn);
-			if(dir != NULL)
-			{
-				char *ptr = fn + strlen(fn);
-				STACK_OF(X509_INFO) *inft;
-				bool err = false;
-				for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
-				{
-					if(entry->d_name[0] == '.')
-						continue;
-
-					strcpy(ptr, entry->d_name);
-					f = fopen(fn, "rb");
-					if(f == NULL)
-					{
-						debugPrintf("Failed opening certificate file (%s)!", fn);
-						err = true;
-						break;
-					}
-
-					inft = PEM_X509_INFO_read(f, inf, NULL, NULL);
-					fclose(f);
-					if(inft == NULL)
-					{
-						debugPrintf("Error reading %s: %s!", fn, ERR_reason_error_string(ERR_get_error()));
-						err = true;
-						break;
-					}
-					debugPrintf("Cert %s loaded!", fn);
-				}
-				closedir(dir);
-
-				if(!err)
-				{
-					X509_INFO *itmp;
-					int i = 0;
-					for(; i < sk_X509_INFO_num(inf); i++)
-					{
-						itmp = sk_X509_INFO_value(inf, i);
-						if(itmp->x509)
-							X509_STORE_add_cert(cts, itmp->x509);
-						if(itmp->crl)
-							X509_STORE_add_crl(cts, itmp->crl);
-					}
-					debugPrintf("%d certs loaded!", i);
-					ret = CURLE_OK;
-				}
-			}
-			else
-				debugPrintf("Unable to open directory %s", fn);
-			sk_X509_INFO_pop_free(inf, X509_INFO_free);
+			itmp = sk_X509_INFO_value(inf, i);
+			if(itmp->x509)
+				X509_STORE_add_cert(cts, itmp->x509);
+			if(itmp->crl)
+				X509_STORE_add_crl(cts, itmp->crl);
 		}
+		debugPrintf("%d certs loaded!", i);
+		return CURLE_OK;
 	}
-	else
-		debugPrintf("SSL_CTX_get_cert_store failed!");
 
-	return ret;
+	debugPrintf("SSL_CTX_get_cert_store failed!");
+	return CURLE_ABORTED_BY_CALLBACK;
 }
 
 #define killDlbgThread()						\
@@ -328,7 +290,7 @@ static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 
 #define initNetwork()																																					\
 {																																										\
-	if(!startThread(&dlbgThread, "NUSspli socket optimizer", THREAD_PRIORITY_LOW, &dlbgThreadStack, DLBGT_STACK_SIZE, dlbgThreadMain, OS_THREAD_ATTRIB_AFFINITY_ANY))	\
+	if(!startThread(&dlbgThread, "NUSspli socket optimizer", THREAD_PRIORITY_LOW, &dlbgThreadStack, DLBGT_STACK_SIZE, dlbgThreadMain, OS_THREAD_ATTRIB_AFFINITY_CPU0))	\
 		dlbgThreadStack = NULL;																																			\
 }
 
@@ -343,6 +305,46 @@ bool initDownloader()
 	initNetwork();
 	if(dlbgThreadStack == NULL)
 		return false;
+
+	inf = sk_X509_INFO_new_null();
+	if(inf != NULL)
+	{
+		char fn[1024];
+		strcpy(fn, ROMFS_PATH "ca-certificates/");
+		FILE *f;
+		DIR *dir = opendir(fn);
+		if(dir != NULL)
+		{
+			char *ptr = fn + strlen(fn);
+			STACK_OF(X509_INFO) *inft;
+			for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
+			{
+				if(entry->d_name[0] == '.')
+					continue;
+
+				strcpy(ptr, entry->d_name);
+				f = fopen(fn, "rb");
+				if(f == NULL)
+				{
+					debugPrintf("Failed opening certificate file (%s)!", fn);
+					continue;
+				}
+
+				inft = PEM_X509_INFO_read(f, inf, NULL, NULL);
+				fclose(f);
+#ifdef NUSSPLI_DEBUG
+				if(inft == NULL)
+					debugPrintf("Error reading %s: %s!", fn, ERR_reason_error_string(ERR_get_error()));
+				else
+					debugPrintf("Cert %s loaded!", fn);
+#endif
+			}
+
+			closedir(dir);
+		}
+		else
+			debugPrintf("Error opening %s!", fn);
+	}
 
 	CURLcode ret = curl_global_init(CURL_GLOBAL_DEFAULT & ~(CURL_GLOBAL_SSL));
 	if(ret == CURLE_OK)
@@ -398,11 +400,21 @@ bool initDownloader()
 	}
 
 	killDlbgThread();
+	if(inf != NULL)
+	{
+		sk_X509_INFO_free(inf);
+		inf = NULL;
+	}
 	return false;
 }
 
 void deinitDownloader()
 {
+	if(inf != NULL)
+	{
+		sk_X509_INFO_free(inf);
+		inf = NULL;
+	}
 	if(curl != NULL)
 	{
 		curl_easy_cleanup(curl);
@@ -421,6 +433,7 @@ static int dlThreadMain(int argc, const char **argv)
 
 #define setDefaultDataValues(x) 			\
 	x.error = CURLE_OK;						\
+	x.lock = false;							\
 	x.paused = false;						\
 	x.dlnow = 								\
 	x.dltotal = 0.0D;						\
@@ -522,23 +535,35 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	double dlnow;
 	double dltotal;
 	OSTick now;
-	OSTick lastTransfair = 0;
-	int frames = 60;
+	OSTick lastTransfair = OSGetTick();
+	OSTick ent;
+	int frames = 1;
+	int ltframes = 0;
 	while(!OSIsThreadTerminated(&dlThread))
 	{
 		if(--frames == 0)
 		{
-			frames = 60;
-			startNewFrame();
-
-			if(cdata.dltotal > 0.0D)
+			if(cdata.dltotal > 0.1D)
 			{
+				if(!OSCompareAndSwapAtomic(&cdata.lock, false, true))
+				{
+					frames = 2;
+					continue;
+				}
+
+				dlnow = cdata.dlnow;
+				now = cdata.ts;
+				dltotal = cdata.dltotal;
+				cdata.lock = false;
+
+				frames = 60;
+				startNewFrame();
 				strcpy(toScreen, "Downloading ");
 				strcpy(toScreen + 12, name);
 				textToFrame(0, 0, toScreen);
 
-				dlnow = cdata.dlnow + fileSize;
-				dltotal = cdata.dltotal + fileSize;
+				dltotal += fileSize;
+				dlnow += fileSize;
 				barToFrame(1, 0, 30, dlnow / dltotal * 100.0D);
 
 				if(dltotal < 1024.0D)
@@ -565,23 +590,31 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				sprintf(toScreen, "%.2f / %.2f %s", dlnow / multiplier, dltotal / multiplier, multiplierName);
 				textToFrame(1, 31, toScreen);
 
-				dltotal = dlnow - downloaded;
-				now = OSGetTick();
+				dltotal = (dlnow - downloaded); 		// total length in bytes
+				downloaded = dlnow;
+				ent = now - lastTransfair;
+				addEntropy(&ent, sizeof(OSTick));
+				dlnow = OSTicksToMilliseconds(ent);	// duration in milliseconds
+				lastTransfair = now;
+				dlnow /= 1000.0D;						// duration in seconds
+				if(dlnow > 0.0D)
+					dltotal /= dlnow;					// mbyte/s
+
 				if(dltotal < 0.01D)
 				{
-					if(lastTransfair > 0 && OSTicksToSeconds(now - lastTransfair) > 30)
+					if(++ltframes == 30)
 						cdata.error = CURLE_OPERATION_TIMEDOUT;
 				}
 				else
-					lastTransfair = now;
+					ltframes = 0;
 
 				getSpeedString(dltotal, toScreen);
 				textToFrame(0, ALIGNED_RIGHT, toScreen);
-
-				downloaded = dlnow;
 			}
 			else
 			{
+				frames = 1;
+				startNewFrame();
 				strcpy(toScreen, "Preparing ");
 				strcpy(toScreen + 10, name);
 				textToFrame(0, 0, toScreen);

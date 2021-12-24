@@ -296,7 +296,7 @@ bool SWKBD_Init()
 	OSBlockSet(swkbd_msg, 0, sizeof(OSMessage) * SWKBD_QUEUE_SIZE);
 	OSInitMessageQueueEx(&swkbd_queue, swkbd_msg, SWKBD_QUEUE_SIZE, "NUSspli SWKBD calc queue");
 
-	if(!startThread(&calcThread, "NUSspli SWKBD font calculator", THREAD_PRIORITY_MEDIUM, &calcThreadStack, CT_STACK_SIZE, calcThreadMain, OS_THREAD_ATTRIB_AFFINITY_ANY))
+	if(!startThread(&calcThread, "NUSspli SWKBD font calculator", THREAD_PRIORITY_MEDIUM, &calcThreadStack, CT_STACK_SIZE, calcThreadMain, OS_THREAD_ATTRIB_AFFINITY_CPU1))
     {
         MEMFreeToDefaultHeap(createArg.workMemory);
 		createArg.workMemory = NULL;
