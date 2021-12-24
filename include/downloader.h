@@ -47,23 +47,15 @@ typedef struct WUT_PACKED
 	double dltmp;
 } downloadData;
 
-extern char *ramBuf;
-extern size_t ramBufSize;
-
 #define DOWNLOAD_URL "http://ccs.cdn.wup.shop.nintendo.net/ccs/download/"
-
-#define clearRamBuf() 					\
-	if(ramBuf != NULL)					\
-	{									\
-		ramBufSize = 0;					\
-		MEMFreeToDefaultHeap(ramBuf);	\
-		ramBuf = NULL;					\
-	}
 
 bool initDownloader();
 void deinitDownloader();
 int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume);
 bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, NUSDEV dlDev, bool toUSB, bool keepFiles);
+char *getRamBuf();
+size_t getRamBufSize();
+void clearRamBuf();
 
 #ifdef __cplusplus
 	}

@@ -123,7 +123,7 @@ bool updateCheck()
 	drawFrame();
 	showFrame();
 	
-	cJSON *json = cJSON_ParseWithLength(ramBuf, ramBufSize);
+	cJSON *json = cJSON_ParseWithLength(getRamBuf(), getRamBufSize());
 	if(json == NULL)
 	{
 		clearRamBuf();
@@ -269,7 +269,7 @@ void update(char *newVersion)
 	drawFrame();
 	showFrame();
 	
-	unzFile zip = unzOpenBuffer(ramBuf, ramBufSize);
+	unzFile zip = unzOpenBuffer(getRamBuf(), getRamBufSize());
 	unz_global_info zipInfo;
 	if(unzGetGlobalInfo(zip, &zipInfo) != UNZ_OK)
 	{

@@ -63,12 +63,13 @@
 
 #define USERAGENT		"NUSspli/" NUSSPLI_VERSION // TODO: Spoof eShop here?
 #define DLBGT_STACK_SIZE	0x2000
+#define DLT_STACK_SIZE		0x100000
 #define SOCKLIB_BUFSIZE		(IO_BUFSIZE * 2) // double buffering
 
 #define MAX_CERTS	2
 
-char *ramBuf = NULL;
-size_t ramBufSize = 0;
+static char *ramBuf = NULL;
+static size_t ramBufSize = 0;
 
 static CURL *curl;
 static char curlError[CURL_ERROR_SIZE];
@@ -109,14 +110,9 @@ static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData
 typedef struct
 {
 	CURLcode error;
-	downloadData *data;
-	uint32_t onDisc;
-	double downloaded;
 	bool paused;
-	char *name;
-	OSTime lastDraw;
-	OSTime lastInput;
-	OSTime lastTransfair;
+	double dltotal;
+	double dlnow;
 } curlProgressData;
 
 #define closeCancelOverlay()				\
@@ -127,162 +123,23 @@ typedef struct
 
 static int progressCallback(void *rawData, double dltotal, double dlnow, double ultotal, double ulnow)
 {
-	OSTime now = OSGetSystemTime();
-	addEntropy(&now, sizeof(OSTime));
+	if(!AppRunning())
+		return 1;
+
 	curlProgressData *data = (curlProgressData *)rawData;
+	if(data->error != CURLE_OK)
+		return 1;
 
-	if(OSTicksToMilliseconds(now - data->lastInput) > (1000 / 60))
+	if(dltotal > 0.0d && !isinf(dltotal) && !isnan(dltotal))
 	{
-		if(!AppRunning())
-		{
-			data->error = CURLE_ABORTED_BY_CALLBACK;
-			return 1;
-		}
-		/*	else
-		{
+		OSTime now = OSGetSystemTime();
+		addEntropy(&now, sizeof(OSTime));
 
-			if(app == APP_STATE_BACKGROUND)
-			{
-				if(!data->paused && curl_easy_pause(data->curl, CURLPAUSE_ALL) == CURLE_OK)
-				{
-					!data->paused = true;
-					debugPrintf("Download paused!");
-				}
-				return 0;
-			}
-			if(!data->paused && curl_easy_pause(data->curl, CURLPAUSE_CONT) == CURLE_OK)
-			{
-				!data->paused = false;
-				lastDraw = lastTransfair = 0;
-				debugPrintf("Download resumed");
-			}
-		}
-*/
-		data->lastInput = now;
-		readInput();
-		if(cancelOverlayId < 0)
-		{
-			if(vpad.trigger & VPAD_BUTTON_B)
-				cancelOverlayId = addErrorOverlay(
-					"Do you really want to cancel?\n"
-					"\n"
-					BUTTON_A " Yes || " BUTTON_B " No"
-				);
-		}
-		else
-		{
-			if(vpad.trigger & VPAD_BUTTON_A)
-			{
-				closeCancelOverlay();
-				data->error = CURLE_ABORTED_BY_CALLBACK;
-				return 1;
-			}
-			else if(vpad.trigger & VPAD_BUTTON_B)
-				closeCancelOverlay();
-		}
+		//debugPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", data->name, data->data->dcontent, data->data->contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
+
+		data->dlnow = dlnow;
+		data->dltotal = dltotal;
 	}
-
-	if(OSTicksToMilliseconds(now - data->lastDraw) < 1000)
-		return 0;
-
-	data->lastDraw = now;
-	//debugPrintf("Downloading: %s (%u/%u) [%u%%] %u / %u bytes", data->name, data->data->dcontent, data->data->contents, (uint32_t)(dlnow / ((dltotal > 0) ? dltotal : 1) * 100), (uint32_t)dlnow, (uint32_t)dltotal);
-	startNewFrame();
-	bool dling = dltotal > 0.0d && !isinf(dltotal) && !isnan(dltotal);
-	char *tmpString = getToFrameBuffer();
-	strcpy(tmpString, dling ? "Downloading " : "Preparing ");
-	strcat(tmpString, data->name);
-	textToFrame(0, 0, tmpString);
-	
-	double multiplier;
-	char *multiplierName;
-	if(dling)
-	{
-		dlnow += data->onDisc;
-		dltotal += data->onDisc;
-		barToFrame(1, 0, 30, dlnow / dltotal * 100.0D);
-
-		if(dltotal < 1024.0D)
-		{
-			multiplier = 1.0D;
-			multiplierName = "B";
-		}
-		else if(dltotal < 1024.0D * 1024.0D)
-		{
-			multiplier = 1 << 10;
-			multiplierName = "KB";
-		}
-		else if(dltotal < 1024.0f * 1024.0D * 1024.0D)
-		{
-			multiplier = 1 << 20;
-			multiplierName = "MB";
-		}
-		else
-		{
-			multiplier = 1 << 30;
-			multiplierName = "GB";
-		}
-
-		sprintf(tmpString, "%.2f / %.2f %s", dlnow / multiplier, dltotal / multiplier, multiplierName);
-		textToFrame(1, 31, tmpString);
-
-		double dls = dlnow - data->downloaded;
-		if(dls < 0.01D)
-		{
-			if(data->lastTransfair > 0 && OSTicksToSeconds(now - data->lastTransfair) > 30)
-			{
-				data->error = CURLE_OPERATION_TIMEDOUT;
-				return 1;
-			}
-		}
-		else
-			data->lastTransfair = now;
-
-		getSpeedString(dls, tmpString);
-		textToFrame(0, ALIGNED_RIGHT, tmpString);
-
-		data->downloaded = dlnow;
-	}
-	
-	if(data->data != NULL)
-	{
-		sprintf(tmpString, "(%d/%d)", data->data->dcontent + 1, data->data->contents);
-		textToFrame(0, ALIGNED_CENTER, tmpString);
-		
-		if(data->data->dltotal < 1024.0D)
-		{
-			multiplier = 1.0D;
-			multiplierName = "B";
-		}
-		else if(data->data->dltotal < 1024.0D * 1024.0f)
-		{
-			multiplier = 1 << 10;
-			multiplierName = "KB";
-		}
-		else if(data->data->dltotal < 1024.0D * 1024.0D * 1024.0D)
-		{
-			multiplier = 1 << 20;
-			multiplierName = "MB";
-		}
-		else
-		{
-			multiplier = 1 << 30;
-			multiplierName = "GB";
-		}
-		data->data->dlnow = data->data->dltmp + dlnow;
-		barToFrame(1, 65, 30, data->data->dlnow / data->data->dltotal * 100.0f);
-		sprintf(tmpString, "%.2f / %.2f %s", data->data->dlnow / multiplier, data->data->dltotal / multiplier, multiplierName);
-		textToFrame(1, 96, tmpString);
-	}
-
-	
-	writeScreenLog();
-#ifdef NUSSPLI_DEBUG
-	OSTime end = OSGetSystemTime();
-	sprintf(tmpString, "Frame time: %4llums", OSTicksToMilliseconds(end - now));
-	textToFrame(MAX_LINES - 1, ALIGNED_RIGHT, tmpString);
-#endif
-	drawFrame();
 
 	return 0;
 }
@@ -402,15 +259,12 @@ static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 				char *ptr = fn + strlen(fn);
 				STACK_OF(X509_INFO) *inft;
 				bool err = false;
-				OSTime t = OSGetSystemTime();
-				OSTime t2;
 				for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
 				{
 					if(entry->d_name[0] == '.')
 						continue;
 
 					strcpy(ptr, entry->d_name);
-					t2 = OSGetSystemTime();
 					f = fopen(fn, "rb");
 					if(f == NULL)
 					{
@@ -421,18 +275,15 @@ static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 
 					inft = PEM_X509_INFO_read(f, inf, NULL, NULL);
 					fclose(f);
-					t2 = OSGetSystemTime() - t2;
-					addEntropy(&t2, sizeof(OSTime));
 					if(inft == NULL)
 					{
+						debugPrintf("Error reading %s: %s!", fn, ERR_reason_error_string(ERR_get_error()));
 						err = true;
 						break;
 					}
 					debugPrintf("Cert %s loaded!", fn);
 				}
 				closedir(dir);
-				t = OSGetSystemTime() - t;
-				addEntropy(&t, sizeof(OSTime));
 
 				if(!err)
 				{
@@ -462,23 +313,30 @@ static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 }
 
 #define killDlbgThread()						\
+{												\
 	if(dlbgThreadStack != NULL)					\
 	{											\
 		shutdownDebug();						\
 		__fini_wut_socket();					\
 		int ret;								\
 		OSJoinThread(&dlbgThread, &ret);		\
+		OSDetachThread(&dlbgThread);			\
 		MEMFreeToDefaultHeap(dlbgThreadStack);	\
 		dlbgThreadStack = NULL;					\
-	}
+	}											\
+}
 
 #define initNetwork()																																					\
+{																																										\
 	if(!startThread(&dlbgThread, "NUSspli socket optimizer", THREAD_PRIORITY_LOW, &dlbgThreadStack, DLBGT_STACK_SIZE, dlbgThreadMain, OS_THREAD_ATTRIB_AFFINITY_ANY))	\
-		dlbgThreadStack = NULL;
+		dlbgThreadStack = NULL;																																			\
+}
 
 #define resetNetwork()	\
+{						\
 	killDlbgThread();	\
-	initNetwork();
+	initNetwork();		\
+}
 
 bool initDownloader()
 {
@@ -554,13 +412,18 @@ void deinitDownloader()
 	killDlbgThread();
 }
 
+static int dlThreadMain(int argc, const char **argv)
+{
+	int ret =curl_easy_perform(curl);
+	checkStacks("dlThreadMain");
+	return ret;
+}
+
 #define setDefaultDataValues(x) 			\
 	x.error = CURLE_OK;						\
-	x.downloaded = 0.0D;					\
 	x.paused = false;						\
-	x.lastDraw = 0;							\
-	x.lastInput = 							\
-	x.lastTransfair = OSGetSystemTime();
+	x.dlnow = 								\
+	x.dltotal = 0.0D;						\
 
 int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume)
 {
@@ -629,25 +492,168 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		return 1;
 	}
 
+	char *name;
 	if(toRam)
-		cdata.name = file;
+		name = file;
 	else
 	{
 		int haystack;
 		for(haystack = strlen(file); file[haystack] != '/'; haystack--)
 			;
-		cdata.name = file + haystack + 1;
+		name = file + haystack + 1;
 	}
 
-	cdata.data = data;
-	cdata.onDisc = fileSize;
 	setDefaultDataValues(cdata);
 	if(fileExist)
 		fseek(((NUSFILE *)fp)->fd, 0, SEEK_END);
 	
 	debugPrintf("Calling curl_easy_perform()");
 	OSTime t = OSGetSystemTime();
-	ret = curl_easy_perform(curl);
+
+	static OSThread dlThread;
+	void *dlThreadStack;
+	if(!startThread(&dlThread, "NUSspli downloader", THREAD_PRIORITY_HIGH, &dlThreadStack, DLT_STACK_SIZE, dlThreadMain, OS_THREAD_ATTRIB_AFFINITY_CPU2))
+		return 1;
+
+	double multiplier;
+	char *multiplierName;
+	char *toScreen = getToFrameBuffer();
+	double downloaded = 0.0D;
+	double dlnow;
+	double dltotal;
+	OSTick now;
+	OSTick lastTransfair = 0;
+	int frames = 60;
+	while(!OSIsThreadTerminated(&dlThread))
+	{
+		if(--frames == 0)
+		{
+			frames = 60;
+			startNewFrame();
+
+			if(cdata.dltotal > 0.0D)
+			{
+				strcpy(toScreen, "Downloading ");
+				strcpy(toScreen + 12, name);
+				textToFrame(0, 0, toScreen);
+
+				dlnow = cdata.dlnow + fileSize;
+				dltotal = cdata.dltotal + fileSize;
+				barToFrame(1, 0, 30, dlnow / dltotal * 100.0D);
+
+				if(dltotal < 1024.0D)
+				{
+					multiplier = 1.0D;
+					multiplierName = "B";
+				}
+				else if(dltotal < 1024.0D * 1024.0D)
+				{
+					multiplier = 1 << 10;
+					multiplierName = "KB";
+				}
+				else if(dltotal < 1024.0f * 1024.0D * 1024.0D)
+				{
+					multiplier = 1 << 20;
+					multiplierName = "MB";
+				}
+				else
+				{
+					multiplier = 1 << 30;
+					multiplierName = "GB";
+				}
+
+				sprintf(toScreen, "%.2f / %.2f %s", dlnow / multiplier, dltotal / multiplier, multiplierName);
+				textToFrame(1, 31, toScreen);
+
+				dltotal = dlnow - downloaded;
+				now = OSGetTick();
+				if(dltotal < 0.01D)
+				{
+					if(lastTransfair > 0 && OSTicksToSeconds(now - lastTransfair) > 30)
+						cdata.error = CURLE_OPERATION_TIMEDOUT;
+				}
+				else
+					lastTransfair = now;
+
+				getSpeedString(dltotal, toScreen);
+				textToFrame(0, ALIGNED_RIGHT, toScreen);
+
+				downloaded = dlnow;
+			}
+			else
+			{
+				strcpy(toScreen, "Preparing ");
+				strcpy(toScreen + 10, name);
+				textToFrame(0, 0, toScreen);
+			}
+
+			if(data != NULL)
+			{
+				sprintf(toScreen, "(%d/%d)", data->dcontent + 1, data->contents);
+				textToFrame(0, ALIGNED_CENTER, toScreen);
+
+				if(data->dltotal < 1024.0D)
+				{
+					multiplier = 1.0D;
+					multiplierName = "B";
+				}
+				else if(data->dltotal < 1024.0D * 1024.0f)
+				{
+					multiplier = 1 << 10;
+					multiplierName = "KB";
+				}
+				else if(data->dltotal < 1024.0D * 1024.0D * 1024.0D)
+				{
+					multiplier = 1 << 20;
+					multiplierName = "MB";
+				}
+				else
+				{
+					multiplier = 1 << 30;
+					multiplierName = "GB";
+				}
+				data->dlnow = data->dltmp + dlnow;
+				barToFrame(1, 65, 30, data->dlnow / data->dltotal * 100.0f);
+				sprintf(toScreen, "%.2f / %.2f %s", data->dlnow / multiplier, data->dltotal / multiplier, multiplierName);
+				textToFrame(1, 96, toScreen);
+			}
+
+			writeScreenLog();
+			drawFrame();
+		}
+
+		showFrame();
+
+		if(!AppRunning())
+			break;
+
+		if(cancelOverlayId < 0)
+		{
+			if(vpad.trigger & VPAD_BUTTON_B)
+				cancelOverlayId = addErrorOverlay(
+					"Do you really want to cancel?\n"
+					"\n"
+					BUTTON_A " Yes || " BUTTON_B " No"
+				);
+		}
+		else
+		{
+			if(vpad.trigger & VPAD_BUTTON_A)
+			{
+				cdata.error = CURLE_ABORTED_BY_CALLBACK;
+				closeCancelOverlay();
+				break;
+
+			}
+			if(vpad.trigger & VPAD_BUTTON_B)
+				closeCancelOverlay();
+		}
+	}
+
+	OSJoinThread(&dlThread, (int *)&ret);
+	OSDetachThread(&dlThread);
+	MEMFreeToDefaultHeap(dlThreadStack);
+
 	t = OSGetSystemTime() - t;
 	addEntropy(&t, sizeof(OSTime));
 	if(data == NULL && cancelOverlayId >= 0)
@@ -679,7 +685,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 					ret = cdata.error;
 			}
 		}
-		char *toScreen = getToFrameBuffer();
 		sprintf(toScreen, "curl_easy_perform returned a non-valid value: %d\n\n---> ", ret);
 		
 		switch(ret)
@@ -712,11 +717,10 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		if(data != NULL && cancelOverlayId >= 0)
 			closeCancelOverlay();
 		
-		size_t framesLeft;
 		char *p;
 		if(autoResumeEnabled())
 		{
-			framesLeft = 9 * 60; // 9 seconds with 60 FPS
+			frames = 9 * 60; // 9 seconds with 60 FPS
 			strcat(toScreen, "\n\n");
 			p = toScreen + strlen(toScreen) + 12;
 			strcat(toScreen, "Next try in _ seconds.");
@@ -730,7 +734,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				continue;
 
 			if(autoResumeEnabled())
-				*p = '1' + (framesLeft / 60);
+				*p = '1' + (frames / 60);
 			if(autoResumeEnabled() || app == APP_STATE_RETURNING)
 				drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
 
@@ -738,7 +742,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 			
 			if(vpad.trigger & VPAD_BUTTON_B)
 				break;
-			if(vpad.trigger & VPAD_BUTTON_Y || (autoResumeEnabled() && --framesLeft == 0))
+			if(vpad.trigger & VPAD_BUTTON_Y || (autoResumeEnabled() && --frames == 0))
 			{
 				flushIOQueue(); // We flush here so the last file is completely on disc and closed before we retry.
 				resetNetwork(); // Recover from network errors.
@@ -751,8 +755,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	debugPrintf("curl_easy_perform executed successfully");
 	
 	double dld;
-	char *toScreen = getToFrameBuffer();
-	sprintf(toScreen, "Download %s ", cdata.name);
+	sprintf(toScreen, "Download %s ", name);
 	if(!toRam && fileExist && fileSize == 0) // File skipped by headerCallback
 	{
 		dld = 0.0D;
@@ -1220,4 +1223,24 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	}
 	
 	return true;
+}
+
+char *getRamBuf()
+{
+	return ramBuf;
+}
+
+size_t getRamBufSize()
+{
+	return ramBufSize;
+}
+
+void clearRamBuf()
+{
+	if(ramBuf != NULL)
+	{
+		ramBufSize = 0;
+		MEMFreeToDefaultHeap(ramBuf);
+		ramBuf = NULL;
+	}
 }

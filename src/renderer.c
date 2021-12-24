@@ -31,7 +31,7 @@
 #include <coreinit/time.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
-#include <whb/gfx.h>
+#include <gx2/event.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -721,7 +721,7 @@ void colorStartNewFrame(uint32_t color)
 
 void showFrame()
 {
-	WHBGfxBeginRender();
+	GX2WaitForVsync();
 	readInput();
 }
 

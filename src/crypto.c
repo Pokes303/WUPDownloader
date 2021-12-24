@@ -22,6 +22,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <utils.h>
 
 #include <crypto.h>
 
@@ -35,14 +36,13 @@ static uint32_t entropy;
 
 static int osslSeed(const void *buf, int num)
 {
-	reseed();
 	return 1;
 }
 
 static int osslBytes(unsigned char *buf, int num)
 {
 	for(int i = 0; i < num; i++)
-		buf[i] = rand();
+		buf[i] = rand_r(&entropy);
 
 	return 1;
 }
@@ -81,14 +81,16 @@ void addEntropy(void *e, size_t l)
 	uint8_t *buf = (uint8_t *)e;
 	uint32_t ee;
 	int s;
+	uint32_t en = entropy;
 	for(size_t i = 0; i < l; i++)
 	{
 		ee = buf[i];
-		s = rand() % 25;
+		s = rand_r(&en) % 25;
 		if(s)
 			ee <<= s;
-		entropy ^= ee;
+		en ^= ee;
 	}
+	entropy = en;
 }
 
 bool initCrypto()

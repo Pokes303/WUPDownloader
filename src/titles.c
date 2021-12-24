@@ -223,7 +223,7 @@ bool initTitles()
 	void *raw;
 	if(useOnline)
 	{
-		json = cJSON_ParseWithLength(ramBuf, ramBufSize);
+		json = cJSON_ParseWithLength(getRamBuf(), getRamBufSize());
 		raw = NULL;
 	}
 	else

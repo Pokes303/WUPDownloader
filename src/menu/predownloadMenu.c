@@ -216,7 +216,7 @@ downloadTMD:
 		return;
 	}
 	
-	tmd = (TMD *)ramBuf;
+	tmd = (TMD *)getRamBuf();
 	dls = 0;
 	for(uint16_t i = 0; i < tmd->num_contents; i++)
 	{
@@ -396,6 +396,6 @@ naNedNa:
 		removeErrorOverlay(ovl);
 	}
 
-	downloadTitle(tmd, ramBufSize, entry, titleVer, folderName, inst, dlDev, toUSB, keepFiles);
+	downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, inst, dlDev, toUSB, keepFiles);
 	clearRamBuf();
 }
