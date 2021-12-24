@@ -275,13 +275,13 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 		textToFrame(1, 96, tmpString);
 	}
 
+	
+	writeScreenLog();
 #ifdef NUSSPLI_DEBUG
 	OSTime end = OSGetSystemTime();
 	sprintf(tmpString, "Frame time: %4llums", OSTicksToMilliseconds(end - now));
 	textToFrame(MAX_LINES - 1, ALIGNED_RIGHT, tmpString);
 #endif
-	
-	writeScreenLog();
 	drawFrame();
 
 	return 0;
