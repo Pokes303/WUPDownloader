@@ -58,17 +58,18 @@ int io = -1;
 Swkbd_CreateArg createArg;
 FSClient swkbd_fsc;
 
-int globalMaxlength;
-bool globalLimit;
-
-bool okButtonEnabled;
-
-static NUSThread *calcThread;
-
 OSMessageQueue swkbd_queue;
 OSMessage swkbd_msg[SWKBD_QUEUE_SIZE];
 
 static OSTime lastButtonPress = 0;
+
+typedef struct
+{
+	int globalMaxlength;
+	bool globalLimit;
+	bool okButtonEnabled;
+	NUSThread *calcThread;
+} SWKBD_Args;
 
 static bool isUrl(char c)
 {
@@ -102,9 +103,9 @@ static bool isA(char c)
     return isAllowedInFilename(c);
 }
 
-void SWKBD_Render(KeyboardChecks check)
+static void SWKBD_Render(SWKBD_Args *args, KeyboardChecks check)
 {
-	if(globalMaxlength != -1)
+	if(args->globalMaxlength != -1)
 	{
 		char *inputFormString = Swkbd_GetInputFormString();
 		if(inputFormString != NULL)
@@ -141,12 +142,12 @@ void SWKBD_Render(KeyboardChecks check)
 			}
 			
 			MEMFreeToDefaultHeap(inputFormString);
-			okButtonEnabled = globalLimit ? len == globalMaxlength : len <= globalMaxlength;
+			args->okButtonEnabled = args->globalLimit ? len == args->globalMaxlength : len <= args->globalMaxlength;
 		}
 		else
-			okButtonEnabled = false;
+			args->okButtonEnabled = false;
 		
-		Swkbd_SetEnableOkButton(okButtonEnabled);
+		Swkbd_SetEnableOkButton(args->okButtonEnabled);
 	}
 	
 	Swkbd_ControllerInfo controllerInfo;
@@ -165,7 +166,7 @@ void SWKBD_Render(KeyboardChecks check)
 	drawKeyboard(lastUsedController != CT_VPAD_0);
 }
 
-bool SWKBD_Show(KeyboardLayout layout, KeyboardType type, int maxlength, bool limit, const char *okStr) {
+static bool SWKBD_Show(SWKBD_Args *args, KeyboardLayout layout, KeyboardType type, int maxlength, bool limit, const char *okStr) {
 	debugPrintf("SWKBD_Show()");
 	if(!Swkbd_IsHidden())
 	{
@@ -173,8 +174,8 @@ bool SWKBD_Show(KeyboardLayout layout, KeyboardType type, int maxlength, bool li
 		return false;
 	}
 
-    calcThread = startThread("NUSspli SWKBD font calculator", THREAD_PRIORITY_MEDIUM, CT_STACK_SIZE, calcThreadMain, OS_THREAD_ATTRIB_AFFINITY_ANY);
-	if(calcThread == NULL)
+    args->calcThread = startThread("NUSspli SWKBD font calculator", THREAD_PRIORITY_MEDIUM, CT_STACK_SIZE, calcThreadMain, OS_THREAD_ATTRIB_AFFINITY_ANY);
+	if(args->calcThread == NULL)
     {
 		debugPrintf("SWKBD: Can't spawn calc thread!");
 		return false;
@@ -249,7 +250,7 @@ bool SWKBD_Show(KeyboardLayout layout, KeyboardType type, int maxlength, bool li
 	appearArg.inputFormArg.unk_0x1C = true;
 	appearArg.inputFormArg.unk_0x1D = true;
 	appearArg.inputFormArg.unk_0x1E = true;
-	globalMaxlength = appearArg.inputFormArg.maxTextLength = maxlength;
+	args->globalMaxlength = appearArg.inputFormArg.maxTextLength = maxlength;
 	
 	bool kbdVisible = Swkbd_AppearInputForm(appearArg);
 	debugPrintf("Swkbd_AppearInputForm(): %s", kbdVisible ? "true" : "false");
@@ -260,9 +261,9 @@ bool SWKBD_Show(KeyboardLayout layout, KeyboardType type, int maxlength, bool li
 	if(!kbdVisible)
 		return false;
 	
-	globalLimit = limit;
-	okButtonEnabled = limit || maxlength == -1;
-	Swkbd_SetEnableOkButton(okButtonEnabled);
+	args->globalLimit = limit;
+	args->okButtonEnabled = limit || maxlength == -1;
+	Swkbd_SetEnableOkButton(args->okButtonEnabled);
 	
 	VPADSetSensorBar(VPAD_CHAN_0, true);
 	
@@ -270,7 +271,7 @@ bool SWKBD_Show(KeyboardLayout layout, KeyboardType type, int maxlength, bool li
 	return true;
 }
 
-void SWKBD_Hide()
+static void SWKBD_Hide(SWKBD_Args *args)
 {
 	debugPrintf("SWKBD_Hide()");
 	if(Swkbd_IsHidden())
@@ -284,11 +285,11 @@ void SWKBD_Hide()
 	
 	// DisappearInputForm() wants to render a fade out animation
 	while(!Swkbd_IsHidden())
-		SWKBD_Render(CHECK_NONE);
+		SWKBD_Render(args, CHECK_NONE);
 
     OSMessage msg = { .message = NUSSPLI_MESSAGE_EXIT };
 	OSSendMessage(&swkbd_queue, &msg, OS_MESSAGE_FLAGS_BLOCKING);
-	stopThread(calcThread);
+	stopThread(args->calcThread);
 }
 
 bool SWKBD_Init()
@@ -472,7 +473,10 @@ void readInput()
 
 bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, KeyboardChecks check, int maxlength, bool limit, const char *input, const char *okStr) {
 	debugPrintf("Initialising SWKBD");
-	if(!SWKBD_Show(layout, type, maxlength, limit, okStr))
+
+	SWKBD_Args args;
+
+	if(!SWKBD_Show(&args, layout, type, maxlength, limit, okStr))
 	{
 		drawErrorFrame("Error showing SWKBD:\nnn::swkbd::AppearInputForm failed", B_RETURN);
 		
@@ -499,10 +503,10 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 	{
 		VPADGetTPCalibratedPoint(VPAD_CHAN_0, &vpad.tpFiltered1, &vpad.tpNormal);
 		vpad.tpFiltered2 = vpad.tpNormal = vpad.tpFiltered1;
-		SWKBD_Render(check);
+		SWKBD_Render(&args, check);
 //		sleepTillFrameEnd();
 		
-		if(okButtonEnabled && (Swkbd_IsDecideOkButton(&dummy) || (lastUsedController == CT_VPAD_0 && vpad.trigger & VPAD_BUTTON_A)))
+		if(args.okButtonEnabled && (Swkbd_IsDecideOkButton(&dummy) || (lastUsedController == CT_VPAD_0 && vpad.trigger & VPAD_BUTTON_A)))
 		{
 			debugPrintf("SWKBD Ok button pressed");
 			if(layout == KEYBOARD_LAYOUT_NORMAL)
@@ -523,7 +527,7 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 				strcpy(output, outputStr);
 				MEMFreeToDefaultHeap(outputStr);
 			}
-			SWKBD_Hide();
+			SWKBD_Hide(&args);
             t = OSGetSystemTime() - t;
 			addEntropy(&t, sizeof(OSTime));
 			return true;
@@ -551,7 +555,7 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 		
 		if(close || Swkbd_IsDecideCancelButton(&dummy)) {
 			debugPrintf("SWKBD Cancel button pressed");
-			SWKBD_Hide();
+			SWKBD_Hide(&args);
             t = OSGetSystemTime() - t;
 			addEntropy(&t, sizeof(OSTime));
 			return false;
