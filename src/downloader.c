@@ -520,7 +520,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	debugPrintf("Calling curl_easy_perform()");
 	OSTime t = OSGetSystemTime();
 
-	static OSThread dlThread;
+	OSThread dlThread;
 	void *dlThreadStack;
 	if(!startThread(&dlThread, "NUSspli downloader", THREAD_PRIORITY_HIGH, &dlThreadStack, DLT_STACK_SIZE, dlThreadMain, OS_THREAD_ATTRIB_AFFINITY_CPU2))
 		return 1;
