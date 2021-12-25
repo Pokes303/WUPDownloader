@@ -34,17 +34,16 @@
 #include <openssl/rand_drbg.h>
 #include <openssl/ssl.h>
 
-static uint32_t entropy;
-static uint32_t entropyLock = false;
-static uint32_t *entropyLockPtr = &entropyLock;
+static volatile uint32_t entropy;
+static volatile uint32_t entropyLock = false;
 
 static int osslBytes(unsigned char *buf, int num)
 {
-	while(!OSCompareAndSwapAtomic(entropyLockPtr, false, true))
+	while(!OSCompareAndSwapAtomic(&entropyLock, false, true))
 		OSSleepTicks(16);
 
 	for(int i = 0; i < num; i++)
-		buf[i] = rand_r(&entropy);
+		buf[i] = rand_r((uint32_t *)&entropy);
 
 	entropyLock = false;
 	return 1;
@@ -76,7 +75,7 @@ void reseed()
 
 void addEntropy(void *e, size_t l)
 {
-	while(!OSCompareAndSwapAtomic(entropyLockPtr, false, true))
+	while(!OSCompareAndSwapAtomic(&entropyLock, false, true))
 		OSSleepTicks(128);
 
 	uint8_t *buf = (uint8_t *)e;
@@ -85,7 +84,7 @@ void addEntropy(void *e, size_t l)
 	for(size_t i = 0; i < l; i++)
 	{
 		ee = buf[i];
-		s = rand_r(&entropy) % 25;
+		s = rand_r((uint32_t *)&entropy) % 25;
 		if(s)
 			ee <<= s;
 		entropy ^= ee;

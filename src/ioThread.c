@@ -51,8 +51,7 @@ static OSThread ioThread;
 static void *ioThreadStack;
 static bool ioRunning = false;
 #ifdef NUSSPLI_DEBUG
-static uint32_t ioWriteLock = true;
-static uint32_t *ioWriteLockPtr = &ioWriteLock;
+static volatile uint32_t ioWriteLock = true;
 #endif
 
 static WriteQueueEntry *queueEntries;
@@ -134,7 +133,7 @@ void shutdownIOThread()
 		return;
 	
 #ifdef NUSSPLI_DEBUG
-	while(!OSCompareAndSwapAtomic(ioWriteLockPtr, false, true))
+	while(!OSCompareAndSwapAtomic(&ioWriteLock, false, true))
 		;
 #endif
 	while(queueEntries[activeWriteBuffer].inUse)
@@ -159,7 +158,7 @@ size_t addToIOQueue(const void *buf, size_t size, size_t n, NUSFILE *file)
 retryAddingToQueue:
 	
 #ifdef NUSSPLI_DEBUG
-	while(!OSCompareAndSwapAtomic(ioWriteLockPtr, false, true))
+	while(!OSCompareAndSwapAtomic(&ioWriteLock, false, true))
 		if(!ioRunning)
 			return 0;
 #endif
@@ -233,7 +232,7 @@ void flushIOQueue()
 	int ovl = addErrorOverlay("Flushing queue, please wait...");
 #ifdef NUSSPLI_DEBUG
 	debugPrintf("Flushing...");
-	while(!OSCompareAndSwapAtomic(ioWriteLockPtr, false, true))
+	while(!OSCompareAndSwapAtomic(&ioWriteLock, false, true))
 		;
 #endif
 	while(queueEntries[activeWriteBuffer].inUse)

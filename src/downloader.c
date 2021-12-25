@@ -113,7 +113,7 @@ static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData
 typedef struct
 {
 	CURLcode error;
-	uint32_t lock;
+	volatile uint32_t lock;
 	OSTick ts;
 	double dltotal;
 	double dlnow;
