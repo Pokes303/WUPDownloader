@@ -721,6 +721,9 @@ void colorStartNewFrame(uint32_t color)
 
 void showFrame()
 {
+	// Contrary to VSync enabled SDL we use GX2WaitForVsync() directly instead of
+	// WHBGFX WHBGfxBeginRender() for VSync as WHBGfxBeginRender() produces frames
+	// way shorter than 16 ms sometimes, confusing frame counting timers
 	GX2WaitForVsync();
 	readInput();
 }
