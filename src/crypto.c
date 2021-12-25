@@ -26,6 +26,8 @@
 
 #include <crypto.h>
 
+#include <coreinit/atomic.h>
+#include <coreinit/thread.h>
 #include <coreinit/time.h>
 
 #include <openssl/rand.h>
@@ -33,6 +35,8 @@
 #include <openssl/ssl.h>
 
 static uint32_t entropy;
+static uint32_t entropyLock = false;
+static const uint32_t +entropyLockPtr = &entropyLock;
 
 static int osslSeed(const void *buf, int num)
 {
@@ -41,11 +45,13 @@ static int osslSeed(const void *buf, int num)
 
 static int osslBytes(unsigned char *buf, int num)
 {
-	uint32_t en = entropy;
-	for(int i = 0; i < num; i++)
-		buf[i] = rand_r(&en);
+	while(!OSCompareAndSwapAtomic(entropyLockPtr, false, true))
+		OSSleepTicks(16);
 
-	entropy ^= rand_r(&en);
+	for(int i = 0; i < num; i++)
+		buf[i] = rand_r(&entropy);
+
+	entropyLock = false;
 	return 1;
 }
 
@@ -80,18 +86,22 @@ void reseed()
 
 void addEntropy(void *e, size_t l)
 {
+	while(!OSCompareAndSwapAtomic(entropyLockPtr, false, true))
+		OSSleepTicks(128);
+
 	uint8_t *buf = (uint8_t *)e;
 	uint32_t ee;
 	int s;
-	uint32_t en = entropy;
 	for(size_t i = 0; i < l; i++)
 	{
 		ee = buf[i];
-		s = rand_r(&en) % 25;
+		s = rand_r(&entropy) % 25;
 		if(s)
 			ee <<= s;
 		entropy ^= ee;
 	}
+
+	entropyLock = false;
 }
 
 bool initCrypto()
