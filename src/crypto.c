@@ -36,12 +36,7 @@
 
 static uint32_t entropy;
 static uint32_t entropyLock = false;
-static const uint32_t +entropyLockPtr = &entropyLock;
-
-static int osslSeed(const void *buf, int num)
-{
-	return 1;
-}
+static const uint32_t *entropyLockPtr = &entropyLock;
 
 static int osslBytes(unsigned char *buf, int num)
 {
@@ -60,21 +55,16 @@ static void osslCleanup()
 	// STUB
 }
 
-static int osslAdd(const void *buf, int num, double entropy)
-{
-	return 1;
-}
-
 static int osslStatus()
 {
 	return 1;
 }
 
 static const RAND_METHOD srm = {
-	.seed = osslSeed,
+	.seed = NULL,
 	.bytes = osslBytes,
 	.cleanup = osslCleanup,
-	.add = osslAdd,
+	.add = NULL,
 	.pseudorand = osslBytes,
 	.status = osslStatus,
 };
