@@ -553,17 +553,16 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
 				dlnow = cdata.dlnow;
 				now = cdata.ts;
-				dltotal = cdata.dltotal;
 				cdata.lock = false;
+
+				dltotal = cdata.dltotal + fileSize;
+				dlnow += fileSize;
 
 				frames = 60;
 				startNewFrame();
 				strcpy(toScreen, "Downloading ");
 				strcpy(toScreen + 12, name);
 				textToFrame(0, 0, toScreen);
-
-				dltotal += fileSize;
-				dlnow += fileSize;
 				barToFrame(1, 0, 30, dlnow / dltotal * 100.0D);
 
 				if(dltotal < 1024.0D)
