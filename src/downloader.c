@@ -138,13 +138,12 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 
 	if(dltotal > 0.1D && !isinf(dltotal) && !isnan(dltotal))
 	{
-		OSTime now = OSGetSystemTime();
-		while(!OSCompareAndSwapAtomic(&data->lock, false, true))
-		{}
+		if(!OSCompareAndSwapAtomic(&data->lock, false, true))
+			return 0;
 
+		data->ts = OSGetSystemTime();
 		data->dlnow = dlnow;
 		data->dltotal = dltotal;
-		data->ts = now;
 		data->lock = false;
 	}
 
