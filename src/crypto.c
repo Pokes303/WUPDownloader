@@ -40,7 +40,7 @@ static volatile uint32_t entropyLock = false;
 static int osslBytes(unsigned char *buf, int num)
 {
 	while(!OSCompareAndSwapAtomic(&entropyLock, false, true))
-		OSSleepTicks(16);
+		;
 
 	for(int i = 0; i < num; i++)
 		buf[i] = rand_r((uint32_t *)&entropy);
