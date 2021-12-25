@@ -36,7 +36,7 @@
 
 static uint32_t entropy;
 static uint32_t entropyLock = false;
-static const uint32_t *entropyLockPtr = &entropyLock;
+static uint32_t *entropyLockPtr = &entropyLock;
 
 static int osslBytes(unsigned char *buf, int num)
 {

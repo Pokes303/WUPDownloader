@@ -114,11 +114,9 @@ typedef struct
 {
 	CURLcode error;
 	uint32_t lock;
-	uint32_t *lockPtr;
-	bool paused;
-	double dlnow;
+	OSTick ts;
 	double dltotal;
-	OSTime ts;
+	double dlnow;
 } curlProgressData;
 
 #define closeCancelOverlay()				\
@@ -141,9 +139,9 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 		if(!OSCompareAndSwapAtomic(&data->lock, false, true))
 			return 0;
 
-		data->ts = OSGetSystemTime();
-		data->dlnow = dlnow;
+		data->ts = OSGetTick();
 		data->dltotal = dltotal;
+		data->dlnow = dlnow;
 		data->lock = false;
 	}
 
@@ -434,7 +432,6 @@ static int dlThreadMain(int argc, const char **argv)
 #define setDefaultDataValues(x) 			\
 	x.error = CURLE_OK;						\
 	x.lock = false;							\
-	x.paused = false;						\
 	x.dlnow = 								\
 	x.dltotal = 0.0D;						\
 
@@ -598,7 +595,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				dlnow = OSTicksToMilliseconds(ent);		// sample duration in milliseconds
 				lastTransfair = now;
 				dlnow /= 1000.0D;						// sample duration in seconds
-				if(dlnow > 0.0D)
+				if(dlnow != 0.0D)
 					dltotal /= dlnow;					// mbyte/s
 
 				if(dltotal < 0.01D)
