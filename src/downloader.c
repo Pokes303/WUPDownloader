@@ -425,7 +425,8 @@ void deinitDownloader()
 
 static int dlThreadMain(int argc, const char **argv)
 {
-	int ret =curl_easy_perform(curl);
+	debugPrintf("Download thread spawned!");
+	int ret = curl_easy_perform(curl);
 	checkStacks("dlThreadMain");
 	return ret;
 }
