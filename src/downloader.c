@@ -64,7 +64,7 @@
 
 #define USERAGENT		"NUSspli/" NUSSPLI_VERSION // TODO: Spoof eShop here?
 #define DLBGT_STACK_SIZE	0x2000
-#define DLT_STACK_SIZE		0xA0000 // This needs a large stack for OpenSSL to be able to load the ca-certs
+#define DLT_STACK_SIZE		0x100000 // This needs a large stack for OpenSSL to be able to load the ca-certs
 #define SOCKLIB_BUFSIZE		(IO_BUFSIZE * 2) // double buffering
 
 #define MAX_CERTS	2
@@ -76,8 +76,7 @@ static volatile size_t ramBufSize = 0;
 
 static CURL *curl;
 static char curlError[CURL_ERROR_SIZE];
-static OSThread dlbgThread;
-static void *dlbgThreadStack = NULL;
+static NUSThread *dlbgThread = NULL;
 
 static int cancelOverlayId = -1;
 
@@ -271,25 +270,18 @@ static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 	return CURLE_ABORTED_BY_CALLBACK;
 }
 
-#define killDlbgThread()						\
-{												\
-	if(dlbgThreadStack != NULL)					\
-	{											\
-		shutdownDebug();						\
-		__fini_wut_socket();					\
-		int ret;								\
-		OSJoinThread(&dlbgThread, &ret);		\
-		OSDetachThread(&dlbgThread);			\
-		MEMFreeToDefaultHeap(dlbgThreadStack);	\
-		dlbgThreadStack = NULL;					\
-	}											\
+#define killDlbgThread()		\
+{								\
+	if(dlbgThread != NULL)		\
+	{							\
+		shutdownDebug();		\
+		__fini_wut_socket();	\
+		stopThread(dlbgThread);	\
+		dlbgThread = NULL;		\
+	}							\
 }
 
-#define initNetwork()																																					\
-{																																										\
-	if(!startThread(&dlbgThread, "NUSspli socket optimizer", THREAD_PRIORITY_LOW, &dlbgThreadStack, DLBGT_STACK_SIZE, dlbgThreadMain, OS_THREAD_ATTRIB_AFFINITY_CPU0))	\
-		dlbgThreadStack = NULL;																																			\
-}
+#define initNetwork() dlbgThread = startThread("NUSspli socket optimizer", THREAD_PRIORITY_LOW, DLBGT_STACK_SIZE, dlbgThreadMain, OS_THREAD_ATTRIB_AFFINITY_CPU0)
 
 #define resetNetwork()	\
 {						\
@@ -300,7 +292,7 @@ static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 bool initDownloader()
 {
 	initNetwork();
-	if(dlbgThreadStack == NULL)
+	if(dlbgThread == NULL)
 		return false;
 
 	inf = sk_X509_INFO_new_null();
@@ -520,9 +512,8 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	debugPrintf("Calling curl_easy_perform()");
 	OSTime t = OSGetSystemTime();
 
-	OSThread dlThread;
-	void *dlThreadStack;
-	if(!startThread(&dlThread, "NUSspli downloader", THREAD_PRIORITY_HIGH, &dlThreadStack, DLT_STACK_SIZE, dlThreadMain, OS_THREAD_ATTRIB_AFFINITY_CPU2))
+	NUSThread *dlThread = startThread("NUSspli downloader", THREAD_PRIORITY_HIGH, DLT_STACK_SIZE, dlThreadMain, OS_THREAD_ATTRIB_AFFINITY_CPU2);
+	if(dlThread == NULL)
 		return 1;
 
 	double multiplier;
@@ -536,7 +527,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	OSTick ent;
 	int frames = 1;
 	int ltframes = 0;
-	while(!OSIsThreadTerminated(&dlThread))
+	while(!OSIsThreadTerminated((OSThread *)dlThread))
 	{
 		if(--frames == 0)
 		{
@@ -687,9 +678,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		}
 	}
 
-	OSJoinThread(&dlThread, (int *)&ret);
-	OSDetachThread(&dlThread);
-	MEMFreeToDefaultHeap(dlThreadStack);
+	ret = stopThread(dlThread);
 
 	t = OSGetSystemTime() - t;
 	addEntropy(&t, sizeof(OSTime));

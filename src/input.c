@@ -63,8 +63,7 @@ bool globalLimit;
 
 bool okButtonEnabled;
 
-static OSThread calcThread;
-static void *calcThreadStack;
+static NUSThread *calcThread;
 
 OSMessageQueue swkbd_queue;
 OSMessage swkbd_msg[SWKBD_QUEUE_SIZE];
@@ -296,11 +295,11 @@ bool SWKBD_Init()
 	OSBlockSet(swkbd_msg, 0, sizeof(OSMessage) * SWKBD_QUEUE_SIZE);
 	OSInitMessageQueueEx(&swkbd_queue, swkbd_msg, SWKBD_QUEUE_SIZE, "NUSspli SWKBD calc queue");
 
-	if(!startThread(&calcThread, "NUSspli SWKBD font calculator", THREAD_PRIORITY_MEDIUM, &calcThreadStack, CT_STACK_SIZE, calcThreadMain, OS_THREAD_ATTRIB_AFFINITY_CPU1))
+    calcThread = startThread("NUSspli SWKBD font calculator", THREAD_PRIORITY_MEDIUM, CT_STACK_SIZE, calcThreadMain, OS_THREAD_ATTRIB_AFFINITY_CPU1);
+	if(calcThread == NULL)
     {
         MEMFreeToDefaultHeap(createArg.workMemory);
 		createArg.workMemory = NULL;
-        calcThreadStack = NULL;
 		debugPrintf("SWKBD: Can't allocate memory!");
 		return false;
     }
@@ -351,8 +350,7 @@ void SWKBD_Shutdown()
 		OSMessage msg;
 		msg.message = NUSSPLI_MESSAGE_EXIT;
 		OSSendMessage(&swkbd_queue, &msg, OS_MESSAGE_FLAGS_BLOCKING);
-		int ret;
-		OSJoinThread(&calcThread, &ret);
+		stopThread(calcThread);
 	}
 }
 

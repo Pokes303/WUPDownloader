@@ -46,6 +46,8 @@
 	#define shutdownDebug()
 #endif
 
+#define NUSThread OSThread
+
 #ifdef __cplusplus
 	#include <codecvt>
 	
@@ -93,7 +95,8 @@ extern int mcpHandle;
 
 #define toLowercase(x) for(int y = 0; y < strlen(x); y++) if(isUppercase(x[y])) x[y] += 32;
 
-bool startThread(OSThread *thread, const char *name, THREAD_PRIORITY priority, void **stackPtr, size_t stacksize, OSThreadEntryPointFn mainfunc, OSThreadAttributes attribs);
+NUSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksize, OSThreadEntryPointFn mainfunc, OSThreadAttributes attribs);
+int stopThread(NUSThread *thread);
 char* b_tostring(bool b);
 void hex(uint64_t i, int digits, char *out); //ex: 000050D1
 void getSpeedString(double bytePerSecond, char *out);

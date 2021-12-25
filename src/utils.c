@@ -41,27 +41,38 @@
 
 int mcpHandle;
 
-bool startThread(OSThread *thread, const char *name, THREAD_PRIORITY priority, void **stackPtr, size_t stacksize, OSThreadEntryPointFn mainfunc, OSThreadAttributes attribs)
+NUSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksize, OSThreadEntryPointFn mainfunc, OSThreadAttributes attribs)
 {
 	OSTime t;
 	addEntropy(&t, sizeof(OSTime));
 	t = OSGetSystemTime();
-	addEntropy(stackPtr, 4);
-	*stackPtr = MEMAllocFromDefaultHeapEx(stacksize, 8);
-	if(*stackPtr != NULL)
+	uint8_t *thread = MEMAllocFromDefaultHeapEx(sizeof(OSThread) + stacksize, 8);
+	if(thread != NULL)
 	{
-		if(OSCreateThread(thread, mainfunc, 0, NULL, ((uint8_t* )*stackPtr) + stacksize, stacksize, priority, attribs))
+		OSThread *ost = (OSThread *)thread;
+		if(OSCreateThread(ost, mainfunc, 0, NULL, thread + stacksize + sizeof(OSThread), stacksize, priority, attribs))
 		{
-			OSSetThreadName(thread, name);
-			OSResumeThread(thread);
+			OSSetThreadName(ost, name);
+			OSResumeThread(ost);
 			t = OSGetSystemTime() - t;
 			addEntropy(&t, sizeof(OSTime));
-			addEntropy(&(thread->id), sizeof(uint16_t));
-			return true;
+			addEntropy(&(ost->id), sizeof(uint16_t));
+
+			return (NUSThread *)thread;
 		}
-		MEMFreeToDefaultHeap(*stackPtr);
+		MEMFreeToDefaultHeap(thread);
 	}
-	return false;
+	return NULL;
+}
+
+int stopThread(NUSThread *thread)
+{
+	OSThread *ost = (OSThread *)thread;
+	int ret;
+	OSJoinThread(ost, &ret);
+	OSDetachThread(ost);
+	MEMFreeToDefaultHeap(thread);
+	return ret;
 }
 
 void hex(uint64_t i, int digits, char *out) {
