@@ -64,7 +64,7 @@
 
 #define USERAGENT		"NUSspli/" NUSSPLI_VERSION // TODO: Spoof eShop here?
 #define DLBGT_STACK_SIZE	0x2000
-#define DLT_STACK_SIZE		0x100000 // This needs a large stack for OpenSSL to be able to load the ca-certs
+#define DLT_STACK_SIZE		0x800000 // This needs a large stack for OpenSSL to be able to load the ca-certs
 #define SOCKLIB_BUFSIZE		(IO_BUFSIZE * 2) // double buffering
 
 #define MAX_CERTS	2
@@ -449,7 +449,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	{
 		fileExist = resume && fileExists(file);
 		fp = (void *)openFile(file, fileExist ? "rb+" : "wb");
-		
+
 		if(fileExist)
 		{
 			fileSize = getFilesize(((NUSFILE *)fp)->fd);
@@ -458,7 +458,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		else
 			fileSize = 0;
 	}
-	
+
 	curlError[0] = '\0';
 	uint32_t realFileSize = fileSize;
 	volatile curlProgressData cdata;
@@ -482,7 +482,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 			}
 		}
 	}
-	
+
 	if(ret != CURLE_OK)
 	{
 		if(toRam)
