@@ -111,6 +111,7 @@ static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData
 
 typedef struct
 {
+	bool running;
 	CURLcode error;
 	volatile uint32_t lock;
 	OSTick ts;
@@ -281,7 +282,7 @@ static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 	}							\
 }
 
-#define initNetwork() dlbgThread = startThread("NUSspli socket optimizer", THREAD_PRIORITY_LOW, DLBGT_STACK_SIZE, dlbgThreadMain, OS_THREAD_ATTRIB_AFFINITY_CPU0)
+#define initNetwork() dlbgThread = startThread("NUSspli socket optimizer", THREAD_PRIORITY_LOW, DLBGT_STACK_SIZE, dlbgThreadMain, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_CPU0)
 
 #define resetNetwork()	\
 {						\
@@ -418,10 +419,12 @@ static int dlThreadMain(int argc, const char **argv)
 	debugPrintf("Download thread spawned!");
 	int ret = curl_easy_perform(curl);
 	checkStacks("dlThreadMain");
+	((curlProgressData *)argv[0])->running = false;
 	return ret;
 }
 
 #define setDefaultDataValues(x) 			\
+	x.running = true;						\
 	x.error = CURLE_OK;						\
 	x.lock = false;							\
 	x.dlnow = 								\
@@ -512,7 +515,8 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	debugPrintf("Calling curl_easy_perform()");
 	OSTime t = OSGetSystemTime();
 
-	NUSThread *dlThread = startThread("NUSspli downloader", THREAD_PRIORITY_HIGH, DLT_STACK_SIZE, dlThreadMain, OS_THREAD_ATTRIB_AFFINITY_CPU2);
+	char *argv[1] = { (char *)&cdata };
+	NUSThread *dlThread = startThread("NUSspli downloader", THREAD_PRIORITY_HIGH, DLT_STACK_SIZE, dlThreadMain, 1, (char *)argv, OS_THREAD_ATTRIB_AFFINITY_CPU2);
 	if(dlThread == NULL)
 		return 1;
 
@@ -527,7 +531,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	OSTick ent;
 	int frames = 1;
 	int ltframes = 0;
-	while(!OSIsThreadTerminated((OSThread *)dlThread))
+	while(cdata.running)
 	{
 		if(--frames == 0)
 		{

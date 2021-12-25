@@ -73,7 +73,7 @@ static int rumbleThreadMain(int argc, const char **argv)
 bool initRumble()
 {
     OSInitMessageQueueEx(&rumble_queue, rumble_msg, RUMBLE_QUEUE_SIZE, "NUSspli rumble queue");
-    rumbleThread = startThread("NUSspli Rumble", THREAD_PRIORITY_LOW, RUMBLE_STACK_SIZE, rumbleThreadMain, OS_THREAD_ATTRIB_AFFINITY_ANY);
+    rumbleThread = startThread("NUSspli Rumble", THREAD_PRIORITY_LOW, RUMBLE_STACK_SIZE, rumbleThreadMain, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_ANY);
     return rumbleThread != NULL;
 }
 

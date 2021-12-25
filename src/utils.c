@@ -41,7 +41,7 @@
 
 int mcpHandle;
 
-NUSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksize, OSThreadEntryPointFn mainfunc, OSThreadAttributes attribs)
+NUSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksize, OSThreadEntryPointFn mainfunc, int argc, char *argv, OSThreadAttributes attribs)
 {
 	OSTime t;
 	addEntropy(&t, sizeof(OSTime));
@@ -50,7 +50,7 @@ NUSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacks
 	if(thread != NULL)
 	{
 		OSThread *ost = (OSThread *)thread;
-		if(OSCreateThread(ost, mainfunc, 0, NULL, thread + stacksize + sizeof(OSThread), stacksize, priority, attribs))
+		if(OSCreateThread(ost, mainfunc, argc, argv, thread + stacksize + sizeof(OSThread), stacksize, priority, attribs))
 		{
 			OSSetThreadName(ost, name);
 			OSResumeThread(ost);
