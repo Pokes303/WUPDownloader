@@ -158,8 +158,7 @@ void SWKBD_Render(KeyboardChecks check)
 
 	if(Swkbd_IsNeedCalcSubThreadFont())
 	{
-		OSMessage msg;
-		msg.message = NUSSPLI_MESSAGE_NONE;
+		OSMessage msg = { .message = NUSSPLI_MESSAGE_NONE };
 		OSSendMessage(&swkbd_queue, &msg, OS_MESSAGE_FLAGS_NONE);
 	}
 
@@ -173,6 +172,13 @@ bool SWKBD_Show(KeyboardLayout layout, KeyboardType type, int maxlength, bool li
 		debugPrintf("...while visible!!!");
 		return false;
 	}
+
+    calcThread = startThread("NUSspli SWKBD font calculator", THREAD_PRIORITY_MEDIUM, CT_STACK_SIZE, calcThreadMain, OS_THREAD_ATTRIB_AFFINITY_ANY);
+	if(calcThread == NULL)
+    {
+		debugPrintf("SWKBD: Can't spawn calc thread!");
+		return false;
+    }
 	
 	char16_t *okStrL;
 	if(okStr == NULL)
@@ -279,6 +285,10 @@ void SWKBD_Hide()
 	// DisappearInputForm() wants to render a fade out animation
 	while(!Swkbd_IsHidden())
 		SWKBD_Render(CHECK_NONE);
+
+    OSMessage msg = { .message = NUSSPLI_MESSAGE_EXIT };
+	OSSendMessage(&swkbd_queue, &msg, OS_MESSAGE_FLAGS_BLOCKING);
+	stopThread(calcThread);
 }
 
 bool SWKBD_Init()
@@ -294,15 +304,6 @@ bool SWKBD_Init()
 
 	OSBlockSet(swkbd_msg, 0, sizeof(OSMessage) * SWKBD_QUEUE_SIZE);
 	OSInitMessageQueueEx(&swkbd_queue, swkbd_msg, SWKBD_QUEUE_SIZE, "NUSspli SWKBD calc queue");
-
-    calcThread = startThread("NUSspli SWKBD font calculator", THREAD_PRIORITY_MEDIUM, CT_STACK_SIZE, calcThreadMain, OS_THREAD_ATTRIB_AFFINITY_ANY);
-	if(calcThread == NULL)
-    {
-        MEMFreeToDefaultHeap(createArg.workMemory);
-		createArg.workMemory = NULL;
-		debugPrintf("SWKBD: Can't allocate memory!");
-		return false;
-    }
 	
 	switch(getKeyboardLanguage())
 	{
@@ -346,11 +347,6 @@ void SWKBD_Shutdown()
 		MEMFreeToDefaultHeap(createArg.workMemory);
 		createArg.workMemory = NULL;
 		FSDelClient(createArg.fsClient, 0);
-		
-		OSMessage msg;
-		msg.message = NUSSPLI_MESSAGE_EXIT;
-		OSSendMessage(&swkbd_queue, &msg, OS_MESSAGE_FLAGS_BLOCKING);
-		stopThread(calcThread);
 	}
 }
 
