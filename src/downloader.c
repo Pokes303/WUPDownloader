@@ -589,13 +589,13 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				sprintf(toScreen, "%.2f / %.2f %s", dlnow / multiplier, dltotal / multiplier, multiplierName);
 				textToFrame(1, 31, toScreen);
 
-				dltotal = (dlnow - downloaded); 		// total length in bytes
+				dltotal = (dlnow - downloaded); 		// sample length in bytes
 				downloaded = dlnow;
 				ent = now - lastTransfair;
 				addEntropy(&ent, sizeof(OSTick));
-				dlnow = OSTicksToMilliseconds(ent);	// duration in milliseconds
+				dlnow = OSTicksToMilliseconds(ent);		// sample duration in milliseconds
 				lastTransfair = now;
-				dlnow /= 1000.0D;						// duration in seconds
+				dlnow /= 1000.0D;						// sample duration in seconds
 				if(dlnow > 0.0D)
 					dltotal /= dlnow;					// mbyte/s
 
