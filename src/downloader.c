@@ -646,7 +646,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 					multiplier = 1 << 30;
 					multiplierName = "GB";
 				}
-				data->dlnow = data->dltmp + dlnow;
+				data->dlnow = data->dltmp + downloaded;
 				barToFrame(1, 65, 30, data->dlnow / data->dltotal * 100.0f);
 				sprintf(toScreen, "%.2f / %.2f %s", data->dlnow / multiplier, data->dltotal / multiplier, multiplierName);
 				textToFrame(1, 96, toScreen);
