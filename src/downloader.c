@@ -590,6 +590,8 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				textToFrame(1, 31, toScreen);
 
 				dltotal = (dlnow - downloaded); 		// sample length in bytes
+				ent = (OSTick)dltotal;
+				addEntropy(&ent, sizeof(OSTick));
 				downloaded = dlnow;
 				ent = now - lastTransfair;
 				addEntropy(&ent, sizeof(OSTick));
