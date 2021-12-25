@@ -590,14 +590,20 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				ent = (OSTick)dltotal;
 				addEntropy(&ent, sizeof(OSTick));
 				downloaded = dlnow;
-				ent = now - lastTransfair;
-				addEntropy(&ent, sizeof(OSTick));
-				dlnow = OSTicksToMilliseconds(ent);		// sample duration in milliseconds
-				lastTransfair = now;
-				dlnow /= 1000.0D;						// sample duration in seconds
-				if(dlnow != 0.0D)
-					dltotal /= dlnow;					// mbyte/s
+				if(dltotal > 0.0D)
+				{
+					ent = now - lastTransfair;
+					addEntropy(&ent, sizeof(OSTick));
+					dlnow = OSTicksToMilliseconds(ent);		// sample duration in milliseconds
+					if(dlnow != 0.0D)
+					{
+						dlnow /= 1000.0D;					// sample duration in seconds
+						if(dlnow != 0.0D)
+							dltotal /= dlnow;				// mbyte/s
+					}
+				}
 
+				lastTransfair = now;
 				if(dltotal < 0.01D)
 				{
 					if(++ltframes == 30)
