@@ -71,8 +71,8 @@
 
 static STACK_OF(X509_INFO) *inf;
 
-static char *ramBuf = NULL;
-static size_t ramBufSize = 0;
+static volatile char *ramBuf = NULL;
+static volatile size_t ramBufSize = 0;
 
 static CURL *curl;
 static char curlError[CURL_ERROR_SIZE];
@@ -451,7 +451,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	{
 		fileExist = false;
 		fileSize = 0;
-		fp = (void *)open_memstream(&ramBuf, &ramBufSize);
+		fp = (void *)open_memstream((char **)&ramBuf, (size_t *)&ramBufSize);
 	}
 	else
 	{
@@ -469,7 +469,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	
 	curlError[0] = '\0';
 	uint32_t realFileSize = fileSize;
-	curlProgressData cdata;
+	volatile curlProgressData cdata;
 
 	CURLcode ret = curl_easy_setopt(curl, CURLOPT_URL, url);
 	if(ret == CURLE_OK)
@@ -1264,7 +1264,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 
 char *getRamBuf()
 {
-	return ramBuf;
+	return (char *)ramBuf;
 }
 
 size_t getRamBufSize()
@@ -1277,7 +1277,7 @@ void clearRamBuf()
 	if(ramBuf != NULL)
 	{
 		ramBufSize = 0;
-		MEMFreeToDefaultHeap(ramBuf);
+		MEMFreeToDefaultHeap((void *)ramBuf);
 		ramBuf = NULL;
 	}
 }
