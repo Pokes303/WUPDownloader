@@ -167,7 +167,6 @@ retryAddingToQueue:
 			queueStalled = true;
 		}
 #endif
-		OSSleepTicks(256);
 		goto retryAddingToQueue; // We use goto here instead of just calling addToIOQueue again to not overgrow the stack.
 	}
 
