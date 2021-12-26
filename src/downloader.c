@@ -77,6 +77,7 @@ static volatile size_t ramBufSize = 0;
 
 static CURL *curl;
 static char curlError[CURL_ERROR_SIZE];
+static bool curlReuseConnection = true;
 static OSThread *dlbgThread = NULL;
 
 static int cancelOverlayId = -1;
@@ -283,7 +284,11 @@ static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 	}							\
 }
 
-#define initNetwork() dlbgThread = startThread("NUSspli socket optimizer", THREAD_PRIORITY_LOW, DLBGT_STACK_SIZE, dlbgThreadMain, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_CPU0)
+#define initNetwork() 																																		\
+{																																							\
+	curlReuseConnection = false;																															\
+	dlbgThread = startThread("NUSspli socket optimizer", THREAD_PRIORITY_LOW, DLBGT_STACK_SIZE, dlbgThreadMain, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_CPU0);	\
+}
 
 #define resetNetwork()	\
 {						\
@@ -470,18 +475,28 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	CURLcode ret = curl_easy_setopt(curl, CURLOPT_URL, url);
 	if(ret == CURLE_OK)
 	{
-		ret = curl_easy_setopt(curl, CURLOPT_RESUME_FROM_LARGE, (curl_off_t)fileSize);
+		if(curlReuseConnection)
+			ret = curl_easy_setopt(curl, CURLOPT_FRESH_CONNECT, 0L);
+		else
+		{
+			ret = curl_easy_setopt(curl, CURLOPT_FRESH_CONNECT, 1L);
+			curlReuseConnection = true;
+		}
 		if(ret == CURLE_OK)
 		{
-			ret = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, toRam ? fwrite : (size_t (*)(const void *, size_t, size_t, FILE *))addToIOQueue);
+			ret = curl_easy_setopt(curl, CURLOPT_RESUME_FROM_LARGE, (curl_off_t)fileSize);
 			if(ret == CURLE_OK)
 			{
-				ret = curl_easy_setopt(curl, CURLOPT_WRITEDATA, (FILE *)fp);
+				ret = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, toRam ? fwrite : (size_t (*)(const void *, size_t, size_t, FILE *))addToIOQueue);
 				if(ret == CURLE_OK)
 				{
-					ret = curl_easy_setopt(curl, CURLOPT_WRITEHEADER, &fileSize);
+					ret = curl_easy_setopt(curl, CURLOPT_WRITEDATA, (FILE *)fp);
 					if(ret == CURLE_OK)
-						ret = curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &cdata);
+					{
+						ret = curl_easy_setopt(curl, CURLOPT_WRITEHEADER, &fileSize);
+						if(ret == CURLE_OK)
+							ret = curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &cdata);
+					}
 				}
 			}
 		}
@@ -721,7 +736,9 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		switch(ret)
 		{
 			case CURLE_RANGE_ERROR:
-				return downloadFile(url, file, data, type, false);
+				int r = downloadFile(url, file, data, type, false);
+				curlReuseConnection = false;
+				return r;
 			case CURLE_FAILED_INIT:
 			case CURLE_COULDNT_RESOLVE_HOST:
 				strcat(toScreen, "Network error\nYour WiiU is not connected to the internet,\ncheck the network settings and try again");
