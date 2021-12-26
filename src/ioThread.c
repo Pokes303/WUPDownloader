@@ -50,9 +50,7 @@ typedef struct
 
 static OSThread *ioThread;
 static volatile bool ioRunning = false;
-#ifdef NUSSPLI_DEBUG
 static volatile uint32_t ioWriteLock = true;
-#endif
 
 static volatile WriteQueueEntry *queueEntries;
 static volatile uint32_t activeReadBuffer;
@@ -60,13 +58,12 @@ static volatile uint32_t activeWriteBuffer;
 
 static int ioThreadMain(int argc, const char **argv)
 {
-#ifdef NUSSPLI_DEBUG
 	debugPrintf("I/O queue running!");
-	ioWriteLock = false;
 
-#endif
+	ioWriteLock = false;
 	uint32_t asl;
 	volatile WriteQueueEntry *entry;
+
 	while(ioRunning)
 	{
 		asl = activeWriteBuffer;
@@ -133,10 +130,9 @@ void shutdownIOThread()
 	if(!ioRunning)
 		return;
 	
-#ifdef NUSSPLI_DEBUG
 	while(!OSCompareAndSwapAtomic(&ioWriteLock, false, true))
 		;
-#endif
+
 	while(queueEntries[activeWriteBuffer].inUse)
 		;
 	
@@ -156,17 +152,15 @@ size_t addToIOQueue(const void *buf, size_t size, size_t n, NUSFILE *file)
 		
 retryAddingToQueue:
 	
-#ifdef NUSSPLI_DEBUG
 	while(!OSCompareAndSwapAtomic(&ioWriteLock, false, true))
 		if(!ioRunning)
 			return 0;
-#endif
 	
     entry = queueEntries + activeReadBuffer;
 	if(entry->inUse)
 	{
+        ioWriteLock = false;
 #ifdef NUSSPLI_DEBUG
-		ioWriteLock = false;
 		if(!queueStalled)
 		{
 			debugPrintf("Waiting for free slot...");
@@ -196,10 +190,8 @@ retryAddingToQueue:
 		
 		if(size > IO_BUFSIZE)
 		{
+            ioWriteLock = false;
 			debugPrintf("size > %i (%i)", IO_BUFSIZE, size);
-#ifdef NUSSPLI_DEBUG
-			ioWriteLock = false;
-#endif
 			addToIOQueue(buf, 1, IO_BUFSIZE, file);
 			const uint8_t *newPtr = buf;
 			newPtr += IO_BUFSIZE;
@@ -220,26 +212,21 @@ retryAddingToQueue:
 		activeReadBuffer = 0;
 	
 queueExit:
-#ifdef NUSSPLI_DEBUG
 	ioWriteLock = false;
-#endif
 	return n;
 }
 
 void flushIOQueue()
 {
 	int ovl = addErrorOverlay("Flushing queue, please wait...");
-#ifdef NUSSPLI_DEBUG
 	debugPrintf("Flushing...");
 	while(!OSCompareAndSwapAtomic(&ioWriteLock, false, true))
 		;
-#endif
+
 	while(queueEntries[activeWriteBuffer].inUse)
 		OSSleepTicks(1024);
-	
-#ifdef NUSSPLI_DEBUG
+
 	ioWriteLock = false;
-#endif
 	removeErrorOverlay(ovl);
 }
 
