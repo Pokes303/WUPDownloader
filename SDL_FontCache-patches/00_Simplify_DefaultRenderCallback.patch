@@ -1,0 +1,54 @@
+diff --git a/SDL_FontCache.c b/SDL_FontCache.c
+index e534622..adf9da3 100644
+--- a/SDL_FontCache.c
++++ b/SDL_FontCache.c
+@@ -675,40 +675,21 @@ static_inline FC_Rect FC_RectIntersect(FC_Rect A, FC_Rect B)
+ 
+ FC_Rect FC_DefaultRenderCallback(FC_Image* src, FC_Rect* srcrect, FC_Target* dest, float x, float y, float xscale, float yscale)
+ {
+-    float w = srcrect->w * xscale;
+-    float h = srcrect->h * yscale;
+-    FC_Rect result;
++    FC_Rect result =
++    {
++        .x = x,
++        .y = y,
++        .w = srcrect->w * xscale,
++        .h = srcrect->h * yscale,
++    };
+ 
+     // FIXME: Why does the scaled offset look so wrong?
+     #ifdef FC_USE_SDL_GPU
+-    {
+-        GPU_Rect r = *srcrect;
+-        GPU_BlitScale(src, &r, dest, x + xscale*r.w/2.0f, y + r.h/2.0f, xscale, yscale);
+-    }
++        GPU_BlitScale(src, srcrect, dest, x + xscale*srcrect->w/2.0f, y + srcrect->/2.0f, xscale, yscale);
+     #else
+-    {
+-        SDL_RendererFlip flip = SDL_FLIP_NONE;
+-        if(xscale < 0)
+-        {
+-            xscale = -xscale;
+-            flip = (SDL_RendererFlip) ((int)flip | (int)SDL_FLIP_HORIZONTAL);
+-        }
+-        if(yscale < 0)
+-        {
+-            yscale = -yscale;
+-            flip = (SDL_RendererFlip) ((int)flip | (int)SDL_FLIP_VERTICAL);
+-        }
+-
+-        SDL_Rect r = *srcrect;
+-        SDL_Rect dr = {(int)x, (int)y, (int)(xscale*r.w), (int)(yscale*r.h)};
+-        SDL_RenderCopyEx(dest, src, &r, &dr, 0, NULL, flip);
+-    }
++        SDL_RenderCopy(dest, src, srcrect, &result);
+     #endif
+ 
+-    result.x = x;
+-    result.y = y;
+-    result.w = w;
+-    result.h = h;
+     return result;
+ }
+ 

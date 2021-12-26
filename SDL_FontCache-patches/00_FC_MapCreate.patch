@@ -1,0 +1,27 @@
+diff --git a/SDL_FontCache.c b/SDL_FontCache.c
+index e534622..807bc0b 100644
+--- a/SDL_FontCache.c
++++ b/SDL_FontCache.c
+@@ -297,18 +297,14 @@ typedef struct FC_Map
+ 
+ 
+ 
+-static FC_Map* FC_MapCreate(int num_buckets)
++static inline FC_Map* FC_MapCreate(int num_buckets)
+ {
+-    int i;
+     FC_Map* map = (FC_Map*)malloc(sizeof(FC_Map));
+ 
+     map->num_buckets = num_buckets;
+-    map->buckets = (FC_MapNode**)malloc(num_buckets * sizeof(FC_MapNode*));
+-
+-    for(i = 0; i < num_buckets; ++i)
+-    {
+-        map->buckets[i] = NULL;
+-    }
++    num_buckets *= sizeof(FC_MapNode*);
++    map->buckets = (FC_MapNode**)malloc(num_buckets);
++    memset(map->buckets, 0, num_buckets);
+ 
+     return map;
+ }

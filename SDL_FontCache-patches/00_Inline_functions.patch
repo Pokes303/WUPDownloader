@@ -1,0 +1,22 @@
+diff --git a/SDL_FontCache.c b/SDL_FontCache.c
+index e534622..5bab7a7 100644
+--- a/SDL_FontCache.c
++++ b/SDL_FontCache.c
+@@ -335,7 +335,7 @@ static FC_Map* FC_MapCreate(int num_buckets)
+     }
+ }*/
+ 
+-static void FC_MapFree(FC_Map* map)
++static inline void FC_MapFree(FC_Map* map)
+ {
+     int i;
+     if(map == NULL)
+@@ -397,7 +397,7 @@ static FC_GlyphData* FC_MapInsert(FC_Map* map, Uint32 codepoint, FC_GlyphData gl
+     return NULL;
+ }
+ 
+-static FC_GlyphData* FC_MapFind(FC_Map* map, Uint32 codepoint)
++static inline FC_GlyphData* FC_MapFind(FC_Map* map, Uint32 codepoint)
+ {
+     Uint32 index;
+     FC_MapNode* node;

@@ -1,0 +1,26 @@
+diff --git a/SDL_FontCache.c b/SDL_FontCache.c
+index e534622..21cd664 100644
+--- a/SDL_FontCache.c
++++ b/SDL_FontCache.c
+@@ -522,15 +522,15 @@ int U8_charsize(const char* character)
+     if(character == NULL)
+         return 0;
+ 
+-    if((unsigned char)*character <= 0x7F)
++    char c = *character;
++    if(c <= 0x7F)
+         return 1;
+-    else if((unsigned char)*character < 0xE0)
++    if(c < 0xE0)
+         return 2;
+-    else if((unsigned char)*character < 0xF0)
++    if(c < 0xF0)
+         return 3;
+-    else
+-        return 4;
+-    return 1;
++
++    return 4;
+ }
+ 
+ int U8_charcpy(char* buffer, const char* source, int buffer_size)

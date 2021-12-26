@@ -1,0 +1,17 @@
+diff --git a/SDL_FontCache.h b/SDL_FontCache.h
+index 77f5fb4..1502192 100644
+--- a/SDL_FontCache.h
++++ b/SDL_FontCache.h
+@@ -60,10 +60,11 @@ extern "C" {
+ #define FC_Image GPU_Image
+ #define FC_Log GPU_LogError
+ #else
++#include <utils.h>
+ #define FC_Rect SDL_Rect
+ #define FC_Target SDL_Renderer
+ #define FC_Image SDL_Texture
+-#define FC_Log SDL_Log
++#define FC_Log debugPrintf
+ #endif
+ 
+ 

@@ -1,0 +1,62 @@
+diff --git a/SDL_FontCache.c b/SDL_FontCache.c
+index e534622..12653a4 100644
+--- a/SDL_FontCache.c
++++ b/SDL_FontCache.c
+@@ -176,18 +176,17 @@ char* FC_GetStringASCII(void)
+     {
+         int i;
+         char c;
+-        ASCII_STRING = (char*)malloc(512);
+-        memset(ASCII_STRING, 0, 512);
++        ASCII_STRING = (char*)malloc(127 - 31);
+         i = 0;
+         c = 32;
+         while(1)
+         {
+-            ASCII_STRING[i] = c;
++            ASCII_STRING[++i] = c;
+             if(c == 126)
+                 break;
+-            ++i;
+             ++c;
+         }
++        ASCII_STRING[i] = '\0';
+     }
+     return U8_strdup(ASCII_STRING);
+ }
+@@ -199,29 +198,27 @@ char* FC_GetStringLatin1(void)
+         int i;
+         unsigned char c;
+         LATIN_1_STRING = (char*)malloc(512);
+-        memset(LATIN_1_STRING, 0, 512);
+         i = 0;
+         c = 0xA0;
+         while(1)
+         {
+-            LATIN_1_STRING[i] = 0xC2;
+-            LATIN_1_STRING[i+1] = c;
++            LATIN_1_STRING[i++] = 0xC2;
++            LATIN_1_STRING[i++] = c;
+             if(c == 0xBF)
+                 break;
+-            i += 2;
+             ++c;
+         }
+-        i += 2;
+         c = 0x80;
+         while(1)
+         {
+-            LATIN_1_STRING[i] = 0xC3;
+-            LATIN_1_STRING[i+1] = c;
++            LATIN_1_STRING[i++] = 0xC3;
++            LATIN_1_STRING[i++] = c;
+             if(c == 0xBF)
+                 break;
+-            i += 2;
+             ++c;
+         }
++        LATIN_1_STRING[i++] = '\0';
++        LATIN_1_STRING[i] = '\0';
+     }
+     return U8_strdup(LATIN_1_STRING);
+ }

@@ -1,0 +1,62 @@
+diff --git a/SDL_FontCache.c b/SDL_FontCache.c
+index e534622..5e9ea21 100644
+--- a/SDL_FontCache.c
++++ b/SDL_FontCache.c
+@@ -1223,7 +1223,13 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
+         unsigned int h = font->height*12;
+         SDL_Surface* surfaces[FC_LOAD_MAX_SURFACES];
+         int num_surfaces = 1;
++        int i = 0;
+         surfaces[0] = FC_CreateSurface32(w, h);
++        if(surfaces[0] == NULL)
++        {
++            debugPrintf("!!! NULL SURFACE (%s) !!!!", SDL_GetError());
++            return 0;
++        }
+         font->last_glyph.rect.x = FC_CACHE_PADDING;
+         font->last_glyph.rect.y = FC_CACHE_PADDING;
+         font->last_glyph.rect.w = 0;
+@@ -1240,15 +1246,13 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
+                 continue;
+ 
+             // Try packing.  If it fails, create a new surface for the next cache level.
+-            packed = (FC_PackGlyphData(font, FC_GetCodepointFromUTF8(&buff_ptr, 0), glyph_surf->w, surfaces[num_surfaces-1]->w, surfaces[num_surfaces-1]->h) != NULL);
++            packed = (FC_PackGlyphData(font, FC_GetCodepointFromUTF8(&buff_ptr, 0), glyph_surf->w, surfaces[i]->w, surfaces[i]->h) != NULL);
+             if(!packed)
+             {
+-                int i = num_surfaces-1;
+                 if(num_surfaces >= FC_LOAD_MAX_SURFACES)
+                 {
+                     // Can't do any more!
+                     FC_Log("SDL_FontCache error: Could not create enough cache surfaces to fit all of the loading string!\n");
+-                    SDL_FreeSurface(glyph_surf);
+                     break;
+                 }
+ 
+@@ -1264,22 +1268,23 @@ Uint8 FC_LoadFontFromTTF(FC_Font* font, SDL_Renderer* renderer, TTF_Font* ttf, S
+ 
+                 surfaces[num_surfaces] = FC_CreateSurface32(w, h);
+                 num_surfaces++;
++                i++;
++                packed = (FC_PackGlyphData(font, FC_GetCodepointFromUTF8(&buff_ptr, 0), glyph_surf->w, surfaces[i]->w, surfaces[i]->h) != NULL);
+             }
+ 
+             // Try packing for the new surface, then blit onto it.
+-            if(packed || FC_PackGlyphData(font, FC_GetCodepointFromUTF8(&buff_ptr, 0), glyph_surf->w, surfaces[num_surfaces-1]->w, surfaces[num_surfaces-1]->h) != NULL)
++            if(packed)
+             {
+                 SDL_SetSurfaceBlendMode(glyph_surf, SDL_BLENDMODE_NONE);
+                 SDL_Rect srcRect = {0, 0, glyph_surf->w, glyph_surf->h};
+                 SDL_Rect destrect = font->last_glyph.rect;
+-                SDL_BlitSurface(glyph_surf, &srcRect, surfaces[num_surfaces-1], &destrect);
++                SDL_BlitSurface(glyph_surf, &srcRect, surfaces[i], &destrect);
+             }
+ 
+             SDL_FreeSurface(glyph_surf);
+         }
+ 
+         {
+-            int i = num_surfaces-1;
+             FC_UploadGlyphCache(font, i, surfaces[i]);
+             SDL_FreeSurface(surfaces[i]);
+             #ifndef FC_USE_SDL_GPU
