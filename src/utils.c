@@ -33,10 +33,10 @@
 #include <sys/stat.h>
 #include <uchar.h>
 
+#include <coreinit/atomic.h>
 #include <coreinit/ios.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
-#include <coreinit/thread.h>
 
 int mcpHandle;
 
@@ -288,11 +288,11 @@ char months[12][4] = {
 	"Dez",
 };
 
-OSFastMutex debugMutex;
+static volatile uint32_t debugLock;
 
 void debugInit()
 {
-	OSFastMutex_Init(&debugMutex, "NUSspli debug");
+	debugLock = false;
 	WHBLogUdpInit();
 }
 
@@ -311,10 +311,10 @@ void debugPrintf(const char *str, ...)
 	vsnprintf(newStr + tss, 2048 - tss, str, va);
 	va_end(va);
 	
-	while(!OSFastMutex_TryLock(&debugMutex))
+	while(!OSCompareAndSwapAtomic(&debugLock, false, true))
 		;
 	WHBLogPrint(newStr);
-	OSFastMutex_Unlock(&debugMutex);
+	debugLock = false;
 }
 
 void checkStacks(const char *src)
