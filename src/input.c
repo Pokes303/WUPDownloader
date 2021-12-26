@@ -27,6 +27,7 @@
 #include <renderer.h>
 #include <status.h>
 #include <swkbd_wrapper.h>
+#include <thread.h>
 #include <utils.h>
 #include <menu/utils.h>
 
@@ -68,7 +69,7 @@ typedef struct
 	int globalMaxlength;
 	bool globalLimit;
 	bool okButtonEnabled;
-	NUSThread *calcThread;
+	OSThread *calcThread;
 } SWKBD_Args;
 
 static bool isUrl(char c)

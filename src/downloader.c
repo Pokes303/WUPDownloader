@@ -44,6 +44,7 @@
 #include <romfs.h>
 #include <rumbleThread.h>
 #include <status.h>
+#include <thread.h>
 #include <ticket.h>
 #include <titles.h>
 #include <tmd.h>
@@ -63,8 +64,8 @@
 #include <openssl/x509.h>
 
 #define USERAGENT		"NUSspli/" NUSSPLI_VERSION // TODO: Spoof eShop here?
-#define DLBGT_STACK_SIZE	0x2000
-#define DLT_STACK_SIZE		0x800000 // This needs a large stack for OpenSSL to be able to load the ca-certs
+#define DLBGT_STACK_SIZE	MIN_STACKSIZE
+#define DLT_STACK_SIZE		DEFAULT_STACKSIZE // This needs a large stack for OpenSSL to be able to load the ca-certs
 #define SOCKLIB_BUFSIZE		(IO_BUFSIZE * 2) // double buffering
 
 #define MAX_CERTS	2
@@ -76,7 +77,7 @@ static volatile size_t ramBufSize = 0;
 
 static CURL *curl;
 static char curlError[CURL_ERROR_SIZE];
-static NUSThread *dlbgThread = NULL;
+static OSThread *dlbgThread = NULL;
 
 static int cancelOverlayId = -1;
 
@@ -516,7 +517,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	OSTime t = OSGetSystemTime();
 
 	char *argv[1] = { (char *)&cdata };
-	NUSThread *dlThread = startThread("NUSspli downloader", THREAD_PRIORITY_HIGH, DLT_STACK_SIZE, dlThreadMain, 1, (char *)argv, OS_THREAD_ATTRIB_AFFINITY_CPU2);
+	OSThread *dlThread = startThread("NUSspli downloader", THREAD_PRIORITY_HIGH, DLT_STACK_SIZE, dlThreadMain, 1, (char *)argv, OS_THREAD_ATTRIB_AFFINITY_CPU2);
 	if(dlThread == NULL)
 		return 1;
 

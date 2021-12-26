@@ -36,6 +36,7 @@
 #include <rumbleThread.h>
 #include <sanity.h>
 #include <status.h>
+#include <thread.h>
 #include <ticket.h>
 #include <titles.h>
 #include <updater.h>

@@ -33,9 +33,10 @@
 #include <crypto.h>
 #include <file.h>
 #include <ioThread.h>
+#include <thread.h>
 #include <utils.h>
 
-#define IOT_STACK_SIZE		0x2000
+#define IOT_STACK_SIZE		MIN_STACKSIZE
 #define MAX_IO_QUEUE_ENTRIES	((512 * 1024 * 1024) / IO_BUFSIZE) // 512 MB
 #define IO_MAX_FILE_BUFFER	(1024 * 1024) // 1 MB
 
@@ -47,7 +48,7 @@ typedef struct
 	bool inUse;
 } WriteQueueEntry;
 
-static NUSThread *ioThread;
+static OSThread *ioThread;
 static volatile bool ioRunning = false;
 #ifdef NUSSPLI_DEBUG
 static volatile uint32_t ioWriteLock = true;

@@ -46,8 +46,6 @@
 	#define shutdownDebug()
 #endif
 
-#define NUSThread OSThread
-
 #ifdef __cplusplus
 	#include <codecvt>
 	
@@ -67,19 +65,6 @@ typedef struct
 	MCPError err;
 } McpData;
 
-/*
- * Default Wii U thread priority is 16.
- * SDL changes its audio thread priority one lower, so to 15.
- * We want the SDL audio thread to be at THREAD_PRIORITY_LOW,
- * so that has to be 15, too
- */
-typedef enum
-{
-    THREAD_PRIORITY_HIGH = 13,
-    THREAD_PRIORITY_MEDIUM = 14,
-    THREAD_PRIORITY_LOW = 15,
-} THREAD_PRIORITY;
-
 extern int mcpHandle;
 
 #define isNumber(x) (x >= '0' && x <= '9')
@@ -95,8 +80,6 @@ extern int mcpHandle;
 
 #define toLowercase(x) for(int y = 0; y < strlen(x); y++) if(isUppercase(x[y])) x[y] += 32;
 
-NUSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksize, OSThreadEntryPointFn mainfunc, int argc, char *argv, OSThreadAttributes attribs);
-int stopThread(NUSThread *thread);
 char* b_tostring(bool b);
 void hex(uint64_t i, int digits, char *out); //ex: 000050D1
 void getSpeedString(double bytePerSecond, char *out);

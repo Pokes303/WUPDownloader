@@ -37,43 +37,8 @@
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
-#include <coreinit/time.h>
 
 int mcpHandle;
-
-NUSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksize, OSThreadEntryPointFn mainfunc, int argc, char *argv, OSThreadAttributes attribs)
-{
-	OSTime t;
-	addEntropy(&t, sizeof(OSTime));
-	t = OSGetSystemTime();
-	uint8_t *thread = MEMAllocFromDefaultHeapEx(sizeof(OSThread) + stacksize, 8);
-	if(thread != NULL)
-	{
-		OSThread *ost = (OSThread *)thread;
-		if(OSCreateThread(ost, mainfunc, argc, argv, thread + stacksize + sizeof(OSThread), stacksize, priority, attribs))
-		{
-			OSSetThreadName(ost, name);
-			OSResumeThread(ost);
-			t = OSGetSystemTime() - t;
-			addEntropy(&t, sizeof(OSTime));
-			addEntropy(&(ost->id), sizeof(uint16_t));
-
-			return (NUSThread *)thread;
-		}
-		MEMFreeToDefaultHeap(thread);
-	}
-	return NULL;
-}
-
-int stopThread(NUSThread *thread)
-{
-	OSThread *ost = (OSThread *)thread;
-	int ret;
-	OSJoinThread(ost, &ret);
-	OSDetachThread(ost);
-	MEMFreeToDefaultHeap(thread);
-	return ret;
-}
 
 void hex(uint64_t i, int digits, char *out) {
 	char x[8]; // max 99 digits!

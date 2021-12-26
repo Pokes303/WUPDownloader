@@ -29,12 +29,13 @@
 
 #include <messages.h>
 #include <osdefs.h>
+#include <thread.h>
 #include <utils.h>
 
-#define RUMBLE_STACK_SIZE 0x2000
+#define RUMBLE_STACK_SIZE MIN_STACKSIZE
 #define RUMBLE_QUEUE_SIZE 2
 
-static NUSThread *rumbleThread;
+static OSThread *rumbleThread;
 static uint8_t pattern[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 OSMessageQueue rumble_queue;
 OSMessage rumble_msg[2];
@@ -81,8 +82,7 @@ void deinitRumble()
 {
 	if(rumbleThread != NULL)
 	{
-		OSMessage msg;
-		msg.message = NUSSPLI_MESSAGE_EXIT;
+		OSMessage msg = { . message = NUSSPLI_MESSAGE_EXIT };
 		OSSendMessage(&rumble_queue, &msg, OS_MESSAGE_FLAGS_BLOCKING);
 		stopThread(rumbleThread);
 	}
@@ -90,7 +90,6 @@ void deinitRumble()
 
 void startRumble()
 {
-	OSMessage msg;
-	msg.message = NUSSPLI_MESSAGE_NONE;
+	OSMessage msg = { .message = NUSSPLI_MESSAGE_NONE };
 	OSSendMessage(&rumble_queue, &msg, OS_MESSAGE_FLAGS_NONE);
 }
