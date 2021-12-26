@@ -43,10 +43,10 @@ OSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksi
 		if(OSCreateThread(ost, mainfunc, argc, argv, thread + stacksize + sizeof(OSThread), stacksize, priority, attribs))
 		{
 			OSSetThreadName(ost, name);
-#ifdef NUSSPLI_DEBUG
-			if(!OSSetThreadStackUsage(ost))
-				debugPrintf("Tracking stack usage failed for %s", name);
-#endif
+//#ifdef NUSSPLI_DEBUG
+//			if(!OSSetThreadStackUsage(ost))
+//				debugPrintf("Tracking stack usage failed for %s", name);
+//#endif
 			OSResumeThread(ost);
 			t = OSGetSystemTime() - t;
 			addEntropy(&t, sizeof(OSTime));
@@ -64,9 +64,9 @@ int stopThread(OSThread *thread)
 	OSThread *ost = (OSThread *)thread;
 	int ret;
 	OSJoinThread(ost, &ret);
-#ifdef NUSSPLI_DEBUG
-	debugPrintf("%s used %d bytes of stack", thread->name, OSCheckThreadStackUsage(thread));
-#endif
+//#ifdef NUSSPLI_DEBUG
+//	debugPrintf("%s used %d bytes of stack", thread->name, OSCheckThreadStackUsage(thread));
+//#endif
 	OSDetachThread(ost);
 	MEMFreeToDefaultHeap(thread);
 	return ret;
