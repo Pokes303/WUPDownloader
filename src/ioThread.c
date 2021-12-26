@@ -81,7 +81,6 @@ static int ioThreadMain(int argc, const char **argv)
 		}
 		else // Close command
 		{
-			fflush(entry->file->fd);
 			fclose(entry->file->fd);
 			MEMFreeToDefaultHeap(entry->file->buffer);
 			MEMFreeToDefaultHeap((void *)entry->file);

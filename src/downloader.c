@@ -708,10 +708,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	debugPrintf("curl_easy_perform() returned: %d", ret);
 	
 	if(toRam)
-	{
-		fflush((FILE *)fp);
 		fclose((FILE *)fp);
-	}
 	else
 		addToIOQueue(NULL, 0, 0, (NUSFILE *)fp);
 	
