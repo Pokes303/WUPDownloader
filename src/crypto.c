@@ -34,17 +34,23 @@
 
 static volatile uint32_t entropy;
 
+#define reseed()					\
+{									\
+	entropy ^= OSGetSystemTick();	\
+	entropy ^= OSGetTick();			\
+}
+
 // Based on George Marsaglias paper "Xorshift RNGs" from https://www.jstatsoft.org/article/view/v008i14
 #define rngRun()					\
 {									\
-	if(!entropy)					\
-		reseed();					\
-	else							\
+	if(entropy)						\
 	{								\
 		entropy ^= entropy << 13;	\
 		entropy ^= entropy >> 17;	\
 		entropy ^= entropy << 5;	\
 	}								\
+	else							\
+		reseed();					\
 }
 
 int osslBytes(unsigned char *buf, int num)
@@ -78,12 +84,6 @@ static const RAND_METHOD srm = {
 	.pseudorand = osslBytes,
 	.status = osslStatus,
 };
-
-void reseed()
-{
-	entropy ^= OSGetSystemTick();
-	entropy ^= OSGetTick();
-}
 
 void addEntropy(void *e, size_t l)
 {

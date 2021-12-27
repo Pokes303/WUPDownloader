@@ -305,7 +305,7 @@ bool saveConfig(bool force)
 	cJSON_AddItemToObject(config, "Download to USB", entry);
 
 	uint32_t entropy;
-	osslBytes(&entropy, 4)
+	osslBytes((unsigned char *)&entropy, 4);
 	entry = cJSON_CreateNumber(entropy);
 		cJSON_AddItemToObject(config, "Seed", entry);
 	
