@@ -384,7 +384,7 @@ void readInput()
 				controllerType == WPAD_EXT_CLASSIC ||
 				controllerType == WPAD_EXT_MPLUS_CLASSIC)
 		{
-			
+
 			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_A)
 				vpad.trigger = VPAD_BUTTON_A;
 			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_B)

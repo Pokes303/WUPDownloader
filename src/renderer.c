@@ -80,15 +80,15 @@ void textToFrameCut(int line, int column, const char *str, int maxWidth)
 	text.w = FC_GetWidth(font, str);
 
 	int i = strlen(str);
-	char cpy[i + 1];
+	char cpy[++i ];
 
 	if(maxWidth != 0 && text.w > maxWidth)
 	{
 		strcpy(cpy, str);
-		cpy[i--] = '\0';
-		cpy[i--] = '.';
-		cpy[i--] = '.';
-		cpy[i] = '.';
+		cpy[--i] = '\0';
+		cpy[--i] = '.';
+		cpy[--i] = '.';
+		cpy[--i] = '.';
 		text.w = FC_GetWidth(font, cpy);
 
 		while(text.w > maxWidth)
@@ -105,7 +105,7 @@ void textToFrameCut(int line, int column, const char *str, int maxWidth)
 	if(text.w == 0 || text.h == 0)
 		return;
 
-	line += 1;
+	++line;
 	line *= FONT_SIZE;
 	line -= 7;
 	text.y = line;
@@ -131,10 +131,12 @@ void lineToFrame(int column, uint32_t color)
 	if(font == NULL)
 		return;
 
+	++column;
+	column *= FONT_SIZE;
 	SDL_Rect line =
 	{
 		.x = FONT_SIZE,
-		.y = ((column + 1) * FONT_SIZE) + ((FONT_SIZE >> 1) - 1),
+		.y = column + ((FONT_SIZE >> 1) - 1),
 		.w = screen.x - (FONT_SIZE << 1),
 		.h = 3,
 	};
@@ -149,7 +151,7 @@ void boxToFrame(int lineStart, int lineEnd)
 	if(font == NULL)
 		return;
 
-	int ty = ((lineStart + 1) * FONT_SIZE) + ((FONT_SIZE >> 1) - 1);
+	int ty = ((++lineStart) * FONT_SIZE) + ((FONT_SIZE >> 1) - 1);
 	int tw = screen.x - (FONT_SIZE << 1);
 	SDL_Rect box =
 	{
@@ -164,13 +166,13 @@ void boxToFrame(int lineStart, int lineEnd)
 	// Horizontal lines
 	SDL_RenderFillRect(renderer, &box);
 
-	box.y = ((lineEnd + 1) * FONT_SIZE) + ((FONT_SIZE >> 1) - 1) - 3,
+	box.y = ((++lineEnd) * FONT_SIZE) + ((FONT_SIZE >> 1) - 1) - 3;
 	SDL_RenderFillRect(renderer, &box);
 	
 	// Vertical lines
 	box.y = ty;
 	box.w = 3;
-	box.h = (lineEnd - lineStart) * FONT_SIZE;
+	box.h = (--lineEnd - --lineStart) * FONT_SIZE;
 	SDL_RenderFillRect(renderer, &box);
 
 	box.x += tw - 3;
@@ -195,7 +197,7 @@ void barToFrame(int line, int column, uint32_t width, double progress)
 	SDL_Rect box =
 	{
 		.x = FONT_SIZE + (column * spaceWidth),
-		.y = ((line + 1) * FONT_SIZE) - 2,
+		.y = ((++line ) * FONT_SIZE) - 2,
 		.w = ((int)width) * spaceWidth,
 		.h = FONT_SIZE,
 	};
@@ -224,7 +226,7 @@ void barToFrame(int line, int column, uint32_t width, double progress)
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, 64);
 	SDL_RenderFillRect(renderer, &box);
 	
-	textToFrame(line, column + (width >> 1) - (strlen(text) >> 1), text);
+	textToFrame(--line, column + (width >> 1) - (strlen(text) >> 1), text);
 }
 
 void arrowToFrame(int line, int column)
@@ -232,7 +234,7 @@ void arrowToFrame(int line, int column)
 	if(font == NULL)
 		return;
 	
-	line += 1;
+	++line;
 	line *= FONT_SIZE;
 	column *= spaceWidth;
 	column += spaceWidth;
@@ -251,7 +253,7 @@ void checkmarkToFrame(int line, int column)
 	if(font == NULL)
 		return;
 	
-	line += 1;
+	++line;
 	line *= FONT_SIZE;
 	column *= spaceWidth;
 	column += spaceWidth >> 1;
@@ -289,7 +291,7 @@ void flagToFrame(int line, int column, TITLE_REGION flag)
 	if(font == NULL)
 		return;
 	
-	line += 1;
+	++line;
 	line *= FONT_SIZE;
 	column *= spaceWidth;
 	column += spaceWidth >> 1;
