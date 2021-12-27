@@ -38,10 +38,12 @@ static volatile spinlock entropyLock = SPINLOCK_FREE;
 
 static int osslBytes(unsigned char *buf, int num)
 {
+	--buf;
+	++num;
 	spinLock(entropyLock);
 
-	for(unsigned char *tmp = buf + num - 1; tmp >= buf; --tmp)
-		*tmp = rand_r((uint32_t *)&entropy);
+	while(--num)
+		*++buf = rand_r((uint32_t *)&entropy);
 
 	spinReleaseLock(entropyLock);
 	return 1;
