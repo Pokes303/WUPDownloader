@@ -84,7 +84,7 @@ void deinitRumble()
 	{
 		OSMessage msg = { . message = NUSSPLI_MESSAGE_EXIT };
 		OSSendMessage(&rumble_queue, &msg, OS_MESSAGE_FLAGS_BLOCKING);
-		stopThread(rumbleThread);
+		stopThread(rumbleThread, NULL);
 	}
 }
 

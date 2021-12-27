@@ -279,7 +279,7 @@ static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 	{							\
 		shutdownDebug();		\
 		__fini_wut_socket();	\
-		stopThread(dlbgThread);	\
+		stopThread(dlbgThread, NULL);	\
 		dlbgThread = NULL;		\
 	}							\
 }
@@ -698,7 +698,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		}
 	}
 
-	ret = stopThread(dlThread);
+	stopThread(dlThread, (int *)&ret);
 
 	t = OSGetSystemTime() - t;
 	addEntropy(&t, sizeof(OSTime));

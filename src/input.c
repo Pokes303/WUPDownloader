@@ -290,7 +290,7 @@ static void SWKBD_Hide(SWKBD_Args *args)
 
     OSMessage msg = { .message = NUSSPLI_MESSAGE_EXIT };
 	OSSendMessage(&swkbd_queue, &msg, OS_MESSAGE_FLAGS_BLOCKING);
-	stopThread(args->calcThread);
+	stopThread(args->calcThread, NULL);
 }
 
 bool SWKBD_Init()

@@ -136,10 +136,17 @@ void shutdownIOThread()
 		;
 	
 	ioRunning = false;
-    int ret = stopThread(ioThread);
+#ifdef NUSSPLI_DEBUG
+	int ret;
+	stopThread(ioThread, &ret);
+#else
+	stopThread(ioThread, NULL);
+#endif
 	MEMFreeToDefaultHeap(queueEntries[0].buf);
 	MEMFreeToDefaultHeap((void *)queueEntries);
+#ifdef NUSSPLI_DEBUG
 	debugPrintf("I/O thread returned: %d", ret);
+#endif
 }
 
 #ifdef NUSSPLI_DEBUG

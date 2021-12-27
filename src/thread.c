@@ -58,16 +58,3 @@ OSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksi
 	}
 	return NULL;
 }
-
-int stopThread(OSThread *thread)
-{
-	OSThread *ost = (OSThread *)thread;
-	int ret;
-	OSJoinThread(ost, &ret);
-//#ifdef NUSSPLI_DEBUG
-//	debugPrintf("%s used %d bytes of stack", thread->name, OSCheckThreadStackUsage(thread));
-//#endif
-	OSDetachThread(ost);
-	MEMFreeToDefaultHeap(thread);
-	return ret;
-}

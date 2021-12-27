@@ -22,6 +22,7 @@
 
 #include <wut-fixups.h>
 
+#include <coreinit/memdefaultheap.h>
 #include <coreinit/thread.h>
 
 #define DEFAULT_STACKSIZE	0x800000	// 8 MB
@@ -45,7 +46,18 @@ typedef enum
 } THREAD_PRIORITY;
 
 OSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksize, OSThreadEntryPointFn mainfunc, int argc, char *argv, OSThreadAttributes attribs);
-int stopThread(OSThread *thread);
+
+#define stopThread(thread, ret)																	\
+{																								\
+	OSJoinThread(thread, ret);																	\
+/*																								\
+#ifdef NUSSPLI_DEBUG																			\
+	debugPrintf("%s used %d bytes of stack", thread->name, OSCheckThreadStackUsage(thread));	\
+#endif																							\
+*/																								\
+	OSDetachThread(thread);																		\
+	MEMFreeToDefaultHeap(thread);																\
+}
 
 #ifdef __cplusplus
     }
