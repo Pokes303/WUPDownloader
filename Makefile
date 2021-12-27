@@ -43,8 +43,7 @@ endif
 #-------------------------------------------------------------------------------
 include $(PORTLIBS_PATH)/wiiu/share/romfs-wiiu.mk
 
-CFLAGS		:=	$(MACHDEP) -O3 -flto=auto -fno-fat-lto-objects \
-				-fuse-linker-plugin -pipe -D__WIIU__ -D__WUT__ \
+CFLAGS		:=	$(MACHDEP) -O3 -pipe -D__WIIU__ -D__WUT__ \
 				-DNUSSPLI_VERSION=\"$(NUSSPLI_VERSION)\" \
 				-DIOAPI_NO_64 $(ROMFS_CFLAGS)
 
