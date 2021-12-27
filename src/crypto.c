@@ -25,27 +25,36 @@
 #include <utils.h>
 
 #include <crypto.h>
-#include <thread.h>
-
-#include <coreinit/time.h>
 
 #include <openssl/rand.h>
 #include <openssl/rand_drbg.h>
 #include <openssl/ssl.h>
 
 static volatile uint32_t entropy;
-static volatile spinlock entropyLock = SPINLOCK_FREE;
+
+// Based on George Marsaglias paper "Xorshift RNGs" from https://www.jstatsoft.org/article/view/v008i14
+#define rngRun()					\
+{									\
+	if(!entropy)					\
+		entropy = rand();/* TODO */	\
+	else							\
+	{								\
+		entropy ^= entropy << 13;	\
+		entropy ^= entropy >> 17;	\
+		entropy ^= entropy << 5;	\
+	}								\
+}
 
 static int osslBytes(unsigned char *buf, int num)
 {
 	--buf;
 	++num;
-	spinLock(entropyLock);
-
 	while(--num)
-		*++buf = rand_r((uint32_t *)&entropy);
+	{
+		rngRun();
+		*++buf = entropy;
+	}
 
-	spinReleaseLock(entropyLock);
 	return 1;
 }
 
@@ -70,6 +79,7 @@ static const RAND_METHOD srm = {
 
 void reseed()
 {
+	rngRun();
 	srand(entropy);
 }
 
@@ -90,16 +100,17 @@ void addEntropy(void *e, size_t l)
 	++l32;
 	--buf8;
 
-	while(!spinTryLock(entropyLock))
-		OSSleepTicks(128);
-
 	while(--l32)
-		entropy ^= (*++buf32) ^ rand_r((uint32_t *)&entropy);
+	{
+		rngRun();
+		entropy ^= *++buf32;
+	}
 
 	while(--l)
-		entropy ^= (*++buf8) ^ rand_r((uint32_t *)&entropy);
-
-	spinReleaseLock(entropyLock);
+	{
+		rngRun();
+		entropy ^= *++buf8;
+	}
 }
 
 bool initCrypto()
