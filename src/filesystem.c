@@ -101,7 +101,7 @@ bool mountMLC()
 		return false;
 
 	int ret = mount_fs("mlc", fsaHandle, NULL, "/vol/storage_mlc01");
-	if(ret != 0 || !dirExists("mlc:/"))
+	if(ret || !dirExists("mlc:/"))
 	{
 		debugPrintf("IOSUHAX: error mounting MLC: %#010x", ret);
 		return false;
