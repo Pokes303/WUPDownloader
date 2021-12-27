@@ -80,7 +80,7 @@ bool initConfig()
 			return false;
 	}
 	
-	OSTime t = OSGetSystemTime();
+	OSTime t = OSGetTime();
 	FILE *fp = fopen(CONFIG_PATH, "rb");
 	if(fp == NULL)
 		return false;
@@ -92,7 +92,7 @@ bool initConfig()
 	char fileContent[fileSize];
 	ret = ret && fread(fileContent, fileSize, 1, fp) == 1;
 	fclose(fp);
-	t = OSGetSystemTime() - t;
+	t = OSGetTime() - t;
 	addEntropy(&t, sizeof(OSTime));
 	if(!ret)
 		return false;
@@ -314,7 +314,7 @@ bool saveConfig(bool force)
 	if(configString == NULL)
 		return false;
 	
-	OSTime t = OSGetSystemTime();
+	OSTime t = OSGetTime();
 	FILE *fp = fopen(CONFIG_PATH, "w");
 	if(fp == NULL)
 		return false;
@@ -322,7 +322,7 @@ bool saveConfig(bool force)
 	fwrite(configString, strlen(configString), 1, fp);
 	debugPrintf("Config written!");
 	fclose(fp);
-	t = OSGetSystemTime() - t;
+	t = OSGetTime() - t;
 	addEntropy(&t, sizeof(OSTime));
 	
 	changed = false;

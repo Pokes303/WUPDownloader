@@ -83,7 +83,7 @@ char *fileBrowserMenu()
 	DIR *dir;
 	
 refreshDirList:
-    OSTime t = OSGetSystemTime();
+    OSTime t = OSGetTime();
 	for(int i = 1; i < foldersSize; ++i)
 		MEMFreeToDefaultHeap(folders[i]);
 	foldersSize = 0;
@@ -105,7 +105,7 @@ refreshDirList:
 			}
 		closedir(dir);
 	}
-	t = OSGetSystemTime() - t;
+	t = OSGetTime() - t;
 	addEntropy(&t, sizeof(OSTime));
 	
 	drawFBMenuFrame(folders, ++foldersSize, pos, cursor, activeDevice, usbMounted);

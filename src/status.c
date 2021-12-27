@@ -119,7 +119,7 @@ uint32_t homeButtonCallback(void *dummy)
 void initStatus()
 {
 	ProcUIInit(&OSSavesDone_ReadyToRelease);
-	OSTime t = OSGetSystemTime();
+	OSTime t = OSGetTime();
 	
 	app = APP_STATE_RUNNING;
 	
@@ -146,7 +146,7 @@ void initStatus()
 		apdEnabled = false;
 	}
 	debugPrintf("APD enabled by sys settings: %s (%d)", apdEnabled ? "true" : "false", (uint32_t)ime);
-    t = OSGetSystemTime() - t;
+    t = OSGetTime() - t;
 	addEntropy(&t, sizeof(OSTime));
 }
 

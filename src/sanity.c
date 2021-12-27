@@ -63,7 +63,7 @@ bool sanityCheck()
 	if(isChannel())
 	{
 		MCPTitleListType title;
-		OSTime t = OSGetSystemTime();
+		OSTime t = OSGetTime();
 		if(MCP_GetTitleInfo(mcpHandle, OSGetTitleID(), &title))
 		{
 			debugPrintf("Sanity error: Can't get MCPTitleListType");
@@ -157,7 +157,7 @@ bool sanityCheck()
 		else
 			unmountMLC();
 
-        t = OSGetSystemTime() - t;
+        t = OSGetTime() - t;
 		addEntropy(&t, sizeof(OSTime));
 		return ret;
 	}

@@ -238,11 +238,11 @@ NUSFILE *openFile(const char *path, const char *mode)
 	if(ret == NULL)
 		return NULL;
 	
-	OSTime t = OSGetSystemTime();
+	OSTime t = OSGetTime();
 	ret->fd = fopen(path, mode);
 	if(ret->fd != NULL)
 	{
-		t = OSGetSystemTime() - t;
+		t = OSGetTime() - t;
 		addEntropy(&t, sizeof(OSTime));
 		ret->buffer = MEMAllocFromDefaultHeapEx(IO_MAX_FILE_BUFFER, 0x40);
 		if(ret->buffer != NULL)
