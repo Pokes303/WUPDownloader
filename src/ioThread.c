@@ -79,9 +79,12 @@ static int ioThreadMain(int argc, const char **argv)
 		}
 		else // Close command
 		{
+			OSTime t = OSGetTime();
 			fclose(entry->file->fd);
 			MEMFreeToDefaultHeap(entry->file->buffer);
 			MEMFreeToDefaultHeap((void *)entry->file);
+			t = OSGetTime() - t;
+			addEntropy(&t, sizeof(OSTime));
 		}
 
 		if(++asl == MAX_IO_QUEUE_ENTRIES)
