@@ -23,7 +23,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include <coreinit/atomic.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
@@ -50,7 +49,7 @@ typedef struct
 
 static OSThread *ioThread;
 static volatile bool ioRunning = false;
-static volatile uint32_t ioWriteLock = true;
+static volatile spinlock ioWriteLock = SPINLOCK_LOCKED;
 
 static volatile WriteQueueEntry *queueEntries;
 static volatile uint32_t activeReadBuffer;
@@ -58,9 +57,9 @@ static volatile uint32_t activeWriteBuffer;
 
 static int ioThreadMain(int argc, const char **argv)
 {
+	spinReleaseLock(ioWriteLock);
 	debugPrintf("I/O queue running!");
 
-	ioWriteLock = false;
 	uint32_t asl;
 	volatile WriteQueueEntry *entry;
 
@@ -129,8 +128,7 @@ void shutdownIOThread()
 	if(!ioRunning)
 		return;
 	
-	while(!OSCompareAndSwapAtomic(&ioWriteLock, false, true))
-		;
+	spinLock(ioWriteLock);
 
 	while(queueEntries[activeWriteBuffer].inUse)
 		;
@@ -158,14 +156,14 @@ size_t addToIOQueue(const void *buf, size_t size, size_t n, NUSFILE *file)
 		
 retryAddingToQueue:
 	
-	while(!OSCompareAndSwapAtomic(&ioWriteLock, false, true))
+	while(!spinTryLock(ioWriteLock))
 		if(!ioRunning)
 			return 0;
 	
     entry = queueEntries + activeReadBuffer;
 	if(entry->inUse)
 	{
-        ioWriteLock = false;
+        spinReleaseLock(ioWriteLock);
 #ifdef NUSSPLI_DEBUG
 		if(!queueStalled)
 		{
@@ -195,7 +193,7 @@ retryAddingToQueue:
 		
 		if(size > IO_BUFSIZE)
 		{
-            ioWriteLock = false;
+            spinReleaseLock(ioWriteLock);
 			debugPrintf("size > %i (%i)", IO_BUFSIZE, size);
 			addToIOQueue(buf, 1, IO_BUFSIZE, file);
 			const uint8_t *newPtr = buf;
@@ -217,7 +215,7 @@ retryAddingToQueue:
 		activeReadBuffer = 0;
 	
 queueExit:
-	ioWriteLock = false;
+	spinReleaseLock(ioWriteLock);
 	return n;
 }
 
@@ -225,13 +223,12 @@ void flushIOQueue()
 {
 	int ovl = addErrorOverlay("Flushing queue, please wait...");
 	debugPrintf("Flushing...");
-	while(!OSCompareAndSwapAtomic(&ioWriteLock, false, true))
-		;
+	spinLock(ioWriteLock);
 
 	while(queueEntries[activeWriteBuffer].inUse)
 		OSSleepTicks(1024);
 
-	ioWriteLock = false;
+	spinReleaseLock(ioWriteLock);
 	removeErrorOverlay(ovl);
 }
 

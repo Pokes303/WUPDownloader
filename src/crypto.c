@@ -25,9 +25,8 @@
 #include <utils.h>
 
 #include <crypto.h>
+#include <thread.h>
 
-#include <coreinit/atomic.h>
-#include <coreinit/thread.h>
 #include <coreinit/time.h>
 
 #include <openssl/rand.h>
@@ -35,17 +34,16 @@
 #include <openssl/ssl.h>
 
 static volatile uint32_t entropy;
-static volatile uint32_t entropyLock = false;
+static volatile spinlock entropyLock = SPINLOCK_FREE;
 
 static int osslBytes(unsigned char *buf, int num)
 {
-	while(!OSCompareAndSwapAtomic(&entropyLock, false, true))
-		;
+	spinLock(entropyLock);
 
 	for(unsigned char *tmp = buf + num - 1; tmp >= buf; --tmp)
 		*tmp = rand_r((uint32_t *)&entropy);
 
-	entropyLock = false;
+	spinReleaseLock(entropyLock);
 	return 1;
 }
 
@@ -75,7 +73,7 @@ void reseed()
 
 void addEntropy(void *e, size_t l)
 {
-	while(!OSCompareAndSwapAtomic(&entropyLock, false, true))
+	while(!spinTryLock(entropyLock))
 		OSSleepTicks(128);
 
 	uint8_t *buf = (uint8_t *)e;
@@ -90,7 +88,7 @@ void addEntropy(void *e, size_t l)
 		entropy ^= ee;
 	}
 
-	entropyLock = false;
+	spinReleaseLock(entropyLock);
 }
 
 bool initCrypto()

@@ -50,7 +50,6 @@
 #include <tmd.h>
 #include <utils.h>
 
-#include <coreinit/atomic.h>
 #include <coreinit/filesystem.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/thread.h>
@@ -115,7 +114,7 @@ typedef struct
 {
 	bool running;
 	CURLcode error;
-	volatile uint32_t lock;
+	volatile spinlock lock;
 	OSTick ts;
 	double dltotal;
 	double dlnow;
@@ -138,13 +137,13 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 
 	if(dltotal > 0.1D && !isinf(dltotal) && !isnan(dltotal))
 	{
-		if(!OSCompareAndSwapAtomic(&data->lock, false, true))
+		if(!spinTryLock(data->lock))
 			return 0;
 
 		data->ts = OSGetTick();
 		data->dltotal = dltotal;
 		data->dlnow = dlnow;
-		data->lock = false;
+		spinReleaseLock(data->lock);
 	}
 
 	return 0;
@@ -553,7 +552,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		{
 			if(cdata.dltotal > 0.1D)
 			{
-				if(!OSCompareAndSwapAtomic(&cdata.lock, false, true))
+				if(!spinTryLock(cdata.lock))
 				{
 					frames = 2;
 					continue;
@@ -561,7 +560,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
 				dlnow = cdata.dlnow;
 				now = cdata.ts;
-				cdata.lock = false;
+				spinReleaseLock(cdata.lock);
 
 				dltotal = cdata.dltotal + fileSize;
 				dlnow += fileSize;

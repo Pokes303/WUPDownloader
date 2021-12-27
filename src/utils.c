@@ -259,6 +259,8 @@ int str16cmp(const char16_t *s1, const char16_t *s2)
 
 #include <stdarg.h>
 
+#include <thread.h>
+
 #include <coreinit/fastmutex.h>
 #include <coreinit/time.h>
 #include <whb/log.h>
@@ -287,11 +289,11 @@ char months[12][4] = {
 	"Dez",
 };
 
-static volatile uint32_t debugLock;
+static volatile spinlock debugLock;
 
 void debugInit()
 {
-	debugLock = false;
+	debugLock = SPINLOCK_FREE;
 	WHBLogUdpInit();
 }
 
@@ -310,10 +312,9 @@ void debugPrintf(const char *str, ...)
 	vsnprintf(newStr + tss, 2048 - tss, str, va);
 	va_end(va);
 	
-	while(!OSCompareAndSwapAtomic(&debugLock, false, true))
-		;
+	spinLock(debugLock);
 	WHBLogPrint(newStr);
-	debugLock = false;
+	spinReleaseLock(debugLock);
 }
 
 void checkStacks(const char *src)

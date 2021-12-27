@@ -22,6 +22,10 @@
 
 #include <wut-fixups.h>
 
+#include <stdbool.h>
+#include <stdint.h>
+
+#include <coreinit/atomic.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/thread.h>
 
@@ -44,6 +48,16 @@ typedef enum
     THREAD_PRIORITY_MEDIUM = 14,
     THREAD_PRIORITY_LOW = 15,
 } THREAD_PRIORITY;
+
+#define spinlock uint32_t
+
+#define SPINLOCK_FREE	false
+#define SPINLOCK_LOCKED	true
+
+#define spinIsLocked(lock)		lock == SPINLOCK_LOCKED
+#define spinTryLock(lock)		OSCompareAndSwapAtomic(&lock, SPINLOCK_FREE, SPINLOCK_LOCKED)
+#define spinLock(lock)			while(!spinTryLock(lock)) {}
+#define spinReleaseLock(lock)	lock = SPINLOCK_FREE
 
 OSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksize, OSThreadEntryPointFn mainfunc, int argc, char *argv, OSThreadAttributes attribs);
 
