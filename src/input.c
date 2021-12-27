@@ -366,6 +366,7 @@ void readInput()
 	bool altCon = false;
 	uint32_t controllerType;
 	int32_t controllerProbe;
+	uint32_t oldV;
 	for(int i = 0; i < 4; ++i)
 	{
 		controllerProbe = WPADProbe(i, &controllerType);
@@ -384,6 +385,7 @@ void readInput()
 				controllerType == WPAD_EXT_CLASSIC ||
 				controllerType == WPAD_EXT_MPLUS_CLASSIC)
 		{
+			oldV = vpad.trigger;
 
 			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_A)
 				vpad.trigger = VPAD_BUTTON_A;
@@ -418,7 +420,7 @@ void readInput()
 			
 			if(vpad.trigger != 0)
 			{
-				if(kbdHidden)
+				if(kbdHidden && vpad.trigger != oldV)
 					lastUsedController = i;
 				
 				continue;
@@ -448,7 +450,7 @@ void readInput()
 		if(kpad[i].trigger & WPAD_BUTTON_HOME)
 			vpad.trigger |= VPAD_BUTTON_HOME;
 		
-		if(vpad.trigger != 0 && kbdHidden)
+		if(vpad.trigger != 0 && kbdHidden && vpad.trigger != oldV)
 			lastUsedController = i;
 	}
 
