@@ -187,9 +187,9 @@ static bool SWKBD_Show(SWKBD_Args *args, KeyboardLayout layout, KeyboardType typ
 		okStrL = NULL;
 	else
 	{
-		size_t strLen = strlen(okStr) + 1;
-		okStrL = MEMAllocFromDefaultHeap(strLen);
-		if(okStrL != NULL)
+		size_t strLen = strlen(okStr);
+		okStrL = MEMAllocFromDefaultHeap(++strLen);
+		if(okStrL)
 			for(size_t i = 0; i < strLen; ++i)
 				okStrL[i] = okStr[i];
 	}
@@ -343,7 +343,7 @@ bool SWKBD_Init()
 
 void SWKBD_Shutdown()
 {
-	if(createArg.workMemory != NULL)
+	if(createArg.workMemory)
 	{
 		Swkbd_Destroy();
 		MEMFreeToDefaultHeap(createArg.workMemory);
@@ -516,11 +516,11 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 			{
 				const char16_t *outputStr = Swkbd_GetInputFormString16();
 				size_t i = 0;
-				size_t j = 0;
+				size_t j = -1;
 				do
 				{
-					output[j++] = (char)(outputStr[i] >> 8);
-					output[j++] = (char)(outputStr[i]);
+					output[++j] = (char)(outputStr[i] >> 8);
+					output[++j] = (char)(outputStr[i]);
 				}
 				while(outputStr[i++]);
 			}
