@@ -36,7 +36,6 @@ bool initCrypto();
 void reseed();
 void addEntropy(void *e, size_t len);
 int osslBytes(unsigned char *buf, int num);
-uint32_t getEntropy();
 
 #ifdef __cplusplus
 	}

@@ -122,8 +122,3 @@ bool initCrypto()
 		RAND_set_rand_method(&srm) == 1 &&
 		RAND_DRBG_set_reseed_defaults(0, 0, 0, 0) == 1;
 }
-
-uint32_t getEntropy()
-{
-    return entropy;
-}

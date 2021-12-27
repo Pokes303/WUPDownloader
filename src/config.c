@@ -158,7 +158,7 @@ bool initConfig()
 
 	configEntry = cJSON_GetObjectItemCaseSensitive(json, "Seed");
 	if(configEntry != NULL && cJSON_IsNumber(configEntry))
-		addEntropy(&(configEntry->valueint), sizeof(int));
+		addEntropy(&(configEntry->valueint), 4);
 	
 	cJSON_Delete(json);
 	
@@ -304,7 +304,9 @@ bool saveConfig(bool force)
 	}
 	cJSON_AddItemToObject(config, "Download to USB", entry);
 
-	entry = cJSON_CreateNumber(getEntropy());
+	uint32_t entropy;
+	osslBytes(&entropy, 4)
+	entry = cJSON_CreateNumber(entropy);
 		cJSON_AddItemToObject(config, "Seed", entry);
 	
 	char *configString = cJSON_Print(config);
