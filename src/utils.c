@@ -96,8 +96,7 @@ void glueMcpData(MCPInstallTitleInfo *info, McpData *data)
 	data->processing = true;
 	uint32_t *ptr = (uint32_t *)info;
 	*ptr = (uint32_t)mcpCallback;
-	ptr++;
-	*ptr = (uint32_t)data;
+	*++ptr = (uint32_t)data;
 }
 
 void showMcpProgress(McpData *data, const char *game, const bool inst)
@@ -186,8 +185,8 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 size_t strlen16(char16_t *str)
 {
 	size_t ret = 0;
-	while(str[ret] != u'\0')
-		ret++;
+	while(str[ret])
+		++ret;
 	return ret;
 }
 
@@ -206,7 +205,7 @@ char16_t *str16str(char16_t *haystack, char16_t *needle)
 	do
 	{
 		ret = haystack + i;
-		for(size_t j = 0 ; j < needleL; j++)
+		for(size_t j = 0 ; j < needleL; ++j)
 		{
 			if(haystack[i + j] != needle[j])
 			{
@@ -214,7 +213,7 @@ char16_t *str16str(char16_t *haystack, char16_t *needle)
 				break;
 			}
 		}
-		i++;
+		++i;
 	}
 	while(ret == NULL && haystack + i <= haystack + (hayL - needleL));
 	
@@ -231,10 +230,10 @@ char16_t tolower16(char16_t in)
 char16_t *str16cpy(char16_t *target, const char16_t *source)
 {
 	size_t i = 0;
-	while(source[i] != u'\0')
+	while(source[i])
 	{
 		target[i] = source[i];
-		i++;
+		++i;
 	}
 
 	target[i] = u'\0';
@@ -246,13 +245,13 @@ int str16cmp(const char16_t *s1, const char16_t *s2)
 	size_t i = 0;
 	while(true)
 	{
-		if(s1[i] == u'\0')
+		if(!s1[i])
 			return s2[i] == u'\0' ? 0 : -1;
 
-		if(s2[i] == u'\0')
+		if(!s2[i])
 			return 1;
 
-		i++;
+		++i;
 	}
 }
 

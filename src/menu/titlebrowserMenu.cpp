@@ -56,7 +56,7 @@ void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cu
 	
 	// Games, Updates, DLC, Demos, All
 	const char *tabLabels[5] = { "Games", "Updates", "DLC", "Demos", "All" };
-	for(int i = 0; i < 5; i++)
+	for(int i = 0; i < 5; ++i)
 		tabToFrame(0, i, (char *)tabLabels[i], i == tab);
 	
 	boxToFrame(1, MAX_LINES - 2);
@@ -73,7 +73,7 @@ void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cu
 		ts = 0;
 		do
 			lowerSearch[ts] = tolower16(search[ts]);
-		while(search[ts++] != u'\0');
+		while(search[ts++]);
 		
 		ts = 0;
 		size_t ss;
@@ -81,11 +81,11 @@ void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cu
 		char16_t *ptr[2];
 		bool found;
 		std::wstring_convert<codecvt<char16_t, char, std::mbstate_t>, char16_t> conv;
-		for(size_t i = 0 ; i < filteredTitleEntrySize; i++)
+		for(size_t i = 0 ; i < filteredTitleEntrySize; ++i)
 		{
 			ss = strlen(titleEntrys[i].name);
 			char tmpName[ss + 1];
-			for(size_t j = 0; j < ss; j++)
+			for(size_t j = 0; j < ss; ++j)
 				tmpName[j] = tolower(titleEntrys[i].name[j]);
 			
 			u16s = conv.from_bytes(tmpName, tmpName+ss);
@@ -121,14 +121,14 @@ void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cu
 		filteredTitleEntrySize = ts;
 	}
 	else
-		for(size_t i = 0; i < filteredTitleEntrySize; i++)
+		for(size_t i = 0; i < filteredTitleEntrySize; ++i)
 			filteredTitleEntries[i] = titleEntrys[i];
 	
 	size_t max = MAX_TITLEBROWSER_LINES < filteredTitleEntrySize ? MAX_TITLEBROWSER_LINES : filteredTitleEntrySize;
 	size_t j, l;
 	MCPTitleListType titleList;
 	char *toFrame = getToFrameBuffer();
-	for(size_t i = 0; i < max; i++)
+	for(size_t i = 0; i < max; ++i)
 	{
 		l = i + 2;
 		if(cursor == i)
@@ -229,12 +229,12 @@ void titleBrowserMenu()
 			if(cursor >= filteredTitleEntrySize - 1 || cursor >= MAX_TITLEBROWSER_LINES - 1)
 			{
 				if(mov && pos < filteredTitleEntrySize - MAX_TITLEBROWSER_LINES)
-					pos++;
+					++pos;
 				else
 					cursor = pos = 0;
 			}
 			else
-				cursor++;
+				++cursor;
 			
 			redraw = true;
 		}

@@ -59,7 +59,7 @@ void writeRandomBytes(NUSFILE* fp, uint32_t len)
 {
 	uint32_t len32 = len < 9 ? 1 : len >> 2;
 	uint32_t bytes[len32];
-	for(int i = 0; i < len32; i++)
+	for(int i = 0; i < len32; ++i)
 		bytes[i] = rand();
 	addToIOQueue(bytes, 1, len, fp);
 }
@@ -133,8 +133,8 @@ void removeDirectory(const char *path)
 	
 	if(newPath[len - 1] != '/')
 	{
-		newPath[len++] = '/';
-		newPath[len] = '\0';
+		newPath[len] = '/';
+		newPath[++len] = '\0';
 	}
 	
 	char *inSentence = newPath + len;

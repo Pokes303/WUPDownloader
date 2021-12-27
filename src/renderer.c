@@ -342,7 +342,7 @@ int addErrorOverlay(const char *err)
 		return -1;
 
 	int i = 0;
-	for( ; i < MAX_OVERLAYS + 1; i++)
+	for( ; i < MAX_OVERLAYS + 1; ++i)
 		if(i < MAX_OVERLAYS && errorOverlay[i] == NULL)
 			break;
 
@@ -485,7 +485,7 @@ void resumeRenderer()
 			SDL_SetRenderTarget(renderer, frameBuffer);
 
 			const char *tex;
-			for(int i = 0; i < 6; i++)
+			for(int i = 0; i < 6; ++i)
 			{
 				switch(i)
 				{
@@ -531,7 +531,7 @@ void initRenderer()
 	if(font != NULL)
 		return;
 
-	for(int i = 0; i < MAX_OVERLAYS; i++)
+	for(int i = 0; i < MAX_OVERLAYS; ++i)
 		errorOverlay[i] = NULL;
 	
 	if(SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO) != 0)
@@ -634,7 +634,7 @@ void pauseRenderer()
 	SDL_DestroyTexture(barTex);
 	SDL_DestroyTexture(bgTex);
 	
-	for(int i = 0; i < 6; i++)
+	for(int i = 0; i < 6; ++i)
 		SDL_DestroyTexture(flagTex[i]);
 	
 	font = NULL;
@@ -642,7 +642,7 @@ void pauseRenderer()
 
 void shutdownRenderer()
 {
-	for(int i = 0; i < MAX_OVERLAYS; i++)
+	for(int i = 0; i < MAX_OVERLAYS; ++i)
 		removeErrorOverlay(i);
 	
 	if(font != NULL)
@@ -692,7 +692,7 @@ void shutdownRenderer()
 	uint16_t fo;
 	int ch;
 	int c = Mix_QuerySpec(&fr, &fo, &ch);
-	for(int i = 0; i < c; i++)
+	for(int i = 0; i < c; ++i)
 		Mix_CloseAudio();
 
 // TODO:
@@ -736,7 +736,7 @@ void showFrame()
 	SDL_RenderCopy(renderer, frameBuffer, NULL, NULL);
 
 #define postdrawFrame()												\
-	for(int i = 0; i < MAX_OVERLAYS; i++)							\
+	for(int i = 0; i < MAX_OVERLAYS; ++i)							\
 		if(errorOverlay[i] != NULL)									\
 			SDL_RenderCopy(renderer, errorOverlay[i], NULL, NULL);	\
 																	\

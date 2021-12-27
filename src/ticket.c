@@ -148,7 +148,7 @@ bool generateFakeTicket()
 		char *ide = strstr(++ids, "]");
 		if(ide != NULL && ide - ids == 16)
 		{
-			for(int i = 0; i < 16; i++)
+			for(int i = 0; i < 16; ++i)
 			{
 				if(isHexa(ids[i]))
 					titleID[i] = ids[i];

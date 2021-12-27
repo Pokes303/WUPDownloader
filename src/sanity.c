@@ -110,7 +110,7 @@ bool sanityCheck()
 		strcpy(newPath + 4, title.path + 18);
 		strcat(newPath, "/meta/");
 
-		for(int i = 0; !br && i < MD5_FILES; i++)
+		for(int i = 0; !br && i < MD5_FILES; ++i)
 		{
 			strcpy(newPath + 38, md5File[i]);
 			f = fopen(newPath, "rb+");
@@ -137,7 +137,7 @@ bool sanityCheck()
 			}
 
 			MD5(buf, s, m);
-			for(int j = 0; j < 16; j++)
+			for(int j = 0; j < 16; ++j)
 			{
 				if(m[j] != md5[i][j])
 				{

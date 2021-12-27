@@ -146,7 +146,7 @@ TitleEntry *getTitleEntryByTid(uint64_t tid)
 		
 	}
 	
-	for(size_t i = 0; i < haySize; i++, haystack++)
+	for(size_t i = 0; i < haySize; ++i, ++haystack)
 		if(haystack->tid == tid)
 			return haystack;
 	
@@ -284,7 +284,7 @@ bool initTitles()
 			}
 			
 			ma += size;
-			entries++;
+			++entries;
 		}
 	}
 	
@@ -364,8 +364,9 @@ bool initTitles()
 			tid |= 0x0000000010000000;
 			tid |= j;
 //			debugPrintf("%s / 0x%016X / 0x%016X", sj, j, tid);
-			titleEntry[entries++].tid = tid;
-			titleEntries[cat]++;
+			titleEntry[entries].tid = tid;
+			++entries;
+			++titleEntries[cat];
 		}
 	}
 	
@@ -407,9 +408,9 @@ void clearTitles()
 		titleEntry = NULL;
 	}
 	
-	for(int i = 0; i < 5; i++)
+	for(int i = 0; i < 5; ++i)
 		titleEntries[i] = 0;
 	
-	for(int i = 0; i < 4; i++)
+	for(int i = 0; i < 4; ++i)
 		filteredEntry[i] = NULL;
 }

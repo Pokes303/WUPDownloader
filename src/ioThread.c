@@ -104,7 +104,7 @@ bool initIOThread()
 		uint8_t *ptr = (uint8_t *)MEMAllocFromDefaultHeap(MAX_IO_QUEUE_ENTRIES * IO_BUFSIZE);
 		if(ptr != NULL)
 		{
-			for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; i++, ptr += IO_BUFSIZE)
+			for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; ++i, ptr += IO_BUFSIZE)
 			{
 				queueEntries[i].buf = (void *)ptr;
 				queueEntries[i].inUse = false;

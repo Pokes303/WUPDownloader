@@ -56,7 +56,7 @@ static int rumbleThreadMain(int argc, const char **argv)
 			
 			for(; i > -1; i--)
 			{
-				for(int j = 0; j < 4; j++)
+				for(int j = 0; j < 4; ++j)
 					WPADControlMotor(j, i);
 				
 				OSSleepTicks(OSSecondsToTicks(i));

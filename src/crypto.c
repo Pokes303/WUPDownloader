@@ -42,8 +42,8 @@ static int osslBytes(unsigned char *buf, int num)
 	while(!OSCompareAndSwapAtomic(&entropyLock, false, true))
 		;
 
-	for(int i = 0; i < num; i++)
-		buf[i] = rand_r((uint32_t *)&entropy);
+	for(unsigned char *tmp = buf + num - 1; tmp >= buf; --tmp)
+		*tmp = rand_r((uint32_t *)&entropy);
 
 	entropyLock = false;
 	return 1;
@@ -81,7 +81,7 @@ void addEntropy(void *e, size_t l)
 	uint8_t *buf = (uint8_t *)e;
 	uint32_t ee;
 	int s;
-	for(size_t i = 0; i < l; i++)
+	for(size_t i = 0; i < l; ++i)
 	{
 		ee = buf[i];
 		s = rand_r((uint32_t *)&entropy) % 25;

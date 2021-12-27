@@ -100,7 +100,7 @@ bool generateKey(const TitleEntry *te, char *out)
 #ifdef NUSSPLI_DEBUG
 	tmp = out;
 #endif
-	for(bhl = 0; bhl < 16; bhl++, out += 2)
+	for(bhl = 0; bhl < 16; ++bhl, out += 2)
 		sprintf(out, "%02x", h[bhl]);
 	
 	debugPrintf("Key: 0x%s", tmp);

@@ -218,7 +218,7 @@ downloadTMD:
 	
 	tmd = (TMD *)getRamBuf();
 	dls = 0;
-	for(uint16_t i = 0; i < tmd->num_contents; i++)
+	for(uint16_t i = 0; i < tmd->num_contents; ++i)
 	{
 		if((tmd->contents[i].type & 0x0003) == 0x0003)
 			dls += 20;

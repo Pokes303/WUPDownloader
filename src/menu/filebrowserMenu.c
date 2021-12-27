@@ -56,7 +56,7 @@ void drawFBMenuFrame(char **folders, size_t foldersSize, const size_t pos, const
 	
 	foldersSize -= pos;
 	size_t max = MAX_FILEBROWSER_LINES < foldersSize ? MAX_FILEBROWSER_LINES : foldersSize;
-	for(size_t i = 0; i < max; i++)
+	for(size_t i = 0; i < max; ++i)
 	{
 		textToFrame(i + 2, 5, folders[i + pos]);
 		if(cursor == i)
@@ -84,9 +84,9 @@ char *fileBrowserMenu()
 	
 refreshDirList:
     OSTime t = OSGetSystemTime();
-	for(int i = 1; i < foldersSize; i++)
+	for(int i = 1; i < foldersSize; ++i)
 		MEMFreeToDefaultHeap(folders[i]);
-	foldersSize = 1;
+	foldersSize = 0;
 	cursor = pos = 0;
 	
 	dir = opendir(activeDevice == NUSDEV_USB ? INSTALL_DIR_USB : activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC);
@@ -97,18 +97,18 @@ refreshDirList:
 			if(entry->d_type & DT_DIR) //Check if it's a directory
 			{
 				len = strlen(entry->d_name);
-				folders[foldersSize] = MEMAllocFromDefaultHeap(len + 2);
+				folders[++foldersSize] = MEMAllocFromDefaultHeap(len + 2);
 				
 				strcpy(folders[foldersSize], entry->d_name);
-				folders[foldersSize][len++] = '/';
-				folders[foldersSize++][len] = '\0';
+				folders[foldersSize][len] = '/';
+				folders[foldersSize][++len] = '\0';
 			}
 		closedir(dir);
 	}
 	t = OSGetSystemTime() - t;
 	addEntropy(&t, sizeof(OSTime));
 	
-	drawFBMenuFrame(folders, foldersSize, pos, cursor, activeDevice, usbMounted);
+	drawFBMenuFrame(folders, ++foldersSize, pos, cursor, activeDevice, usbMounted);
 	
 	mov = foldersSize >= MAX_FILEBROWSER_LINES;
 	char *ret = NULL;
@@ -165,12 +165,12 @@ refreshDirList:
 			if(cursor >= foldersSize - 1 || cursor >= MAX_FILEBROWSER_LINES - 1)
 			{
 				if(mov && pos < foldersSize - MAX_FILEBROWSER_LINES)
-					pos++;
+					++pos;
 				else
 					cursor = pos = 0;
 			}
 			else
-				cursor++;
+				++cursor;
 			
 			redraw = true;
 		}
@@ -221,7 +221,7 @@ refreshDirList:
 	}
 	
 exitFileBrowserMenu:
-	for(int i = 0; i < foldersSize; i++)
+	for(int i = 0; i < foldersSize; ++i)
 		MEMFreeToDefaultHeap(folders[i]);
 	return ret;
 }

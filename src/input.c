@@ -133,7 +133,7 @@ static void SWKBD_Render(SWKBD_Args *args, KeyboardChecks check)
 						return;
 				}
 				
-				for(len = 0; inputFormString[len] != '\0'; len++)
+				for(len = 0; inputFormString[len] != '\0'; ++len)
 					if(!cf(inputFormString[len]))
 					{
 						inputFormString[len] = '\0';
@@ -153,7 +153,7 @@ static void SWKBD_Render(SWKBD_Args *args, KeyboardChecks check)
 	
 	Swkbd_ControllerInfo controllerInfo;
 	controllerInfo.vpad = &vpad;
-	for(int i = 0; i < 4; i++)
+	for(int i = 0; i < 4; ++i)
 		controllerInfo.kpad[i] = &kpad[i];
 	
 	Swkbd_Calc(controllerInfo); //TODO: Do this in a new thread?
@@ -190,7 +190,7 @@ static bool SWKBD_Show(SWKBD_Args *args, KeyboardLayout layout, KeyboardType typ
 		size_t strLen = strlen(okStr) + 1;
 		okStrL = MEMAllocFromDefaultHeap(strLen);
 		if(okStrL != NULL)
-			for(size_t i = 0; i < strLen; i++)
+			for(size_t i = 0; i < strLen; ++i)
 				okStrL[i] = okStr[i];
 	}
 	
@@ -366,7 +366,7 @@ void readInput()
 	bool altCon = false;
 	uint32_t controllerType;
 	int32_t controllerProbe;
-	for(int i = 0; i < 4; i++)
+	for(int i = 0; i < 4; ++i)
 	{
 		controllerProbe = WPADProbe(i, &controllerType);
 		if(controllerProbe == -1)
@@ -520,7 +520,7 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 					output[j++] = (char)(outputStr[i] >> 8);
 					output[j++] = (char)(outputStr[i]);
 				}
-				while(outputStr[i++] != u'\0');
+				while(outputStr[i++]);
 			}
 			else
 			{

@@ -257,7 +257,7 @@ static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 	{
 		X509_INFO *itmp;
 		int i = 0;
-		for(; i < sk_X509_INFO_num(inf); i++)
+		for(; i < sk_X509_INFO_num(inf); ++i)
 		{
 			itmp = sk_X509_INFO_value(inf, i);
 			if(itmp->x509)
@@ -916,7 +916,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	
 	if(folderName[0] == '\0')
 	{
-		for(int i = 0; i < strlen(titleEntry->name); i++)
+		for(int i = 0; i < strlen(titleEntry->name); ++i)
 			folderName[i] = isAllowedInFilename(titleEntry->name[i]) ? titleEntry->name[i] : '_';
 	}
 	strcpy(folderName + strlen(titleEntry->name), " [");
@@ -1181,13 +1181,13 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	bool h3[data.contents];
 	
 	//Get .app and .h3 files
-	for(int i = 0; i < tmd->num_contents; i++)
+	for(int i = 0; i < tmd->num_contents; ++i)
 	{
 		hex(tmd->contents[i].cid, 8, apps[i]);
 		h3[i] = (tmd->contents[i].type & 0x0003) == 0x0003;
 		if(h3[i])
 		{
-			data.contents++;
+			++data.contents;
 			data.dltotal += 20;
 		}
 		
@@ -1197,7 +1197,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	disableApd();
 	char *dupp = dup + 8;
 	char *idpp = idp + 8;
-	for(int i = 0; i < tmd->num_contents && AppRunning(); i++)
+	for(int i = 0; i < tmd->num_contents && AppRunning(); ++i)
 	{
 		strcpy(dup, apps[i]);
 		strcpy(idp, apps[i]);
@@ -1208,7 +1208,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 			enableApd();
 			return true;
 		}
-		data.dcontent++;
+		++data.dcontent;
 		
 		if(h3[i])
 		{
@@ -1220,7 +1220,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 				enableApd();
 				return true;
 			}
-			data.dcontent++;
+			++data.dcontent;
 		}
 	}
 

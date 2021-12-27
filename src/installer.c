@@ -126,7 +126,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	if(data.err == 0)
 	{
 		if(toUsb && !isUSB01())
-			target++;
+			++target;
 
 		data.err = MCP_InstallSetTargetUsb(mcpHandle, target);
 	}

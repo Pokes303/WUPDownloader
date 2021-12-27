@@ -76,7 +76,7 @@ void addToScreenLog(const char *str, ...)
 	for(DownloadLogList *c = downloadLogList; c != NULL; c = c->nextEntry)
 	{
 		
-		i++;
+		++i;
 		last = c;
 	}
 	if(i == MAX_LINES - 3)
@@ -105,9 +105,9 @@ void clearScreenLog()
 void writeScreenLog()
 {
 	lineToFrame(2, SCREEN_COLOR_WHITE);
-	int i = 3;
+	int i = 2;
 	for(DownloadLogList *entry = downloadLogList; entry != NULL; entry = entry->nextEntry)
-		textToFrame(i++, 0, entry->line);
+		textToFrame(++i, 0, entry->line);
 }
 
 void drawErrorFrame(const char *text, ErrorOptions option)
@@ -123,7 +123,7 @@ void drawErrorFrame(const char *text, ErrorOptions option)
 		if(size > 0)
 		{
 			char tmp[size + 1];
-			for(int i = 0; i < size; i++)
+			for(int i = 0; i < size; ++i)
 				tmp[i] = text[i];
 
 			tmp[size] = '\0';
@@ -131,7 +131,7 @@ void drawErrorFrame(const char *text, ErrorOptions option)
 		}
 		
 		text = l == NULL ? NULL : (l + 1);
-		line++;
+		++line;
 	}
 	
 	line = MAX_LINES - 1;
