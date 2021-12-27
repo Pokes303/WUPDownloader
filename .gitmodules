@@ -1,5 +1,5 @@
-[submodule "src/cJSON"]
-	path = src/cJSON
+[submodule "cJSON"]
+	path = cJSON
 	url = https://github.com/DaveGamble/cJSON.git
 [submodule "zlib"]
 	path = zlib
