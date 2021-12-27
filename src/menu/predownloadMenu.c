@@ -189,7 +189,6 @@ void predownloadMenu(const TitleEntry *entry)
 	
 	bool loop = true;
 	bool inst, toUSB;
-	bool uninstall = false;
 	bool redraw = false;
 	
 	char tid[17];
@@ -313,8 +312,10 @@ naNedNa:
 		}
 		if(installed && vpad.trigger & VPAD_BUTTON_UP)
 		{
-			uninstall = true;
-			redraw = loop = false;
+			clearRamBuf();
+			saveConfig(false);
+			deinstall(titleList, false);
+			return;
 		}
 		
 		if(redraw)
@@ -327,14 +328,6 @@ naNedNa:
 	if(!AppRunning())
 	{
 		clearRamBuf();
-		return;
-	}
-	
-	if(uninstall)
-	{
-		clearRamBuf();
-		saveConfig(false);
-		deinstall(titleList, false);
 		return;
 	}
 	
