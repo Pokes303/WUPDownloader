@@ -45,7 +45,7 @@ static volatile uint32_t entropy;
 	}								\
 }
 
-static int osslBytes(unsigned char *buf, int num)
+int osslBytes(unsigned char *buf, int num)
 {
 	--buf;
 	++num;

@@ -57,10 +57,8 @@ void writeCustomBytes(NUSFILE *fp, const char *str)
 
 void writeRandomBytes(NUSFILE* fp, uint32_t len)
 {
-	uint32_t len32 = len < 9 ? 1 : len >> 2;
-	uint32_t bytes[len32];
-	for(int i = 0; i < len32; ++i)
-		bytes[i] = rand();
+    uint8_t bytes[len];
+    osslBytes(bytes, len);
 	addToIOQueue(bytes, 1, len, fp);
 }
 
