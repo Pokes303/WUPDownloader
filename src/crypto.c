@@ -75,20 +75,29 @@ void reseed()
 
 void addEntropy(void *e, size_t l)
 {
+	uint8_t *buf8 = (uint8_t *)e;
+	uint32_t *buf32;
+	size_t l32 = l >> 2;
+	if(l32)
+	{
+		buf32 = (uint32_t *)e;
+		--buf32;
+		buf8 += l32 << 2;
+		l %= 4;
+	}
+
+	++l;
+	++l32;
+	--buf8;
+
 	while(!spinTryLock(entropyLock))
 		OSSleepTicks(128);
 
-	uint8_t *buf = (uint8_t *)e;
-	uint32_t ee;
-	int s;
-	for(size_t i = 0; i < l; ++i)
-	{
-		ee = buf[i];
-		s = rand_r((uint32_t *)&entropy) % 25;
-		if(s)
-			ee <<= s;
-		entropy ^= ee;
-	}
+	while(--l32)
+		entropy ^= (*++buf32) ^ rand_r((uint32_t *)&entropy);
+
+	while(--l)
+		entropy ^= (*++buf8) ^ rand_r((uint32_t *)&entropy);
 
 	spinReleaseLock(entropyLock);
 }
