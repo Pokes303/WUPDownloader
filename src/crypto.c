@@ -30,13 +30,15 @@
 #include <openssl/rand_drbg.h>
 #include <openssl/ssl.h>
 
+#include <coreinit/time.h>
+
 static volatile uint32_t entropy;
 
 // Based on George Marsaglias paper "Xorshift RNGs" from https://www.jstatsoft.org/article/view/v008i14
 #define rngRun()					\
 {									\
 	if(!entropy)					\
-		entropy = rand();/* TODO */	\
+		reseed();					\
 	else							\
 	{								\
 		entropy ^= entropy << 13;	\
@@ -79,8 +81,8 @@ static const RAND_METHOD srm = {
 
 void reseed()
 {
-	rngRun();
-	srand(entropy);
+	entropy ^= OSGetSystemTick();
+	entropy ^= OSGetTick();
 }
 
 void addEntropy(void *e, size_t l)
@@ -115,7 +117,6 @@ void addEntropy(void *e, size_t l)
 
 bool initCrypto()
 {
-	entropy ^= OSGetTick();
 	reseed();
 	return OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS, NULL) == 1 &&
 		RAND_set_rand_method(&srm) == 1 &&

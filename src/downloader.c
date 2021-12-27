@@ -889,7 +889,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	}
 	
 	addToScreenLog(toScreen);
-	reseed();
 	return 0;
 }
 
