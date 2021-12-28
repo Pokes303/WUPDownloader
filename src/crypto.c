@@ -25,6 +25,7 @@
 #include <utils.h>
 
 #include <crypto.h>
+#include <thread.h>
 
 #include <openssl/rand.h>
 #include <openssl/rand_drbg.h>
@@ -32,6 +33,7 @@
 
 #include <coreinit/time.h>
 
+static volatile spinlock rngLock;
 static volatile uint32_t entropy;
 
 #define reseed()					\
@@ -57,11 +59,16 @@ int osslBytes(unsigned char *buf, int num)
 {
 	--buf;
 	++num;
+
+	spinLock(rngLock);
+
 	while(--num)
 	{
 		rngRun();
 		*++buf = entropy;
 	}
+
+	spinReleaseLock(rngLock);
 
 	return 1;
 }
@@ -102,6 +109,8 @@ void addEntropy(void *e, size_t l)
 	++l32;
 	--buf8;
 
+	spinLock(rngLock);
+
 	while(--l32)
 	{
 		rngRun();
@@ -113,11 +122,14 @@ void addEntropy(void *e, size_t l)
 		rngRun();
 		entropy ^= *++buf8;
 	}
+
+	spinReleaseLock(rngLock);
 }
 
 bool initCrypto()
 {
 	reseed();
+	spinCreateLock(&rngLock, false);
 	return OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS, NULL) == 1 &&
 		RAND_set_rand_method(&srm) == 1 &&
 		RAND_DRBG_set_reseed_defaults(0, 0, 0, 0) == 1;
