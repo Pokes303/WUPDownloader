@@ -48,12 +48,12 @@ typedef struct
 } WriteQueueEntry;
 
 static OSThread *ioThread;
-static bool ioRunning = false;
+static volatile bool ioRunning = false;
 static volatile spinlock ioWriteLock = SPINLOCK_LOCKED;
 
-static WriteQueueEntry *queueEntries;
-static uint32_t activeReadBuffer;
-static uint32_t activeWriteBuffer;
+static volatile WriteQueueEntry *queueEntries;
+static volatile uint32_t activeReadBuffer;
+static volatile uint32_t activeWriteBuffer;
 
 static int ioThreadMain(int argc, const char **argv)
 {
@@ -61,7 +61,8 @@ static int ioThreadMain(int argc, const char **argv)
 	debugPrintf("I/O queue running!");
 
 	uint32_t asl;
-	WriteQueueEntry *entry;
+	volatile WriteQueueEntry *entry;
+
 	while(ioRunning)
 	{
 		asl = activeWriteBuffer;
@@ -117,7 +118,7 @@ bool initIOThread()
 
 			MEMFreeToDefaultHeap(queueEntries[0].buf);
 		}
-		MEMFreeToDefaultHeap(queueEntries);
+		MEMFreeToDefaultHeap((void *)queueEntries);
 	}
 	return false;
 }
@@ -140,7 +141,7 @@ void shutdownIOThread()
 	stopThread(ioThread, NULL);
 #endif
 	MEMFreeToDefaultHeap(queueEntries[0].buf);
-	MEMFreeToDefaultHeap(queueEntries);
+	MEMFreeToDefaultHeap((void *)queueEntries);
 #ifdef NUSSPLI_DEBUG
 	debugPrintf("I/O thread returned: %d", ret);
 #endif
@@ -151,7 +152,7 @@ bool queueStalled = false;
 #endif
 size_t addToIOQueue(const void *buf, size_t size, size_t n, NUSFILE *file)
 {
-    WriteQueueEntry *entry;
+    volatile WriteQueueEntry *entry;
 		
 retryAddingToQueue:
 	
