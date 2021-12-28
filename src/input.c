@@ -152,11 +152,24 @@ static void SWKBD_Render(SWKBD_Args *args, KeyboardChecks check)
 	}
 	
 	Swkbd_ControllerInfo controllerInfo;
-	controllerInfo.vpad = &vpad;
-	for(int i = 0; i < 4; ++i)
-		controllerInfo.kpad[i] = &kpad[i];
+	bool tv;
+	if(lastUsedController == CT_VPAD_0)
+	{
+		tv = false;
+		controllerInfo.vpad = &vpad;
+	}
+	else
+	{
+		tv = true;
+		KPADStatus *ksp = kpad;
+		--ksp;
+		KPADStatus **ciksp = controllerInfo.kpad;
+		--ciksp;
+		for(int i = 4; i; --i)
+			*++ciksp = ++ksp;
+	}
 	
-	Swkbd_Calc(controllerInfo); //TODO: Do this in a new thread?
+	Swkbd_Calc(controllerInfo);
 
 	if(Swkbd_IsNeedCalcSubThreadFont())
 	{
@@ -164,7 +177,7 @@ static void SWKBD_Render(SWKBD_Args *args, KeyboardChecks check)
 		OSSendMessage(&swkbd_queue, &msg, OS_MESSAGE_FLAGS_NONE);
 	}
 
-	drawKeyboard(lastUsedController != CT_VPAD_0);
+	drawKeyboard(tv);
 }
 
 static bool SWKBD_Show(SWKBD_Args *args, KeyboardLayout layout, KeyboardType type, int maxlength, bool limit, const char *okStr) {
@@ -197,8 +210,7 @@ static bool SWKBD_Show(SWKBD_Args *args, KeyboardLayout layout, KeyboardType typ
 	// Show the keyboard
 	Swkbd_AppearArg appearArg;
 	
-	OSBlockSet(&appearArg.keyboardArg.configArg, 0, sizeof(Swkbd_ConfigArg));
-	OSBlockSet(&appearArg.keyboardArg.receiverArg, 0, sizeof(Swkbd_ReceiverArg));
+	OSBlockSet(&appearArg, 0, sizeof(Swkbd_AppearArg));
 	
 	appearArg.keyboardArg.configArg.languageType = getKeyboardLanguage();
 	switch(appearArg.keyboardArg.configArg.languageType)
@@ -367,9 +379,13 @@ void readInput()
 	uint32_t controllerType;
 	int32_t controllerProbe;
 	uint32_t oldV;
-	for(int i = 0; i < 4; ++i)
+	uint32_t tv;
+	KPADStatus *kps = kpad + 4;
+	int i = 4;
+	while(i)
 	{
-		controllerProbe = WPADProbe(i, &controllerType);
+		--kps;
+		controllerProbe = WPADProbe(--i, &controllerType);
 		if(controllerProbe == -1)
 			continue;
 		
@@ -378,44 +394,46 @@ void readInput()
 		if(controllerProbe != 0)
 			continue;
 		
-		OSBlockSet(&kpad[i], 0, sizeof(KPADStatus));
-		KPADRead(i, &kpad[i], 1);
+
+//		OSBlockSet(kpad, 0, sizeof(KPADStatus));
+		KPADRead(i, kps, 1);
 		
 		if(controllerType == WPAD_EXT_PRO_CONTROLLER || // With a simple input like ours we're able to handle Wii u pro as Wii classic controllers.
 				controllerType == WPAD_EXT_CLASSIC ||
 				controllerType == WPAD_EXT_MPLUS_CLASSIC)
 		{
 			oldV = vpad.trigger;
+			tv = kps->classic.trigger;
 
-			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_A)
+			if(tv & WPAD_CLASSIC_BUTTON_A)
 				vpad.trigger = VPAD_BUTTON_A;
-			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_B)
+			if(tv & WPAD_CLASSIC_BUTTON_B)
 				vpad.trigger |= VPAD_BUTTON_B;
-			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_X)
+			if(tv & WPAD_CLASSIC_BUTTON_X)
 				vpad.trigger |= VPAD_BUTTON_X;
-			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_Y)
+			if(tv & WPAD_CLASSIC_BUTTON_Y)
 				vpad.trigger |= VPAD_BUTTON_Y;
-			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_UP)
+			if(tv & WPAD_CLASSIC_BUTTON_UP)
 				vpad.trigger |= VPAD_BUTTON_UP;
-			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_DOWN)
+			if(tv & WPAD_CLASSIC_BUTTON_DOWN)
 				vpad.trigger |= VPAD_BUTTON_DOWN;
-			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_LEFT)
+			if(tv & WPAD_CLASSIC_BUTTON_LEFT)
 				vpad.trigger |= VPAD_BUTTON_LEFT;
-			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_RIGHT)
+			if(tv & WPAD_CLASSIC_BUTTON_RIGHT)
 				vpad.trigger |= VPAD_BUTTON_RIGHT;
-			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_PLUS)
+			if(tv & WPAD_CLASSIC_BUTTON_PLUS)
 				vpad.trigger |= VPAD_BUTTON_PLUS;
-			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_MINUS)
+			if(tv & WPAD_CLASSIC_BUTTON_MINUS)
 				vpad.trigger |= VPAD_BUTTON_MINUS;
-			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_HOME)
+			if(tv & WPAD_CLASSIC_BUTTON_HOME)
 				vpad.trigger |= VPAD_BUTTON_HOME;
-			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_R)
+			if(tv & WPAD_CLASSIC_BUTTON_R)
 				vpad.trigger |= VPAD_BUTTON_R;
-			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_L)
+			if(tv & WPAD_CLASSIC_BUTTON_L)
 				vpad.trigger |= VPAD_BUTTON_L;
-			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_ZR)
+			if(tv & WPAD_CLASSIC_BUTTON_ZR)
 				vpad.trigger |= VPAD_BUTTON_ZR;
-			if(kpad[i].classic.trigger & WPAD_CLASSIC_BUTTON_ZL)
+			if(tv & WPAD_CLASSIC_BUTTON_ZL)
 				vpad.trigger |= VPAD_BUTTON_ZL;
 			
 			if(vpad.trigger != 0)
@@ -426,28 +444,30 @@ void readInput()
 				continue;
 			}
 		}
-			
-		if(kpad[i].trigger & WPAD_BUTTON_A)
+
+		tv = kps->trigger;
+
+		if(tv & WPAD_BUTTON_A)
 			vpad.trigger = VPAD_BUTTON_A;
-		if(kpad[i].trigger & WPAD_BUTTON_B)
+		if(tv & WPAD_BUTTON_B)
 			vpad.trigger |= VPAD_BUTTON_B;
-		if(kpad[i].trigger & WPAD_BUTTON_1)
+		if(tv & WPAD_BUTTON_1)
 			vpad.trigger |= VPAD_BUTTON_X;
-		if(kpad[i].trigger & WPAD_BUTTON_2)
+		if(tv & WPAD_BUTTON_2)
 			vpad.trigger |= VPAD_BUTTON_Y;
-		if(kpad[i].trigger & WPAD_BUTTON_UP)
+		if(tv & WPAD_BUTTON_UP)
 			vpad.trigger |= VPAD_BUTTON_UP;
-		if(kpad[i].trigger & WPAD_BUTTON_DOWN)
+		if(tv & WPAD_BUTTON_DOWN)
 			vpad.trigger |= VPAD_BUTTON_DOWN;
-		if(kpad[i].trigger & WPAD_BUTTON_LEFT)
+		if(tv & WPAD_BUTTON_LEFT)
 			vpad.trigger |= VPAD_BUTTON_LEFT;
-		if(kpad[i].trigger & WPAD_BUTTON_RIGHT)
+		if(tv & WPAD_BUTTON_RIGHT)
 			vpad.trigger |= VPAD_BUTTON_RIGHT;
-		if(kpad[i].trigger & WPAD_BUTTON_PLUS)
+		if(tv & WPAD_BUTTON_PLUS)
 			vpad.trigger |= VPAD_BUTTON_PLUS;
-		if(kpad[i].trigger & WPAD_BUTTON_MINUS)
+		if(tv & WPAD_BUTTON_MINUS)
 			vpad.trigger |= VPAD_BUTTON_MINUS;
-		if(kpad[i].trigger & WPAD_BUTTON_HOME)
+		if(tv & WPAD_BUTTON_HOME)
 			vpad.trigger |= VPAD_BUTTON_HOME;
 		
 		if(vpad.trigger != 0 && kbdHidden && vpad.trigger != oldV)
@@ -509,7 +529,7 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 		SWKBD_Render(&args, check);
 //		sleepTillFrameEnd();
 		
-		if(args.okButtonEnabled && (Swkbd_IsDecideOkButton(&dummy) || (lastUsedController == CT_VPAD_0 && vpad.trigger & VPAD_BUTTON_A)))
+		if(args.okButtonEnabled && (Swkbd_IsDecideOkButton(&dummy) || (lastUsedController == CT_VPAD_0 && vpad.trigger & VPAD_BUTTON_A) || vpad.trigger & VPAD_BUTTON_PLUS))
 		{
 			debugPrintf("SWKBD Ok button pressed");
 			if(layout == KEYBOARD_LAYOUT_NORMAL)
@@ -536,7 +556,7 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 			return true;
 		}
 		
-		bool close = vpad.trigger & VPAD_BUTTON_B;
+		bool close = vpad.trigger & VPAD_BUTTON_B || vpad.trigger & VPAD_BUTTON_MINUS;
 		if(close)
 		{
 			if(layout == KEYBOARD_LAYOUT_NORMAL)
