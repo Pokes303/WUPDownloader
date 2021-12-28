@@ -81,10 +81,10 @@ void textToFrameCut(int line, int column, const char *str, int maxWidth)
 	line -= 7;
 	SDL_Rect text = { .w = FC_GetWidth(font, str), .h = FONT_SIZE, .y = line };
 
+	int i = strlen(str);
+	char cpy[++i ];
 	if(maxWidth != 0 && text.w > maxWidth)
 	{
-		int i = strlen(str);
-		char cpy[++i ];
 		char *tmp = cpy;
 		OSBlockMove(tmp, str, i, false);
 		tmp += i;
@@ -103,6 +103,12 @@ void textToFrameCut(int line, int column, const char *str, int maxWidth)
 			++tmp2;
 			*++tmp2 = '\0';
 			text.w = FC_GetWidth(font, cpy);
+		}
+
+		if(*--tmp == ' ')
+		{
+			*tmp = '.';
+			tmp[3] = '\0';
 		}
 
 		str = cpy;
