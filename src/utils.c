@@ -293,7 +293,7 @@ static volatile spinlock debugLock;
 
 void debugInit()
 {
-	debugLock = SPINLOCK_FREE;
+	spinCreateLock(&debugLock, false);
 	WHBLogUdpInit();
 }
 

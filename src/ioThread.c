@@ -49,7 +49,7 @@ typedef struct
 
 static OSThread *ioThread;
 static volatile bool ioRunning = false;
-static volatile spinlock ioWriteLock = SPINLOCK_LOCKED;
+static volatile spinlock ioWriteLock;
 
 static volatile WriteQueueEntry *queueEntries;
 static volatile uint32_t activeReadBuffer;
@@ -108,6 +108,7 @@ bool initIOThread()
 				queueEntries[i].inUse = false;
 			}
 
+			spinCreateLock(&ioWriteLock, true);
 			activeReadBuffer = activeWriteBuffer = 0;
 			ioRunning = true;
 

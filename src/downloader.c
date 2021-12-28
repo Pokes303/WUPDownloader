@@ -431,7 +431,7 @@ static int dlThreadMain(int argc, const char **argv)
 #define setDefaultDataValues(x) 			\
 	x.running = true;						\
 	x.error = CURLE_OK;						\
-	x.lock = false;							\
+	spinCreateLock(&(x.lock), false);		\
 	x.dlnow = 								\
 	x.dltotal = 0.0D;						\
 
