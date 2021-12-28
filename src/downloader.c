@@ -1078,7 +1078,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 			hasDependencies = false;
 			break;
 		default:
-			sprintf(toScreen + strlen(toScreen), "Unknown (0x%08X)", *(uint32_t *)&(tmd->tid));
+			sprintf(toScreen + strlen(toScreen), "Unknown (0x%08X)", getTidHighFromTid(tmd->tid));
 			hasDependencies = false;
 			break;
 	}

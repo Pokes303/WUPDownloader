@@ -62,7 +62,6 @@ static int ioThreadMain(int argc, const char **argv)
 
 	uint32_t asl;
 	volatile WriteQueueEntry *entry;
-
 	while(ioRunning)
 	{
 		asl = activeWriteBuffer;

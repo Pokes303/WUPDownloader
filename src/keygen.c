@@ -34,7 +34,7 @@
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 
-#define KEYGEN_SECRET  "fd040105060b111c2d49"
+static const uint8_t KEYGEN_SECRET[10] = { 0xfd, 0x04, 0x01, 0x05, 0x06, 0x0b, 0x11, 0x1c, 0x2d, 0x49 };
 
 static inline const char *transformPassword(TITLE_KEY in)
 {
@@ -66,43 +66,63 @@ static inline const char *transformPassword(TITLE_KEY in)
 
 bool generateKey(const TitleEntry *te, char *out)
 {
-	char tid[17];
-	hex(te->tid, 16, tid);
-	char *tmp = tid;
-	while(tmp[0] == '0' && tmp[1] == '0')
-		tmp += 2;
-	
-	char h[strlen(KEYGEN_SECRET) + 16 + 1];
-	strcpy(h, KEYGEN_SECRET);
-	strcat(h, tmp);
-	
-	size_t bhl = strlen(h) >> 1;
-	uint8_t bh[bhl];
-	hexToByte(h, bh);
-	
-	uint8_t ct[16];
-	MD5(bh, bhl, ct);
-	
+	const uint8_t *ti = (const uint8_t *)&(te->tid);
+	size_t i;
+	size_t j;
+	switch(getTidHighFromTid(te->tid))
+	{
+		case TID_HIGH_VWII_IOS:
+			ti += 2;
+			i = 8 - 3;
+			j = 8 - 3 + 10;
+			break;
+		default:
+			i = 8 - 1;
+			j = 8 - 1 + 10;
+	}
+
+	uint8_t bh[j];
+	uint8_t *tmp8 = bh;
+	const uint8_t *tmp81 = KEYGEN_SECRET;
+
+	--tmp8;
+	--tmp81;
+	uint8_t *k = tmp8 + 10;
+	while(k != tmp8)
+		*++tmp8 = *++tmp81;
+
+	k += i;
+	while(k != tmp8)
+		*++tmp8 = *++ti;
+
 	const char *pw = transformPassword(te->key);
 	debugPrintf("Using password \"%s\"", pw);
 
-	uint8_t key[16];
-	if(PKCS5_PBKDF2_HMAC_SHA1(pw, strlen(pw), ct, 16, 20, 16, key) == 0)
+	MD5(bh, j, bh);
+	if(PKCS5_PBKDF2_HMAC_SHA1(pw, strlen(pw), bh, 16, 20, 16, bh) == 0)
 		return false;
-	
-	hexToByte(tid, ct);
+
+	uint8_t ct[16];
+	OSBlockMove(ct, &(te->tid), 8, false);
 	OSBlockSet(ct + 8, 0, 8);
 
 	AES_KEY aesk;
+	unsigned char tmp[17];
 	AES_set_encrypt_key(getCommonKey(), 128, &aesk);
-	AES_cbc_encrypt(key, (unsigned char *)h, 16, &aesk, ct, AES_ENCRYPT);
+	AES_cbc_encrypt(bh, tmp, 16, &aesk, ct, AES_ENCRYPT);
 
-#ifdef NUSSPLI_DEBUG
-	tmp = out;
-#endif
-	for(bhl = 0; bhl < 16; ++bhl, out += 2)
-		sprintf(out, "%02x", h[bhl]);
+	unsigned char *tmpc = tmp;
+	--tmpc;
+	i = 17;
+	while(--i)
+	{
+		sprintf(out, "%02x", *++tmpc);
+		out += 2;
+	}
 	
-	debugPrintf("Key: 0x%s", tmp);
+#ifdef NUSSPLI_DEBUG
+	out -= 32;
+	debugPrintf("Key: 0x%s", out);
+#endif
 	return true;
 }
