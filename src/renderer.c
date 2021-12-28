@@ -76,39 +76,37 @@ void textToFrameCut(int line, int column, const char *str, int maxWidth)
 	if(font == NULL)
 		return;
 
-	SDL_Rect text;
-	text.w = FC_GetWidth(font, str);
-
-	int i = strlen(str);
-	char cpy[++i ];
+	++line;
+	line *= FONT_SIZE;
+	line -= 7;
+	SDL_Rect text = { .w = FC_GetWidth(font, str), .h = FONT_SIZE, .y = line };
 
 	if(maxWidth != 0 && text.w > maxWidth)
 	{
-		strcpy(cpy, str);
-		cpy[--i] = '\0';
-		cpy[--i] = '.';
-		cpy[--i] = '.';
-		cpy[--i] = '.';
-		text.w = FC_GetWidth(font, cpy);
+		int i = strlen(str);
+		char cpy[++i ];
+		char *tmp = cpy;
+		OSBlockMove(tmp, str, i, false);
+		tmp += i;
 
+		*--tmp = '\0';
+		*--tmp = '.';
+		*--tmp = '.';
+		*--tmp = '.';
+
+		char *tmp2;
+		text.w = FC_GetWidth(font, cpy);
 		while(text.w > maxWidth)
 		{
-			cpy[i + 2] = '\0';
-			cpy[--i] = '.';
+			tmp2 = tmp;
+			*--tmp = '.';
+			++tmp2;
+			*++tmp2 = '\0';
 			text.w = FC_GetWidth(font, cpy);
 		}
 
 		str = cpy;
 	}
-
-	text.h = FONT_SIZE;
-	if(text.w == 0 || text.h == 0)
-		return;
-
-	++line;
-	line *= FONT_SIZE;
-	line -= 7;
-	text.y = line;
 
 	switch(column)
 	{
