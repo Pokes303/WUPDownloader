@@ -30,9 +30,10 @@
 #define TO_FRAME_BUFFER_SIZE 4096
 
 typedef enum {
-	B_RETURN = 1,
-	A_CONTINUE = 2,
-	Y_RETRY = 4,
+	ANY_RETURN	= 0xFFFFFFFF,
+	B_RETURN	= 1,
+	A_CONTINUE	= 1 << 1,
+	Y_RETRY 	= 1 << 2,
 } ErrorOptions;
 
 void addToScreenLog(const char *str, ...);

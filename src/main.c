@@ -254,9 +254,9 @@ int main()
 	
 	if(lerr != NULL)
 	{
-		drawErrorFrame(lerr, B_RETURN);
+		drawErrorFrame(lerr, ANY_RETURN);
 			
-		while(!(vpad.trigger & VPAD_BUTTON_B))
+		while(!(vpad.trigger))
 			showFrame();
 	}
 	

@@ -102,18 +102,18 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 		
 		debugPrintf(toScreen);
 		addToScreenLog("Installation failed!");
-		drawErrorFrame(toScreen, B_RETURN);
+		drawErrorFrame(toScreen, ANY_RETURN);
 		
 		while(AppRunning())
 		{
 			if(app == APP_STATE_BACKGROUND)
 				continue;
 			if(app == APP_STATE_RETURNING)
-				drawErrorFrame(toScreen, B_RETURN);
+				drawErrorFrame(toScreen, ANY_RETURN);
 			
 			showFrame();
 			
-			if(vpad.trigger & VPAD_BUTTON_B)
+			if(vpad.trigger)
 				break;
 		}
 		return false;
@@ -136,18 +136,18 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 		char *err = toUsb ? "Error opening USB device" : "Error opening internal memory";
 		debugPrintf(err);
 		addToScreenLog("Installation failed!");
-		drawErrorFrame(err, B_RETURN);
+		drawErrorFrame(err, ANY_RETURN);
 		
 		while(AppRunning())
 		{
 			if(app == APP_STATE_BACKGROUND)
 				continue;
 			if(app == APP_STATE_RETURNING)
-				drawErrorFrame(err, B_RETURN);
+				drawErrorFrame(err, ANY_RETURN);
 			
 			showFrame();
 			
-			if(vpad.trigger & VPAD_BUTTON_B)
+			if(vpad.trigger)
 				break;
 		}
 		return false;
@@ -173,18 +173,18 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 		sprintf(toScreen, "Error starting async installation of \"%s\": %#010x", newPath, data.err);
 		debugPrintf(toScreen);
 		addToScreenLog("Installation failed!");
-		drawErrorFrame(toScreen, B_RETURN);
+		drawErrorFrame(toScreen, ANY_RETURN);
 		
 		while(AppRunning())
 		{
 			if(app == APP_STATE_BACKGROUND)
 				continue;
 			if(app == APP_STATE_RETURNING)
-				drawErrorFrame(toScreen, B_RETURN);
+				drawErrorFrame(toScreen, ANY_RETURN);
 			
 			showFrame();
 			
-			if(vpad.trigger & VPAD_BUTTON_B)
+			if(vpad.trigger)
 				break;
 		}
 		enableShutdown();
@@ -236,18 +236,18 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 		}
 		
 		addToScreenLog("Installation failed!");
-		drawErrorFrame(toScreen, B_RETURN);
+		drawErrorFrame(toScreen, ANY_RETURN);
 		
 		while(AppRunning())
 		{
 			if(app == APP_STATE_BACKGROUND)
 				continue;
 			if(app == APP_STATE_RETURNING)
-				drawErrorFrame(toScreen, B_RETURN);
+				drawErrorFrame(toScreen, ANY_RETURN);
 			
 			showFrame();
 			
-			if(vpad.trigger & VPAD_BUTTON_B)
+			if(vpad.trigger)
 				break;
 		}
 		enableShutdown();

@@ -114,11 +114,12 @@ void drawErrorFrame(const char *text, ErrorOptions option)
 {
 	colorStartNewFrame(SCREEN_COLOR_RED);
 	
+    char *l;
 	size_t size;
-	int line = 0;
-	while(text != NULL)
+	int line = -1;
+	while(text)
 	{
-		const char *l = strchr(text, '\n');
+		l = strchr(text, '\n');
 		size = l == NULL ? strlen(text) : (l - text);
 		if(size > 0)
 		{
@@ -127,22 +128,29 @@ void drawErrorFrame(const char *text, ErrorOptions option)
 				tmp[i] = text[i];
 
 			tmp[size] = '\0';
-			textToFrame(line, 0, tmp);
+			textToFrame(++line, 0, tmp);
 		}
 		
 		text = l == NULL ? NULL : (l + 1);
-		++line;
 	}
 	
-	line = MAX_LINES - 1;
-	if((option & B_RETURN) == B_RETURN)
-		textToFrame(line--, 0, "Press " BUTTON_B " to return");
-	if((option & Y_RETRY) == Y_RETRY)
-		textToFrame(line--, 0, "Press " BUTTON_Y " to retry");
-	if((option & A_CONTINUE) == A_CONTINUE)
-		textToFrame(line--, 0, "Press " BUTTON_A " to continue");
-	lineToFrame(line, SCREEN_COLOR_WHITE);
-	
+	line = MAX_LINES;
+
+	if(option == ANY_RETURN)
+		textToFrame(--line, 0, "Press any key to return");
+	else
+	{
+		if(option & B_RETURN)
+			textToFrame(--line, 0, "Press " BUTTON_B " to return");
+
+		if(option & Y_RETRY)
+			textToFrame(--line, 0, "Press " BUTTON_Y " to retry");
+
+		if(option & A_CONTINUE)
+			textToFrame(--line, 0, "Press " BUTTON_A " to continue");
+	}
+
+	lineToFrame(--line, SCREEN_COLOR_WHITE);
 	drawFrame();
 }
 

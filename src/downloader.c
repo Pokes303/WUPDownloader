@@ -944,18 +944,18 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 			else
 				strcpy(toScreen, errStr);
 
-			drawErrorFrame(toScreen, B_RETURN);
+			drawErrorFrame(toScreen, ANY_RETURN);
 
 			while(AppRunning())
 			{
 				if(app == APP_STATE_BACKGROUND)
 					continue;
 				if(app == APP_STATE_RETURNING)
-					drawErrorFrame(toScreen, B_RETURN);
+					drawErrorFrame(toScreen, ANY_RETURN);
 
 				showFrame();
 
-				if(vpad.trigger & VPAD_BUTTON_B)
+				if(vpad.trigger)
 					break;
 			}
 			return false;
@@ -984,18 +984,18 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 			else
 				strcpy(toScreen, errStr);
 			
-			drawErrorFrame(toScreen, B_RETURN);
+			drawErrorFrame(toScreen, ANY_RETURN);
 			
 			while(AppRunning())
 			{
 				if(app == APP_STATE_BACKGROUND)
 					continue;
 				if(app == APP_STATE_RETURNING)
-					drawErrorFrame(toScreen, B_RETURN);
+					drawErrorFrame(toScreen, ANY_RETURN);
 				
 				showFrame();
 				
-				if(vpad.trigger & VPAD_BUTTON_B)
+				if(vpad.trigger)
 					break;
 			}
 			return false;
@@ -1010,18 +1010,18 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	NUSFILE *fp = openFile(installDir, "wb");
 	if(fp == NULL)
 	{
-		drawErrorFrame("Can't save TMD file!", B_RETURN);
+		drawErrorFrame("Can't save TMD file!", ANY_RETURN);
 		
 		while(AppRunning())
 		{
 			if(app == APP_STATE_BACKGROUND)
 				continue;
 			if(app == APP_STATE_RETURNING)
-				drawErrorFrame("Can't save TMD file!", B_RETURN);
+				drawErrorFrame("Can't save TMD file!", ANY_RETURN);
 			
 			showFrame();
 			
-			if(vpad.trigger & VPAD_BUTTON_B)
+			if(vpad.trigger)
 				break;
 		}
 		return false;

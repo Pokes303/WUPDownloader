@@ -481,12 +481,12 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 
 	if(!SWKBD_Show(&args, layout, type, maxlength, limit, okStr))
 	{
-		drawErrorFrame("Error showing SWKBD:\nnn::swkbd::AppearInputForm failed", B_RETURN);
+		drawErrorFrame("Error showing SWKBD:\nnn::swkbd::AppearInputForm failed", ANY_RETURN);
 		
 		while(true)
 		{
 			showFrame();							
-			if(vpad.trigger & VPAD_BUTTON_B)
+			if(vpad.trigger)
 				return false;
 		}
 	}

@@ -68,17 +68,17 @@
 void showUpdateError(const char* msg)
 {
 	enableShutdown();
-	drawErrorFrame(msg, B_RETURN);
+	drawErrorFrame(msg, ANY_RETURN);
 	while(AppRunning())
 	{
 		if(app == APP_STATE_BACKGROUND)
 			continue;
 		if(app == APP_STATE_RETURNING)
-			drawErrorFrame(msg, B_RETURN);
+			drawErrorFrame(msg, ANY_RETURN);
 		
 		showFrame();
 		
-		if(vpad.trigger & VPAD_BUTTON_B)
+		if(vpad.trigger)
 			return;
 	}
 }

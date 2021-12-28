@@ -60,7 +60,7 @@ void generateTik(const char *path, const TitleEntry *titleEntry)
 	{
 		char err[1044];
 		sprintf(err, "Could not open path\n%s", path);
-		drawErrorFrame(err, B_RETURN);
+		drawErrorFrame(err, ANY_RETURN);
 		
 		while(AppRunning())
 		{
@@ -69,9 +69,9 @@ void generateTik(const char *path, const TitleEntry *titleEntry)
 			if(app == APP_STATE_BACKGROUND)
 				continue;
 			if(app == APP_STATE_RETURNING)
-				drawErrorFrame(err, B_RETURN);
+				drawErrorFrame(err, ANY_RETURN);
 			
-			if(vpad.trigger & VPAD_BUTTON_B)
+			if(vpad.trigger)
 				break;
 		}
 		return;
@@ -221,7 +221,7 @@ bool generateFakeTicket()
 					textToFrame(1, 0, tikPath);
 				}
 				
-				textToFrame(3, 0, "Press " BUTTON_A " to return");
+				textToFrame(3, 0, "Press any key to return");
 				drawFrame();
 				
 				while(AppRunning())
@@ -232,7 +232,7 @@ bool generateFakeTicket()
 						continue;
 					//TODO: APP_STATE_RETURNING
 					
-					if(vpad.trigger & VPAD_BUTTON_A)
+					if(vpad.trigger)
 						return true;
 				}
 				return false;
