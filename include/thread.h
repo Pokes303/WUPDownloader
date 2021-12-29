@@ -65,7 +65,7 @@ static inline bool spinTryLock(volatile spinlock lock)
 {
 	bool ret = OSCompareAndSwapAtomic(&lock, SPINLOCK_FREE, SPINLOCK_LOCKED);
 	if(!ret)
-		debugPrintf("spinTryLock: LOCKED: 0x%08X", &lock);
+		debugPrintfUnlocked("spinTryLock: LOCKED: 0x%08X", &lock);
 	return ret;
 
 }

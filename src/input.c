@@ -406,7 +406,7 @@ void readInput()
 			tv = kps->classic.trigger;
 
 			if(tv & WPAD_CLASSIC_BUTTON_A)
-				vpad.trigger = VPAD_BUTTON_A;
+				vpad.trigger |= VPAD_BUTTON_A;
 			if(tv & WPAD_CLASSIC_BUTTON_B)
 				vpad.trigger |= VPAD_BUTTON_B;
 			if(tv & WPAD_CLASSIC_BUTTON_X)
@@ -448,7 +448,7 @@ void readInput()
 		tv = kps->trigger;
 
 		if(tv & WPAD_BUTTON_A)
-			vpad.trigger = VPAD_BUTTON_A;
+			vpad.trigger |= VPAD_BUTTON_A;
 		if(tv & WPAD_BUTTON_B)
 			vpad.trigger |= VPAD_BUTTON_B;
 		if(tv & WPAD_BUTTON_1)

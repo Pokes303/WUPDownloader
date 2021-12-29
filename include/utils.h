@@ -41,6 +41,7 @@
 	#define shutdownDebug WHBLogUdpDeinit
 #else
 	#define debugPrintf(...)
+#   define debugPrintfUnlocked(...)
 	#define checkStacks(...)
 	#define debugInit()
 	#define shutdownDebug()
@@ -93,6 +94,7 @@ char16_t *str16cpy(char16_t *target, const char16_t *source);
 int str16cmp(const char16_t *s1, const char16_t *s2);
 #ifdef NUSSPLI_DEBUG
 void debugInit();
+void debugPrintfUnlocked(const char *str, ...);
 void debugPrintf(const char *str, ...);
 void checkStacks(const char *src);
 #endif
