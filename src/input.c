@@ -156,18 +156,19 @@ static void SWKBD_Render(SWKBD_Args *args, KeyboardChecks check)
 	if(lastUsedController == CT_VPAD_0)
 	{
 		tv = false;
-		controllerInfo.vpad = &vpad;
 	}
 	else
 	{
 		tv = true;
-		KPADStatus *ksp = kpad;
-		--ksp;
-		KPADStatus **ciksp = controllerInfo.kpad;
-		--ciksp;
-		for(int i = 4; i; --i)
-			*++ciksp = ++ksp;
 	}
+
+	controllerInfo.vpad = &vpad;
+	KPADStatus *ksp = kpad;
+	--ksp;
+	KPADStatus **ciksp = controllerInfo.kpad;
+	--ciksp;
+	for(int i = 4; i; --i)
+		*++ciksp = ++ksp;
 	
 	Swkbd_Calc(controllerInfo);
 
@@ -395,7 +396,7 @@ void readInput()
 			continue;
 		
 
-//		OSBlockSet(kpad, 0, sizeof(KPADStatus));
+		OSBlockSet(kpad, 0, sizeof(KPADStatus));
 		KPADRead(i, kps, 1);
 		
 		if(controllerType == WPAD_EXT_PRO_CONTROLLER || // With a simple input like ours we're able to handle Wii u pro as Wii classic controllers.
