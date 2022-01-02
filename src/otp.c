@@ -363,7 +363,7 @@ uint8_t *getCommonKey()
 	{
 		OSTime t = OSGetSystemTime();
 #ifndef NUSSPLI_HBL
-		if(isAroma() && openIOSUhax())
+		if(openIOSUhax())
 		{
 			uint8_t buf[0x38 + 16];
 			if(IOSUHAX_read_otp(buf, 0x38 + 16) >= 0)
