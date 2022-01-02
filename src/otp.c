@@ -362,7 +362,6 @@ uint8_t *getCommonKey()
 	if(otp_common_key[0] == 0x00)
 	{
 		OSTime t = OSGetSystemTime();
-#ifndef NUSSPLI_HBL
 		if(openIOSUhax())
 		{
 			uint8_t buf[0x38 + 16];
@@ -370,7 +369,6 @@ uint8_t *getCommonKey()
 				OSBlockMove(otp_common_key, buf + 0x38, 16, false);
 			closeIOSUhax();
 		}
-#endif
 		if(otp_common_key[0] == 0x00)
 		{
 			debugPrintf("CC: IOSUHAX failed, doing exploit...");
