@@ -75,7 +75,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	MCPInstallTitleInfo info;
 	McpData data;
 	
-	if(!isAroma())
+	if(!isTiramisu())
 	{
 		flushIOQueue(); // Make sure all game files are on disc
 		unmountAll(); // Get MCP ready
@@ -161,7 +161,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	disableShutdown();
 	glueMcpData(&info, &data);
 	
-	if(isAroma())
+	if(isTiramisu())
 		flushIOQueue(); // Make sure all game files are on disc
 	
 	// Start the installation process

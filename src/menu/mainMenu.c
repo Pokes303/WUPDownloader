@@ -83,7 +83,7 @@ void mainMenu()
 	drawMainMenuFrame();
 
 	int ovl;
-	if(isAroma() || cfwWarningShown)
+	if(isTiramisu() || cfwWarningShown)
 		ovl = -1;
 	else if(openIOSUhax())
 	{

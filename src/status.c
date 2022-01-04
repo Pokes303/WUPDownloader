@@ -33,6 +33,7 @@
 #include <coreinit/systeminfo.h>
 #include <coreinit/time.h>
 #include <coreinit/title.h>
+#include <iosuhax.h>
 #include <proc_ui/procui.h>
 
 #include <stdbool.h>
@@ -43,6 +44,7 @@ bool shutdownEnabled = true;
 bool channel;
 #endif
 bool aroma;
+bool tiramisu;
 bool apdEnabled;
 bool apdDisabled = false;
 
@@ -98,6 +100,11 @@ bool isAroma()
 	return aroma;
 }
 
+bool isTiramisu()
+{
+	return tiramisu;
+}
+
 #ifndef NUSSPLI_HBL
 bool isChannel()
 {
@@ -129,15 +136,22 @@ void initStatus()
 	ProcUIRegisterCallback(PROCUI_CALLBACK_HOME_BUTTON_DENIED, &homeButtonCallback, NULL, 100);
 	OSEnableHomeButtonMenu(false);
 	
-	OSDynLoad_Module mod;
-	aroma = OSDynLoad_Acquire("homebrew_kernel", &mod) == OS_DYNLOAD_OK;
-	if(aroma)
-		OSDynLoad_Release(mod);
+	uint32_t ime;
+	tiramisu = IOSUHAX_read_otp((uint8_t *)&ime, 1 >= 0);
+	if(tiramisu)
+	{
+		OSDynLoad_Module mod;
+		aroma = OSDynLoad_Acquire("homebrew_kernel", &mod) == OS_DYNLOAD_OK;
+		if(aroma)
+			OSDynLoad_Release(mod);
+	}
+	else
+		aroma = false;
+
 #ifndef NUSSPLI_HBL
 	channel = OSGetTitleID() == 0x0005000010155373;
 #endif
 	
-	uint32_t ime;
 	if(IMIsAPDEnabledBySysSettings(&ime) == 0)
 		apdEnabled = ime == 1;
 	else
