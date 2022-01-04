@@ -364,9 +364,10 @@ uint8_t *getCommonKey()
 		OSTime t = OSGetSystemTime();
 		if(openIOSUhax())
 		{
-			uint8_t buf[0x38 + 16];
-			if(IOSUHAX_read_otp(buf, 0x38 + 16) >= 0)
-				OSBlockMove(otp_common_key, buf + 0x38, 16, false);
+			uint8_t buf[(0x38 * 4) + 16];
+			if(IOSUHAX_read_otp(buf, (0x38 * 4) + 16) >= 0)
+				OSBlockMove(otp_common_key, buf + (0x38 * 4), 16, false);
+
 			closeIOSUhax();
 		}
 		if(otp_common_key[0] == 0x00)
