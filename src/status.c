@@ -21,6 +21,7 @@
 #include <wut-fixups.h>
 
 #include <crypto.h>
+#include <iosuhaxx.h>
 #include <ioThread.h>
 #include <renderer.h>
 #include <status.h>
@@ -30,6 +31,7 @@
 #include <coreinit/dynload.h>
 #include <coreinit/energysaver.h>
 #include <coreinit/foreground.h>
+#include <coreinit/ios.h>
 #include <coreinit/systeminfo.h>
 #include <coreinit/time.h>
 #include <coreinit/title.h>
@@ -137,9 +139,30 @@ void initStatus()
 	OSEnableHomeButtonMenu(false);
 	
 	uint32_t ime;
-	tiramisu = IOSUHAX_read_otp((uint8_t *)&ime, 1 >= 0);
+	int handle = IOS_Open("/dev/mcp", IOS_OPEN_READ);
+	tiramisu = handle >= 0;
 	if(tiramisu)
 	{
+		char dummy[0x100];
+		int in = 0xF9; // IPC_CUSTOM_COPY_ENVIRONMENT_PATH
+		tiramisu = IOS_Ioctl(handle, 100, &in, sizeof(in), dummy, sizeof(dummy)) == IOS_ERROR_OK;
+		if(tiramisu)
+		{
+			if(openIOSUhax())
+			{
+				tiramisu = IOSUHAX_read_otp((uint8_t *)&ime, 1) >= 0;
+				closeIOSUhax();
+			}
+			else
+				tiramisu = false;
+		}
+
+		IOS_Close(handle);
+	}
+
+	if(tiramisu)
+	{
+		debugPrintf("Tiramisu!");
 		OSDynLoad_Module mod;
 		aroma = OSDynLoad_Acquire("homebrew_kernel", &mod) == OS_DYNLOAD_OK;
 		if(aroma)
