@@ -376,17 +376,19 @@ void readInput()
 	{
 		--kps;
 		controllerProbe = WPADProbe(--i, &controllerType);
-		if(controllerProbe == -1)
-			continue;
-		
-		altCon = true;
-		
-		if(controllerProbe != 0)
-			continue;
-		
+		if(controllerProbe == 0)
+		{
+			altCon = true;
+			KPADRead(i, kps, 1);
+		}
+		else
+		{
+			if(controllerProbe != -1)
+				altCon = true;
 
-		OSBlockSet(kpad, 0, sizeof(KPADStatus));
-		KPADRead(i, kps, 1);
+			OSBlockSet(kps, 0, sizeof(KPADStatus));
+			continue;
+		}
 		
 		if(controllerType == WPAD_EXT_PRO_CONTROLLER || // With a simple input like ours we're able to handle Wii u pro as Wii classic controllers.
 				controllerType == WPAD_EXT_CLASSIC ||
