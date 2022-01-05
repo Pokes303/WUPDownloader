@@ -151,18 +151,7 @@ static void SWKBD_Render(SWKBD_Args *args, KeyboardChecks check)
 		Swkbd_SetEnableOkButton(args->okButtonEnabled);
 	}
 	
-	Swkbd_ControllerInfo controllerInfo;
-	bool tv;
-	if(lastUsedController == CT_VPAD_0)
-	{
-		tv = false;
-	}
-	else
-	{
-		tv = true;
-	}
-
-	controllerInfo.vpad = &vpad;
+	Swkbd_ControllerInfo controllerInfo = { .vpad = &vpad };
 	KPADStatus *ksp = kpad;
 	--ksp;
 	KPADStatus **ciksp = controllerInfo.kpad;
@@ -178,7 +167,7 @@ static void SWKBD_Render(SWKBD_Args *args, KeyboardChecks check)
 		OSSendMessage(&swkbd_queue, &msg, OS_MESSAGE_FLAGS_NONE);
 	}
 
-	drawKeyboard(tv);
+	drawKeyboard(lastUsedController != CT_VPAD_0);
 }
 
 static bool SWKBD_Show(SWKBD_Args *args, KeyboardLayout layout, KeyboardType type, int maxlength, bool limit, const char *okStr) {
