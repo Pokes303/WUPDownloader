@@ -53,6 +53,16 @@
 #define LANG_TCH	"Traditional chinese"
 #define LANG_SYS	"System settings"
 
+#define SET_EUR		"Europe"
+#define SET_USA		"USA"
+#define SET_JPN		"Japan"
+#define SET_ALL		"All"
+
+const int regEUR = 1;
+const int regUSA = 1 << 1;
+const int regJPN = 1 << 2;
+const int regAll = regEUR | regUSA | regJPN;
+
 bool changed = false;
 bool useTitleDB = true;
 bool checkForUpdates = true;
@@ -61,6 +71,7 @@ Swkbd_LanguageType lang = Swkbd_LanguageType__Invalid;
 Swkbd_LanguageType sysLang;
 int configInitTries = 0;
 bool dlToUSB = true;
+int regionSetting = regAll;
 
 
 bool initConfig()
@@ -146,6 +157,22 @@ bool initConfig()
 			lang = Swkbd_LanguageType__Chinese2;
 		else
 			lang = Swkbd_LanguageType__Invalid;
+	}
+	else
+		changed = true;
+	configEntry = cJSON_GetObjectItemCaseSensitive(json, "Region");
+	if(configEntry != NULL && cJSON_IsString(configEntry))
+	{
+		if(strcmp(configEntry->valuestring, SET_ALL) == 0)
+			regionSetting = regAll;
+		else if(strcmp(configEntry->valuestring, SET_EUR) == 0)
+			regionSetting = regEUR;
+		else if(strcmp(configEntry->valuestring, SET_USA) == 0)
+			regionSetting = regUSA;
+		else if(strcmp(configEntry->valuestring, SET_JPN) == 0)
+			regionSetting = regJPN;
+		else
+			regionSetting = regAll;
 	}
 	else
 		changed = true;
@@ -295,6 +322,14 @@ bool saveConfig(bool force)
 		return false;
 	}
 	cJSON_AddItemToObject(config, "Language", entry);
+
+	entry = cJSON_CreateString(SET_ALL);
+	if(entry == NULL)
+	{
+		cJSON_Delete(config);
+		return false;
+	}
+	cJSON_AddItemToObject(config, "Region", entry);
 	
 	entry = cJSON_CreateBool(dlToUSB);
 	if(entry == NULL)
@@ -393,6 +428,38 @@ Swkbd_LanguageType getKeyboardLanguage()
 Swkbd_LanguageType getUnfilteredLanguage()
 {
 	return lang;
+}
+
+int getRegion()
+{
+	return regionSetting;
+}
+
+char* getFormattedRegion(int region) {
+	if(region == regAll) {
+		return SET_ALL;
+	} else if(region == regEUR) {
+		return SET_EUR;
+	} else if(region == regUSA) {
+		return SET_USA;
+	} else if(region == regJPN) {
+		return SET_JPN;
+	}
+}
+
+void setRegion(char *region)
+{
+	if(region == SET_ALL) {
+		regionSetting = regAll;
+	} else if(region == SET_EUR) {
+		regionSetting = regEUR;
+	} else if(region == SET_USA) {
+		regionSetting = regUSA;
+	} else if(region == SET_JPN) {
+		regionSetting = regJPN;
+	}
+	
+	changed = true;
 }
 
 void setKeyboardLanguage(Swkbd_LanguageType language)

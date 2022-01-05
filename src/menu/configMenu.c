@@ -49,12 +49,12 @@ void drawConfigMenu()
 	strcat(toScreen, autoResumeEnabled() ? "disable" : "enable");
 	strcat(toScreen, " auto resuming of failed downloads");
 	textToFrame(++i, 0, toScreen);
-	/*
-	strcpy(toScreen, "Press LEFT/RIGHT to change the language (curently ");
-	strcat(toScreen, getLanguageString(getUnfilteredLanguage()));
+	
+	strcpy(toScreen, "Press LEFT/RIGHT to change the region (curently ");
+	strcat(toScreen, getFormattedRegion(getRegion()));
 	strcat(toScreen, ")");
 	textToFrame(++i, 0, toScreen);
-	*/
+	
 	textToFrame(i + 2, 0, "Press " BUTTON_B " to go back");
 	drawFrame();
 }
@@ -88,24 +88,34 @@ void configMenu()
 			setAutoResume(!autoResumeEnabled());
 			redraw = true;
 		}
-/*		if(vpad.trigger & VPAD_BUTTON_LEFT)
+		if(vpad.trigger & VPAD_BUTTON_LEFT)
 		{
-			int l = getUnfilteredLanguage();
-			if(--l < Swkbd_LanguageType__Japanese)
-				l = Swkbd_LanguageType__Invalid;
-			
-			setKeyboardLanguage(l);
+			char* l = getFormattedRegion(getRegion());
+			if(l == "All") {
+				setRegion("Japan");
+			} else if(l == "Japan") {
+				setRegion("USA");
+			} else if(l == "USA") {
+				setRegion("Europe");
+			} else if(l == "Europe") {
+				setRegion("All");
+			}
 			redraw = true;
 		}
 		else if(vpad.trigger & VPAD_BUTTON_RIGHT)
 		{
-			int l = getUnfilteredLanguage();
-			if(++l > Swkbd_LanguageType__Invalid)
-				l = Swkbd_LanguageType__Japanese;
-			
-			setKeyboardLanguage(l);
+			char* l = getFormattedRegion(getRegion());
+			if(l == "All") {
+				setRegion("Europe");
+			} else if(l == "Europe") {
+				setRegion("USA");
+			} else if(l == "USA") {
+				setRegion("Japan");
+			} else if(l == "Japan") {
+				setRegion("All");
+			}
 			redraw = true;
-		}*/
+		}
 		if(vpad.trigger & VPAD_BUTTON_B)
 		{
 			saveConfig(false);
