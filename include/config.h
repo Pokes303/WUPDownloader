@@ -39,7 +39,7 @@ typedef enum
 	regEUR = 1,
 	regUSA = 1 << 1,
 	regJPN = 1 << 2,
-	regAll = regEUR | regUSA | regJPN,
+	regALL = regEUR | regUSA | regJPN,
 } reg;
 
 bool initConfig();

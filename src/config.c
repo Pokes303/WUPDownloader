@@ -67,7 +67,7 @@ Swkbd_LanguageType lang = Swkbd_LanguageType__Invalid;
 Swkbd_LanguageType sysLang;
 int configInitTries = 0;
 bool dlToUSB = true;
-reg regionSetting = regAll;
+reg regionSetting = regALL;
 
 bool initConfig()
 {
@@ -160,7 +160,7 @@ bool initConfig()
 	if(configEntry != NULL && cJSON_IsString(configEntry))
 	{
 		if(strcmp(configEntry->valuestring, SET_ALL) == 0)
-			regionSetting = regAll;
+			regionSetting = regALL;
 		else if(strcmp(configEntry->valuestring, SET_EUR) == 0)
 			regionSetting = regEUR;
 		else if(strcmp(configEntry->valuestring, SET_USA) == 0)
@@ -168,7 +168,7 @@ bool initConfig()
 		else if(strcmp(configEntry->valuestring, SET_JPN) == 0)
 			regionSetting = regJPN;
 		else
-			regionSetting = regAll;
+			regionSetting = regALL;
 	}
 	else
 		changed = true;

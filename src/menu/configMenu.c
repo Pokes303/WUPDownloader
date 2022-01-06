@@ -93,7 +93,7 @@ void configMenu()
 		{
 			switch(getRegion())
 			{
-				case regAll:
+				case regALL:
 					setRegion(regJPN);
 					break;
 				case regJPN:
@@ -103,7 +103,7 @@ void configMenu()
 					setRegion(regEUR);
 					break;
 				case regEUR:
-					setRegion(regAll);
+					setRegion(regALL);
 			}
 			redraw = true;
 		}
@@ -111,7 +111,7 @@ void configMenu()
 		{
 			switch(getRegion())
 			{
-				case regAll:
+				case regALL:
 					setRegion(regEUR);
 					break;
 				case regEUR:
@@ -121,7 +121,7 @@ void configMenu()
 					setRegion(regJPN);
 					break;
 				case regJPN:
-					setRegion(regAll);
+					setRegion(regALL);
 			}
 			redraw = true;
 		}
