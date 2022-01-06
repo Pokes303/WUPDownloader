@@ -261,6 +261,8 @@ bool initTitles()
 	size_t ma = 0;
 	size_t size;
 	size_t entries = 0;
+	reg currentRegion = getRegion();
+
 	cJSON_ArrayForEach(curr[0], json)
 	{
 		if(curr[0]->string[0] == 's')
@@ -283,6 +285,9 @@ bool initTitles()
 				debugPrintf("Too long title name detected: %s", curr[2]->valuestring);
 				continue;
 			}
+
+			if(!(cJSON_GetArrayItem(curr[1], 1)->valueint & currentRegion))
+				continue;
 			
 			ma += size;
 			++entries;
@@ -305,7 +310,7 @@ bool initTitles()
 	char sj[32];
 	sj[0] = '0';
 	char *sjm = sj + 1;
-	reg currentRegion = getRegion();
+	reg regio;
 
 	cJSON_ArrayForEach(curr[0], json)
 	{
@@ -348,7 +353,11 @@ bool initTitles()
 			size = strlen(curr[2]->valuestring) + 1;
 			if(size > 256)
 				continue;
-			
+
+			regio = cJSON_GetArrayItem(curr[1], 1)->valueint;
+			if(!(regio & currentRegion))
+				continue;
+
 			strcpy(sjm, curr[1]->string);
 			hexToByte(sj, (uint8_t *)&j);
 			
@@ -357,32 +366,29 @@ bool initTitles()
 			titleEntry[entries].name = ptr;
 			ptr += size;
 			
-			titleEntry[entries].region = cJSON_GetArrayItem(curr[1], 1)->valueint;
-			if(titleEntry[entries].region & currentRegion)
-            {
-				titleEntry[entries].isDLC = i == TRANSFORMED_TID_HIGH_DLC;
-				titleEntry[entries].isUpdate = i == TRANSFORMED_TID_HIGH_UPDATE;
-				titleEntry[entries].key = cJSON_GetArrayItem(curr[1], 2)->valueint;
-				
-				tid = retransformTidHigh(i);
-				tid <<= 32;
-				tid |= 0x0000000010000000;
-				tid |= j;
-	//			debugPrintf("%s / 0x%016X / 0x%016X", sj, j, tid);
-				titleEntry[entries].tid = tid;
-				++entries;
-				++titleEntries[cat];
-			}
+			titleEntry[entries].region = regio;
+			titleEntry[entries].isDLC = i == TRANSFORMED_TID_HIGH_DLC;
+			titleEntry[entries].isUpdate = i == TRANSFORMED_TID_HIGH_UPDATE;
+			titleEntry[entries].key = cJSON_GetArrayItem(curr[1], 2)->valueint;
+
+			tid = retransformTidHigh(i);
+			tid <<= 32;
+			tid |= 0x0000000010000000;
+			tid |= j;
+//			debugPrintf("%s / 0x%016X / 0x%016X", sj, j, tid);
+			titleEntry[entries].tid = tid;
+
+			++entries;
+			++titleEntries[cat];
 		}
 	}
 	
 	cJSON_Delete(json);
 	if(useOnline)
-	{
 		clearRamBuf();
-	}
 	else
 		MEMFreeToDefaultHeap(raw);
+
 	addToScreenLog("title database parsed!");
 	debugPrintf("%d titles parsed", getTitleEntriesSize(TITLE_CATEGORY_ALL));
 	return true;
@@ -390,9 +396,7 @@ bool initTitles()
 titleError:
 	cJSON_Delete(json);
 	if(useOnline)
-	{
 		clearRamBuf();
-	}
 	else
 		MEMFreeToDefaultHeap(raw);
 
