@@ -53,16 +53,6 @@
 #define LANG_TCH	"Traditional chinese"
 #define LANG_SYS	"System settings"
 
-#define SET_EUR		"Europe"
-#define SET_USA		"USA"
-#define SET_JPN		"Japan"
-#define SET_ALL		"All"
-
-const int regEUR = 1;
-const int regUSA = 1 << 1;
-const int regJPN = 1 << 2;
-const int regAll = regEUR | regUSA | regJPN;
-
 bool changed = false;
 bool useTitleDB = true;
 bool checkForUpdates = true;

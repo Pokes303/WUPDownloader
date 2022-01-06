@@ -33,6 +33,19 @@
 	extern "C" {
 #endif
 
+#define SET_EUR		"Europe"
+#define SET_USA		"USA"
+#define SET_JPN		"Japan"
+#define SET_ALL		"All"
+
+enum regEnum
+{
+	regEUR = 1,
+	regUSA = 1 << 1,
+	regJPN = 1 << 2,
+	regAll = regEUR | regUSA | regJPN,
+};
+
 bool initConfig();
 bool saveConfig(bool force);
 bool useOnlineTitleDB();

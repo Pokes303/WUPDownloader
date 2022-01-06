@@ -90,38 +90,28 @@ void configMenu()
 		}
 		if(vpad.trigger & VPAD_BUTTON_LEFT)
 		{
-			char *l = getFormattedRegion(getRegion());
-			if(l == "All") 
-			{
-				setRegion("Japan");
-			} else if(l == "Japan") 
-			{
-				setRegion("USA");
-			} else if(l == "USA") 
-			{
-				setRegion("Europe");
-			} else if(l == "Europe") 
-			{
-				setRegion("All");
-			}
+			int l = getRegion();
+			if(l == regAll)
+				setRegion(SET_JPN);
+			else if(l == regJPN)
+				setRegion(SET_USA);
+			else if(l == regUSA)
+				setRegion(SET_EUR);
+			else if(l == regEUR)
+				setRegion(SET_ALL);
 			redraw = true;
 		}
 		else if(vpad.trigger & VPAD_BUTTON_RIGHT)
 		{
-			char *l = getFormattedRegion(getRegion());
-			if(l == "All") 
-			{
-				setRegion("Europe");
-			} else if(l == "Europe") 
-			{
-				setRegion("USA");
-			} else if(l == "USA") 
-			{
-				setRegion("Japan");
-			} else if(l == "Japan") 
-			{
-				setRegion("All");
-			}
+			int l = getRegion();
+			if(l == regAll)
+				setRegion(SET_EUR);
+			else if(l == regEUR)
+				setRegion(SET_USA);
+			else if(l == regUSA)
+				setRegion(SET_JPN);
+			else if(l == regJPN)
+				setRegion(SET_ALL);
 			redraw = true;
 		}
 		if(vpad.trigger & VPAD_BUTTON_B)
