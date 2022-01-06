@@ -53,6 +53,11 @@
 #define LANG_TCH	"Traditional chinese"
 #define LANG_SYS	"System settings"
 
+#define SET_EUR		"Europe"
+#define SET_USA		"USA"
+#define SET_JPN		"Japan"
+#define SET_ALL		"All"
+
 bool changed = false;
 bool useTitleDB = true;
 bool checkForUpdates = true;
@@ -61,8 +66,7 @@ Swkbd_LanguageType lang = Swkbd_LanguageType__Invalid;
 Swkbd_LanguageType sysLang;
 int configInitTries = 0;
 bool dlToUSB = true;
-int regionSetting;
-
+reg regionSetting = regAll;
 
 bool initConfig()
 {
@@ -150,6 +154,7 @@ bool initConfig()
 	}
 	else
 		changed = true;
+
 	configEntry = cJSON_GetObjectItemCaseSensitive(json, "Region");
 	if(configEntry != NULL && cJSON_IsString(configEntry))
 	{
@@ -420,17 +425,15 @@ Swkbd_LanguageType getUnfilteredLanguage()
 	return lang;
 }
 
-int getRegion()
+reg getRegion()
 {
 	return regionSetting;
 }
 
-char *getFormattedRegion(int region) 
+char *getFormattedRegion(reg region)
 {
 	switch(region)
 	{
-		case regAll:
-			return SET_ALL;
 		case regEUR:
 			return SET_EUR;
 		case regUSA:
@@ -442,17 +445,12 @@ char *getFormattedRegion(int region)
 	}
 }
 
-void setRegion(char *region)
+void setRegion(reg region)
 {
-	if(strcmp(region, SET_ALL) == 0) 
-		regionSetting = regAll;
-	else if(strcmp(region, SET_EUR) == 0)
-		regionSetting = regEUR;
-	else if(strcmp(region, SET_USA) == 0)
-		regionSetting = regUSA;
-	else if(strcmp(region, SET_JPN) == 0)
-		regionSetting = regJPN;
-	
+	if(region == regionSetting)
+		return;
+
+	regionSetting = region;
 	changed = true;
 }
 

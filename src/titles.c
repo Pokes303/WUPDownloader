@@ -304,7 +304,7 @@ bool initTitles()
 	char sj[32];
 	sj[0] = '0';
 	char *sjm = sj + 1;
-	int currentRegion = getRegion();
+	reg currentRegion = getRegion();
 
 	cJSON_ArrayForEach(curr[0], json)
 	{
@@ -357,7 +357,8 @@ bool initTitles()
 			ptr += size;
 			
 			titleEntry[entries].region = cJSON_GetArrayItem(curr[1], 1)->valueint;
-			if(titleEntry[entries].region & currentRegion) {
+			if(titleEntry[entries].region & currentRegion)
+            {
 				titleEntry[entries].isDLC = i == TRANSFORMED_TID_HIGH_DLC;
 				titleEntry[entries].isUpdate = i == TRANSFORMED_TID_HIGH_UPDATE;
 				titleEntry[entries].key = cJSON_GetArrayItem(curr[1], 2)->valueint;
