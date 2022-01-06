@@ -304,6 +304,8 @@ bool initTitles()
 	char sj[32];
 	sj[0] = '0';
 	char *sjm = sj + 1;
+	int currentRegion = getRegion();
+
 	cJSON_ArrayForEach(curr[0], json)
 	{
 		if(curr[0]->string[0] == 's')
@@ -355,18 +357,20 @@ bool initTitles()
 			ptr += size;
 			
 			titleEntry[entries].region = cJSON_GetArrayItem(curr[1], 1)->valueint;
-			titleEntry[entries].isDLC = i == TRANSFORMED_TID_HIGH_DLC;
-			titleEntry[entries].isUpdate = i == TRANSFORMED_TID_HIGH_UPDATE;
-			titleEntry[entries].key = cJSON_GetArrayItem(curr[1], 2)->valueint;
-			
-			tid = retransformTidHigh(i);
-			tid <<= 32;
-			tid |= 0x0000000010000000;
-			tid |= j;
-//			debugPrintf("%s / 0x%016X / 0x%016X", sj, j, tid);
-			titleEntry[entries].tid = tid;
-			++entries;
-			++titleEntries[cat];
+			if(titleEntry[entries].region & currentRegion) {
+				titleEntry[entries].isDLC = i == TRANSFORMED_TID_HIGH_DLC;
+				titleEntry[entries].isUpdate = i == TRANSFORMED_TID_HIGH_UPDATE;
+				titleEntry[entries].key = cJSON_GetArrayItem(curr[1], 2)->valueint;
+				
+				tid = retransformTidHigh(i);
+				tid <<= 32;
+				tid |= 0x0000000010000000;
+				tid |= j;
+	//			debugPrintf("%s / 0x%016X / 0x%016X", sj, j, tid);
+				titleEntry[entries].tid = tid;
+				++entries;
+				++titleEntries[cat];
+			}
 		}
 	}
 	
