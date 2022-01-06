@@ -61,6 +61,7 @@ Swkbd_LanguageType lang = Swkbd_LanguageType__Invalid;
 Swkbd_LanguageType sysLang;
 int configInitTries = 0;
 bool dlToUSB = true;
+int regionSetting;
 
 
 bool initConfig()
@@ -146,6 +147,22 @@ bool initConfig()
 			lang = Swkbd_LanguageType__Chinese2;
 		else
 			lang = Swkbd_LanguageType__Invalid;
+	}
+	else
+		changed = true;
+	configEntry = cJSON_GetObjectItemCaseSensitive(json, "Region");
+	if(configEntry != NULL && cJSON_IsString(configEntry))
+	{
+		if(strcmp(configEntry->valuestring, SET_ALL) == 0)
+			regionSetting = regAll;
+		else if(strcmp(configEntry->valuestring, SET_EUR) == 0)
+			regionSetting = regEUR;
+		else if(strcmp(configEntry->valuestring, SET_USA) == 0)
+			regionSetting = regUSA;
+		else if(strcmp(configEntry->valuestring, SET_JPN) == 0)
+			regionSetting = regJPN;
+		else
+			regionSetting = regAll;
 	}
 	else
 		changed = true;
@@ -295,6 +312,14 @@ bool saveConfig(bool force)
 		return false;
 	}
 	cJSON_AddItemToObject(config, "Language", entry);
+
+	entry = cJSON_CreateString(getFormattedRegion(getRegion()));
+	if(entry == NULL)
+	{
+		cJSON_Delete(config);
+		return false;
+	}
+	cJSON_AddItemToObject(config, "Region", entry);
 	
 	entry = cJSON_CreateBool(dlToUSB);
 	if(entry == NULL)
@@ -393,6 +418,42 @@ Swkbd_LanguageType getKeyboardLanguage()
 Swkbd_LanguageType getUnfilteredLanguage()
 {
 	return lang;
+}
+
+int getRegion()
+{
+	return regionSetting;
+}
+
+char *getFormattedRegion(int region) 
+{
+	switch(region)
+	{
+		case regAll:
+			return SET_ALL;
+		case regEUR:
+			return SET_EUR;
+		case regUSA:
+			return SET_USA;
+		case regJPN:
+			return SET_JPN;
+		default:
+			return SET_ALL;
+	}
+}
+
+void setRegion(char *region)
+{
+	if(strcmp(region, SET_ALL) == 0) 
+		regionSetting = regAll;
+	else if(strcmp(region, SET_EUR) == 0)
+		regionSetting = regEUR;
+	else if(strcmp(region, SET_USA) == 0)
+		regionSetting = regUSA;
+	else if(strcmp(region, SET_JPN) == 0)
+		regionSetting = regJPN;
+	
+	changed = true;
 }
 
 void setKeyboardLanguage(Swkbd_LanguageType language)
