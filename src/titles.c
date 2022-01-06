@@ -305,7 +305,7 @@ bool initTitles()
 	sj[0] = '0';
 	char *sjm = sj + 1;
 	int currentRegion = getRegion();
-	
+
 	cJSON_ArrayForEach(curr[0], json)
 	{
 		if(curr[0]->string[0] == 's')
@@ -357,7 +357,7 @@ bool initTitles()
 			ptr += size;
 			
 			titleEntry[entries].region = cJSON_GetArrayItem(curr[1], 1)->valueint;
-			if(titleEntry[entries].region == currentRegion) {
+			if(titleEntry[entries].region & currentRegion) {
 				titleEntry[entries].isDLC = i == TRANSFORMED_TID_HIGH_DLC;
 				titleEntry[entries].isUpdate = i == TRANSFORMED_TID_HIGH_UPDATE;
 				titleEntry[entries].key = cJSON_GetArrayItem(curr[1], 2)->valueint;
@@ -370,8 +370,6 @@ bool initTitles()
 				titleEntry[entries].tid = tid;
 				++entries;
 				++titleEntries[cat];
-			} else {
-				continue;
 			}
 		}
 	}

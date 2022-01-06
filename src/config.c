@@ -71,7 +71,7 @@ Swkbd_LanguageType lang = Swkbd_LanguageType__Invalid;
 Swkbd_LanguageType sysLang;
 int configInitTries = 0;
 bool dlToUSB = true;
-int regionSetting = regAll;
+int regionSetting;
 
 
 bool initConfig()
@@ -323,7 +323,7 @@ bool saveConfig(bool force)
 	}
 	cJSON_AddItemToObject(config, "Language", entry);
 
-	entry = cJSON_CreateString(SET_ALL);
+	entry = cJSON_CreateString(getFormattedRegion(getRegion()));
 	if(entry == NULL)
 	{
 		cJSON_Delete(config);
@@ -435,29 +435,33 @@ int getRegion()
 	return regionSetting;
 }
 
-char* getFormattedRegion(int region) {
-	if(region == regAll) {
-		return SET_ALL;
-	} else if(region == regEUR) {
-		return SET_EUR;
-	} else if(region == regUSA) {
-		return SET_USA;
-	} else if(region == regJPN) {
-		return SET_JPN;
+char *getFormattedRegion(int region) 
+{
+	switch(region)
+	{
+		case regAll:
+			return SET_ALL;
+		case regEUR:
+			return SET_EUR;
+		case regUSA:
+			return SET_USA;
+		case regJPN:
+			return SET_JPN;
+		default:
+			return SET_ALL;
 	}
 }
 
 void setRegion(char *region)
 {
-	if(region == SET_ALL) {
+	if(region == SET_ALL) 
 		regionSetting = regAll;
-	} else if(region == SET_EUR) {
+	else if(region == SET_EUR)
 		regionSetting = regEUR;
-	} else if(region == SET_USA) {
+	else if(region == SET_USA)
 		regionSetting = regUSA;
-	} else if(region == SET_JPN) {
+	else if(region == SET_JPN)
 		regionSetting = regJPN;
-	}
 	
 	changed = true;
 }

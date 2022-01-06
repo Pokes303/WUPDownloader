@@ -50,7 +50,7 @@ void drawConfigMenu()
 	strcat(toScreen, " auto resuming of failed downloads");
 	textToFrame(++i, 0, toScreen);
 	
-	strcpy(toScreen, "Press LEFT/RIGHT to change the region (curently ");
+	strcpy(toScreen, "Press LEFT/RIGHT to change the region (currently ");
 	strcat(toScreen, getFormattedRegion(getRegion()));
 	strcat(toScreen, ")");
 	textToFrame(++i, 0, toScreen);
@@ -90,28 +90,36 @@ void configMenu()
 		}
 		if(vpad.trigger & VPAD_BUTTON_LEFT)
 		{
-			char* l = getFormattedRegion(getRegion());
-			if(l == "All") {
+			char *l = getFormattedRegion(getRegion());
+			if(l == "All") 
+			{
 				setRegion("Japan");
-			} else if(l == "Japan") {
+			} else if(l == "Japan") 
+			{
 				setRegion("USA");
-			} else if(l == "USA") {
+			} else if(l == "USA") 
+			{
 				setRegion("Europe");
-			} else if(l == "Europe") {
+			} else if(l == "Europe") 
+			{
 				setRegion("All");
 			}
 			redraw = true;
 		}
 		else if(vpad.trigger & VPAD_BUTTON_RIGHT)
 		{
-			char* l = getFormattedRegion(getRegion());
-			if(l == "All") {
+			char *l = getFormattedRegion(getRegion());
+			if(l == "All") 
+			{
 				setRegion("Europe");
-			} else if(l == "Europe") {
+			} else if(l == "Europe") 
+			{
 				setRegion("USA");
-			} else if(l == "USA") {
+			} else if(l == "USA") 
+			{
 				setRegion("Japan");
-			} else if(l == "Japan") {
+			} else if(l == "Japan") 
+			{
 				setRegion("All");
 			}
 			redraw = true;

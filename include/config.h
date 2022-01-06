@@ -45,7 +45,7 @@ Swkbd_LanguageType getKeyboardLanguage();
 Swkbd_LanguageType getUnfilteredLanguage();
 int getRegion();
 void setRegion(char *region);
-char* getFormattedRegion(int region);
+char *getFormattedRegion(int region);
 void setKeyboardLanguage(Swkbd_LanguageType language);
 char *getLanguageString(Swkbd_LanguageType language);
 bool dlToUSBenabled();
