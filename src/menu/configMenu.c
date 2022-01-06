@@ -51,7 +51,7 @@ void drawConfigMenu()
 	strcat(toScreen, " auto resuming of failed downloads");
 	textToFrame(++i, 0, toScreen);
 	
-	strcpy(toScreen, "Press LEFT/RIGHT to change the region (currently ");
+	strcpy(toScreen, "Press " BUTTON_LEFT_RIGHT " to change the region (currently ");
 	strcat(toScreen, getFormattedRegion(getRegion()));
 	strcat(toScreen, ")");
 	textToFrame(++i, 0, toScreen);

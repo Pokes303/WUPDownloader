@@ -41,6 +41,8 @@
 #define BUTTON_UP		"\uE079"
 #define BUTTON_DOWN		"\uE07A"
 
+#define BUTTON_LEFT_RIGHT "\uE07E"
+
 #define BUTTON_HOME		"\uE044"
 
 #ifdef __cplusplus
