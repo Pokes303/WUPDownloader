@@ -444,13 +444,13 @@ char *getFormattedRegion(int region)
 
 void setRegion(char *region)
 {
-	if(region == SET_ALL) 
+	if(strcmp(region, SET_ALL) == 0) 
 		regionSetting = regAll;
-	else if(region == SET_EUR)
+	else if(strcmp(region, SET_EUR) == 0)
 		regionSetting = regEUR;
-	else if(region == SET_USA)
+	else if(strcmp(region, SET_USA) == 0)
 		regionSetting = regUSA;
-	else if(region == SET_JPN)
+	else if(strcmp(region, SET_JPN) == 0)
 		regionSetting = regJPN;
 	
 	changed = true;
