@@ -33,7 +33,7 @@
 #include <coreinit/thread.h>
 
 #define NAPI_URL		"https://napi.nbg01.v10lator.de/v2/"
-#define NUSSPLI_COPYRIGHT	"© 2020-2021 V10lator <v10lator@myway.de>"
+#define NUSSPLI_COPYRIGHT	"© 2020-2022 V10lator <v10lator@myway.de>"
 
 #ifdef NUSSPLI_DEBUG
 	#include <whb/log.h>
