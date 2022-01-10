@@ -55,7 +55,7 @@ void drawInstallerMenuFrame(const char *name, NUSDEV dev, bool keepFiles)
 
 void installerMenu(const char *dir)
 {
-	NUSDEV dev = dir[3] == ':' ? dev = dir[1] == 'u' ? NUSDEV_USB : NUSDEV_MLC : NUSDEV_SD;
+	NUSDEV dev = dir[3] == ':' ? dir[0] == 'u' ? NUSDEV_USB : NUSDEV_MLC : NUSDEV_SD;
 	bool keepFiles;
 	char name[strlen(dir) + 1];
 	if(dev == NUSDEV_SD)
