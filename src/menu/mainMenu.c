@@ -59,8 +59,8 @@ void drawMainMenuFrame()
 	textToFrame(7, MAX_CHARS - 27, "Thanks to:");
 	textToFrame(8, MAX_CHARS - 26, "• cJSON");
 	textToFrame(9, MAX_CHARS - 26, "• E1ite007");
-	textToFrame(10, MAX_CHARS - 26, "• SDL");
-	textToFrame(11, MAX_CHARS - 26, "• Pokes303");
+	textToFrame(10, MAX_CHARS - 26, "• Pokes303");
+    textToFrame(11, MAX_CHARS - 26, "• SDL");
 	textToFrame(12, MAX_CHARS - 26, "• Simone Z.");
 	textToFrame(13, MAX_CHARS - 26, "• WUP installer");
 	
