@@ -24,6 +24,7 @@
 #include <wut_structsize.h>
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include <coreinit/ios.h>
 #include <coreinit/mcp.h>
@@ -50,6 +51,9 @@ extern void GX2SetDRCGamma(float gamma);
 extern void GX2SetDRCGammaEx(float gamma);
 extern void GX2SetTVGamma(float gamma);
 extern void GX2SetTVGammaEx(float gamma);
+
+// _SYS
+extern void _SYSLaunchTitleWithStdArgsInNoSplash(uint64_t, int);
 
 // UC - From:
 // https://github.com/decaf-emu/decaf-emu/blob/master/src/libdecaf/src/cafe/libraries/coreinit/coreinit_userconfig.h

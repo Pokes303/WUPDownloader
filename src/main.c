@@ -25,6 +25,7 @@
 #include <downloader.h>
 #include <file.h>
 #include <filesystem.h>
+#include <hbl.h>
 #include <input.h>
 #include <installer.h>
 #include <ioThread.h>
@@ -71,7 +72,7 @@ int main()
 {
 	initStatus();
 	initASAN();
-	
+
 	OSThread *mainThread = OSGetCurrentThread();
 	OSSetThreadName(mainThread, "NUSspli");
 	addEntropy(&(mainThread->id), sizeof(uint16_t));
@@ -82,8 +83,21 @@ int main()
 	getCommonKey(); // We do this exploit as soon as possible
 	
 	FSInit();
+
 #ifdef NUSSPLI_HBL
-	romfsInit();
+	bool breakingout = isTiramisu();
+	uint64_t tid;
+	if(breakingout)
+	{
+		tid = OSGetTitleID();
+		breakingout = tid == 0x000500101004A000 || tid == 0x000500101004A100 || tid == 0x000500101004A200;
+		if(breakingout)
+			breakingout = breakOut();
+	}
+
+	if(!breakingout)
+	{
+		romfsInit();
 #endif
 	initRenderer();
 	
@@ -275,12 +289,20 @@ int main()
 	debugPrintf("Bye!");
 //	shutdownDebug();
 #endif
+
+#ifdef NUSSPLI_HBL
+	}
+#endif
 	
 	if(app != APP_STATE_STOPPED)
 	{
 		debugPrintf("Not STOPPED");
+
 #ifdef NUSSPLI_HBL
-		SYSRelaunchTitle(0, NULL);
+		tid &= 0xFFFFFFFFFFFF0FFF;
+		tid |= breakingout ? 0x000000000000E000 : 0x000000000000A000;
+
+		_SYSLaunchTitleWithStdArgsInNoSplash(tid, 0);
 #else
 		SYSLaunchMenu();
 #endif
