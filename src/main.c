@@ -280,14 +280,14 @@ int main()
 		FSShutdown();
 		debugPrintf("libgui-sdl closed");
 
-#ifdef NUSSPLI_DEBUG
-		checkStacks("main");
-		debugPrintf("Bye!");
-		shutdownDebug();
-#endif
-
 #ifdef NUSSPLI_HBL
 	}
+#endif
+
+#ifdef NUSSPLI_DEBUG
+	checkStacks("main");
+	debugPrintf("Bye!");
+	shutdownDebug();
 #endif
 	
 	if(app != APP_STATE_STOPPED)
