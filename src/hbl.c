@@ -33,7 +33,10 @@
 #include <coreinit/mcp.h>
 #include <coreinit/memory.h>
 
-typedef struct __attribute((packed)) {
+#include <wut_structsize.h>
+
+typedef struct WUT_PACKED
+{
 	uint32_t cmd;
 	uint32_t tgt;
 	uint32_t fs;
