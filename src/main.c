@@ -283,7 +283,7 @@ int main()
 #ifdef NUSSPLI_DEBUG
 		checkStacks("main");
 		debugPrintf("Bye!");
-//		shutdownDebug();
+		shutdownDebug();
 #endif
 
 #ifdef NUSSPLI_HBL
