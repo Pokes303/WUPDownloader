@@ -82,209 +82,208 @@ int main()
 	if(!breakingout)
 	{
 #endif
+		OSThread *mainThread = OSGetCurrentThread();
+		OSSetThreadName(mainThread, "NUSspli");
+		addEntropy(&(mainThread->id), sizeof(uint16_t));
+		addEntropy(mainThread->stackStart, 4);
 
-	OSThread *mainThread = OSGetCurrentThread();
-	OSSetThreadName(mainThread, "NUSspli");
-	addEntropy(&(mainThread->id), sizeof(uint16_t));
-	addEntropy(mainThread->stackStart, 4);
-	
-	checkStacks("main");
-	
-	getCommonKey(); // We do this exploit as soon as possible
-	
-	FSInit();
+		checkStacks("main");
+
+		getCommonKey(); // We do this exploit as soon as possible
+
+		FSInit();
 #ifdef NUSSPLI_HBL
-	romfsInit();
+		romfsInit();
 #endif
-	initRenderer();
-	
-	// ASAN Trigger
-/*	char *asanHeapTrigger = MEMAllocFromDefaultHeap(1);
-	debugPrintf("ASAN Debug: Triggering buffer-read overflow:");
-	if(asanHeapTrigger[1] == ' ') ;
-	debugPrintf("ASAN Debug: Triggering buffer-write overflow:");
-	asanHeapTrigger[1] = '?';
-	debugPrintf("ASAN Debug: Triggering double-free:");
-	MEMFreeToDefaultHeap(asanHeapTrigger);
-	MEMFreeToDefaultHeap(asanHeapTrigger);*/
-	
-	if(OSSetThreadPriority(mainThread, THREAD_PRIORITY_HIGH))
-		addToScreenLog("Changed main thread priority!");
-	else
-		addToScreenLog("WARNING: Error changing main thread priority!");
+		initRenderer();
 
-	startNewFrame();
-	textToFrame(0, 0, "Loading OpenSSL...");
-	writeScreenLog();
-	drawFrame();
+		// ASAN Trigger
+	/*	char *asanHeapTrigger = MEMAllocFromDefaultHeap(1);
+		debugPrintf("ASAN Debug: Triggering buffer-read overflow:");
+		if(asanHeapTrigger[1] == ' ') ;
+		debugPrintf("ASAN Debug: Triggering buffer-write overflow:");
+		asanHeapTrigger[1] = '?';
+		debugPrintf("ASAN Debug: Triggering double-free:");
+		MEMFreeToDefaultHeap(asanHeapTrigger);
+		MEMFreeToDefaultHeap(asanHeapTrigger);*/
 
-	char *lerr = NULL;
-	if(initCrypto())
-	{
-		addToScreenLog("OpenSSL initialized!");
+		if(OSSetThreadPriority(mainThread, THREAD_PRIORITY_HIGH))
+			addToScreenLog("Changed main thread priority!");
+		else
+			addToScreenLog("WARNING: Error changing main thread priority!");
 
 		startNewFrame();
-		textToFrame(0, 0, "Loading MCP...");
+		textToFrame(0, 0, "Loading OpenSSL...");
 		writeScreenLog();
 		drawFrame();
 
-		mcpHandle = MCP_Open();
-		if(mcpHandle != 0)
+		char *lerr = NULL;
+		if(initCrypto())
 		{
-			addToScreenLog("MCP initialized!");
+			addToScreenLog("OpenSSL initialized!");
 
 			startNewFrame();
-			textToFrame(0, 0, "Checking sanity...");
+			textToFrame(0, 0, "Loading MCP...");
 			writeScreenLog();
 			drawFrame();
 
-			if(sanityCheck())
+			mcpHandle = MCP_Open();
+			if(mcpHandle != 0)
 			{
-				addToScreenLog("Sanity checked!");
+				addToScreenLog("MCP initialized!");
 
 				startNewFrame();
-				textToFrame(0, 0, "Initializing rumble...");
+				textToFrame(0, 0, "Checking sanity...");
 				writeScreenLog();
 				drawFrame();
 
-				if(initRumble())
+				if(sanityCheck())
 				{
-					addToScreenLog("Rumble initialized!");
+					addToScreenLog("Sanity checked!");
 
 					startNewFrame();
-					textToFrame(0, 0, "Loading downloader...");
+					textToFrame(0, 0, "Initializing rumble...");
 					writeScreenLog();
 					drawFrame();
 
-					if(initDownloader())
+					if(initRumble())
 					{
-						addToScreenLog("Downloader initialized!");
+						addToScreenLog("Rumble initialized!");
 
 						startNewFrame();
-						textToFrame(0, 0, "Loading cJSON...");
+						textToFrame(0, 0, "Loading downloader...");
 						writeScreenLog();
 						drawFrame();
 
-						cJSON_Hooks ch;
-						ch.malloc_fn = MEMAllocFromDefaultHeap;
-						ch.free_fn = MEMFreeToDefaultHeap;
-						cJSON_InitHooks(&ch);
-
-						addToScreenLog("cJSON initialized!");
-						startNewFrame();
-						textToFrame(0, 0, "Loading SWKBD...");
-						writeScreenLog();
-						drawFrame();
-
-						if(initConfig())
+						if(initDownloader())
 						{
-							addToScreenLog("Config loaded!");
+							addToScreenLog("Downloader initialized!");
+
+							startNewFrame();
+							textToFrame(0, 0, "Loading cJSON...");
+							writeScreenLog();
+							drawFrame();
+
+							cJSON_Hooks ch;
+							ch.malloc_fn = MEMAllocFromDefaultHeap;
+							ch.free_fn = MEMFreeToDefaultHeap;
+							cJSON_InitHooks(&ch);
+
+							addToScreenLog("cJSON initialized!");
 							startNewFrame();
 							textToFrame(0, 0, "Loading SWKBD...");
 							writeScreenLog();
 							drawFrame();
 
-							if(SWKBD_Init())
+							if(initConfig())
 							{
-								addToScreenLog("SWKBD initialized!");
+								addToScreenLog("Config loaded!");
 								startNewFrame();
-								textToFrame(0, 0, "Loading I/O thread...");
+								textToFrame(0, 0, "Loading SWKBD...");
 								writeScreenLog();
 								drawFrame();
 
-								if(initIOThread())
+								if(SWKBD_Init())
 								{
-									addToScreenLog("I/O thread initialized!");
+									addToScreenLog("SWKBD initialized!");
 									startNewFrame();
-									textToFrame(0, 0, "Loading config file...");
+									textToFrame(0, 0, "Loading I/O thread...");
 									writeScreenLog();
 									drawFrame();
 
-									KPADInit();
-									WPADEnableURCC(true);
-
-									checkStacks("main()");
-
-									if(!updateCheck())
+									if(initIOThread())
 									{
-										initTitles();
+										addToScreenLog("I/O thread initialized!");
+										startNewFrame();
+										textToFrame(0, 0, "Loading config file...");
+										writeScreenLog();
+										drawFrame();
 
-										checkStacks("main");
+										KPADInit();
+										WPADEnableURCC(true);
 
-										mainMenu(); // main loop
+										checkStacks("main()");
 
-										debugPrintf("Deinitializing libraries...");
-										clearTitles();
-										saveConfig(true);
+										if(!updateCheck())
+										{
+											initTitles();
 
-										checkStacks("main");
+											checkStacks("main");
+
+											mainMenu(); // main loop
+
+											debugPrintf("Deinitializing libraries...");
+											clearTitles();
+											saveConfig(true);
+
+											checkStacks("main");
+										}
+
+										KPADShutdown();
+										shutdownIOThread();
+										debugPrintf("I/O thread closed");
 									}
+									else
+										lerr = "Couldn't load I/O thread!";
 
-									KPADShutdown();
-									shutdownIOThread();
-									debugPrintf("I/O thread closed");
+									SWKBD_Shutdown();
+									debugPrintf("SWKBD closed");
 								}
 								else
-									lerr = "Couldn't load I/O thread!";
-
-								SWKBD_Shutdown();
-								debugPrintf("SWKBD closed");
+									lerr = "Couldn't initialize SWKBD!";
 							}
 							else
-								lerr = "Couldn't initialize SWKBD!";
+								lerr = "Couldn't load config file!";
+
+							deinitDownloader();
 						}
 						else
-							lerr = "Couldn't load config file!";
+							lerr = "Couldn't initialize downloader!";
 
-						deinitDownloader();
+						deinitRumble();
+						debugPrintf("Rumble closed");
 					}
 					else
-						lerr = "Couldn't initialize downloader!";
-
-					deinitRumble();
-					debugPrintf("Rumble closed");
+						lerr = "Couldn't initialize rumble!";
 				}
 				else
-					lerr = "Couldn't initialize rumble!";
+					lerr = "No support for rebrands, use original NUSspli!";
+
+				unmountAll();
+				MCP_Close(mcpHandle);
+				debugPrintf("MCP closed");
 			}
 			else
-				lerr = "No support for rebrands, use original NUSspli!";
+				lerr = "Couldn't initialize MCP!";
 
-			unmountAll();
-			MCP_Close(mcpHandle);
-			debugPrintf("MCP closed");
+			deinitCrypto();
+			debugPrintf("OpenSSL closed");
 		}
 		else
-			lerr = "Couldn't initialize MCP!";
+			lerr = "Couldn't initialize OpenSSL!";
 
-		deinitCrypto();
-		debugPrintf("OpenSSL closed");
-	}
-	else
-		lerr = "Couldn't initialize OpenSSL!";
-	
-	if(lerr != NULL)
-	{
-		drawErrorFrame(lerr, ANY_RETURN);
-			
-		while(!(vpad.trigger))
-			showFrame();
-	}
-	
-	shutdownRenderer();
-	debugPrintf("Clearing screen log");
-	clearScreenLog();
+		if(lerr != NULL)
+		{
+			drawErrorFrame(lerr, ANY_RETURN);
+
+			while(!(vpad.trigger))
+				showFrame();
+		}
+
+		shutdownRenderer();
+		debugPrintf("Clearing screen log");
+		clearScreenLog();
 #ifdef NUSSPLI_HBL
-	romfsExit();
+		romfsExit();
 #endif
-	debugPrintf("Shutting down filesystem");
-	FSShutdown();
-	debugPrintf("libgui-sdl closed");
-	
+		debugPrintf("Shutting down filesystem");
+		FSShutdown();
+		debugPrintf("libgui-sdl closed");
+
 #ifdef NUSSPLI_DEBUG
-	checkStacks("main");
-	debugPrintf("Bye!");
-//	shutdownDebug();
+		checkStacks("main");
+		debugPrintf("Bye!");
+//		shutdownDebug();
 #endif
 
 #ifdef NUSSPLI_HBL
