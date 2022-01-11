@@ -30,7 +30,7 @@
 	extern "C" {
 #endif
 
-bool breakOut();
+bool jailbreak();
 
 #ifdef __cplusplus
 	}

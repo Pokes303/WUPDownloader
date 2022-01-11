@@ -22,16 +22,13 @@
 #include <wut-fixups.h>
 
 #include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
 
-#include <file.h>
+#include <jailbreak.h>
 #include <utils.h>
 
 #include <coreinit/cache.h>
 #include <coreinit/ios.h>
 #include <coreinit/mcp.h>
-#include <coreinit/memory.h>
 
 #include <wut_structsize.h>
 
@@ -50,9 +47,9 @@ WUT_CHECK_OFFSET(LOAD_REQUEST, 0x0C, fo);
 WUT_CHECK_OFFSET(LOAD_REQUEST, 0x10, path);
 WUT_CHECK_SIZE(LOAD_REQUEST, 0x110);
 
-bool breakOut()
+bool jailbreak()
 {
-	debugPrintf("BO: Init...");
+	debugPrintf("Jailbreak: Init...");
 	mcpHandle = MCP_Open();
 	if(mcpHandle == 0)
 	{
@@ -75,7 +72,7 @@ bool breakOut()
 
 	if(ret == 0)
 	{
-		debugPrintf("BO: Done!");
+		debugPrintf("Jailbreak: Done!");
 		return true;
 	}
 

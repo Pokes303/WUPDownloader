@@ -25,10 +25,10 @@
 #include <downloader.h>
 #include <file.h>
 #include <filesystem.h>
-#include <hbl.h>
 #include <input.h>
 #include <installer.h>
 #include <ioThread.h>
+#include <jailbreak.h>
 #include <memdebug.h>
 #include <osdefs.h>
 #include <otp.h>
@@ -75,11 +75,11 @@ int main()
 
 #ifdef NUSSPLI_HBL
 	uint64_t tid = OSGetTitleID();
-	bool breakingout = isTiramisu() && (tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004A000; // Mii Maker
-	if(breakingout)
-		breakingout = breakOut();
+	bool jailbreaking = isTiramisu() && (tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004A000; // Mii Maker
+	if(jailbreaking)
+		jailbreaking = jailbreak();
 
-	if(!breakingout)
+	if(!jailbreaking)
 	{
 #endif
 		OSThread *mainThread = OSGetCurrentThread();
@@ -293,7 +293,7 @@ int main()
 	if(app != APP_STATE_STOPPED)
 	{
 #ifdef NUSSPLI_HBL
-		if(breakingout)
+		if(jailbreaking)
 		{
 			tid &= 0xFFFFFFFFFFFF0FFF;
 			tid |= 0x000000000000E000;
