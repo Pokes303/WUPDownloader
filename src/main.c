@@ -292,8 +292,6 @@ int main()
 	
 	if(app != APP_STATE_STOPPED)
 	{
-		debugPrintf("Not STOPPED");
-
 #ifdef NUSSPLI_HBL
 		if(breakingout)
 		{
@@ -312,30 +310,22 @@ int main()
 #endif
 		if(app == APP_STATE_HOME)
 		{
-			debugPrintf("Home button detected, waiting for CafeOS to tell us we're ready to release...");
 			app = APP_STATE_RUNNING;
 			while(AppRunning())
 				;
 		}
 		
 		if(app == APP_STATE_STOPPING)
-		{
-			debugPrintf("Releasing GPU cause APP_STATE == STOPPING");
 			ProcUIDrawDoneRelease();
-		}
 		
 		int ps;
 		do
 		{
 			ps = ProcUIProcessMessages(true);
 			if(ps == PROCUI_STATUS_RELEASE_FOREGROUND)
-			{
-				debugPrintf("Releasing GPU cause PROCUI_STATUS == RELEASE_FOREGROUND");
 				ProcUIDrawDoneRelease();
-			}
 		}
 		while(ps != PROCUI_STATUS_EXITING);
-		debugPrintf("EXITED!");
 	}
 	
 	deinitASAN();

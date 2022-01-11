@@ -198,12 +198,10 @@ bool AppRunning()
 		{
 			case PROCUI_STATUS_EXITING:
 				// Real exit request from CafeOS
-				debugPrintf("STOPPED");
 				app = APP_STATE_STOPPED;
 				break;
 			case PROCUI_STATUS_RELEASE_FOREGROUND:
 				// Exit with power button
-				debugPrintf("STOPPING");
 				shutdownRenderer();
 				app = APP_STATE_STOPPING;
 				break;
