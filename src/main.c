@@ -73,6 +73,16 @@ int main()
 	initStatus();
 	initASAN();
 
+#ifdef NUSSPLI_HBL
+	uint64_t tid = OSGetTitleID();
+	bool breakingout = isTiramisu() && (tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004A000; // Mii Maker
+	if(breakingout)
+		breakingout = breakOut();
+
+	if(!breakingout)
+	{
+#endif
+
 	OSThread *mainThread = OSGetCurrentThread();
 	OSSetThreadName(mainThread, "NUSspli");
 	addEntropy(&(mainThread->id), sizeof(uint16_t));
@@ -83,21 +93,8 @@ int main()
 	getCommonKey(); // We do this exploit as soon as possible
 	
 	FSInit();
-
 #ifdef NUSSPLI_HBL
-	bool breakingout = isTiramisu();
-	uint64_t tid;
-	if(breakingout)
-	{
-		tid = OSGetTitleID();
-		breakingout = tid == 0x000500101004A000 || tid == 0x000500101004A100 || tid == 0x000500101004A200;
-		if(breakingout)
-			breakingout = breakOut();
-	}
-
-	if(!breakingout)
-	{
-		romfsInit();
+	romfsInit();
 #endif
 	initRenderer();
 	
@@ -299,8 +296,16 @@ int main()
 		debugPrintf("Not STOPPED");
 
 #ifdef NUSSPLI_HBL
-		tid &= 0xFFFFFFFFFFFF0FFF;
-		tid |= breakingout ? 0x000000000000E000 : 0x000000000000A000;
+		if(breakingout)
+		{
+			tid &= 0xFFFFFFFFFFFF0FFF;
+			tid |= 0x000000000000E000;
+		}
+		else if(isTiramisu() && (tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004E000) // Health & Safety
+		{
+			tid &= 0xFFFFFFFFFFFF0FFF;
+			tid |= 0x000000000000A000;
+		}
 
 		_SYSLaunchTitleWithStdArgsInNoSplash(tid, 0);
 #else
