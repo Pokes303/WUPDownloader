@@ -95,6 +95,8 @@ int main()
 #ifdef NUSSPLI_HBL
 		romfsInit();
 #endif
+		KPADInit();
+		WPADEnableURCC(true);
 
 		if(initRenderer())
 		{
@@ -197,12 +199,9 @@ int main()
 										{
 											addToScreenLog("I/O thread initialized!");
 											startNewFrame();
-											textToFrame(0, 0, "Loading config file...");
+											textToFrame(0, 0, "Loading menu...");
 											writeScreenLog();
 											drawFrame();
-
-											KPADInit();
-											WPADEnableURCC(true);
 
 											checkStacks("main()");
 
@@ -221,7 +220,6 @@ int main()
 												checkStacks("main");
 											}
 
-											KPADShutdown();
 											shutdownIOThread();
 											debugPrintf("I/O thread closed");
 										}
@@ -278,12 +276,12 @@ int main()
 
 		debugPrintf("Clearing screen log");
 		clearScreenLog();
+		KPADShutdown();
+		debugPrintf("Shutting down filesystem");
 #ifdef NUSSPLI_HBL
 		romfsExit();
 #endif
-		debugPrintf("Shutting down filesystem");
 		FSShutdown();
-
 #ifdef NUSSPLI_HBL
 	}
 #endif
