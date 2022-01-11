@@ -61,7 +61,7 @@
 	extern "C" {
 #endif
 
-void initRenderer();
+bool initRenderer();
 void shutdownRenderer();
 void pauseRenderer();
 void resumeRenderer();

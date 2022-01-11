@@ -532,96 +532,122 @@ void resumeRenderer()
 	font = NULL;
 }
 
-void initRenderer()
+static inline void quitSDL()
 {
-	if(font != NULL)
-		return;
+	if(backgroundMusic != NULL)
+	{
+		debugPrintf("Stopping background music");
+		Mix_HaltChannel(0);
+		Mix_FreeChunk(backgroundMusic);
+		Mix_CloseAudio();
+		backgroundMusic = NULL;
+	}
+
+// TODO:
+	if(TTF_WasInit())
+		TTF_Quit();
+	SDL_QuitSubSystem(SDL_INIT_AUDIO);
+//	SDL_QuitSubSystem(SDL_INIT_VIDEO);
+//	SDL_Quit();
+}
+
+bool initRenderer()
+{
+	if(font)
+		return true;
 
 	for(int i = 0; i < MAX_OVERLAYS; ++i)
 		errorOverlay[i] = NULL;
 	
-	if(SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO) != 0)
+	if(SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO) == 0)
 	{
-		debugPrintf("SDL init error: %s", SDL_GetError());
-		return;
-	}
 
-	window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screen.x, screen.y, 0);
-	if(window == NULL)
-		return;
-
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-	if(renderer == NULL)
-		return;
-
-	if(frameBuffer == NULL)
-		frameBuffer = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, screen.x, screen.y);
-
-	if(frameBuffer == NULL)
-		return;
-
-	SDL_SetRenderTarget(renderer, frameBuffer);
-
-	OSTime t = OSGetSystemTime();
-	if(Mix_Init(MIX_INIT_MP3))
-	{
-		FILE *f = fopen(ROMFS_PATH "audio/bg.mp3", "rb");
-		if(f != NULL)
+		window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screen.x, screen.y, 0);
+		if(window)
 		{
-			size_t fs = getFilesize(f);
-			void *buf = MEMAllocFromDefaultHeap(fs);
-			if(buf != NULL)
+			renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+			if(renderer)
 			{
-				if(fread(buf, fs, 1, f) == 1)
+				frameBuffer = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, screen.x, screen.y);
+				if(frameBuffer != NULL)
 				{
-					if(Mix_OpenAudio(22050, AUDIO_S16MSB, 2, 4096) == 0)
-					{
-						SDL_RWops *rw = SDL_RWFromMem(buf, fs);
-						backgroundMusic = Mix_LoadWAV_RW(rw, true);
-						if(backgroundMusic != NULL)
-						{
-							Mix_VolumeChunk(backgroundMusic, 15);
-							if(Mix_PlayChannel(0, backgroundMusic, -1) == 0)
-								goto audioRunning;
+					SDL_SetRenderTarget(renderer, frameBuffer);
 
-							Mix_FreeChunk(backgroundMusic);
-							backgroundMusic = NULL;
+					OSTime t = OSGetSystemTime();
+					if(Mix_Init(MIX_INIT_MP3))
+					{
+						FILE *f = fopen(ROMFS_PATH "audio/bg.mp3", "rb");
+						if(f != NULL)
+						{
+							size_t fs = getFilesize(f);
+							void *buf = MEMAllocFromDefaultHeap(fs);
+							if(buf != NULL)
+							{
+								if(fread(buf, fs, 1, f) == 1)
+								{
+									if(Mix_OpenAudio(22050, AUDIO_S16MSB, 2, 4096) == 0)
+									{
+										SDL_RWops *rw = SDL_RWFromMem(buf, fs);
+										backgroundMusic = Mix_LoadWAV_RW(rw, true);
+										if(backgroundMusic != NULL)
+										{
+											Mix_VolumeChunk(backgroundMusic, 15);
+											if(Mix_PlayChannel(0, backgroundMusic, -1) == 0)
+												goto audioRunning;
+
+											Mix_FreeChunk(backgroundMusic);
+											backgroundMusic = NULL;
+										}
+										SDL_RWclose(rw);
+										Mix_CloseAudio();
+									}
+								}
+								MEMFreeToDefaultHeap(buf);
+							}
+							fclose(f);
 						}
-						SDL_RWclose(rw);
-						Mix_CloseAudio();
 					}
-				}
-				MEMFreeToDefaultHeap(buf);
-			}
-			fclose(f);
-		}
-	}
 
 audioRunning:
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
-	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+					SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+					SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-	GX2SetTVGamma(2.0f);
-	GX2SetDRCGamma(1.0f);
+					GX2SetTVGamma(2.0f);
+					GX2SetDRCGamma(1.0f);
 
-	loadTexture(ROMFS_PATH "textures/goodbye.png", &byeTex);
+					loadTexture(ROMFS_PATH "textures/goodbye.png", &byeTex);
 
-	t = OSGetSystemTime() - t;
-	addEntropy(&t, sizeof(OSTime));
-	
-	TTF_Init();
-	resumeRenderer();
-	if(font == NULL)
-	{
-		debugPrintf("SDL error!");
-		return;
+					t = OSGetSystemTime() - t;
+					addEntropy(&t, sizeof(OSTime));
+
+					TTF_Init();
+					resumeRenderer();
+					if(font != NULL)
+					{
+						addToScreenLog("SDL initialized!");
+						startNewFrame();
+						textToFrame(0, 0, "Loading...");
+						writeScreenLog();
+						drawFrame();
+						return true;
+					}
+
+					pauseRenderer();
+					SDL_DestroyTexture(frameBuffer);
+				}
+
+				SDL_DestroyRenderer(renderer);
+			}
+
+			SDL_DestroyWindow(window);
+		}
+
+		quitSDL();
 	}
+	else
+		debugPrintf("SDL init error: %s", SDL_GetError());
 
-	addToScreenLog("SDL initialized!");
-	startNewFrame();
-	textToFrame(0, 0, "Loading...");
-	writeScreenLog();
-	drawFrame();
+	return false;
 }
 
 #define clearFrame()
@@ -648,64 +674,30 @@ void pauseRenderer()
 
 void shutdownRenderer()
 {
+	if(font == NULL)
+		return;
+
 	for(int i = 0; i < MAX_OVERLAYS; ++i)
 		removeErrorOverlay(i);
 	
-	if(font != NULL)
-	{
-		SDL_SetRenderTarget(renderer, NULL);
-		colorStartNewFrame(SCREEN_COLOR_BLUE);
+	SDL_SetRenderTarget(renderer, NULL);
+	colorStartNewFrame(SCREEN_COLOR_BLUE);
 
-		SDL_Rect bye;
-		SDL_QueryTexture(byeTex, NULL, NULL, &(bye.w), &(bye.h));
-		bye.x = (screen.x >> 1) - (bye.w >> 1);
-		bye.y = (screen.y >> 1) - (bye.h >> 1);
+	SDL_Rect bye;
+	SDL_QueryTexture(byeTex, NULL, NULL, &(bye.w), &(bye.h));
+	bye.x = (screen.x >> 1) - (bye.w >> 1);
+	bye.y = (screen.y >> 1) - (bye.h >> 1);
 
-		SDL_RenderCopy(renderer, byeTex, NULL, &bye);
-		SDL_RenderPresent(renderer);
-		clearFrame();
-		pauseRenderer();
-	}
+	SDL_RenderCopy(renderer, byeTex, NULL, &bye);
+	SDL_RenderPresent(renderer);
+	clearFrame();
+	pauseRenderer();
 
-	if(frameBuffer != NULL)
-	{
-		SDL_DestroyTexture(frameBuffer);
-		frameBuffer = NULL;
-	}
+	SDL_DestroyTexture(frameBuffer);
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
 
-	if(renderer != NULL)
-	{
-		SDL_DestroyRenderer(renderer);
-		renderer = NULL;
-	}
-
-	if(window != NULL)
-	{
-		SDL_DestroyWindow(window);
-		window = NULL;
-	}
-	
-	if(backgroundMusic != NULL)
-	{
-		debugPrintf("Stopping background music");
-		Mix_HaltChannel(0);
-		Mix_FreeChunk(backgroundMusic);
-		backgroundMusic = NULL;
-
-	}
-
-	int fr;
-	uint16_t fo;
-	int ch;
-	int c = Mix_QuerySpec(&fr, &fo, &ch);
-	for(int i = 0; i < c; ++i)
-		Mix_CloseAudio();
-
-// TODO:
-	TTF_Quit();
-	SDL_QuitSubSystem(SDL_INIT_AUDIO);
-//	SDL_QuitSubSystem(SDL_INIT_VIDEO);
-//	SDL_Quit();
+	quitSDL();
 }
 
 void colorStartNewFrame(uint32_t color)
