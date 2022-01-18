@@ -570,7 +570,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				strcpy(toScreen, "Downloading ");
 				strcpy(toScreen + 12, name);
 				textToFrame(0, 0, toScreen);
-				barToFrame(1, 0, 30, dlnow / dltotal * 100.0D);
+				barToFrame(1, 0, 29, dlnow / dltotal * 100.0D);
 
 				if(dltotal < 1024.0D)
 				{
@@ -594,7 +594,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				}
 
 				sprintf(toScreen, "%.2f / %.2f %s", dlnow / multiplier, dltotal / multiplier, multiplierName);
-				textToFrame(1, 31, toScreen);
+				textToFrame(1, 30, toScreen);
 
 				dltotal = (dlnow - downloaded); 		// sample length in bytes
 				ent = (OSTick)dltotal;
@@ -660,9 +660,9 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 					multiplierName = "GB";
 				}
 				data->dlnow = data->dltmp + downloaded;
-				barToFrame(1, 63, 30, data->dlnow / data->dltotal * 100.0f);
+				barToFrame(1, 62, 29, data->dlnow / data->dltotal * 100.0f);
 				sprintf(toScreen, "%.2f / %.2f %s", data->dlnow / multiplier, data->dltotal / multiplier, multiplierName);
-				textToFrame(1, 94, toScreen);
+				textToFrame(1, 92, toScreen);
 			}
 
 			writeScreenLog();
