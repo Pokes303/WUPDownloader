@@ -220,7 +220,7 @@ void innerMain()
 									lerr = "Couldn't initialize SWKBD!";
 							}
 							else
-								lerr = "Couldn't load config file!";
+								lerr = "Couldn't load config file!\n\nMost likely your SD card is write locked!";
 
 							deinitDownloader();
 						}
