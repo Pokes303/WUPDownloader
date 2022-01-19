@@ -29,7 +29,6 @@
 #include <installer.h>
 #include <ioThread.h>
 #include <jailbreak.h>
-#include <memdebug.h>
 #include <osdefs.h>
 #include <otp.h>
 #include <renderer.h>
@@ -88,16 +87,6 @@ void innerMain()
 
 	if(initRenderer())
 	{
-		// ASAN Trigger
-	/*	char *asanHeapTrigger = MEMAllocFromDefaultHeap(1);
-		debugPrintf("ASAN Debug: Triggering buffer-read overflow:");
-		if(asanHeapTrigger[1] == ' ') ;
-		debugPrintf("ASAN Debug: Triggering buffer-write overflow:");
-		asanHeapTrigger[1] = '?';
-		debugPrintf("ASAN Debug: Triggering double-free:");
-		MEMFreeToDefaultHeap(asanHeapTrigger);
-		MEMFreeToDefaultHeap(asanHeapTrigger);*/
-
 		if(OSSetThreadPriority(mainThread, THREAD_PRIORITY_HIGH))
 			addToScreenLog("Changed main thread priority!");
 		else
@@ -274,7 +263,6 @@ void innerMain()
 int main()
 {
 	initStatus();
-	initASAN();
 
 #ifdef NUSSPLI_HBL
 	uint64_t tid = OSGetTitleID();
@@ -330,7 +318,6 @@ int main()
 		while(ps != PROCUI_STATUS_EXITING);
 	}
 	
-	deinitASAN();
 	ProcUIShutdown();
 	return 0;
 }

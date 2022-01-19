@@ -37,7 +37,6 @@
 #include <input.h>
 #include <installer.h>
 #include <ioThread.h>
-#include <memdebug.h>
 #include <menu/utils.h>
 #include <osdefs.h>
 #include <renderer.h>
