@@ -21,14 +21,13 @@ TARGET		:=	$(notdir $(CURDIR))
 BUILD		?=	debug
 
 SOURCES		:=	zlib/contrib/minizip \
-				src/cJSON \
 				src/menu \
 				src
 
 DATA		:=	
 INCLUDES	:=	include \
 				payload \
-				src/cJSON \
+				cJSON \
 				zlib/contrib/minizip
 
 ifeq ($(strip $(HBL)), 1)
