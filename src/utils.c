@@ -106,7 +106,7 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 	if(progress == NULL)
 	{
 		debugPrintf("Error allocating memory!");
-		enableShutdown();
+		data->err = 0xDEAD0001;
 		return;
 	}
 	
@@ -182,27 +182,30 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 		
 		showFrame();
 
-		if(ovl < 0)
+		if(inst)
 		{
-			if(vpad.trigger & VPAD_BUTTON_B)
-				ovl = addErrorOverlay(
-					"Do you really want to cancel?\n"
-					"\n"
-					BUTTON_A " Yes || " BUTTON_B " No"
-				);
-		}
-		else
-		{
-			if(vpad.trigger & VPAD_BUTTON_A)
+			if(ovl < 0)
 			{
-				removeErrorOverlay(ovl);
-				ovl = -2;
-				break;
+				if(vpad.trigger & VPAD_BUTTON_B)
+					ovl = addErrorOverlay(
+						"Do you really want to cancel?\n"
+						"\n"
+						BUTTON_A " Yes || " BUTTON_B " No"
+					);
 			}
-			else if(vpad.trigger & VPAD_BUTTON_B)
+			else
 			{
-				removeErrorOverlay(ovl);
-				ovl = -1;
+				if(vpad.trigger & VPAD_BUTTON_A)
+				{
+					removeErrorOverlay(ovl);
+					ovl = -2;
+					break;
+				}
+				else if(vpad.trigger & VPAD_BUTTON_B)
+				{
+					removeErrorOverlay(ovl);
+					ovl = -1;
+				}
 			}
 		}
 	}
@@ -211,7 +214,11 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 	{
 		startNewFrame();
 		textToFrame(0, 0, "Please wait...");
+		writeScreenLog();
+		drawFrame();
+
 		MCP_InstallTitleAbort(mcpHandle);
+		data->err =  0xDEAD0002;
 	}
 	else if(ovl >= 0)
 		removeErrorOverlay(ovl);

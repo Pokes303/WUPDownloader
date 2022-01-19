@@ -197,6 +197,10 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 		strcpy(toScreen, "Installation failed!\n\n");
 		switch(data.err)
 		{
+			case 0xDEAD0001: // EOM
+			case 0xDEAD0002: // Cancelled
+				enableShutdown();
+				return true;
 			case 0xFFFCFFE9:
 				if(hasDeps)
 				{
