@@ -21,6 +21,7 @@
 #include <wut-fixups.h>
 
 #include <crypto.h>
+#include <input.h>
 #include <renderer.h>
 #include <status.h>
 #include <utils.h>
@@ -119,6 +120,7 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 	uint64_t lsp = 0;
 	char speedBuf[32];
 	speedBuf[0] = '\0';
+	int ovl = -1;
 	
 	while(data->processing)
 	{
@@ -179,7 +181,40 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 			debugPrintf("MCP_InstallGetProgress() returned %#010x", err);
 		
 		showFrame();
+
+		if(ovl < 0)
+		{
+			if(vpad.trigger & VPAD_BUTTON_B)
+				ovl = addErrorOverlay(
+					"Do you really want to cancel?\n"
+					"\n"
+					BUTTON_A " Yes || " BUTTON_B " No"
+				);
+		}
+		else
+		{
+			if(vpad.trigger & VPAD_BUTTON_A)
+			{
+				removeErrorOverlay(ovl);
+				ovl = -2;
+				break;
+			}
+			else if(vpad.trigger & VPAD_BUTTON_B)
+			{
+				removeErrorOverlay(ovl);
+				ovl = -1;
+			}
+		}
 	}
+
+	if(ovl == -2)
+	{
+		startNewFrame();
+		textToFrame(0, 0, "Please wait...");
+		MCP_InstallTitleAbort(mcpHandle);
+	}
+	else if(ovl >= 0)
+		removeErrorOverlay(ovl);
 }
 
 size_t strlen16(char16_t *str)
