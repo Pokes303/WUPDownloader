@@ -76,8 +76,6 @@ void innerMain()
 
 	checkStacks("main");
 
-	getCommonKey(); // We do this exploit as soon as possible
-
 	FSInit();
 #ifdef NUSSPLI_HBL
 	romfsInit();
@@ -266,7 +264,7 @@ int main()
 
 #ifdef NUSSPLI_HBL
 	uint64_t tid = OSGetTitleID();
-	bool jailbreaking = isTiramisu() && (tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004A000; // Mii Maker
+	bool jailbreaking = !isAroma() && (tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004A000; // Mii Maker
 	if(jailbreaking)
 		jailbreaking = jailbreak();
 
@@ -288,7 +286,7 @@ int main()
 			tid &= 0xFFFFFFFFFFFF0FFF;
 			tid |= 0x000000000000E000;
 		}
-		else if(isTiramisu() && (tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004E000) // Health & Safety
+		else if(!isAroma() && (tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004E000) // Health & Safety
 		{
 			tid &= 0xFFFFFFFFFFFF0FFF;
 			tid |= 0x000000000000A000;

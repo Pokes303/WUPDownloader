@@ -84,7 +84,7 @@ void mainMenu()
 	drawMainMenuFrame();
 
 	int ovl;
-	if(isTiramisu() || cfwWarningShown)
+	if(cfwWarningShown)
 		ovl = -1;
 	else if(openIOSUhax())
 	{
@@ -97,7 +97,7 @@ void mainMenu()
 			"No CFW detected!\n"
 			"\n"
 			"NUSspli won't work correctly without a CFW.\n"
-			"Have a look at https://wiiu.hacks.guide/#/cfw-choice\n"
+			"Have a look at https://wiiu.hacks.guide\n"
 			"\n"
 			"Press any button to close this warning."
 		);

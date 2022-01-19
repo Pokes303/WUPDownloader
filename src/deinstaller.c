@@ -62,9 +62,6 @@ bool deinstall(MCPTitleListType title, bool channelHaxx)
 	MCPInstallTitleInfo info;
 	glueMcpData(&info, &data);
 	
-	if(!isTiramisu())
-		unmountAll();
-	
 	if(!channelHaxx)
 		disableShutdown();
 	

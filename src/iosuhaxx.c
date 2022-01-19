@@ -30,13 +30,6 @@
 #include <utils.h>
 
 bool iosuConnected = false;
-bool haxchi;
-
-static void iosuCallback(IOSError err, void *dummy)
-{
-	debugPrintf("IOSUHAX: Closing callback!");
-	iosuConnected = false;
-}
 
 void closeIOSUhax()
 {
@@ -45,14 +38,7 @@ void closeIOSUhax()
 
 	//close down wupserver, return control to mcp
 	IOSUHAX_Close();
-	//wait for mcp to return
-	if(haxchi)
-	{
-		while(iosuConnected)
-			OSSleepTicks(1024 << 10); //TODO: What's a good value here?
-	}
-	else
-		iosuConnected = false;
+	iosuConnected = false;
 }
 
 bool openIOSUhax()
@@ -60,28 +46,6 @@ bool openIOSUhax()
 	if(iosuConnected)
 		return true;
 
-	if(IOSUHAX_Open(NULL) < 0)
-	{
-		// We're not on Mocha. So try the Haxchi method of taking over MCP
-		IOSError err = IOS_IoctlAsync(mcpHandle, 0x62, NULL, 0, NULL, 0, iosuCallback, NULL);
-		if(err != IOS_ERROR_OK)
-		{
-			debugPrintf("IOSUHAX: Error sending IOCTL: %d", err);
-			return false;
-		}
-
-		//let wupserver start up
-		OSSleepTicks(OSMillisecondsToTicks(50)); // TODO: Extensively test this in release builds
-		if(IOSUHAX_Open("/dev/mcp") < 0)
-		{
-			debugPrintf("IOSUHAX: Error opening!");
-			return false;
-		}
-		haxchi = true;
-	}
-	else
-		haxchi = false;
-
-	iosuConnected = true;
-	return true;
+	iosuConnected = IOSUHAX_Open(NULL) >= 0;
+	return iosuConnected;
 }

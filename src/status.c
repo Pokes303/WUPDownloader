@@ -46,7 +46,6 @@ bool shutdownEnabled = true;
 bool channel;
 #endif
 bool aroma;
-bool tiramisu;
 bool apdEnabled;
 bool apdDisabled = false;
 
@@ -102,11 +101,6 @@ bool isAroma()
 	return aroma;
 }
 
-bool isTiramisu()
-{
-	return tiramisu;
-}
-
 #ifndef NUSSPLI_HBL
 bool isChannel()
 {
@@ -138,43 +132,16 @@ void initStatus()
 	ProcUIRegisterCallback(PROCUI_CALLBACK_HOME_BUTTON_DENIED, &homeButtonCallback, NULL, 100);
 	OSEnableHomeButtonMenu(false);
 	
-	uint32_t ime;
-	int handle = IOS_Open("/dev/mcp", IOS_OPEN_READ);
-	tiramisu = handle >= 0;
-	if(tiramisu)
-	{
-		char dummy[0x100];
-		int in = 0xF9; // IPC_CUSTOM_COPY_ENVIRONMENT_PATH
-		tiramisu = IOS_Ioctl(handle, 100, &in, sizeof(in), dummy, sizeof(dummy)) == IOS_ERROR_OK;
-		if(tiramisu)
-		{
-			if(openIOSUhax())
-			{
-				tiramisu = IOSUHAX_read_otp((uint8_t *)&ime, 1) >= 0;
-				closeIOSUhax();
-			}
-			else
-				tiramisu = false;
-		}
-
-		IOS_Close(handle);
-	}
-
-	if(tiramisu)
-	{
-		debugPrintf("Tiramisu!");
-		OSDynLoad_Module mod;
-		aroma = OSDynLoad_Acquire("homebrew_kernel", &mod) == OS_DYNLOAD_OK;
-		if(aroma)
-			OSDynLoad_Release(mod);
-	}
-	else
-		aroma = false;
+	OSDynLoad_Module mod;
+	aroma = OSDynLoad_Acquire("homebrew_kernel", &mod) == OS_DYNLOAD_OK;
+    if(aroma)
+        OSDynLoad_Release(mod);
 
 #ifndef NUSSPLI_HBL
 	channel = OSGetTitleID() == 0x0005000010155373;
 #endif
 	
+    uint32_t ime;
 	if(IMIsAPDEnabledBySysSettings(&ime) == 0)
 		apdEnabled = ime == 1;
 	else

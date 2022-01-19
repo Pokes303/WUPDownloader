@@ -75,12 +75,6 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	MCPInstallTitleInfo info;
 	McpData data;
 	
-	if(!isTiramisu())
-	{
-		flushIOQueue(); // Make sure all game files are on disc
-		unmountAll(); // Get MCP ready
-	}
-	
 	// Let's see if MCP is able to parse the TMD...
 	OSTime t = OSGetSystemTime();
 	data.err = MCP_InstallGetInfo(mcpHandle, newPath, (MCPInstallInfo *)&info);
@@ -161,8 +155,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	disableShutdown();
 	glueMcpData(&info, &data);
 	
-	if(isTiramisu())
-		flushIOQueue(); // Make sure all game files are on disc
+	flushIOQueue(); // Make sure all game files are on disc
 	
 	// Start the installation process
 	t = OSGetSystemTime();

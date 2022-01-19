@@ -48,7 +48,6 @@ void disableApd();
 void enableShutdown();
 void disableShutdown();
 bool isAroma();
-bool isTiramisu();
 #ifdef NUSSPLI_HBL
 #define isChannel() false
 #else

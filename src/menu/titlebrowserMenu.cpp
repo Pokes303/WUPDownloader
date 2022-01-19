@@ -49,9 +49,6 @@ size_t filteredTitleEntrySize;
 
 void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cursor, char16_t *search)
 {
-	if(!isTiramisu())
-		unmountAll();
-	
 	startNewFrame();
 	
 	// Games, Updates, DLC, Demos, All
