@@ -55,7 +55,6 @@ static bool initFsa()
 	fsaHandle = IOSUHAX_FSA_Open();
 	if(fsaHandle < 0)
 	{
-		closeIOSUhax();
 		debugPrintf("IOSUHAX: Error opening FSA!");
 		return false;
 	}
@@ -78,7 +77,6 @@ bool mountUSB()
 		if(ret != 0 || !dirExists("usb:/"))
 		{
 			IOSUHAX_FSA_Close(fsaHandle);
-			closeIOSUhax();
 			debugPrintf("IOSUHAX: error mounting USB drive 2: %#010x", ret);
 			return false;
 		}
@@ -115,7 +113,6 @@ bool mountMLC()
 static void closeFsa()
 {
 	IOSUHAX_FSA_Close(fsaHandle);
-	closeIOSUhax();
 	fsaHandle = -1;
 }
 

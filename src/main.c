@@ -27,6 +27,7 @@
 #include <filesystem.h>
 #include <input.h>
 #include <installer.h>
+#include <iosuhaxx.h>
 #include <ioThread.h>
 #include <jailbreak.h>
 #include <osdefs.h>
@@ -101,23 +102,24 @@ void innerMain()
 			addToScreenLog("OpenSSL initialized!");
 
 			startNewFrame();
-			textToFrame(0, 0, "Loading MCP...");
+			textToFrame(0, 0, "Checking sanity...");
 			writeScreenLog();
 			drawFrame();
 
 			mcpHandle = MCP_Open();
-			if(mcpHandle != 0)
+			if(sanityCheck())
 			{
-				addToScreenLog("MCP initialized!");
+				addToScreenLog("Sanity checked!");
 
 				startNewFrame();
-				textToFrame(0, 0, "Checking sanity...");
+				textToFrame(0, 0, "Loading MCP...");
 				writeScreenLog();
 				drawFrame();
 
-				if(sanityCheck())
+				mcpHandle = MCP_Open();
+				if(mcpHandle != 0)
 				{
-					addToScreenLog("Sanity checked!");
+					addToScreenLog("MCP initialized!");
 
 					startNewFrame();
 					textToFrame(0, 0, "Initializing rumble...");
@@ -219,16 +221,15 @@ void innerMain()
 					}
 					else
 						lerr = "Couldn't initialize rumble!";
+
+					MCP_Close(mcpHandle);
+					debugPrintf("MCP closed");
 				}
 				else
-					lerr = "No support for rebrands, use original NUSspli!";
-
-				unmountAll();
-				MCP_Close(mcpHandle);
-				debugPrintf("MCP closed");
+					lerr = "Couldn't initialize MCP!";
 			}
 			else
-				lerr = "Couldn't initialize MCP!";
+				lerr = "No support for rebrands, use original NUSspli!";
 
 			deinitCrypto();
 			debugPrintf("OpenSSL closed");
@@ -236,6 +237,8 @@ void innerMain()
 		else
 			lerr = "Couldn't initialize OpenSSL!";
 
+		unmountAll();
+		closeIOSUhax();
 		if(lerr != NULL)
 		{
 			drawErrorFrame(lerr, ANY_RETURN);

@@ -84,13 +84,8 @@ void mainMenu()
 	drawMainMenuFrame();
 
 	int ovl;
-	if(cfwWarningShown)
+	if(cfwWarningShown || openIOSUhax())
 		ovl = -1;
-	else if(openIOSUhax())
-	{
-		closeIOSUhax();
-		ovl = -1;
-	}
 	else
 	{
 		ovl = addErrorOverlay(
