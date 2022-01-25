@@ -44,7 +44,6 @@ typedef struct
 	NUSFILE *file;
 	void *buf;
 	size_t size;
-	bool inUse;
 } WriteQueueEntry;
 
 static OSThread *ioThread;
@@ -66,7 +65,7 @@ static int ioThreadMain(int argc, const char **argv)
 	{
 		asl = activeWriteBuffer;
 		entry = queueEntries + asl;
-		if(!entry->inUse)
+		if(entry->file == NULL)
 		{
 			OSSleepTicks(256);
 			continue;
@@ -91,7 +90,7 @@ static int ioThreadMain(int argc, const char **argv)
 			asl = 0;
 
 		activeWriteBuffer = asl;
-		entry->inUse = false;
+		entry->file = NULL;
 	}
 	
 	return 0;
@@ -107,8 +106,8 @@ bool initIOThread()
 		{
 			for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; ++i, ptr += IO_BUFSIZE)
 			{
+                queueEntries[i].file = NULL;
 				queueEntries[i].buf = (void *)ptr;
-				queueEntries[i].inUse = false;
 			}
 
 			spinCreateLock(&ioWriteLock, true);
@@ -133,7 +132,7 @@ void shutdownIOThread()
 	
 	spinLock(ioWriteLock);
 
-	while(queueEntries[activeWriteBuffer].inUse)
+	while(queueEntries[activeWriteBuffer].file != NULL)
 		;
 	
 	ioRunning = false;
@@ -164,7 +163,7 @@ retryAddingToQueue:
 			return 0;
 	
     entry = queueEntries + activeReadBuffer;
-	if(entry->inUse)
+	if(entry->file != NULL)
 	{
         spinReleaseLock(ioWriteLock);
 #ifdef NUSSPLI_DEBUG
@@ -212,7 +211,6 @@ retryAddingToQueue:
 		entry->size = 0;
 	
 	entry->file = file;
-	entry->inUse = true;
 	
 	if(++activeReadBuffer == MAX_IO_QUEUE_ENTRIES)
 		activeReadBuffer = 0;
@@ -228,7 +226,7 @@ void flushIOQueue()
 	debugPrintf("Flushing...");
 	spinLock(ioWriteLock);
 
-	while(queueEntries[activeWriteBuffer].inUse)
+	while(queueEntries[activeWriteBuffer].file)
 		OSSleepTicks(1024);
 
 	spinReleaseLock(ioWriteLock);
