@@ -442,6 +442,32 @@ static int dlThreadMain(int argc, const char **argv)
 	x.dlnow = 								\
 	x.dltotal = 0.0D;						\
 
+static const char *translateCurlError(CURLcode err)
+{
+	switch(err)
+	{
+		case CURLE_FAILED_INIT:
+			return "Your Wii U is not connected to the internet";
+		case CURLE_COULDNT_RESOLVE_HOST:
+			return "Couldn't resolve host";
+		case CURLE_WRITE_ERROR:
+			return "Couldn't write to storage";
+		case CURLE_OPERATION_TIMEDOUT:
+			return "Timeout";
+		case CURLE_GOT_NOTHING:
+			return "The server didn't return any data";
+		case CURLE_SEND_ERROR:
+		case CURLE_RECV_ERROR:
+			return "Socket I/O error";
+		case CURLE_PARTIAL_FILE:
+			return "Incomplete file received";
+		case CURLE_PEER_FAILED_VERIFICATION:
+			return "SSL verification failed";
+		default:
+			return "Unknown Error";
+	}
+}
+
 int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume)
 {
 	//Results: 0 = OK | 1 = Error | 2 = No ticket aviable | 3 = Exit
@@ -736,6 +762,8 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		}
 		sprintf(toScreen, "curl_easy_perform returned a non-valid value: %d\n\n---> ", ret);
 		
+		const char *te = translateCurlError(ret);
+		char errMsg[1024];
 		switch(ret)
 		{
 			case CURLE_RANGE_ERROR:
@@ -744,26 +772,24 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				return r;
 			case CURLE_FAILED_INIT:
 			case CURLE_COULDNT_RESOLVE_HOST:
-				strcat(toScreen, "Network error\nYour WiiU is not connected to the internet,\ncheck the network settings and try again");
-				break;
-			case CURLE_WRITE_ERROR:
-				strcat(toScreen, "Error from SD Card\nThe SD Card was extracted or invalid to write data,\nre-insert it or use another one and restart the app");
-				break;
 			case CURLE_OPERATION_TIMEDOUT:
 			case CURLE_GOT_NOTHING:
 			case CURLE_SEND_ERROR:
 			case CURLE_RECV_ERROR:
 			case CURLE_PARTIAL_FILE:
-				strcat(toScreen, "Network error\nFailed while trying to download data, probably your router was turned off,\ncheck the internet connection and try again");
+				sprintf(errMsg, "Network error\n%s,\ncheck the network settings and try again", te);
+				break;
+			case CURLE_WRITE_ERROR:
+				sprintf(errMsg, "I/O error\n%s,\nre-insert it or use another one and restart the Wii U", te);
 				break;
 			case CURLE_PEER_FAILED_VERIFICATION:
-				strcat(toScreen, "SSL error\nThe servers certificate seems to be invalid,\ncheck your Wii Us date and time settings");
+				sprintf(errMsg, "SSL error\n%s,\ncheck your Wii Us date and time settings", te);
 				break;
 			default:
-				strcat(toScreen, "Unknown error\n");
-				strcat(toScreen, curlError);
+				sprintf(errMsg, "%s\n%s", te, curlError);
 				break;
 		}
+		strcat(toScreen, errMsg);
 
 		if(data != NULL && cancelOverlayId >= 0)
 			closeCancelOverlay();
