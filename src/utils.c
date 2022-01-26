@@ -331,11 +331,11 @@ char months[12][4] = {
 	"Dez",
 };
 
-static volatile spinlock debugLock;
+static spinlock debugLock;
 
 void debugInit()
 {
-	spinCreateLock(&debugLock, false);
+	spinCreateLock(debugLock, false);
 	WHBLogUdpInit();
 }
 

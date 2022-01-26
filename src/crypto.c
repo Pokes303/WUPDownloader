@@ -33,7 +33,7 @@
 
 #include <coreinit/time.h>
 
-static volatile spinlock rngLock;
+static spinlock rngLock;
 static volatile uint32_t entropy;
 
 #define reseed()					\
@@ -129,7 +129,7 @@ void addEntropy(void *e, size_t l)
 bool initCrypto()
 {
 	reseed();
-	spinCreateLock(&rngLock, false);
+	spinCreateLock(rngLock, false);
 	return OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS, NULL) == 1 &&
 		RAND_set_rand_method(&srm) == 1 &&
 		RAND_DRBG_set_reseed_defaults(0, 0, 0, 0) == 1;

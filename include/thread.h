@@ -49,32 +49,32 @@ typedef enum
     THREAD_PRIORITY_LOW = 15,
 } THREAD_PRIORITY;
 
-#define spinlock uint32_t
+#define spinlock volatile uint32_t
 
 #define SPINLOCK_FREE	false
 #define SPINLOCK_LOCKED	true
 
 #ifdef NUSSPLI_DEBUG
 #include <utils.h>
-static inline void spinCreateLock(volatile spinlock *lock, bool locked)
-{
-	debugPrintf("Spinlock 0x%08X created!", lock);
-	*lock = (spinlock)locked;
+#define spinCreateLock(lock, locked)					\
+{														\
+	debugPrintf("Spinlock 0x%08X created!", &lock);		\
+	lock = locked;							\
 }
-static inline bool spinTryLock(volatile spinlock lock)
+static inline bool spinTryLock(spinlock lock)
 {
 	bool ret = OSCompareAndSwapAtomic(&lock, SPINLOCK_FREE, SPINLOCK_LOCKED);
 	if(!ret)
 		debugPrintfUnlocked("spinTryLock: LOCKED: 0x%08X", &lock);
 	return ret;
-
 }
 #else
-#define spinCreateLock(lock, locked)	*lock = locked
+#define spinCreateLock(lock, locked)	lock = locked
 #define spinTryLock(lock)				OSCompareAndSwapAtomic(&lock, SPINLOCK_FREE, SPINLOCK_LOCKED)
 #endif
-#define spinIsLocked(lock)				lock == SPINLOCK_LOCKED
+#define spinIsLocked(lock)				(lock)
 #define spinLock(lock)					while(!spinTryLock(lock)) {}
+#define spinLockAsMutex(lock)			while(!spinTryLock(lock)) { OSSleepTicks(256); }
 #define spinReleaseLock(lock)			lock = SPINLOCK_FREE
 
 OSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksize, OSThreadEntryPointFn mainfunc, int argc, char *argv, OSThreadAttributes attribs);

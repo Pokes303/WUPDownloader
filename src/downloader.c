@@ -113,7 +113,7 @@ typedef struct
 {
 	bool running;
 	CURLcode error;
-	volatile spinlock lock;
+	spinlock lock;
 	OSTick ts;
 	double dltotal;
 	double dlnow;
@@ -438,7 +438,7 @@ static int dlThreadMain(int argc, const char **argv)
 #define setDefaultDataValues(x) 			\
 	x.running = true;						\
 	x.error = CURLE_OK;						\
-	spinCreateLock(&(x.lock), false);		\
+	spinCreateLock((x.lock), false);		\
 	x.dlnow = 								\
 	x.dltotal = 0.0D;						\
 
