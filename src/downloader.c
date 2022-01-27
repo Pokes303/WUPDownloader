@@ -795,10 +795,12 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		if(data != NULL && cancelOverlayId >= 0)
 			closeCancelOverlay();
 		
+		int os;
 		char *p;
 		if(autoResumeEnabled())
 		{
-			frames = 9 * 60; // 9 seconds with 60 FPS
+			os = 9 * 60; // 9 seconds with 60 FPS
+			frames = os;
 			strcat(toScreen, "\n\n");
 			p = toScreen + strlen(toScreen) + 12;
 			strcat(toScreen, "Next try in _ seconds.");
@@ -806,15 +808,24 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		else
 			drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
 		
+		int s;
 		while(AppRunning())
 		{
 			if(app == APP_STATE_BACKGROUND)
 				continue;
+			else if(app == APP_STATE_RETURNING)
+				drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
 
 			if(autoResumeEnabled())
-				*p = '1' + (frames / 60);
-			if(autoResumeEnabled() || app == APP_STATE_RETURNING)
-				drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
+			{
+				s = frames / 60;
+				if(s != os)
+				{
+					*p = '1' + s;
+					os = s;
+					drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
+				}
+			}
 
 			showFrame();
 			
