@@ -442,8 +442,6 @@ static const char *translateCurlError(CURLcode err)
 			return "Your Wii U is not connected to the internet";
 		case CURLE_COULDNT_RESOLVE_HOST:
 			return "Couldn't resolve host";
-		case CURLE_WRITE_ERROR:
-			return "Couldn't write to storage";
 		case CURLE_OPERATION_TIMEDOUT:
 			return "Timeout";
 		case CURLE_GOT_NOTHING:
@@ -770,9 +768,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 			case CURLE_RECV_ERROR:
 			case CURLE_PARTIAL_FILE:
 				sprintf(errMsg, "Network error\n%s,\ncheck the network settings and try again", te);
-				break;
-			case CURLE_WRITE_ERROR:
-				sprintf(errMsg, "I/O error\n%s,\nre-insert it or use another one and restart the Wii U", te);
 				break;
 			case CURLE_PEER_FAILED_VERIFICATION:
 				sprintf(errMsg, "SSL error\n%s,\ncheck your Wii Us date and time settings", te);
