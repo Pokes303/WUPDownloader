@@ -225,15 +225,15 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 				strcat(toScreen, "Possible incorrect console for DLC title.tik file");
 				break;
 			case 0xFFFCFFE4:
-				strcat(toScreen, "Possible not enough memory on target device");
+				strcat(toScreen, "Not enough free space on target device");
 				break;
 			case 0xFFFFF825:
 			case 0xFFFFF82E:
-				strcat(toScreen, "Possible corrupted files or bad storage medium.\nTry redownloading files or reformat/replace target device");
+				strcat(toScreen, "Files might be corrupt or bad storage medium.\nTry redownloading files or reformat/replace target device");
 				break;
 			default:
 				if ((data.err & 0xFFFF0000) == 0xFFFB0000)
-					strcat(toScreen, "Possible corrupted files.\nPaid content requires a CFW. See https://wiiu.hacks.guide");
+					strcat(toScreen, "Make sure you didn't forget to install 01_sigpatches.rpx from\n\thttps://wiiu.hacks.guide/#/tiramisu/sd-preparation\nAlso files might be corrupt");
 				else
 					sprintf(toScreen + 12, "Unknown Error: %#010x", data.err);
 		}
