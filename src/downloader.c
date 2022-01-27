@@ -434,28 +434,44 @@ static int dlThreadMain(int argc, const char **argv)
 	x.dlnow = 								\
 	x.dltotal = 0.0D;						\
 
-static const char *translateCurlError(CURLcode err)
+static char *translateCurlError(CURLcode err, char *curlError)
 {
+	char *ret;
 	switch(err)
 	{
-		case CURLE_FAILED_INIT:
-			return "Your Wii U is not connected to the internet";
 		case CURLE_COULDNT_RESOLVE_HOST:
-			return "Couldn't resolve host";
+			ret = "Couldn't resolve hostname";
+			break;
+		case CURLE_COULDNT_CONNECT:
+			ret = "Couldn't connect to server";
+			break;
 		case CURLE_OPERATION_TIMEDOUT:
-			return "Timeout";
+			ret = "Operation timed out";
+			break;
 		case CURLE_GOT_NOTHING:
-			return "The server didn't return any data";
+			ret=  "The server didn't return any data";
+			break;
 		case CURLE_SEND_ERROR:
 		case CURLE_RECV_ERROR:
-			return "Socket I/O error";
 		case CURLE_PARTIAL_FILE:
-			return "Incomplete file received";
+			ret = "I/O error";
+			break;
 		case CURLE_PEER_FAILED_VERIFICATION:
-			return "SSL verification failed";
+			ret = "Verification failed";
+			break;
+		case CURLE_SSL_CONNECT_ERROR:
+			ret = "Handshake failed";
+			break;
+
+		case CURLE_FAILED_INIT:
+		case CURLE_READ_ERROR:
+		case CURLE_OUT_OF_MEMORY:
+			return "Internal error";
 		default:
-			return "Unknown Error";
+			return "Unknown libcurl error";
 	}
+
+	return curlError[0] == '\0' ? ret : curlError;
 }
 
 int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume)
@@ -750,33 +766,31 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 					ret = cdata.error;
 			}
 		}
-		sprintf(toScreen, "curl_easy_perform returned a non-valid value: %d\n\n---> ", ret);
-		
-		const char *te = translateCurlError(ret);
-		char errMsg[1024];
+
+		const char *te = translateCurlError(ret, curlError);
 		switch(ret)
 		{
 			case CURLE_RANGE_ERROR:
 				int r = downloadFile(url, file, data, type, false);
 				curlReuseConnection = false;
 				return r;
-			case CURLE_FAILED_INIT:
 			case CURLE_COULDNT_RESOLVE_HOST:
+			case CURLE_COULDNT_CONNECT:
 			case CURLE_OPERATION_TIMEDOUT:
 			case CURLE_GOT_NOTHING:
 			case CURLE_SEND_ERROR:
 			case CURLE_RECV_ERROR:
 			case CURLE_PARTIAL_FILE:
-				sprintf(errMsg, "Network error\n%s,\ncheck the network settings and try again", te);
+				sprintf(toScreen, "Network error:\n\t%s!\n\ncheck the network settings and try again", te);
 				break;
 			case CURLE_PEER_FAILED_VERIFICATION:
-				sprintf(errMsg, "SSL error\n%s,\ncheck your Wii Us date and time settings", te);
+			case CURLE_SSL_CONNECT_ERROR:
+				sprintf(toScreen, "SSL error:\n\t%s!\n\ncheck your Wii Us date and time settings", te);
 				break;
 			default:
-				sprintf(errMsg, "%s\n%s", te, curlError);
+				sprintf(toScreen, "%s:\n\t%d %s", te, ret, curlError);
 				break;
 		}
-		strcat(toScreen, errMsg);
 
 		if(data != NULL && cancelOverlayId >= 0)
 			closeCancelOverlay();
