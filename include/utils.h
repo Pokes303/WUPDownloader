@@ -1,7 +1,7 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
  * Copyright (c) 2019-2020 Pokes303                                        *
- * Copyright (c) 2020-2021 V10lator <v10lator@myway.de>                    *
+ * Copyright (c) 2020-2022 V10lator <v10lator@myway.de>                    *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
@@ -34,6 +34,9 @@
 
 #define NAPI_URL		"https://napi.nbg01.v10lator.de/v2/"
 #define NUSSPLI_COPYRIGHT	"© 2020-2022 V10lator <v10lator@myway.de>"
+
+#define CUSTOM_MCP_ERROR_EOM		0xDEAD0001
+#define CUSTOM_MCP_ERROR_CANCELLED	0xDEAD0002
 
 #ifdef NUSSPLI_DEBUG
 	#include <whb/log.h>

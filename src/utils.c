@@ -106,7 +106,7 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 	if(progress == NULL)
 	{
 		debugPrintf("Error allocating memory!");
-		data->err = 0xDEAD0001;
+		data->err = CUSTOM_MCP_ERROR_EOM;
 		return;
 	}
 	
@@ -218,7 +218,7 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 		drawFrame();
 
 		MCP_InstallTitleAbort(mcpHandle);
-		data->err =  0xDEAD0002;
+		data->err =  CUSTOM_MCP_ERROR_CANCELLED;
 	}
 	else if(ovl >= 0)
 		removeErrorOverlay(ovl);

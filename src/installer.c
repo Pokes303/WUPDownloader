@@ -203,8 +203,8 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 		strcpy(toScreen, "Installation failed!\n\n");
 		switch(data.err)
 		{
-			case 0xDEAD0001: // EOM
-			case 0xDEAD0002: // Cancelled
+			case CUSTOM_MCP_ERROR_EOM:
+			case CUSTOM_MCP_ERROR_CANCELLED:
 				enableShutdown();
 				return true;
 			case 0xFFFCFFE9:
