@@ -200,14 +200,6 @@ static int initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 		return CURL_SOCKOPT_ERROR;
 	}
 
-	// Activate TCP noackdelay
-	r = setsockopt(socket, IPPROTO_TCP, TCP_NOACKDELAY, &o, sizeof(o));
-	if(r != 0)
-	{
-		debugPrintf("initSocket: Error settings TCP noackdelay: %d", r);
-		return CURL_SOCKOPT_ERROR;
-	}
-
 	// Disable slowstart. Should be more important fo a server but doesn't hurt a client, too
 	r = setsockopt(socket, SOL_SOCKET, 0x4000, &o, sizeof(o));
 	if(r != 0)
