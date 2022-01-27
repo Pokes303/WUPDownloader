@@ -248,7 +248,7 @@ void innerMain(bool validCfw)
 			closeIOSUhax();
 		}
 		else
-			lerr = "Haxchi/Mocha isn't supported.\nPlease update to Tiramisu.\nSee https://wiiu.hacks.guide";
+			lerr = "Unsupported environment.\nPlease update to Tiramisu.\nSee https://wiiu.hacks.guide";
 
 		if(lerr != NULL)
 		{
