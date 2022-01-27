@@ -88,7 +88,13 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 				sprintf(toScreen, "No title.tmd found at \"%s\"", newPath);
 				break;
 			case 0xfffbfc17:
-				sprintf(toScreen, "Internal error installing \"%s\"\nYour Homebrew Launcher Channel is probably outdated!", newPath);
+				sprintf(toScreen,
+						"Internal error installing \"%s\""
+#ifdef NUSSPLI_HBL
+						"We're supporting HBL on Tiramisu and HBLC v2.1 fix by Gary only!"
+#endif
+						, newPath
+				);
 				break;
 			default:
 				sprintf(toScreen, "Error getting info for \"%s\" from MCP: %#010x", newPath, data.err);
