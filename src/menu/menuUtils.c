@@ -120,6 +120,7 @@ void drawErrorFrame(const char *text, ErrorOptions option)
 	while(text)
 	{
 		l = strchr(text, '\n');
+        ++line;
 		size = l == NULL ? strlen(text) : (l - text);
 		if(size > 0)
 		{
@@ -128,7 +129,7 @@ void drawErrorFrame(const char *text, ErrorOptions option)
 				tmp[i] = text[i];
 
 			tmp[size] = '\0';
-			textToFrame(++line, 0, tmp);
+			textToFrame(line, 0, tmp);
 		}
 		
 		text = l == NULL ? NULL : (l + 1);
