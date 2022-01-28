@@ -87,7 +87,6 @@ void innerMain(bool validCfw)
 	romfsInit();
 #endif
 
-	VPADInit();
 	KPADInit();
 	WPADEnableURCC(true);
 
@@ -268,7 +267,6 @@ void innerMain(bool validCfw)
 	debugPrintf("Clearing screen log");
 	clearScreenLog();
 	KPADShutdown();
-	VPADShutdown();
 
 	debugPrintf("Shutting down filesystem");
 #ifdef NUSSPLI_HBL
