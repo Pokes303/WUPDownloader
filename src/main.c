@@ -253,6 +253,7 @@ void innerMain(bool validCfw)
 		if(lerr != NULL)
 		{
 			drawErrorFrame(lerr, ANY_RETURN);
+			vpad.trigger = 0;
 
 			while(!(vpad.trigger))
 				showFrame();
