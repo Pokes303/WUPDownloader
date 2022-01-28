@@ -248,22 +248,15 @@ void innerMain(bool validCfw)
 			closeIOSUhax();
 		}
 		else
-		{
-			debugPrintf("Setting lerr...");
 			lerr = "Unsupported environment.\nPlease update to Tiramisu.\nSee https://wiiu.hacks.guide";
-		}
 
 		if(lerr != NULL)
 		{
-			debugPrintf("Drawig error screen...");
 			drawErrorFrame(lerr, ANY_RETURN);
 			vpad.trigger = 0;
 
-			debugPrintf("Starting error loop...");
 			while(!(vpad.trigger))
 				showFrame();
-
-			debugPrintf("Ending error loop...");
 		}
 
 		shutdownRenderer();
@@ -318,7 +311,6 @@ int main()
 #endif
 	if(cfwValid())
 	{
-		debugPrintf("CFW supported!");
 #ifdef NUSSPLI_HBL
 		jailbreaking = !isAroma() && (tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004A000; // Mii Maker
 		if(jailbreaking)
@@ -330,7 +322,6 @@ int main()
 	}
 	else
 	{
-		debugPrintf("CFW not supported!");
 		innerMain(false);
 #ifdef NUSSPLI_HBL
 		jailbreaking = false;
