@@ -258,6 +258,8 @@ void innerMain(bool validCfw)
 
 			while(!(vpad.trigger))
 				showFrame();
+
+			debugPrintf("Error loop ended cause: %d", vpad.trigger);
 		}
 
 		shutdownRenderer();

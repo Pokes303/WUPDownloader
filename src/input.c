@@ -364,7 +364,10 @@ void readInput()
 	if(vError != VPAD_READ_SUCCESS)
 		OSBlockSet(&vpad, 0, sizeof(VPADStatus));
 	else if(vpad.trigger != 0 && kbdHidden)
+	{
 		lastUsedController = CT_VPAD_0;
+		debugPrintf("INPUT: DRC: %d", vpad.trigger);
+	}
 	
 	bool altCon = false;
 	uint32_t controllerType;
@@ -397,6 +400,8 @@ void readInput()
 		{
 			oldV = vpad.trigger;
 			tv = kps->classic.trigger;
+			if(tv)
+				debugPrintf("INPUT: WPAD_CLASSIC: %d", tv);
 
 			if(tv & WPAD_CLASSIC_BUTTON_A)
 				vpad.trigger |= VPAD_BUTTON_A;
@@ -439,6 +444,8 @@ void readInput()
 		}
 
 		tv = kps->trigger;
+		if(tv)
+			debugPrintf("INPUT: WPAD: %d", tv);
 
 		if(tv & WPAD_BUTTON_A)
 			vpad.trigger |= VPAD_BUTTON_A;
