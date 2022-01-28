@@ -80,12 +80,13 @@ void innerMain(bool validCfw)
 		addEntropy(mainThread->stackStart, 4);
 
 		checkStacks("main");
-
-		FSInit();
-#ifdef NUSSPLI_HBL
-		romfsInit();
-#endif
 	}
+
+	FSInit();
+#ifdef NUSSPLI_HBL
+	romfsInit();
+#endif
+
 	KPADInit();
 	WPADEnableURCC(true);
 
@@ -267,14 +268,11 @@ void innerMain(bool validCfw)
 	clearScreenLog();
 	KPADShutdown();
 
-	if(validCfw)
-	{
-		debugPrintf("Shutting down filesystem");
+	debugPrintf("Shutting down filesystem");
 #ifdef NUSSPLI_HBL
-		romfsExit();
+	romfsExit();
 #endif
-		FSShutdown();
-	}
+	FSShutdown();
 }
 
 static bool cfwValid()
