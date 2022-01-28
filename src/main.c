@@ -279,12 +279,24 @@ void innerMain(bool validCfw)
 
 static bool cfwValid()
 {
-	bool ret = openIOSUhax();
+	int handle = IOS_Open("/dev/mcp", IOS_OPEN_READ);
+	bool ret = handle >= 0;
 	if(ret)
 	{
-		uint8_t dummy;
-		ret = IOSUHAX_read_otp(&dummy, 1) >= 0;
-		closeIOSUhax();
+		char dummy[0x100];
+		int in = 0xF9; // IPC_CUSTOM_COPY_ENVIRONMENT_PATH
+		ret = IOS_Ioctl(handle, 100, &in, sizeof(in), dummy, sizeof(dummy)) == IOS_ERROR_OK;
+		if(ret)
+		{
+			ret = openIOSUhax();
+			if(ret)
+			{
+				ret = IOSUHAX_read_otp((uint8_t *)dummy, 1) >= 0;
+				closeIOSUhax();
+			}
+		}
+
+		IOS_Close(handle);
 	}
 
 	return ret;
