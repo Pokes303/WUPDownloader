@@ -363,8 +363,13 @@ void readInput()
 	
 	if(vError != VPAD_READ_SUCCESS)
 		OSBlockSet(&vpad, 0, sizeof(VPADStatus));
-	else if(vpad.trigger != 0 && kbdHidden)
-		lastUsedController = CT_VPAD_0;
+	else if(vpad.trigger)
+	{
+		vpad.trigger &= ~(VPAD_STICK_R_EMULATION_LEFT | VPAD_STICK_R_EMULATION_RIGHT | VPAD_STICK_R_EMULATION_UP | VPAD_STICK_R_EMULATION_DOWN);
+
+		if(vpad.trigger && kbdHidden)
+			lastUsedController = CT_VPAD_0;
+	}
 	
 	bool altCon = false;
 	uint32_t controllerType;
@@ -391,80 +396,86 @@ void readInput()
 			continue;
 		}
 		
+		oldV = vpad.trigger;
+
 		if(controllerType == WPAD_EXT_PRO_CONTROLLER || // With a simple input like ours we're able to handle Wii u pro as Wii classic controllers.
 				controllerType == WPAD_EXT_CLASSIC ||
 				controllerType == WPAD_EXT_MPLUS_CLASSIC)
 		{
-			oldV = vpad.trigger;
 			tv = kps->classic.trigger;
-
-			if(tv & WPAD_CLASSIC_BUTTON_A)
-				vpad.trigger |= VPAD_BUTTON_A;
-			if(tv & WPAD_CLASSIC_BUTTON_B)
-				vpad.trigger |= VPAD_BUTTON_B;
-			if(tv & WPAD_CLASSIC_BUTTON_X)
-				vpad.trigger |= VPAD_BUTTON_X;
-			if(tv & WPAD_CLASSIC_BUTTON_Y)
-				vpad.trigger |= VPAD_BUTTON_Y;
-			if(tv & WPAD_CLASSIC_BUTTON_UP)
-				vpad.trigger |= VPAD_BUTTON_UP;
-			if(tv & WPAD_CLASSIC_BUTTON_DOWN)
-				vpad.trigger |= VPAD_BUTTON_DOWN;
-			if(tv & WPAD_CLASSIC_BUTTON_LEFT)
-				vpad.trigger |= VPAD_BUTTON_LEFT;
-			if(tv & WPAD_CLASSIC_BUTTON_RIGHT)
-				vpad.trigger |= VPAD_BUTTON_RIGHT;
-			if(tv & WPAD_CLASSIC_BUTTON_PLUS)
-				vpad.trigger |= VPAD_BUTTON_PLUS;
-			if(tv & WPAD_CLASSIC_BUTTON_MINUS)
-				vpad.trigger |= VPAD_BUTTON_MINUS;
-			if(tv & WPAD_CLASSIC_BUTTON_HOME)
-				vpad.trigger |= VPAD_BUTTON_HOME;
-			if(tv & WPAD_CLASSIC_BUTTON_R)
-				vpad.trigger |= VPAD_BUTTON_R;
-			if(tv & WPAD_CLASSIC_BUTTON_L)
-				vpad.trigger |= VPAD_BUTTON_L;
-			if(tv & WPAD_CLASSIC_BUTTON_ZR)
-				vpad.trigger |= VPAD_BUTTON_ZR;
-			if(tv & WPAD_CLASSIC_BUTTON_ZL)
-				vpad.trigger |= VPAD_BUTTON_ZL;
-			
-			if(vpad.trigger != 0)
+			if(tv)
 			{
+				if(tv & WPAD_CLASSIC_BUTTON_A)
+					vpad.trigger |= VPAD_BUTTON_A;
+				if(tv & WPAD_CLASSIC_BUTTON_B)
+					vpad.trigger |= VPAD_BUTTON_B;
+				if(tv & WPAD_CLASSIC_BUTTON_X)
+					vpad.trigger |= VPAD_BUTTON_X;
+				if(tv & WPAD_CLASSIC_BUTTON_Y)
+					vpad.trigger |= VPAD_BUTTON_Y;
+				if(tv & WPAD_CLASSIC_BUTTON_UP)
+					vpad.trigger |= VPAD_BUTTON_UP;
+				if(tv & WPAD_CLASSIC_BUTTON_DOWN)
+					vpad.trigger |= VPAD_BUTTON_DOWN;
+				if(tv & WPAD_CLASSIC_BUTTON_LEFT)
+					vpad.trigger |= VPAD_BUTTON_LEFT;
+				if(tv & WPAD_CLASSIC_BUTTON_RIGHT)
+					vpad.trigger |= VPAD_BUTTON_RIGHT;
+				if(tv & WPAD_CLASSIC_BUTTON_PLUS)
+					vpad.trigger |= VPAD_BUTTON_PLUS;
+				if(tv & WPAD_CLASSIC_BUTTON_MINUS)
+					vpad.trigger |= VPAD_BUTTON_MINUS;
+				if(tv & WPAD_CLASSIC_BUTTON_HOME)
+					vpad.trigger |= VPAD_BUTTON_HOME;
+				if(tv & WPAD_CLASSIC_BUTTON_R)
+					vpad.trigger |= VPAD_BUTTON_R;
+				if(tv & WPAD_CLASSIC_BUTTON_L)
+					vpad.trigger |= VPAD_BUTTON_L;
+				if(tv & WPAD_CLASSIC_BUTTON_ZR)
+					vpad.trigger |= VPAD_BUTTON_ZR;
+				if(tv & WPAD_CLASSIC_BUTTON_ZL)
+					vpad.trigger |= VPAD_BUTTON_ZL;
+
 				if(kbdHidden && vpad.trigger != oldV)
 					lastUsedController = i;
-				
+
 				continue;
 			}
 		}
 
 		tv = kps->trigger;
+		if(tv)
+		{
+			if(tv & WPAD_BUTTON_A)
+				vpad.trigger |= VPAD_BUTTON_A;
+			if(tv & WPAD_BUTTON_B)
+				vpad.trigger |= VPAD_BUTTON_B;
+			if(tv & WPAD_BUTTON_1)
+				vpad.trigger |= VPAD_BUTTON_X;
+			if(tv & WPAD_BUTTON_2)
+				vpad.trigger |= VPAD_BUTTON_Y;
+			if(tv & WPAD_BUTTON_UP)
+				vpad.trigger |= VPAD_BUTTON_UP;
+			if(tv & WPAD_BUTTON_DOWN)
+				vpad.trigger |= VPAD_BUTTON_DOWN;
+			if(tv & WPAD_BUTTON_LEFT)
+				vpad.trigger |= VPAD_BUTTON_LEFT;
+			if(tv & WPAD_BUTTON_RIGHT)
+				vpad.trigger |= VPAD_BUTTON_RIGHT;
+			if(tv & WPAD_BUTTON_PLUS || tv & WPAD_BUTTON_1)
+				vpad.trigger |= VPAD_BUTTON_PLUS;
+			if(tv & WPAD_BUTTON_MINUS || tv & WPAD_BUTTON_2)
+				vpad.trigger |= VPAD_BUTTON_MINUS;
+			if(tv & WPAD_BUTTON_HOME)
+				vpad.trigger |= VPAD_BUTTON_HOME;
+			if(tv & WPAD_BUTTON_Z)
+				vpad.trigger |= VPAD_BUTTON_ZR;
+			if(tv & WPAD_BUTTON_C)
+				vpad.trigger |= VPAD_BUTTON_ZL;
 
-		if(tv & WPAD_BUTTON_A)
-			vpad.trigger |= VPAD_BUTTON_A;
-		if(tv & WPAD_BUTTON_B)
-			vpad.trigger |= VPAD_BUTTON_B;
-		if(tv & WPAD_BUTTON_1)
-			vpad.trigger |= VPAD_BUTTON_X;
-		if(tv & WPAD_BUTTON_2)
-			vpad.trigger |= VPAD_BUTTON_Y;
-		if(tv & WPAD_BUTTON_UP)
-			vpad.trigger |= VPAD_BUTTON_UP;
-		if(tv & WPAD_BUTTON_DOWN)
-			vpad.trigger |= VPAD_BUTTON_DOWN;
-		if(tv & WPAD_BUTTON_LEFT)
-			vpad.trigger |= VPAD_BUTTON_LEFT;
-		if(tv & WPAD_BUTTON_RIGHT)
-			vpad.trigger |= VPAD_BUTTON_RIGHT;
-		if(tv & WPAD_BUTTON_PLUS)
-			vpad.trigger |= VPAD_BUTTON_PLUS;
-		if(tv & WPAD_BUTTON_MINUS)
-			vpad.trigger |= VPAD_BUTTON_MINUS;
-		if(tv & WPAD_BUTTON_HOME)
-			vpad.trigger |= VPAD_BUTTON_HOME;
-		
-		if(vpad.trigger != 0 && kbdHidden && vpad.trigger != oldV)
-			lastUsedController = i;
+			if(kbdHidden && vpad.trigger != oldV)
+				lastUsedController = i;
+		}
 	}
 
 	if(vpad.trigger != 0)
