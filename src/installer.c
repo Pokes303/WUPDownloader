@@ -43,7 +43,7 @@
 #include <utils.h>
 #include <menu/utils.h>
 
-static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool keepFiles)
+static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUsb, bool keepFiles)
 {
 	debugPrintf("Cleaning up...");
 
@@ -65,6 +65,29 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool keep
 
 	if(!keepFiles)
 		removeDirectory(path);
+
+	DIR *dir = opendir(toUsb ? "usb:/usr/import" : "mlc:/usr/import");
+	if(dir != NULL)
+	{
+		for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
+		{
+			if(entry->d_name[0] == '.')
+				continue;
+
+			if(entry->d_type & DT_DIR)
+			{
+				debugPrintf("Removing directory %s", entry->d_name);
+				removeDirectory(entry->d_name);
+			}
+			else
+			{
+				debugPrintf("Removing file %s", entry->d_name);
+				remove(entry->d_name);
+			}
+		}
+
+		closedir(dir);
+	}
 }
 
 bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool toUsb, bool keepFiles)
@@ -228,7 +251,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 		switch(data.err)
 		{
 			case CUSTOM_MCP_ERROR_CANCELLED:
-				cleanupCancelledInstallation(dev, path, keepFiles);
+				cleanupCancelledInstallation(dev, path, toUsb, keepFiles);
 			case CUSTOM_MCP_ERROR_EOM:
 				enableShutdown();
 				return true;
