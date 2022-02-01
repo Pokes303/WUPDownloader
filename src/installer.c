@@ -76,21 +76,12 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUs
 
 		for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
 		{
-			if(entry->d_name[0] == '.')
+			if(entry->d_name[0] == '.' || !(entry->d_type & DT_DIR) || strlen(entry->d_name) != 8)
 				continue;
 
 			strcpy(ptr, entry->d_name);
-
-			if(entry->d_type & DT_DIR)
-			{
-				debugPrintf("Removing directory %s", importPath);
-				removeDirectory(importPath);
-			}
-			else
-			{
-				debugPrintf("Removing file %s", importPath);
-				remove(importPath);
-			}
+			debugPrintf("Removing directory %s", importPath);
+			removeDirectory(importPath);
 		}
 
 		closedir(dir);
