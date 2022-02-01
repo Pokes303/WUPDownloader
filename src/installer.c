@@ -66,23 +66,30 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUs
 	if(!keepFiles)
 		removeDirectory(path);
 
-	DIR *dir = opendir(toUsb ? "usb:/usr/import" : "mlc:/usr/import");
+	char importPath[1024];
+	strcpy(importPath, toUsb ? "usb:/usr/import/" : "mlc:/usr/import/");
+	DIR *dir = opendir(importPath);
+
 	if(dir != NULL)
 	{
+		char *ptr = importPath + 16;
+
 		for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
 		{
 			if(entry->d_name[0] == '.')
 				continue;
 
+			strcpy(ptr, entry->d_name);
+
 			if(entry->d_type & DT_DIR)
 			{
-				debugPrintf("Removing directory %s", entry->d_name);
-				removeDirectory(entry->d_name);
+				debugPrintf("Removing directory %s", importPath);
+				removeDirectory(importPath);
 			}
 			else
 			{
-				debugPrintf("Removing file %s", entry->d_name);
-				remove(entry->d_name);
+				debugPrintf("Removing file %s", importPath);
+				remove(importPath);
 			}
 		}
 
