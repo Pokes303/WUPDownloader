@@ -43,6 +43,30 @@
 #include <utils.h>
 #include <menu/utils.h>
 
+static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool keepFiles)
+{
+	debugPrintf("Cleaning up...");
+
+	startNewFrame();
+	textToFrame(0, 0, "Cancelling installation.");
+	textToFrame(1, 0, "Please wait...");
+	writeScreenLog();
+	drawFrame();
+	showFrame();
+
+	switch(dev)
+	{
+		case NUSDEV_USB:
+		case NUSDEV_MLC:
+			keepFiles = false;
+		default:
+			break;
+	}
+
+	if(!keepFiles)
+		removeDirectory(path);
+}
+
 bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool toUsb, bool keepFiles)
 {
 	startNewFrame();
@@ -203,8 +227,9 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 		strcpy(toScreen, "Installation failed!\n\n");
 		switch(data.err)
 		{
-			case CUSTOM_MCP_ERROR_EOM:
 			case CUSTOM_MCP_ERROR_CANCELLED:
+				cleanupCancelledInstallation(dev, path, keepFiles);
+			case CUSTOM_MCP_ERROR_EOM:
 				enableShutdown();
 				return true;
 			case 0xFFFCFFE9:
