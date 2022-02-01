@@ -157,7 +157,11 @@ size_t addToIOQueue(const void *buf, size_t size, size_t n, NUSFILE *file)
     volatile WriteQueueEntry *entry;
 		
 retryAddingToQueue:
-	spinLock(ioWriteLock);
+	
+	while(!spinTryLock(ioWriteLock))
+		if(!ioRunning)
+			return 0;
+	
     entry = queueEntries + activeReadBuffer;
 	if(entry->file != NULL)
 	{
@@ -180,20 +184,38 @@ retryAddingToQueue:
 	}
 #endif
 
-	if(buf)
+	if(buf != NULL)
 	{
 		size *= n;
+		if(size == 0)
+		{
+			n = 0;
+			goto queueExit;
+		}
+		
+		if(size > IO_BUFSIZE)
+		{
+            spinReleaseLock(ioWriteLock);
+			debugPrintf("size > %i (%i)", IO_BUFSIZE, size);
+			addToIOQueue(buf, 1, IO_BUFSIZE, file);
+			const uint8_t *newPtr = buf;
+			newPtr += IO_BUFSIZE;
+			addToIOQueue((const void *)newPtr, 1, size - IO_BUFSIZE, file);
+			return n;
+		}
+		
 		OSBlockMove(entry->buf, buf, size, false);
 		entry->size = size;
 	}
 	else
 		entry->size = 0;
-
+	
 	entry->file = file;
-
+	
 	if(++activeReadBuffer == MAX_IO_QUEUE_ENTRIES)
 		activeReadBuffer = 0;
-
+	
+queueExit:
 	spinReleaseLock(ioWriteLock);
 	return n;
 }
