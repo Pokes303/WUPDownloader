@@ -4,9 +4,11 @@ import xml.etree.cElementTree as ET
 import os
 import shutil
 
-nuspacker = "../nuspacker/NUSPacker.jar"
-wuhbtool = ""
-ForceRelease = False
+nuspacker = "../nuspacker/NUSPacker.jar"    # Set path to NUSPacker.jar here. will be downloaded if empty
+wuhbtool = ""                               # Set path to wuhbtool. Will use the one from PATH if empty
+ForceRelease = False                        # set to True to force release builds even if we'e building ALPHA/BETA
+
+# Don't edit below this line
 
 def checkAndDeleteFile(file):
     if os.path.exists(file):
