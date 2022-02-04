@@ -4,7 +4,7 @@ import xml.etree.cElementTree as ET
 import os
 import shutil
 
-nuspacker = "NUSPacker.jar"
+nuspacker = "../nuspacker/NUSPacker.jar"
 wuhbtool = ""
 ForceRelease = False
 
