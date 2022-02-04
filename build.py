@@ -50,7 +50,6 @@ shutil.copytree("meta/menu", "NUStmp/meta", dirs_exist_ok=True)
 code = ["NUSspli.rpx", "meta/menu/app.xml", "meta/menu/cos.xml"]
 for file in code:
     shutil.copy(file, "NUStmp/code")
-    os.remove(file)
 shutil.copytree("data", "NUStmp/content", dirs_exist_ok=True)
 os.system(f"java -jar {nuspacker} -in NUStmp -out NUSspli")
 shutil.make_archive(f"zips/NUSspli-{version}-Channel-DEBUG", "zip", ".", "NUSspli")
