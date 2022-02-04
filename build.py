@@ -76,7 +76,6 @@ shutil.make_archive(f"zips/NUSspli-{version}-HBL-DEBUG", "zip", ".", "NUSspli")
 if not isBeta:
     os.system("make HBL=1 -j8")
     os.makedirs("NUSspli", exist_ok=True)
-    hblFiles = ["NUSspli.rpx", "meta/hbl/meta.xml", "meta/hbl/icon.png"]
     for file in hblFiles:
         shutil.copy(file, "NUSspli")
     shutil.make_archive(f"zips/NUSspli-{version}-HBL", "zip", ".", "NUSspli")
