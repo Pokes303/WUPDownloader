@@ -699,12 +699,12 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 					multiplierName = "GB";
 				}
 				data->dlnow = data->dltmp + downloaded;
-				barToFrame(1, 62, 29, data->dlnow / data->dltotal * 100.0f);
+				barToFrame(2, 0, 29, data->dlnow / data->dltotal * 100.0f);
 				sprintf(toScreen, "%.2f / %.2f %s", data->dlnow / multiplier, data->dltotal / multiplier, multiplierName);
-				textToFrame(1, 92, toScreen);
+				textToFrame(2, 30, toScreen);
 			}
 
-			writeScreenLog();
+			writeShortScreenLog(3);
 			drawFrame();
 		}
 
@@ -1141,7 +1141,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 				addToScreenLog("title.tik not found on the NUS. Generating...");
 				startNewFrame();
 				textToFrame(0, 0, "Creating fake title.tik");
-				writeScreenLog();
+				writeShortScreenLog(3);
 				drawFrame();
 
 				generateTik(installDir, titleEntry);
@@ -1165,7 +1165,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		debugPrintf("Creating CERT...");
 		startNewFrame();
 		textToFrame(0, 0, "Creating CERT");
-		writeScreenLog();
+		writeShortScreenLog(3);
 		drawFrame();
 		
 		NUSFILE *cert = openFile(installDir, "wb");

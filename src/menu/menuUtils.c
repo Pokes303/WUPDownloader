@@ -104,10 +104,19 @@ void clearScreenLog()
 
 void writeScreenLog()
 {
-	lineToFrame(2, SCREEN_COLOR_WHITE);
-	int i = 2;
-	for(DownloadLogList *entry = downloadLogList; entry != NULL; entry = entry->nextEntry)
-		textToFrame(++i, 0, entry->line);
+	writeShortScreenLog(2);
+}
+
+void writeShortScreenLog(int line)
+{
+	lineToFrame(line, SCREEN_COLOR_WHITE);
+
+	DownloadLogList *entry = downloadLogList;
+	for(int i = line; i != 2 && entry != NULL; --i, entry = entry->nextEntry)
+		;
+
+	for( ; entry != NULL; entry = entry->nextEntry)
+		textToFrame(++line, 0, entry->line);
 }
 
 void drawErrorFrame(const char *text, ErrorOptions option)

@@ -39,6 +39,7 @@ typedef enum {
 void addToScreenLog(const char *str, ...);
 void clearScreenLog();
 void writeScreenLog();
+void writeShortScreenLog(int line);
 void drawErrorFrame(const char *text, ErrorOptions option);
 char *getToFrameBuffer();
 
