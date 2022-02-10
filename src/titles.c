@@ -202,7 +202,7 @@ bool initTitles()
 	{
 		startNewFrame();
 		textToFrame(0, 0, "Preparing download");
-		writeScreenLog();
+		writeScreenLog(1);
 		drawFrame();
 		showFrame();
 		
@@ -216,7 +216,7 @@ bool initTitles()
 	
 	startNewFrame();
 	textToFrame(0, 0, "Parsing JSON");
-	writeScreenLog();
+	writeScreenLog(1);
 	drawFrame();
 	showFrame();
 

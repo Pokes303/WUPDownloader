@@ -50,7 +50,7 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUs
 	startNewFrame();
 	textToFrame(0, 0, "Cancelling installation.");
 	textToFrame(1, 0, "Please wait...");
-	writeScreenLog();
+	writeScreenLog(2);
 	drawFrame();
 	showFrame();
 
@@ -97,7 +97,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	textToFrame(0, 0, toScreen);
 	barToFrame(1, 0, 40, 0);
 	textToFrame(1, 41, "Preparing. This might take some time. Please be patient.");
-	writeScreenLog();
+	writeScreenLog(2);
 	drawFrame();
 	showFrame();
 	
@@ -314,7 +314,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 	textToFrame(0, 0, game);
 	textToFrame(1, 0, "Installed successfully!");
-	writeScreenLog();
+	writeScreenLog(2);
 	drawFrame();
 
 	startRumble();
@@ -329,7 +329,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 			textToFrame(0, 0, game);
 			textToFrame(1, 0, "Installed successfully!");
-			writeScreenLog();
+			writeScreenLog(2);
 			drawFrame();
 		}
 		

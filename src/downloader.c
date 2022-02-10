@@ -702,9 +702,11 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				barToFrame(2, 0, 29, data->dlnow / data->dltotal * 100.0f);
 				sprintf(toScreen, "%.2f / %.2f %s", data->dlnow / multiplier, data->dltotal / multiplier, multiplierName);
 				textToFrame(2, 30, toScreen);
+				writeScreenLog(3);
 			}
+			else
+				writeScreenLog(2);
 
-			writeShortScreenLog(3);
 			drawFrame();
 		}
 
@@ -941,7 +943,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	startNewFrame();											\
 	textToFrame(0, 0, "Preparing the download of");				\
 	textToFrame(1, 3, x == NULL ? "NULL" : x);	\
-	writeScreenLog();											\
+	writeScreenLog(2);											\
 	drawFrame();
 
 bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, NUSDEV dlDev, bool toUSB, bool keepFiles)
@@ -1141,7 +1143,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 				addToScreenLog("title.tik not found on the NUS. Generating...");
 				startNewFrame();
 				textToFrame(0, 0, "Creating fake title.tik");
-				writeShortScreenLog(3);
+				writeScreenLog(3);
 				drawFrame();
 
 				generateTik(installDir, titleEntry);
@@ -1165,7 +1167,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		debugPrintf("Creating CERT...");
 		startNewFrame();
 		textToFrame(0, 0, "Creating CERT");
-		writeShortScreenLog(3);
+		writeScreenLog(3);
 		drawFrame();
 		
 		NUSFILE *cert = openFile(installDir, "wb");
@@ -1285,7 +1287,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 	textToFrame(0, 0, titleEntry->name);
 	textToFrame(1, 0, "Downloaded successfully!");
-	writeScreenLog();
+	writeScreenLog(1);
 	drawFrame();
 	
 	startRumble();
@@ -1300,7 +1302,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 			textToFrame(0, 0, titleEntry->name);
 			textToFrame(1, 0, "Downloaded successfully!");
-			writeScreenLog();
+			writeScreenLog(1);
 			drawFrame();
 		}
 		

@@ -100,7 +100,7 @@ bool updateCheck()
 	
 	startNewFrame();
 	textToFrame(0, 0, "Preparing download");
-	writeScreenLog();
+	writeScreenLog(1);
 	drawFrame();
 	showFrame();
 	
@@ -119,7 +119,7 @@ bool updateCheck()
 	
 	startNewFrame();
 	textToFrame(0, 0, "Parsing JSON");
-	writeScreenLog();
+	writeScreenLog(1);
 	drawFrame();
 	showFrame();
 	
@@ -265,7 +265,7 @@ void update(char *newVersion)
 	
 	startNewFrame();
 	textToFrame(0, 0, "Updating, please wait...");
-	writeScreenLog();
+	writeScreenLog(1);
 	drawFrame();
 	showFrame();
 	
@@ -441,7 +441,7 @@ finishUpdate:
 		colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 		textToFrame(0, 0, "Update");
 		textToFrame(1, 0, "Installed successfully!");
-		writeScreenLog();
+		writeScreenLog(2);
 		drawFrame();
 		
 		while(AppRunning())
@@ -453,7 +453,7 @@ finishUpdate:
 				colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 				textToFrame(0, 0, "Update");
 				textToFrame(1, 0, "Installed successfully!");
-				writeScreenLog();
+				writeScreenLog(2);
 				drawFrame();
 			}
 			

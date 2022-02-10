@@ -102,7 +102,7 @@ void innerMain(bool validCfw)
 
 			startNewFrame();
 			textToFrame(0, 0, "Loading OpenSSL...");
-			writeScreenLog();
+			writeScreenLog(1);
 			drawFrame();
 
 			if(initCrypto())
@@ -111,7 +111,7 @@ void innerMain(bool validCfw)
 
 				startNewFrame();
 				textToFrame(0, 0, "Checking sanity...");
-				writeScreenLog();
+				writeScreenLog(1);
 				drawFrame();
 
 				mcpHandle = MCP_Open();
@@ -121,7 +121,7 @@ void innerMain(bool validCfw)
 
 					startNewFrame();
 					textToFrame(0, 0, "Loading MCP...");
-					writeScreenLog();
+					writeScreenLog(1);
 					drawFrame();
 
 					mcpHandle = MCP_Open();
@@ -131,7 +131,7 @@ void innerMain(bool validCfw)
 
 						startNewFrame();
 						textToFrame(0, 0, "Initializing rumble...");
-						writeScreenLog();
+						writeScreenLog(1);
 						drawFrame();
 
 						if(initRumble())
@@ -140,7 +140,7 @@ void innerMain(bool validCfw)
 
 							startNewFrame();
 							textToFrame(0, 0, "Loading downloader...");
-							writeScreenLog();
+							writeScreenLog(1);
 							drawFrame();
 
 							if(initDownloader())
@@ -149,7 +149,7 @@ void innerMain(bool validCfw)
 
 								startNewFrame();
 								textToFrame(0, 0, "Loading cJSON...");
-								writeScreenLog();
+								writeScreenLog(1);
 								drawFrame();
 
 								cJSON_Hooks ch;
@@ -160,7 +160,7 @@ void innerMain(bool validCfw)
 								addToScreenLog("cJSON initialized!");
 								startNewFrame();
 								textToFrame(0, 0, "Loading SWKBD...");
-								writeScreenLog();
+								writeScreenLog(1);
 								drawFrame();
 
 								if(initConfig())
@@ -168,7 +168,7 @@ void innerMain(bool validCfw)
 									addToScreenLog("Config loaded!");
 									startNewFrame();
 									textToFrame(0, 0, "Loading SWKBD...");
-									writeScreenLog();
+									writeScreenLog(1);
 									drawFrame();
 
 									if(SWKBD_Init())
@@ -176,7 +176,7 @@ void innerMain(bool validCfw)
 										addToScreenLog("SWKBD initialized!");
 										startNewFrame();
 										textToFrame(0, 0, "Loading I/O thread...");
-										writeScreenLog();
+										writeScreenLog(1);
 										drawFrame();
 
 										if(initIOThread())
@@ -184,7 +184,7 @@ void innerMain(bool validCfw)
 											addToScreenLog("I/O thread initialized!");
 											startNewFrame();
 											textToFrame(0, 0, "Loading menu...");
-											writeScreenLog();
+											writeScreenLog(1);
 											drawFrame();
 
 											checkStacks("main()");

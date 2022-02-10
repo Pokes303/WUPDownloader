@@ -173,7 +173,7 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 					textToFrame(1, ALIGNED_RIGHT, speedBuf);
 				}
 				
-				writeScreenLog();
+				writeScreenLog(2);
 				drawFrame();
 			}
 		}
@@ -214,7 +214,7 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 	{
 		startNewFrame();
 		textToFrame(0, 0, "Please wait...");
-		writeScreenLog();
+		writeScreenLog(1);
 		drawFrame();
 
 		MCP_InstallTitleAbort(mcpHandle);

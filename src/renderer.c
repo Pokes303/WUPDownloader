@@ -627,7 +627,7 @@ audioRunning:
 						addToScreenLog("SDL initialized!");
 						startNewFrame();
 						textToFrame(0, 0, "Loading...");
-						writeScreenLog();
+						writeScreenLog(1);
 						drawFrame();
 						return true;
 					}
