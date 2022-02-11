@@ -1287,7 +1287,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 	textToFrame(0, 0, titleEntry->name);
 	textToFrame(1, 0, "Downloaded successfully!");
-	writeScreenLog(1);
+	writeScreenLog(2);
 	drawFrame();
 	
 	startRumble();
@@ -1302,7 +1302,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 			textToFrame(0, 0, titleEntry->name);
 			textToFrame(1, 0, "Downloaded successfully!");
-			writeScreenLog(1);
+			writeScreenLog(2);
 			drawFrame();
 		}
 		
