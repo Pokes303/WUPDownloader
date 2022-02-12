@@ -54,6 +54,8 @@
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
 #include <curl/curl.h>
+#include <nn/ac/ac_c.h>
+#include <nn/result.h>
 #include <nsysnet/_socket.h>
 
 #include <openssl/err.h>
@@ -288,10 +290,16 @@ static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 	dlbgThread = startThread("NUSspli socket optimizer", THREAD_PRIORITY_LOW, DLBGT_STACK_SIZE, dlbgThreadMain, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_CPU0);	\
 }
 
-#define resetNetwork()	\
-{						\
-	killDlbgThread();	\
-	initNetwork();		\
+// We call AC functions here without calling ACInitialize() / ACFinalize() as WUT should call these for us.
+#define resetNetwork()									\
+{														\
+	killDlbgThread();									\
+														\
+	ACConfigId networkCfg;								\
+	if(NNResult_IsSuccess(ACGetStartupId(&networkCfg)))	\
+		ACConnectWithConfigId(networkCfg);				\
+														\
+	initNetwork();										\
 }
 
 bool initDownloader()
