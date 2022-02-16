@@ -635,10 +635,13 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				sprintf(toScreen, "%.2f / %.2f %s", dlnow / multiplier, dltotal / multiplier, multiplierName);
 				textToFrame(1, 30, toScreen);
 
-				double downNow = dlnow;
-				double downTotal = dltotal;
-
+				int fileeta = (dltotal - dlnow);
 				dltotal = (dlnow - downloaded); 		// sample length in bytes
+				fileeta /= dltotal;
+
+				secsToTime(fileeta, toScreen);
+				textToFrame(1, ALIGNED_RIGHT, toScreen);
+
 				ent = (OSTick)dltotal;
 				addEntropy(&ent, sizeof(OSTick));
 				downloaded = dlnow;
@@ -665,12 +668,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 					ltframes = 0;
 
 				getSpeedString(dltotal, toScreen);
-				debugPrintf("dltotal: %.2f, dlnow: %.2f, downloaded: %.2f, downNow: %.2f, downTotal: %.2f", dltotal, dlnow, downloaded, downNow, downTotal);
-				// dltotal: mbyte/s
-				// dlnow: Mbits/s (?)
-				// fileSize: bruh
-				// downloaded: size of already downloaded
-				debugPrintf("eta: %.2f", (downTotal - downNow) / dltotal);
 				textToFrame(0, ALIGNED_RIGHT, toScreen);
 			}
 			else
@@ -708,12 +705,20 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 					multiplierName = "GB";
 				}
 				data->dlnow = data->dltmp + downloaded;
-				barToFrame(1, 62, 29, data->dlnow / data->dltotal * 100.0f);
+				barToFrame(2, 0, 29, data->dlnow / data->dltotal * 100.0f);
 				sprintf(toScreen, "%.2f / %.2f %s", data->dlnow / multiplier, data->dltotal / multiplier, multiplierName);
-				textToFrame(1, 92, toScreen);
-			}
+				textToFrame(2, 30, toScreen);
 
-			writeScreenLog();
+				int totaleta = (data->dltotal - data->dlnow) / dltotal;
+
+				secsToTime(totaleta, toScreen);
+				textToFrame(2, ALIGNED_RIGHT, toScreen);
+
+				writeScreenLog(3);
+			}
+			else
+				writeScreenLog(2);
+
 			drawFrame();
 		}
 
@@ -950,7 +955,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	startNewFrame();											\
 	textToFrame(0, 0, "Preparing the download of");				\
 	textToFrame(1, 3, x == NULL ? "NULL" : x);	\
-	writeScreenLog();											\
+	writeScreenLog(2);											\
 	drawFrame();
 
 bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, NUSDEV dlDev, bool toUSB, bool keepFiles)
@@ -1150,7 +1155,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 				addToScreenLog("title.tik not found on the NUS. Generating...");
 				startNewFrame();
 				textToFrame(0, 0, "Creating fake title.tik");
-				writeScreenLog();
+				writeScreenLog(3);
 				drawFrame();
 
 				generateTik(installDir, titleEntry);
@@ -1174,7 +1179,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		debugPrintf("Creating CERT...");
 		startNewFrame();
 		textToFrame(0, 0, "Creating CERT");
-		writeScreenLog();
+		writeScreenLog(3);
 		drawFrame();
 		
 		NUSFILE *cert = openFile(installDir, "wb");
@@ -1294,7 +1299,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 	textToFrame(0, 0, titleEntry->name);
 	textToFrame(1, 0, "Downloaded successfully!");
-	writeScreenLog();
+	writeScreenLog(1);
 	drawFrame();
 	
 	startRumble();
@@ -1309,7 +1314,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 			textToFrame(0, 0, titleEntry->name);
 			textToFrame(1, 0, "Downloaded successfully!");
-			writeScreenLog();
+			writeScreenLog(1);
 			drawFrame();
 		}
 		
