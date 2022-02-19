@@ -86,6 +86,7 @@ extern int mcpHandle;
 
 char* b_tostring(bool b);
 void hex(uint64_t i, int digits, char *out); //ex: 000050D1
+void secsToTime(int seconds, char *out);
 void getSpeedString(double bytePerSecond, char *out);
 void hexToByte(const char *hex, uint8_t *out);
 void glueMcpData(MCPInstallTitleInfo *info, McpData *data);

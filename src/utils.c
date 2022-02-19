@@ -68,6 +68,34 @@ void getSpeedString(double bytePerSecond, char *out)
 		sprintf(out, "%.2f MB/s)", bytePerSecond / (1024.0D * 1024.0D));
 }
 
+void secsToTime(int seconds, char *out)
+{
+	int minute, hour;
+
+	seconds = seconds % 86400;
+	hour = seconds / 3600;
+	hour = hour % 3600;
+	minute = seconds / 60;
+	minute = minute % 60;
+	seconds = seconds % 60;
+
+		if (hour > 0)
+		{
+			sprintf(out, "%d hours ", hour);
+			out += strlen(out);
+		}
+		if (minute > 0)
+		{
+			sprintf(out, "%d minutes ", minute);
+			out += strlen(out);
+		}
+		if (seconds > 0)
+		{
+			sprintf(out, "%d seconds ", seconds);
+			out += strlen(out);
+		}
+}
+
 uint8_t charToByte(char c)
 {
 	if(isNumber(c))

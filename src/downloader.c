@@ -635,7 +635,13 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				sprintf(toScreen, "%.2f / %.2f %s", dlnow / multiplier, dltotal / multiplier, multiplierName);
 				textToFrame(1, 30, toScreen);
 
+				int fileeta = (dltotal - dlnow);
 				dltotal = (dlnow - downloaded); 		// sample length in bytes
+				fileeta /= dltotal;
+
+				secsToTime(fileeta, toScreen);
+				textToFrame(1, ALIGNED_RIGHT, toScreen);
+
 				ent = (OSTick)dltotal;
 				addEntropy(&ent, sizeof(OSTick));
 				downloaded = dlnow;
@@ -702,6 +708,12 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				barToFrame(2, 0, 29, data->dlnow / data->dltotal * 100.0f);
 				sprintf(toScreen, "%.2f / %.2f %s", data->dlnow / multiplier, data->dltotal / multiplier, multiplierName);
 				textToFrame(2, 30, toScreen);
+
+				int totaleta = (data->dltotal - data->dlnow) / dltotal;
+
+				secsToTime(totaleta, toScreen);
+				textToFrame(2, ALIGNED_RIGHT, toScreen);
+
 				writeScreenLog(3);
 			}
 			else
