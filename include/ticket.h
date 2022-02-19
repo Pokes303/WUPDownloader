@@ -33,6 +33,7 @@
 #endif
 
 void generateTik(const char *path, const TitleEntry *titleEntry);
+void generateCert(const char *path);
 bool generateFakeTicket();
 
 #ifdef __cplusplus

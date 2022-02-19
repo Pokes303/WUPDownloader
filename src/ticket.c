@@ -113,6 +113,69 @@ void generateTik(const char *path, const TitleEntry *titleEntry)
 	addToIOQueue(NULL, 0, 0, tik);
 }
 
+void generateCert(const char *path)
+{
+	NUSFILE *cert = openFile(path, "wb");
+	if(cert == NULL)
+	{
+		char err[1044];
+		sprintf(err, "Could not open path\n%s", path);
+		drawErrorFrame(err, ANY_RETURN);
+
+		while(AppRunning())
+		{
+			showFrame();
+
+			if(app == APP_STATE_BACKGROUND)
+				continue;
+			if(app == APP_STATE_RETURNING)
+				drawErrorFrame(err, ANY_RETURN);
+
+			if(vpad.trigger)
+				break;
+		}
+		return;
+	}
+
+	// NUSspli adds its own header.
+	writeHeader(cert, FILE_TYPE_CERT);
+
+	// Some SSH certificate
+	writeCustomBytes(cert, "0x526F6F742D43413030303030303033"); // "Root-CA00000003"
+	writeVoidBytes(cert, 0x34);
+	writeCustomBytes(cert, "0x0143503030303030303062"); // "?CP0000000b"
+	writeVoidBytes(cert, 0x36);
+	writeRandomBytes(cert, 0x104);
+	writeCustomBytes(cert, "0x00010001");
+	writeVoidBytes(cert, 0x34);
+	writeCustomBytes(cert, "0x00010003");
+	writeRandomBytes(cert, 0x200);
+	writeVoidBytes(cert, 0x3C);
+
+	// Next certificate
+	writeCustomBytes(cert, "0x526F6F74"); // "Root"
+	writeVoidBytes(cert, 0x3F);
+	writeCustomBytes(cert, "0x0143413030303030303033"); // "?CA00000003"
+	writeVoidBytes(cert, 0x36);
+	writeRandomBytes(cert, 0x104);
+	writeCustomBytes(cert, "0x00010001");
+	writeVoidBytes(cert, 0x34);
+	writeCustomBytes(cert, "0x00010004");
+	writeRandomBytes(cert, 0x100);
+	writeVoidBytes(cert, 0x3C);
+
+	// Last certificate
+	writeCustomBytes(cert, "0x526F6F742D43413030303030303033"); // "Root-CA00000003"
+	writeVoidBytes(cert, 0x34);
+	writeCustomBytes(cert, "0x0158533030303030303063"); // "?XS0000000c"
+	writeVoidBytes(cert, 0x36);
+	writeRandomBytes(cert, 0x104);
+	writeCustomBytes(cert, "0x00010001");
+	writeVoidBytes(cert, 0x34);
+
+	addToIOQueue(NULL, 0, 0, cert);
+}
+
 void drawTicketFrame(const char *titleID)
 {
 	startNewFrame();
@@ -186,7 +249,8 @@ bool generateFakeTicket()
 				strcpy(tikPath, dir);
 				strcat(tikPath, dir[0] == '.' ? titleID : "title");
 				MEMFreeToDefaultHeap(dir);
-				strcat(tikPath, ".tik");
+				char *ptr = tikPath + strlen(tikPath);
+				strcpy(ptr, ".tik");
 				
 				TitleEntry te;
 				uint64_t tid;
@@ -202,6 +266,10 @@ bool generateFakeTicket()
 					entry = &te;
 				}
 				generateTik(tikPath, entry);
+
+				strcpy(ptr, ".cert");
+				generateCert(tikPath);
+				strcpy(ptr, ".tik");
 				
 				colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 				textToFrame(0, 0, "Fake ticket generated on:");

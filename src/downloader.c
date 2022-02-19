@@ -1178,45 +1178,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		writeScreenLog(3);
 		drawFrame();
 		
-		NUSFILE *cert = openFile(installDir, "wb");
-		
-		// NUSspli adds its own header.
-		writeHeader(cert, FILE_TYPE_CERT);
-		
-		// Some SSH certificate
-		writeCustomBytes(cert, "0x526F6F742D43413030303030303033"); // "Root-CA00000003"
-		writeVoidBytes(cert, 0x34);
-		writeCustomBytes(cert, "0x0143503030303030303062"); // "?CP0000000b"
-		writeVoidBytes(cert, 0x36);
-		writeRandomBytes(cert, 0x104);
-		writeCustomBytes(cert, "0x00010001");
-		writeVoidBytes(cert, 0x34);
-		writeCustomBytes(cert, "0x00010003");
-		writeRandomBytes(cert, 0x200);
-		writeVoidBytes(cert, 0x3C);
-		
-		// Next certificate
-		writeCustomBytes(cert, "0x526F6F74"); // "Root"
-		writeVoidBytes(cert, 0x3F);
-		writeCustomBytes(cert, "0x0143413030303030303033"); // "?CA00000003"
-		writeVoidBytes(cert, 0x36);
-		writeRandomBytes(cert, 0x104);
-		writeCustomBytes(cert, "0x00010001");
-		writeVoidBytes(cert, 0x34);
-		writeCustomBytes(cert, "0x00010004");
-		writeRandomBytes(cert, 0x100);
-		writeVoidBytes(cert, 0x3C);
-		
-		// Last certificate
-		writeCustomBytes(cert, "0x526F6F742D43413030303030303033"); // "Root-CA00000003"
-		writeVoidBytes(cert, 0x34);
-		writeCustomBytes(cert, "0x0158533030303030303063"); // "?XS0000000c"
-		writeVoidBytes(cert, 0x36);
-		writeRandomBytes(cert, 0x104);
-		writeCustomBytes(cert, "0x00010001");
-		writeVoidBytes(cert, 0x34);
-		
-		addToIOQueue(NULL, 0, 0, cert);
+		generateCert(installDir);
 		
 		addToScreenLog("Cert created!");
 		if(!AppRunning())
