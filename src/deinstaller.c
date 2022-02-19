@@ -54,7 +54,7 @@ bool deinstall(MCPTitleListType title, bool channelHaxx)
 	textToFrame(0, 0, "Uninstalling");
 	textToFrame(0, 19, game);
 	textToFrame(1, 0, "Preparing...");
-	writeScreenLog();
+	writeScreenLog(2);
 	drawFrame();
 	showFrame();
 	
@@ -93,7 +93,7 @@ bool deinstall(MCPTitleListType title, bool channelHaxx)
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 	textToFrame(0, 0, game);
 	textToFrame(1, 0, "Uninstalled successfully!");
-	writeScreenLog();
+	writeScreenLog(2);
 	drawFrame();
 	
 	while(AppRunning())
@@ -105,7 +105,7 @@ bool deinstall(MCPTitleListType title, bool channelHaxx)
 			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 			textToFrame(0, 0, game);
 			textToFrame(1, 0, "Uninstalled successfully!");
-			writeScreenLog();
+			writeScreenLog(2);
 			drawFrame();
 		}
 		

@@ -51,6 +51,8 @@ for path in pathsToCreate:
     os.makedirs(path, exist_ok=True)
 shutil.make_archive(f"zips/NUSspli-{version}-Aroma-DEBUG", "zip", ".", "NUSspli.wuhb")
 shutil.copytree("meta/menu", "NUStmp/meta", dirs_exist_ok=True)
+os.remove("NUStmp/meta/app.xml")
+os.remove("NUStmp/meta/cos.xml")
 code = ["NUSspli.rpx", "meta/menu/app.xml", "meta/menu/cos.xml"]
 for file in code:
     shutil.copy(file, "NUStmp/code")
