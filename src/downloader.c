@@ -593,6 +593,8 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	OSTick ent;
 	int frames = 1;
 	int ltframes = 0;
+	uint32_t fileeta;
+	uint32_t totaleta;
 	while(cdata.running)
 	{
 		if(--frames == 0)
@@ -643,7 +645,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				sprintf(toScreen, "%.2f / %.2f %s", dlnow / multiplier, dltotal / multiplier, multiplierName);
 				textToFrame(1, 30, toScreen);
 
-				int fileeta = (dltotal - dlnow);
+				fileeta = (dltotal - dlnow);
 				dltotal = (dlnow - downloaded); 		// sample length in bytes
 				fileeta /= dltotal;
 
@@ -717,7 +719,16 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				sprintf(toScreen, "%.2f / %.2f %s", data->dlnow / multiplier, data->dltotal / multiplier, multiplierName);
 				textToFrame(2, 30, toScreen);
 
-				int totaleta = (data->dltotal - data->dlnow) / dltotal;
+				if(cdata.dltotal > 0.1D)
+				{
+					totaleta = (data->dltotal - data->dlnow) / dltotal;
+					if(totaleta)
+						data->eta = totaleta;
+					else
+						totaleta = data->eta;
+				}
+				else
+					totaleta = data->eta;
 
 				secsToTime(totaleta, toScreen);
 				textToFrame(2, ALIGNED_RIGHT, toScreen);
@@ -1203,6 +1214,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	data.contents = tmd->num_contents;
 	data.dcontent = 0;
 	data.dlnow = data.dltmp = data.dltotal = 0.0D;
+	data.eta = 0;
 	
 	char apps[data.contents][9];
 	bool h3[data.contents];
