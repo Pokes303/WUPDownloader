@@ -82,19 +82,19 @@ void secsToTime(uint32_t seconds, char *out)
 
 	if (hour)
 	{
-		sprintf(out, "%d hours ", hour);
+		sprintf(out, "%u hours ", hour);
 		out += strlen(out);
 		visible = true;
 	}
 	if (minute || visible)
 	{
-		sprintf(out, "%d minutes ", minute);
+		sprintf(out, "%u minutes ", minute);
 		out += strlen(out);
 		visible = true;
 	}
 
 	if (seconds || visible)
-		sprintf(out, "%d seconds ", seconds);
+		sprintf(out, "%u seconds ", seconds);
 	else
 		strcpy(out, "N/A");
 }
