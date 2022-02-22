@@ -31,6 +31,7 @@
 #include <renderer.h>
 #include <status.h>
 #include <titles.h>
+#include <tmd.h>
 #include <utils.h>
 #include <menu/filebrowser.h>
 #include <menu/utils.h>
@@ -196,34 +197,73 @@ void drawTicketFrame(const char *titleID)
 	drawFrame();
 }
 
-bool generateFakeTicket()
+void generateFakeTicket()
 {
 	char *dir = fileBrowserMenu();
 	if(dir == NULL)
-		return true;
+		return;
 	
-	char titleID[17];
-	titleID[0] = '\0';
-	
-	char *ids = strstr(dir, "[");
-	if(ids != NULL)
+	char tikPath[1024];
+	strcpy(tikPath, dir);
+	strcat(tikPath, "title");
+	char *ptr = tikPath + strlen(tikPath);
+	strcpy(ptr, ".tmd");
+	MEMFreeToDefaultHeap(dir);
+	FILE *f = fopen(tikPath, "rb");
+	if(f == NULL)
 	{
-		char *ide = strstr(++ids, "]");
-		if(ide != NULL && ide - ids == 16)
+		drawErrorFrame("Couldn't open title.tmd", ANY_RETURN);
+
+		while(AppRunning())
 		{
-			for(int i = 0; i < 16; ++i)
-			{
-				if(isHexa(ids[i]))
-					titleID[i] = ids[i];
-				else
-				{
-					titleID[0] = '\0';
-					break;
-				}
-			}
-			titleID[16] = '\0';
+			showFrame();
+
+			if(app == APP_STATE_BACKGROUND)
+				continue;
+			if(app == APP_STATE_RETURNING)
+				drawErrorFrame("Couldn't open title.tmd", ANY_RETURN);
+
+			if(vpad.trigger)
+				break;
 		}
+		return;
 	}
+
+	long fs = getFilesize(f);
+	void *buf = MEMAllocFromDefaultHeap(fs);
+	if(buf == NULL)
+	{
+		fclose(f);
+		return;
+	}
+
+	if(fread(buf, fs, 1, f) != 1)
+	{
+		fclose(f);
+		MEMFreeToDefaultHeap(buf);
+		drawErrorFrame("Couldn't read title.tmd", ANY_RETURN);
+
+		while(AppRunning())
+		{
+			showFrame();
+
+			if(app == APP_STATE_BACKGROUND)
+				continue;
+			if(app == APP_STATE_RETURNING)
+				drawErrorFrame("Couldn't read title.tmd", ANY_RETURN);
+
+			if(vpad.trigger)
+				break;
+		}
+		return;
+	}
+
+	fclose(f);
+	uint64_t tid = ((TMD *)buf)->tid;
+	MEMFreeToDefaultHeap(buf);
+
+	char titleID[17];
+	hex(tid, 16, titleID);
 	
 	drawTicketFrame(titleID);
 	
@@ -245,16 +285,9 @@ bool generateFakeTicket()
 				drawFrame();
 				showFrame();
 				
-				char tikPath[1024];
-				strcpy(tikPath, dir);
-				strcat(tikPath, dir[0] == '.' ? titleID : "title");
-				MEMFreeToDefaultHeap(dir);
-				char *ptr = tikPath + strlen(tikPath);
 				strcpy(ptr, ".tik");
-				
 				TitleEntry te;
-				uint64_t tid;
-				hexToByte(titleID, (uint8_t *)&tid);
+
 				TitleEntry *entry = getTitleEntryByTid(tid);
 				if(entry == NULL)
 				{
@@ -301,16 +334,13 @@ bool generateFakeTicket()
 					//TODO: APP_STATE_RETURNING
 					
 					if(vpad.trigger)
-						return true;
+						break;
 				}
-				return false;
+				return;
 			}
 		}
 		else if(vpad.trigger & VPAD_BUTTON_B)
-		{
-			MEMFreeToDefaultHeap(dir);
-			return true;
-		}
+			return;
 		
 		if(vpad.trigger & VPAD_BUTTON_LEFT)
 		{
@@ -319,6 +349,6 @@ bool generateFakeTicket()
 			drawTicketFrame(titleID);
 		}
 	}
-	MEMFreeToDefaultHeap(dir);
-	return false;
+
+	return;
 }
