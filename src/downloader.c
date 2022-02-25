@@ -65,7 +65,7 @@
 
 #define USERAGENT		"NUSspli/" NUSSPLI_VERSION // TODO: Spoof eShop here?
 #define DLBGT_STACK_SIZE	MIN_STACKSIZE
-#define DLT_STACK_SIZE		(DEFAULT_STACKSIZE * 2) // This needs a large stack for OpenSSL to be able to load the ca-certs
+#define DLT_STACK_SIZE		DEFAULT_STACKSIZE // This needs a large stack for OpenSSL to be able to load the ca-certs
 #define SOCKLIB_BUFSIZE		(IO_BUFSIZE * 2) // double buffering
 
 #define MAX_CERTS	2
