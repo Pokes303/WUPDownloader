@@ -281,11 +281,11 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 				if ((data.err & 0xFFFF0000) == 0xFFFB0000)
 				{
 					if(dev == NUSDEV_USB)
-						strcat(toScreen, "Possible USB failure. Check your drives power source.\nAlso m";
+						strcat(toScreen, "Possible USB failure. Check your drives power source.\nAlso f");
 					else
-						strcat(toScreen, "M");
+						strcat(toScreen, "F");
 
-					strcat(toScreen, "ake sure you didn't forget to install 01_sigpatches.rpx from\n\thttps://wiiu.hacks.guide/#/tiramisu/sd-preparation\nLastly files might be corrupt");
+					strcat(toScreen, "iles might be corrupt");
 				}
 				else
 					sprintf(toScreen + 12, "Unknown Error: %#010x", data.err);
