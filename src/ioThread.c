@@ -54,6 +54,9 @@ static volatile WriteQueueEntry *queueEntries;
 static volatile uint32_t activeReadBuffer;
 static volatile uint32_t activeWriteBuffer;
 
+static volatile int fwriteErrno = 0;
+static int fwriteOverlay = -1;
+
 static int ioThreadMain(int argc, const char **argv)
 {
 	spinReleaseLock(ioWriteLock);
@@ -63,6 +66,12 @@ static int ioThreadMain(int argc, const char **argv)
 	volatile WriteQueueEntry *entry;
 	while(ioRunning)
 	{
+		if(fwriteErrno)
+		{
+			OSSleepTicks(1024);
+			continue;
+		}
+
 		asl = activeWriteBuffer;
 		entry = queueEntries + asl;
 		if(entry->file == NULL)
@@ -74,7 +83,10 @@ static int ioThreadMain(int argc, const char **argv)
 		if(entry->size != 0) // WRITE command
 		{
 			if(fwrite(entry->buf, entry->size, 1, entry->file->fd) != 1)
-				debugPrintf("fwrite() error: %d", errno);
+			{
+				fwriteErrno = errno;
+				debugPrintf("fwrite() error: %d", fwriteErrno);
+			}
 		}
 		else // Close command
 		{
@@ -125,15 +137,34 @@ bool initIOThread()
 	return false;
 }
 
+static bool checkForErrors()
+{
+	if(fwriteErrno)
+	{
+		if(fwriteOverlay == -1)
+		{
+			OSSleepTicks(OSMillisecondsToTicks(20)); // Lazy race condition prevention
+			char errMsg[1024];
+			sprintf(errMsg, "Write error: %d\n\nThis is an unrecoverable error!", fwriteErrno);
+			fwriteOverlay = addErrorOverlay(errMsg);
+		}
+		return true;
+	}
+	return false;
+}
+
 void shutdownIOThread()
 {
 	if(!ioRunning)
 		return;
-	
-	spinLock(ioWriteLock);
 
-	while(queueEntries[activeWriteBuffer].file != NULL)
-		;
+	if(!checkForErrors())
+	{
+		spinLock(ioWriteLock);
+
+		while(queueEntries[activeWriteBuffer].file != NULL)
+			;
+	}
 	
 	ioRunning = false;
 #ifdef NUSSPLI_DEBUG
@@ -154,6 +185,9 @@ bool queueStalled = false;
 #endif
 size_t addToIOQueue(const void *buf, size_t size, size_t n, NUSFILE *file)
 {
+	if(checkForErrors())
+		return 0;
+
     volatile WriteQueueEntry *entry;
 		
 retryAddingToQueue:
@@ -222,6 +256,9 @@ queueExit:
 
 void flushIOQueue()
 {
+	if(checkForErrors())
+		return;
+
 	int ovl = addErrorOverlay("Flushing queue, please wait...");
 	debugPrintf("Flushing...");
 	spinLock(ioWriteLock);
@@ -235,6 +272,9 @@ void flushIOQueue()
 
 NUSFILE *openFile(const char *path, const char *mode)
 {
+	if(checkForErrors())
+		return NULL;
+
 	NUSFILE *ret = MEMAllocFromDefaultHeap(sizeof(NUSFILE));
 	if(ret == NULL)
 		return NULL;
