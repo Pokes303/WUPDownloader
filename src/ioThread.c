@@ -86,7 +86,7 @@ static int ioThreadMain(int argc, const char **argv)
 			if(fwrite(entry->buf, entry->size, 1, entry->file->fd) != 1)
 			{
 				fwriteErrno = errno;
-				debugPrintf("fwrite() error: %d", fwriteErrno);
+				debugPrintf("fwrite() error: %d / %d / %d", fwriteErrno, entry->file->fd, entry->size);
 			}
 		}
 		else // Close command
