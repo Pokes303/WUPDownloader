@@ -93,7 +93,11 @@ static int ioThreadMain(int argc, const char **argv)
 		{
 			debugPrintf("File close: %d", entry->file->fd);
 			OSTime t = OSGetTime();
-			fclose(entry->file->fd);
+			if(fclose(entry->file->fd))
+			{
+				fwriteErrno = errno;
+				debugPrintf("fclose() error: %d / %d", fwriteErrno, entry->file->fd);
+			}
 			MEMFreeToDefaultHeap(entry->file->buffer);
 			MEMFreeToDefaultHeap((void *)entry->file);
 			t = OSGetTime() - t;
