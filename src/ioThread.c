@@ -86,11 +86,12 @@ static int ioThreadMain(int argc, const char **argv)
 			if(fwrite(entry->buf, entry->size, 1, entry->file->fd) != 1)
 			{
 				fwriteErrno = errno;
-				debugPrintf("fwrite() error: %d / %d / %d", fwriteErrno, entry->file->fd, entry->size);
+				debugPrintf("fwrite() error: %d / %d / %u", fwriteErrno, entry->file->fd, entry->size);
 			}
 		}
 		else // Close command
 		{
+			debugPrintf("File close: %d", entry->file->fd);
 			OSTime t = OSGetTime();
 			fclose(entry->file->fd);
 			MEMFreeToDefaultHeap(entry->file->buffer);
@@ -292,6 +293,7 @@ NUSFILE *openFile(const char *path, const char *mode)
 			if(setvbuf(ret->fd, ret->buffer, _IOFBF, IO_MAX_FILE_BUFFER) != 0)
 				debugPrintf("Error setting buffer!");
 
+			debugPrintf("File open: %d", ret->fd);
 			return ret;
 		}
 		fclose(ret->fd);
