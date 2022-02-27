@@ -151,7 +151,7 @@ bool checkForQueueErrors()
 		{
 			OSSleepTicks(OSMillisecondsToTicks(20)); // Lazy race condition prevention
 			char errMsg[1024];
-			sprintf(errMsg, "Write error: %d\n\nThis is an unrecoverable error!", fwriteErrno);
+			sprintf(errMsg, "Write error:\n%s\n\nThis is an unrecoverable error!", strerror(fwriteErrno));
 			fwriteOverlay = addErrorOverlay(errMsg);
 		}
 		return true;
