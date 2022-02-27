@@ -23,6 +23,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include <coreinit/core.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
@@ -55,7 +56,7 @@ static volatile uint32_t activeReadBuffer;
 static volatile uint32_t activeWriteBuffer;
 
 static volatile int fwriteErrno = 0;
-static int fwriteOverlay = -1;
+static volatile int fwriteOverlay = -1;
 
 static int ioThreadMain(int argc, const char **argv)
 {
@@ -137,11 +138,11 @@ bool initIOThread()
 	return false;
 }
 
-static bool checkForErrors()
+bool checkForQueueErrors()
 {
 	if(fwriteErrno)
 	{
-		if(fwriteOverlay == -1)
+		if(fwriteOverlay == -1 && OSIsMainCore())
 		{
 			OSSleepTicks(OSMillisecondsToTicks(20)); // Lazy race condition prevention
 			char errMsg[1024];
@@ -158,7 +159,7 @@ void shutdownIOThread()
 	if(!ioRunning)
 		return;
 
-	if(!checkForErrors())
+	if(!checkForQueueErrors())
 	{
 		spinLock(ioWriteLock);
 
@@ -185,7 +186,7 @@ bool queueStalled = false;
 #endif
 size_t addToIOQueue(const void *buf, size_t size, size_t n, NUSFILE *file)
 {
-	if(checkForErrors())
+	if(checkForQueueErrors())
 		return 0;
 
     volatile WriteQueueEntry *entry;
@@ -256,7 +257,7 @@ queueExit:
 
 void flushIOQueue()
 {
-	if(checkForErrors())
+	if(checkForQueueErrors())
 		return;
 
 	int ovl = addErrorOverlay("Flushing queue, please wait...");
@@ -272,7 +273,7 @@ void flushIOQueue()
 
 NUSFILE *openFile(const char *path, const char *mode)
 {
-	if(checkForErrors())
+	if(checkForQueueErrors())
 		return NULL;
 
 	NUSFILE *ret = MEMAllocFromDefaultHeap(sizeof(NUSFILE));

@@ -37,6 +37,7 @@ typedef struct
 
 bool initIOThread();
 void shutdownIOThread();
+bool checkForQueueErrors();
 size_t addToIOQueue(const void *buf, size_t size, size_t n, NUSFILE *file);
 void flushIOQueue();
 NUSFILE *openFile(const char *patch, const char *mode);

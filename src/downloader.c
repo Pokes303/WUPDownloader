@@ -607,6 +607,9 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 					continue;
 				}
 
+				if(!toRam)
+					checkForQueueErrors();
+
 				dlnow = cdata.dlnow;
 				now = cdata.ts;
 				spinReleaseLock(cdata.lock);
