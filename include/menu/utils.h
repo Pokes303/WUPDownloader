@@ -23,6 +23,10 @@
 
 #include <wut-fixups.h>
 
+#include <stdbool.h>
+
+#include <titles.h>
+
 #ifdef __cplusplus
 	extern "C" {
 #endif
@@ -41,6 +45,9 @@ void clearScreenLog();
 void writeScreenLog(int line);
 void drawErrorFrame(const char *text, ErrorOptions option);
 char *getToFrameBuffer();
+bool checkSystemTitleFromEntry(const TitleEntry *entry);
+
+#define checkSystemTitleFromTid(tid) checkSystemTitleFromEntry(getTitleEntryByTid(tid))
 
 #ifdef __cplusplus
 	}

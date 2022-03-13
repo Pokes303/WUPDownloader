@@ -21,12 +21,17 @@
 #include <wut-fixups.h>
 
 #include <stdarg.h>
+#include <stdbool.h>
 #include <string.h>
 
+#include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
 
 #include <input.h>
 #include <renderer.h>
+#include <status.h>
+#include <titles.h>
+#include <tmd.h>
 #include <utils.h>
 #include <menu/utils.h>
 
@@ -163,4 +168,128 @@ void drawErrorFrame(const char *text, ErrorOptions option)
 char *getToFrameBuffer()
 {
 	return toFrameBuffer;
+}
+
+bool checkSystemTitleFromEntry(const TitleEntry *entry)
+{
+	switch(getTidHighFromTid(entry->tid))
+	{
+		case TID_HIGH_SYSTEM_APP:
+		case TID_HIGH_SYSTEM_DATA:
+		case TID_HIGH_SYSTEM_APPLET:
+			break;
+		default:
+			return true;
+	}
+
+	MCPRegion region;
+	MCPSysProdSettings *settings = MEMAllocFromDefaultHeapEx(sizeof(MCPSysProdSettings), 0x40);
+	if(settings == NULL)
+	{
+		debugPrintf("OUT OF MEMORY!");
+		region = 0;
+	}
+	else
+	{
+		MCPError err = MCP_GetSysProdSettings(mcpHandle, settings);
+		if(err)
+		{
+			debugPrintf("Error reading settings: %d!", err);
+			region = 0;
+		}
+		else
+			region = settings->game_region;
+
+		MEMFreeToDefaultHeap(settings);
+	}
+
+	debugPrintf("Console region: %d", region);
+	debugPrintf("TMD region: %d", entry->region);
+	switch(region)
+	{
+		case MCP_REGION_EUROPE:
+			if(entry->region & TITLE_REGION_EUR)
+				return true;
+			break;
+		case MCP_REGION_USA:
+			if(entry->region & TITLE_REGION_USA)
+				return true;
+			break;
+		case MCP_REGION_JAPAN:
+			if(entry->region & TITLE_REGION_JAP)
+				return true;
+			break;
+		default:
+			// TODO: MCP_REGION_CHINA, MCP_REGION_KOREA, MCP_REGION_TAIWAN
+			debugPrintf("Unknwon region: %d", region);
+			return true;
+	}
+
+	int ovl = addErrorOverlay("Installing out of region system apps is a reliable way to brick your console!\n"
+		"Are you sure you want to do that?\n"
+		"\n"
+		BUTTON_A " Yes || " BUTTON_B " No");
+
+	bool ret;
+	while(AppRunning())
+	{
+		showFrame();
+
+		if(vpad.trigger & VPAD_BUTTON_A)
+		{
+			ret = true;
+			break;
+		}
+		if(vpad.trigger & VPAD_BUTTON_B)
+		{
+			ret = false;
+			break;
+		}
+	}
+
+	removeErrorOverlay(ovl);
+	if(ret)
+	{
+		ovl = addErrorOverlay("Are you sure you want to brick your Wii U?\n"
+			"\n"
+			BUTTON_A " Yes || " BUTTON_B " No");
+
+		while(AppRunning())
+		{
+			showFrame();
+
+			if(vpad.trigger & VPAD_BUTTON_A)
+				break;
+			if(vpad.trigger & VPAD_BUTTON_B)
+			{
+				ret = false;
+				break;
+			}
+		}
+		removeErrorOverlay(ovl);
+	}
+
+	if(ret)
+	{
+		ovl = addErrorOverlay("You're on your own doing this,\n"
+			"do you understand the consequences?\n"
+			"\n"
+			BUTTON_A " Yes || " BUTTON_B " No");
+
+		while(AppRunning())
+		{
+			showFrame();
+
+			if(vpad.trigger & VPAD_BUTTON_A)
+				break;
+			if(vpad.trigger & VPAD_BUTTON_B)
+			{
+				ret = false;
+				break;
+			}
+		}
+		removeErrorOverlay(ovl);
+	}
+
+	return ret;
 }

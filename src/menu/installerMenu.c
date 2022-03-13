@@ -19,12 +19,18 @@
 
 #include <wut-fixups.h>
 
+#include <file.h>
 #include <input.h>
 #include <installer.h>
 #include <renderer.h>
 #include <status.h>
+#include <tmd.h>
+#include <utils.h>
 #include <menu/utils.h>
 
+#include <coreinit/memdefaultheap.h>
+
+#include <stdio.h>
 #include <string.h>
 
 void drawInstallerMenuFrame(const char *name, NUSDEV dev, bool keepFiles)
@@ -51,6 +57,42 @@ void drawInstallerMenuFrame(const char *name, NUSDEV dev, bool keepFiles)
 	}
 	
 	drawFrame();
+}
+
+bool brickCheck(const char* dir)
+{
+	char tmdPath[strlen(dir) + 11];
+	strcpy(tmdPath, dir);
+	strcat(tmdPath, "/title.tmd");
+
+	FILE *f = fopen(tmdPath, "wb");
+	if(f == NULL)
+	{
+		debugPrintf("Error opening %s", tmdPath);
+		return false;
+	}
+
+	size_t s = getFilesize(f);
+	TMD *tmd = MEMAllocFromDefaultHeap(s);
+	if(tmd == NULL)
+	{
+		debugPrintf("OUT OF MEMORY!", tmdPath);
+		fclose(f);
+		return false;
+	}
+
+	if(fread(tmd, s, 1, f) != 1)
+	{
+		debugPrintf("Error reading %s", tmdPath);
+		fclose(f);
+		MEMFreeToDefaultHeap(tmd);
+		return false;
+	}
+
+	fclose(f);
+	bool ret = checkSystemTitleFromTid(tmd->tid);
+	MEMFreeToDefaultHeap(tmd);
+	return ret;
 }
 
 void installerMenu(const char *dir)
@@ -83,14 +125,16 @@ void installerMenu(const char *dir)
 		
 		if(vpad.trigger & VPAD_BUTTON_A)
 		{
-			install(name, false, dev, dir, true, keepFiles);
+			if(brickCheck(dir))
+				install(name, false, dev, dir, true, keepFiles);
 			return;
 		}
 		if(vpad.trigger & VPAD_BUTTON_B)
 			return;
 		if(vpad.trigger & VPAD_BUTTON_X)
 		{
-			install(name, false, dev, dir, false, keepFiles);
+			if(brickCheck(dir))
+				install(name, false, dev, dir, false, keepFiles);
 			return;
 		}
 		

@@ -389,6 +389,8 @@ naNedNa:
 		removeErrorOverlay(ovl);
 	}
 
-	downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, inst, dlDev, toUSB, keepFiles);
+	if(checkSystemTitleFromEntry(entry))
+		downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, inst, dlDev, toUSB, keepFiles);
+
 	clearRamBuf();
 }
