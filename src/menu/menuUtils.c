@@ -22,6 +22,7 @@
 
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <coreinit/mcp.h>
@@ -292,4 +293,10 @@ bool checkSystemTitleFromEntry(const TitleEntry *entry)
 	}
 
 	return ret;
+}
+
+bool checkSystemTitleFromTid(uint64_t tid)
+{
+	TitleEntry *entry = getTitleEntryByTid(tid);
+	return entry == NULL ? true : checkSystemTitleFromEntry(entry);
 }

@@ -46,8 +46,7 @@ void writeScreenLog(int line);
 void drawErrorFrame(const char *text, ErrorOptions option);
 char *getToFrameBuffer();
 bool checkSystemTitleFromEntry(const TitleEntry *entry);
-
-#define checkSystemTitleFromTid(tid) checkSystemTitleFromEntry(getTitleEntryByTid(tid))
+bool checkSystemTitleFromTid(uint64_t tid);
 
 #ifdef __cplusplus
 	}

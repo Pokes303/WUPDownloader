@@ -65,7 +65,7 @@ bool brickCheck(const char* dir)
 	strcpy(tmdPath, dir);
 	strcat(tmdPath, "/title.tmd");
 
-	FILE *f = fopen(tmdPath, "wb");
+	FILE *f = fopen(tmdPath, "rb");
 	if(f == NULL)
 	{
 		debugPrintf("Error opening %s", tmdPath);
