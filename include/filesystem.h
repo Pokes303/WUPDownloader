@@ -35,8 +35,10 @@ typedef enum
 	NUSDEV_MLC,
 } NUSDEV;
 
+bool initFsa();
 bool mountMLC();
 void unmountMLC();
+void closeFsa();
 bool mountUSB();
 void unmountUSB();
 bool isUSB01();

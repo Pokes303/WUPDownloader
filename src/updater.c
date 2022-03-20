@@ -37,7 +37,6 @@
 #include <menu/utils.h>
 
 #include <coreinit/dynload.h>
-#include <coreinit/filesystem.h>
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
@@ -54,10 +53,10 @@
 
 #define UPDATE_CHECK_URL NAPI_URL "s?t="
 #define UPDATE_DL_URL NAPI_URL "d?t="
-#define UPDATE_TEMP_FOLDER "fs:/vol/external01/NUSspli_temp/"
-#define UPDATE_AROMA_FOLDER "fs:/vol/external01/wiiu/apps/"
+#define UPDATE_TEMP_FOLDER "sd:/NUSspli_temp/"
+#define UPDATE_AROMA_FOLDER "sd:/wiiu/apps/"
 #define UPDATE_AROMA_FILE "NUSspli.wuhb"
-#define UPDATE_HBL_FOLDER "fs:/vol/external01/wiiu/apps/NUSspli"
+#define UPDATE_HBL_FOLDER "sd:/wiiu/apps/NUSspli"
 
 #ifdef NUSSPLI_DEBUG
 	#define NUSSPLI_DLVER "-DEBUG"
@@ -177,7 +176,7 @@ bool updateCheck()
 	return updateMenu(versionString);
 }
 
-//TODO: Quick & dirty, supports absolute paths on fs:/vol/external01 only.
+//TODO: Quick & dirty, supports absolute paths on sd: only.
 bool createDirRecursive(char *dir)
 {
 	if(strlen(dir) < 20 || dir[18] != '/')

@@ -33,7 +33,6 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#include <coreinit/filesystem.h>
 #include <coreinit/memory.h>
 #include <coreinit/time.h>
 
@@ -226,11 +225,19 @@ long getFilesize(FILE *fp)
 
 NUSFS_ERR createDirectory(const char *path, mode_t mode)
 {
+	size_t len = strlen(path);
+	char newPath[len + 1];
+	strcpy(newPath, path);
+	if(newPath[--len] == '/')
+		newPath[len] = '\0';
+
 	OSTime t = OSGetTime();
-    if(mkdir(path, mode) == 0)
+	if(mkdir(newPath, mode) == 0)
+	{
+		t = OSGetTime() - t;
+		addEntropy(&t, sizeof(OSTime));
 		return NUSFS_ERR_NOERR;
-    t = OSGetTime() - t;
-	addEntropy(&t, sizeof(OSTime));
+	}
 
 	int ie = errno;
 	switch(ie)
@@ -240,8 +247,7 @@ NUSFS_ERR createDirectory(const char *path, mode_t mode)
 			return NUSFS_ERR_LOCKED;
 		case ENOSPC:
 			return NUSFS_ERR_FULL;
-        case FS_ERROR_MAX_FILES:
-		case FS_ERROR_MAX_DIRS:
+        case ENFILE:
 			return NUSFS_ERR_LIMITS;
 	}
 
@@ -264,6 +270,6 @@ const char *translateNusfsErr(NUSFS_ERR err)
 		case NUSFS_ERR_DONTEXIST:
 			return "Not found!";
         default:
-            return NULL;
+			return err > 1000 ? strerror(err - 1000) : NULL;
 	}
 }

@@ -52,7 +52,8 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#include <coreinit/filesystem.h>
+#include <fat.h>
+
 #include <coreinit/foreground.h>
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
@@ -82,197 +83,207 @@ void innerMain(bool validCfw)
 		checkStacks("main");
 	}
 
-	FSInit();
-#ifdef NUSSPLI_HBL
-	romfsInit();
-#endif
-
-	KPADInit();
-	WPADEnableURCC(true);
-
-	if(initRenderer())
+	if(initFsa())
 	{
-		char *lerr = NULL;
-		if(validCfw)
+		if(fatInitDefault())
 		{
-			if(OSSetThreadPriority(mainThread, THREAD_PRIORITY_HIGH))
-				addToScreenLog("Changed main thread priority!");
-			else
-				addToScreenLog("WARNING: Error changing main thread priority!");
-
-			startNewFrame();
-			textToFrame(0, 0, "Loading OpenSSL...");
-			writeScreenLog(1);
-			drawFrame();
-
-			if(initCrypto())
+			if(fatMountSimple("sd", &IOSUHAX_sdio_disc_interface))
 			{
-				addToScreenLog("OpenSSL initialized!");
+#ifdef NUSSPLI_HBL
+				romfsInit();
+#endif
+				KPADInit();
+				WPADEnableURCC(true);
 
-				startNewFrame();
-				textToFrame(0, 0, "Checking sanity...");
-				writeScreenLog(1);
-				drawFrame();
-
-				mcpHandle = MCP_Open();
-				if(sanityCheck())
+				if(initRenderer())
 				{
-					addToScreenLog("Sanity checked!");
-
-					startNewFrame();
-					textToFrame(0, 0, "Loading MCP...");
-					writeScreenLog(1);
-					drawFrame();
-
-					mcpHandle = MCP_Open();
-					if(mcpHandle != 0)
+					char *lerr = NULL;
+					if(validCfw)
 					{
-						addToScreenLog("MCP initialized!");
+						if(OSSetThreadPriority(mainThread, THREAD_PRIORITY_HIGH))
+							addToScreenLog("Changed main thread priority!");
+						else
+							addToScreenLog("WARNING: Error changing main thread priority!");
 
 						startNewFrame();
-						textToFrame(0, 0, "Initializing rumble...");
+						textToFrame(0, 0, "Loading OpenSSL...");
 						writeScreenLog(1);
 						drawFrame();
 
-						if(initRumble())
+						if(initCrypto())
 						{
-							addToScreenLog("Rumble initialized!");
+							addToScreenLog("OpenSSL initialized!");
 
 							startNewFrame();
-							textToFrame(0, 0, "Loading downloader...");
+							textToFrame(0, 0, "Checking sanity...");
 							writeScreenLog(1);
 							drawFrame();
 
-							if(initDownloader())
+							mcpHandle = MCP_Open();
+							if(sanityCheck())
 							{
-								addToScreenLog("Downloader initialized!");
+								addToScreenLog("Sanity checked!");
 
 								startNewFrame();
-								textToFrame(0, 0, "Loading cJSON...");
+								textToFrame(0, 0, "Loading MCP...");
 								writeScreenLog(1);
 								drawFrame();
 
-								cJSON_Hooks ch;
-								ch.malloc_fn = MEMAllocFromDefaultHeap;
-								ch.free_fn = MEMFreeToDefaultHeap;
-								cJSON_InitHooks(&ch);
-
-								addToScreenLog("cJSON initialized!");
-								startNewFrame();
-								textToFrame(0, 0, "Loading SWKBD...");
-								writeScreenLog(1);
-								drawFrame();
-
-								if(initConfig())
+								mcpHandle = MCP_Open();
+								if(mcpHandle != 0)
 								{
-									addToScreenLog("Config loaded!");
+									addToScreenLog("MCP initialized!");
+
 									startNewFrame();
-									textToFrame(0, 0, "Loading SWKBD...");
+									textToFrame(0, 0, "Initializing rumble...");
 									writeScreenLog(1);
 									drawFrame();
 
-									if(SWKBD_Init())
+									if(initRumble())
 									{
-										addToScreenLog("SWKBD initialized!");
+										addToScreenLog("Rumble initialized!");
+
 										startNewFrame();
-										textToFrame(0, 0, "Loading I/O thread...");
+										textToFrame(0, 0, "Loading downloader...");
 										writeScreenLog(1);
 										drawFrame();
 
-										if(initIOThread())
+										if(initDownloader())
 										{
-											addToScreenLog("I/O thread initialized!");
+											addToScreenLog("Downloader initialized!");
+
 											startNewFrame();
-											textToFrame(0, 0, "Loading menu...");
+											textToFrame(0, 0, "Loading cJSON...");
 											writeScreenLog(1);
 											drawFrame();
 
-											checkStacks("main()");
+											cJSON_Hooks ch;
+											ch.malloc_fn = MEMAllocFromDefaultHeap;
+											ch.free_fn = MEMFreeToDefaultHeap;
+											cJSON_InitHooks(&ch);
 
-											if(!updateCheck())
+											addToScreenLog("cJSON initialized!");
+											startNewFrame();
+											textToFrame(0, 0, "Loading SWKBD...");
+											writeScreenLog(1);
+											drawFrame();
+
+											if(initConfig())
 											{
-												initTitles();
+												addToScreenLog("Config loaded!");
+												startNewFrame();
+												textToFrame(0, 0, "Loading SWKBD...");
+												writeScreenLog(1);
+												drawFrame();
 
-												checkStacks("main");
+												if(SWKBD_Init())
+												{
+													addToScreenLog("SWKBD initialized!");
+													startNewFrame();
+													textToFrame(0, 0, "Loading I/O thread...");
+													writeScreenLog(1);
+													drawFrame();
 
-												mainMenu(); // main loop
+													if(initIOThread())
+													{
+														addToScreenLog("I/O thread initialized!");
+														startNewFrame();
+														textToFrame(0, 0, "Loading menu...");
+														writeScreenLog(1);
+														drawFrame();
 
-												debugPrintf("Deinitializing libraries...");
-												clearTitles();
-												saveConfig(true);
+														checkStacks("main()");
 
-												checkStacks("main");
+														if(!updateCheck())
+														{
+															initTitles();
+
+															checkStacks("main");
+
+															mainMenu(); // main loop
+
+															debugPrintf("Deinitializing libraries...");
+															clearTitles();
+															saveConfig(true);
+
+															checkStacks("main");
+														}
+
+														shutdownIOThread();
+														debugPrintf("I/O thread closed");
+													}
+													else
+														lerr = "Couldn't load I/O thread!";
+
+													SWKBD_Shutdown();
+													debugPrintf("SWKBD closed");
+												}
+												else
+													lerr = "Couldn't initialize SWKBD!";
 											}
+											else
+												lerr = "Couldn't load config file!\n\nMost likely your SD card is write locked!";
 
-											shutdownIOThread();
-											debugPrintf("I/O thread closed");
+											deinitDownloader();
 										}
 										else
-											lerr = "Couldn't load I/O thread!";
+											lerr = "Couldn't initialize downloader!";
 
-										SWKBD_Shutdown();
-										debugPrintf("SWKBD closed");
+										deinitRumble();
+										debugPrintf("Rumble closed");
 									}
 									else
-										lerr = "Couldn't initialize SWKBD!";
+										lerr = "Couldn't initialize rumble!";
+
+									MCP_Close(mcpHandle);
+									debugPrintf("MCP closed");
 								}
 								else
-									lerr = "Couldn't load config file!\n\nMost likely your SD card is write locked!";
-
-								deinitDownloader();
+									lerr = "Couldn't initialize MCP!";
 							}
 							else
-								lerr = "Couldn't initialize downloader!";
+								lerr = "No support for rebrands, use original NUSspli!";
 
-							deinitRumble();
-							debugPrintf("Rumble closed");
+							deinitCrypto();
+							debugPrintf("OpenSSL closed");
 						}
 						else
-							lerr = "Couldn't initialize rumble!";
+							lerr = "Couldn't initialize OpenSSL!";
 
-						MCP_Close(mcpHandle);
-						debugPrintf("MCP closed");
+						unmountAll();
 					}
 					else
-						lerr = "Couldn't initialize MCP!";
+						lerr = "Unsupported environment.\nPlease update to Tiramisu.\nSee https://wiiu.hacks.guide";
+
+					if(lerr != NULL)
+					{
+						drawErrorFrame(lerr, ANY_RETURN);
+						showFrame();
+
+						while(!(vpad.trigger))
+							showFrame();
+					}
+
+					shutdownRenderer();
+					debugPrintf("SDL closed");
 				}
-				else
-					lerr = "No support for rebrands, use original NUSspli!";
 
-				deinitCrypto();
-				debugPrintf("OpenSSL closed");
+				KPADShutdown();
+				debugPrintf("Shutting down filesystem");
+				fatUnmount("sd");
+#ifdef NUSSPLI_HBL
+				romfsExit();
+#endif
 			}
-			else
-				lerr = "Couldn't initialize OpenSSL!";
-
-			unmountAll();
-			closeIOSUhax();
-		}
-		else
-			lerr = "Unsupported environment.\nPlease update to Tiramisu.\nSee https://wiiu.hacks.guide";
-
-		if(lerr != NULL)
-		{
-			drawErrorFrame(lerr, ANY_RETURN);
-			showFrame();
-
-			while(!(vpad.trigger))
-				showFrame();
 		}
 
-		shutdownRenderer();
-		debugPrintf("SDL closed");
+		KPADShutdown();
+		closeFsa();
+		closeIOSUhax();
 	}
 
 	debugPrintf("Clearing screen log");
 	clearScreenLog();
-	KPADShutdown();
-
-	debugPrintf("Shutting down filesystem");
-#ifdef NUSSPLI_HBL
-	romfsExit();
-#endif
-	FSShutdown();
 }
 
 static bool cfwValid()

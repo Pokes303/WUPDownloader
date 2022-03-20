@@ -21,13 +21,16 @@ TARGET		:=	$(notdir $(CURDIR))
 BUILD		?=	debug
 
 SOURCES		:=	zlib/contrib/minizip \
+				libfat/source \
 				src/menu \
 				src
 
 DATA		:=	
 INCLUDES	:=	include \
 				cJSON \
-				zlib/contrib/minizip
+				zlib/contrib/minizip \
+				libfat/source \
+				libfat/include
 
 ifeq ($(strip $(HBL)), 1)
 ROMFS		:=	data
@@ -42,7 +45,8 @@ endif
 include $(PORTLIBS_PATH)/wiiu/share/romfs-wiiu.mk
 
 CFLAGS		:=	$(MACHDEP) -Ofast -flto=auto -fno-fat-lto-objects \
-				-fuse-linker-plugin -pipe -D__WIIU__ -D__WUT__ \
+				-fuse-linker-plugin -pipe \
+				-D__WIIU__ -D__wiiu__ -D__WUT__ \
 				-DNUSSPLI_VERSION=\"$(NUSSPLI_VERSION)\" \
 				-DIOAPI_NO_64 $(ROMFS_CFLAGS)
 
@@ -86,6 +90,7 @@ real:
 	@rm -f zlib/contrib/minizip/iowin* zlib/contrib/minizip/mini* zlib/contrib/minizip/zip.? zlib/contrib/minizip/mztools.? zlib/contrib/minizip/configure.ac zlib/contrib/minizip/Makefile zlib/contrib/minizip/Makefile.am zlib/contrib/minizip/*.com zlib/contrib/minizip/*.txt
 	@cd zlib && git apply ../minizip.patch || true
 	@cd SDL_FontCache && for patch in $(TOPDIR)/SDL_FontCache-patches/*.patch; do echo Applying $$patch && git apply $$patch; done || true
+	@cd libfat && $(MAKE) include/libfatversion.h || true
 	@[ -d $(BUILD) ] || mkdir -p $(BUILD)
 	@$(MAKE) -C $(BUILD) -f $(CURDIR)/Makefile BUILD=$(BUILD) NUSSPLI_VERSION=$(NUSSPLI_VERSION) $(MAKE_CMD)
 
