@@ -28,7 +28,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#define INSTALL_DIR_SD	"sd:/install/"
+#define INSTALL_DIR_SD	"fs:/vol/external01/install/"
 #define INSTALL_DIR_USB	"usb:/install/"
 #define INSTALL_DIR_MLC	"mlc:/install/"
 #define IO_BUFSIZE	(128 * 1024) // 128 KB

@@ -49,6 +49,7 @@
 #include <tmd.h>
 #include <utils.h>
 
+#include <coreinit/filesystem.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
@@ -1043,6 +1044,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	}
 	
 	strcat(installDir, folderName);
+	strcat(installDir, "/");
 	
 	addToScreenLog("Started the download of \"%s\"", titleEntry->name);
 	addToScreenLog("The content will be saved on \"%s:/install/%s\"", dlDev == NUSDEV_USB ? "usb" : dlDev == NUSDEV_SD ? "sd" : "mlc", folderName);
@@ -1056,11 +1058,12 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		else
 		{
 			char *toScreen = getToFrameBuffer();
+			strcpy(toScreen, "Error creating temporary directory!\n\n");
 			const char *errStr = translateNusfsErr(err);
 			if(errStr == NULL)
 				sprintf(toScreen, "Error creating directory: %d", err);
 			else
-				sprintf(toScreen, "Error creating directory: %s", errStr);
+				strcpy(toScreen, errStr);
 			
 			drawErrorFrame(toScreen, ANY_RETURN);
 			
@@ -1082,7 +1085,6 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	else
 		addToScreenLog("WARNING: The download directory already exists");
 	
-	strcat(installDir, "/");
 	char *idp = installDir + strlen(installDir);
 	strcpy(idp, "title.tmd");
 	

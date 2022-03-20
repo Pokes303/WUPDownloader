@@ -44,7 +44,7 @@ bool isUSB01()
 	return usb01;
 }
 
-bool initFsa()
+static bool initFsa()
 {
 	if(fsaHandle >= 0)
 		return true;
@@ -66,6 +66,9 @@ bool mountUSB()
 	if(usbMounted)
 		return true;
 
+	if(!initFsa())
+		return false;
+
 	int ret = mount_fs("usb", fsaHandle, NULL, "/vol/storage_usb01");
 	if(ret != 0 || !dirExists("usb:/"))
 	{
@@ -73,6 +76,7 @@ bool mountUSB()
 		ret = mount_fs("usb", fsaHandle, NULL, "/vol/storage_usb02");
 		if(ret != 0 || !dirExists("usb:/"))
 		{
+			IOSUHAX_FSA_Close(fsaHandle);
 			debugPrintf("IOSUHAX: error mounting USB drive 2: %#010x", ret);
 			return false;
 		}
@@ -91,6 +95,9 @@ bool mountMLC()
 	if(mlcMounted)
 		return true;
 
+	if(!initFsa())
+		return false;
+
 	int ret = mount_fs("mlc", fsaHandle, NULL, "/vol/storage_mlc01");
 	if(ret || !dirExists("mlc:/"))
 	{
@@ -103,7 +110,7 @@ bool mountMLC()
 	return true;
 }
 
-void closeFsa()
+static void closeFsa()
 {
 	IOSUHAX_FSA_Close(fsaHandle);
 	fsaHandle = -1;
@@ -116,6 +123,8 @@ void unmountUSB()
 
 	unmount_fs("usb");
 	usbMounted = false;
+	if(!mlcMounted)
+		closeFsa();
 
 	debugPrintf("IOSUHAX: USB drive unmounted!");
 }
@@ -127,6 +136,8 @@ void unmountMLC()
 
 	unmount_fs("mlc");
 	mlcMounted = false;
+	if(!usbMounted)
+		closeFsa();
 
 	debugPrintf("IOSUHAX: MLC unmounted!");
 }

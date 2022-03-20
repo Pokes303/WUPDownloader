@@ -7,6 +7,3 @@
 [submodule "SDL_FontCache"]
 	path = SDL_FontCache
 	url = https://github.com/grimfang4/SDL_FontCache.git
-[submodule "libfat"]
-	path = libfat
-	url = https://github.com/Crementif/libfat.git

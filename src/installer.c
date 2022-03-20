@@ -110,7 +110,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 			break;
 		case NUSDEV_SD:
 			strcpy(newPath, "/vol/app_sd");
-			strcpy(newPath + 11, path + 3);
+			strcpy(newPath + 11, path + 18);
 			break;
 		case NUSDEV_MLC:
 			strcpy(newPath, "/vol/storage_mlc01");
