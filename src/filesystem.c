@@ -76,7 +76,6 @@ bool mountUSB()
 		ret = mount_fs("usb", fsaHandle, NULL, "/vol/storage_usb02");
 		if(ret != 0 || !dirExists("usb:/"))
 		{
-			IOSUHAX_FSA_Close(fsaHandle);
 			debugPrintf("IOSUHAX: error mounting USB drive 2: %#010x", ret);
 			return false;
 		}

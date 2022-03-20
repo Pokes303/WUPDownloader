@@ -228,9 +228,11 @@ NUSFS_ERR createDirectory(const char *path, mode_t mode)
 {
 	OSTime t = OSGetTime();
     if(mkdir(path, mode) == 0)
+	{
+		t = OSGetTime() - t;
+		addEntropy(&t, sizeof(OSTime));
 		return NUSFS_ERR_NOERR;
-    t = OSGetTime() - t;
-	addEntropy(&t, sizeof(OSTime));
+	}
 
 	int ie = errno;
 	switch(ie)
@@ -264,6 +266,6 @@ const char *translateNusfsErr(NUSFS_ERR err)
 		case NUSFS_ERR_DONTEXIST:
 			return "Not found!";
         default:
-            return NULL;
+            return err > 1000 ? strerror(err - 1000) : NULL;
 	}
 }
