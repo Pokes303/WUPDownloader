@@ -42,20 +42,26 @@ uint8_t *getCommonKey()
 		{
 			uint8_t buf[(0x38 * 4) + 16];
 			if(IOSUHAX_read_otp(buf, (0x38 * 4) + 16) >= 0)
+			{
 				OSBlockMove(otp_common_key, buf + (0x38 * 4), 16, false);
+
+				t = OSGetSystemTime() - t;
+				addEntropy(&t, sizeof(OSTime));
+
+#ifdef NUSSPLI_DEBUG
+				char ret[33];
+				char *tmp = &ret[0];
+				for(int i = 0; i < 16; i++, tmp += 2)
+					sprintf(tmp, "%02x", otp_common_key[i]);
+				debugPrintf("Common key: %s", ret);
+#endif
+			}
+			else
+				debugPrintf("Common key: IOSUHAX_read_otp() failed!");
 		}
 		else
-			debugPrintf("CC: IOSUHAX failed!");
-		
-#ifdef NUSSPLI_DEBUG
-		char ret[33];
-		char *tmp = &ret[0];
-		for(int i = 0; i < 16; i++, tmp += 2)
-			sprintf(tmp, "%02x", otp_common_key[i]);
-		debugPrintf("CC: %s", ret);
-#endif
-        t = OSGetSystemTime() - t;
-		addEntropy(&t, sizeof(OSTime));
+			debugPrintf("Common key: openIOSUhax() failed!");
 	}
+
 	return otp_common_key;
 }

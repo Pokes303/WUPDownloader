@@ -1,6 +1,6 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
- * Copyright (c) 2020-2021 V10lator <v10lator@myway.de>                    *
+ * Copyright (c) 2020-2022 V10lator <v10lator@myway.de>                    *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
@@ -27,18 +27,16 @@
 #include <iosuhax.h>
 
 #include <iosuhaxx.h>
-#include <utils.h>
 
-bool iosuConnected = false;
+static bool iosuConnected = false;
 
 void closeIOSUhax()
 {
-	if(!iosuConnected)
-		return;
-
-	//close down wupserver, return control to mcp
-	IOSUHAX_Close();
-	iosuConnected = false;
+	if(iosuConnected)
+	{
+		IOSUHAX_Close();
+		iosuConnected = false;
+	}
 }
 
 bool openIOSUhax()

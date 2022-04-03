@@ -65,14 +65,8 @@ static int ioThreadMain(int argc, const char **argv)
 
 	uint32_t asl;
 	volatile WriteQueueEntry *entry;
-	while(ioRunning)
+	while(ioRunning && !fwriteErrno)
 	{
-		if(fwriteErrno)
-		{
-			OSSleepTicks(1024);
-			continue;
-		}
-
 		asl = activeWriteBuffer;
 		entry = queueEntries + asl;
 		if(entry->file == NULL)
@@ -176,14 +170,12 @@ void shutdownIOThread()
 #ifdef NUSSPLI_DEBUG
 	int ret;
 	stopThread(ioThread, &ret);
+	debugPrintf("I/O thread returned: %d", ret);
 #else
 	stopThread(ioThread, NULL);
 #endif
 	MEMFreeToDefaultHeap(queueEntries[0].buf);
 	MEMFreeToDefaultHeap((void *)queueEntries);
-#ifdef NUSSPLI_DEBUG
-	debugPrintf("I/O thread returned: %d", ret);
-#endif
 }
 
 #ifdef NUSSPLI_DEBUG
@@ -191,7 +183,7 @@ bool queueStalled = false;
 #endif
 size_t addToIOQueue(const void *buf, size_t size, size_t n, NUSFILE *file)
 {
-	if(checkForQueueErrors())
+	if(!size || !n || checkForQueueErrors())
 		return 0;
 
     volatile WriteQueueEntry *entry;
@@ -227,12 +219,6 @@ retryAddingToQueue:
 	if(buf != NULL)
 	{
 		size *= n;
-		if(size == 0)
-		{
-			n = 0;
-			goto queueExit;
-		}
-		
 		if(size > IO_BUFSIZE)
 		{
             spinReleaseLock(ioWriteLock);
@@ -254,8 +240,7 @@ retryAddingToQueue:
 	
 	if(++activeReadBuffer == MAX_IO_QUEUE_ENTRIES)
 		activeReadBuffer = 0;
-	
-queueExit:
+
 	spinReleaseLock(ioWriteLock);
 	return n;
 }
