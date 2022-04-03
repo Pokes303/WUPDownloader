@@ -29,8 +29,7 @@
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/thread.h>
 
-#define DEFAULT_STACKSIZE	0x800000	// 8 MB
-#define MIN_STACKSIZE		0x40000		// 256 KB
+#define MIN_STACKSIZE		0xFFF8
 
 #ifdef __cplusplus
 	extern "C" {

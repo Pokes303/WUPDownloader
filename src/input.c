@@ -46,7 +46,7 @@
 #include <padscore/kpad.h>
 #include <padscore/wpad.h>
 
-#define CT_STACK_SIZE (256 * 1024)
+#define CT_STACK_SIZE MIN_STACKSIZE
 #define SWKBD_QUEUE_SIZE MIN_STACKSIZE
 
 //WIP. This need a better implementation
