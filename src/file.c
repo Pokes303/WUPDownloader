@@ -22,6 +22,7 @@
 
 #include <file.h>
 #include <ioThread.h>
+#include <staticMem.h>
 #include <utils.h>
 
 #include <crypto.h>
@@ -126,7 +127,7 @@ bool dirExists(const char *path)
 void removeDirectory(const char *path)
 {
 	size_t len = strlen(path);
-	char newPath[len + 1024]; // TODO
+	char *newPath = getStaticPathBuffer(0);
 	strcpy(newPath, path);
 	
 	if(newPath[len - 1] != '/')
@@ -166,7 +167,7 @@ void removeDirectory(const char *path)
 NUSFS_ERR moveDirectory(const char *src, const char *dest)
 {
 	size_t len = strlen(src);
-	char newSrc[len + 1024]; // TODO
+	char *newSrc = getStaticPathBuffer(0);
 	strcpy(newSrc, src);
 	
 	if(newSrc[len - 1] != '/')
@@ -183,7 +184,7 @@ NUSFS_ERR moveDirectory(const char *src, const char *dest)
 		return err;
 
 	len = strlen(dest);
-	char newDest[len + 1024]; // TODO
+	char *newDest = getStaticPathBuffer(1);
 	strcpy(newDest, dest);
 
 	if(newDest[len - 1] != '/')

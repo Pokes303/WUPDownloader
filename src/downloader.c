@@ -42,6 +42,7 @@
 #include <renderer.h>
 #include <romfs.h>
 #include <rumbleThread.h>
+#include <staticMem.h>
 #include <status.h>
 #include <thread.h>
 #include <ticket.h>
@@ -1008,7 +1009,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		strcat(folderName, titleVer);
 	}
 	
-	char installDir[FILENAME_MAX + 37];
+	char *installDir = getStaticPathBuffer(2);
 	strcpy(installDir, dlDev == NUSDEV_USB ? INSTALL_DIR_USB : dlDev == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC);
 	if(!dirExists(installDir))
 	{

@@ -101,7 +101,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	drawFrame();
 	showFrame();
 	
-	char newPath[0x27F]; // MCP mounts the card at another point, so we have to adjust the path -  The length of 0x27F is important!
+	char *newPath = getStaticInstallerPathArea(); // MCP mounts the card at another point, so we have to adjust the path -  The length of 0x27F is important!
 	switch(dev)
 	{
 		case NUSDEV_USB:

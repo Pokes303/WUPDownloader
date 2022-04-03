@@ -23,6 +23,8 @@
 
 #include <wut-fixups.h>
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 	extern "C" {
 #endif
@@ -33,6 +35,7 @@ void shutdownStaticMem();
 void *getStaticScreenBuffer();
 void *getStaticLineBuffer();
 void *getStaticInstallerPathArea();
+void *getStaticPathBuffer(uint32_t i);
 
 #ifdef __cplusplus
 	}

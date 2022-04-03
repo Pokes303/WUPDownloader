@@ -19,13 +19,15 @@
 
 #include <wut-fixups.h>
 
+#include <limits.h>
+#include <stdint.h>
+
 #include <coreinit/memdefaultheap.h>
-#include <coreinit/memory.h>
 
 #include <renderer.h>
 #include <staticMem.h>
 
-void *pointers[3];
+void *pointers[6];
 
 bool initStaticMem()
 {
@@ -38,7 +40,23 @@ bool initStaticMem()
 			pointers[2] = MEMAllocFromDefaultHeap(0x27F);
 			if(pointers[2] != NULL)
 			{
-				return true;
+				pointers[3] = MEMAllocFromDefaultHeap(PATH_MAX);
+				if(pointers[3] != NULL)
+				{
+					pointers[4] = MEMAllocFromDefaultHeap(PATH_MAX);
+					if(pointers[4] != NULL)
+					{
+						pointers[5] = MEMAllocFromDefaultHeap(PATH_MAX);
+						if(pointers[5] != NULL)
+							return true;
+
+						MEMFreeToDefaultHeap(pointers[4]);
+					}
+
+					MEMFreeToDefaultHeap(pointers[3]);
+				}
+
+				MEMFreeToDefaultHeap(pointers[2]);
 			}
 
 			MEMFreeToDefaultHeap(pointers[1]);
@@ -50,7 +68,7 @@ bool initStaticMem()
 
 void shutdownStaticMem()
 {
-	for(int i = 0; i < 3; i++)
+	for(int i = 0; i < 6; i++)
 		MEMFreeToDefaultHeap(pointers[i]);
 }
 
@@ -66,5 +84,10 @@ void *getStaticLineBuffer()
 
 void *getStaticInstallerPathArea()
 {
-	return pointers[3];
+	return pointers[2];
+}
+
+void *getStaticPathBuffer(uint32_t i)
+{
+	return pointers[3 + i];
 }
