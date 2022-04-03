@@ -205,7 +205,7 @@ void innerMain(bool validCfw)
 
 													debugPrintf("Deinitializing libraries...");
 													clearTitles();
-													saveConfig(true);
+													saveConfig(false);
 
 													checkStacks("main");
 												}
