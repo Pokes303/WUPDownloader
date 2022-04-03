@@ -37,16 +37,11 @@ void drawConfigMenu()
 	char *toScreen = getToFrameBuffer();
 	int i = -1;
 	strcpy(toScreen, "Press " BUTTON_A " to ");
-	strcat(toScreen, useOnlineTitleDB() ? "disable" : "enable");
-	strcat(toScreen, " the online title database");
-	textToFrame(++i, 0, toScreen);
-	
-	strcpy(toScreen, "Press " BUTTON_X " to ");
 	strcat(toScreen, updateCheckEnabled() ? "disable" : "enable");
 	strcat(toScreen, " online updates");
 	textToFrame(++i, 0, toScreen);
 	
-	strcpy(toScreen, "Press " BUTTON_Y " to ");
+	strcpy(toScreen, "Press " BUTTON_X " to ");
 	strcat(toScreen, autoResumeEnabled() ? "disable" : "enable");
 	strcat(toScreen, " auto resuming of failed downloads");
 	textToFrame(++i, 0, toScreen);
@@ -76,15 +71,10 @@ void configMenu()
 		
 		if(vpad.trigger & VPAD_BUTTON_A)
 		{
-			setUseOnlineTitleDB(!useOnlineTitleDB());
-			redraw = true;
-		}
-		if(vpad.trigger & VPAD_BUTTON_X)
-		{
 			setUpdateCheck(!updateCheckEnabled());
 			redraw = true;
 		}
-		if(vpad.trigger & VPAD_BUTTON_Y)
+		if(vpad.trigger & VPAD_BUTTON_X)
 		{
 			setAutoResume(!autoResumeEnabled());
 			redraw = true;
@@ -128,8 +118,6 @@ void configMenu()
 		if(vpad.trigger & VPAD_BUTTON_B)
 		{
 			saveConfig(false);
-			clearTitles();
-			initTitles();
 			return;
 		}
 		

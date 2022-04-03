@@ -60,7 +60,6 @@
 #define SET_ALL		"All"
 
 static bool changed = false;
-static bool useTitleDB = true;
 static bool checkForUpdates = true;
 static bool autoResume = true;
 static Swkbd_LanguageType lang = Swkbd_LanguageType__Invalid;
@@ -105,13 +104,7 @@ bool initConfig()
 			cJSON *json = cJSON_ParseWithLength(fileContent, fileSize);
 			if(json)
 			{
-				cJSON *configEntry = cJSON_GetObjectItemCaseSensitive(json, "Use online title DB");
-				if(configEntry != NULL && cJSON_IsBool(configEntry))
-					useTitleDB = cJSON_IsTrue(configEntry);
-				else
-					changed = true;
-
-				configEntry = cJSON_GetObjectItemCaseSensitive(json, "Check for updates");
+				cJSON *configEntry = cJSON_GetObjectItemCaseSensitive(json, "Check for updates");
 				if(configEntry != NULL && cJSON_IsBool(configEntry))
 					checkForUpdates = cJSON_IsTrue(configEntry);
 				else
@@ -296,15 +289,7 @@ bool saveConfig(bool force)
 		return false;;
 	}
 	cJSON_AddItemToObject(config, "File Version", entry);
-	
-	entry = cJSON_CreateBool(useTitleDB);
-	if(entry == NULL)
-	{
-		cJSON_Delete(config);
-		return false;
-	}
-	cJSON_AddItemToObject(config, "Use online title DB", entry);
-	
+
 	entry = cJSON_CreateBool(checkForUpdates);
 	if(entry == NULL)
 	{
@@ -373,20 +358,6 @@ bool saveConfig(bool force)
 
 	MEMFreeToDefaultHeap(configString);
 	return ret;
-}
-
-bool useOnlineTitleDB()
-{
-	return useTitleDB;
-}
-
-void setUseOnlineTitleDB(bool use)
-{
-	if(useTitleDB == use)
-		return;
-	
-	useTitleDB = use;
-	changed = true;
 }
 
 bool updateCheckEnabled()

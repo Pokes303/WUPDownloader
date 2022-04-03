@@ -44,8 +44,6 @@ typedef enum
 
 bool initConfig();
 bool saveConfig(bool force);
-bool useOnlineTitleDB();
-void setUseOnlineTitleDB(bool use);
 bool updateCheckEnabled();
 void setUpdateCheck(bool enabled);
 bool autoResumeEnabled();
