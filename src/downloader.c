@@ -431,7 +431,6 @@ static int dlThreadMain(int argc, const char **argv)
 {
 	debugPrintf("Download thread spawned!");
 	int ret = curl_easy_perform(curl);
-	checkStacks("dlThreadMain");
 	((curlProgressData *)argv[0])->running = false;
 	return ret;
 }

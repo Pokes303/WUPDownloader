@@ -64,7 +64,6 @@ static int rumbleThreadMain(int argc, const char **argv)
 			
 			VPADStopMotor(VPAD_CHAN_0);
 		}
-		checkStacks("Rumble thread");
 	}
 	while(msg.message != NUSSPLI_MESSAGE_EXIT);
 	

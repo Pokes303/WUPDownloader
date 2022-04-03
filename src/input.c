@@ -88,7 +88,6 @@ static int calcThreadMain(int argc, const char **argv)
 		OSReceiveMessage(&swkbd_queue, &msg, OS_MESSAGE_FLAGS_BLOCKING);
 		if(msg.message == NUSSPLI_MESSAGE_NONE)
 			Swkbd_CalcSubThreadFont();
-		checkStacks("SWKBD font");
 	}
 	while(msg.message != NUSSPLI_MESSAGE_EXIT);
 	

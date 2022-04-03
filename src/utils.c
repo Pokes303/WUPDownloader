@@ -412,7 +412,8 @@ void checkStacks(const char *src)
 {
 	debugPrintf("%s: Checking thread stacks...", src);
 	OSCheckActiveThreads();
-	debugPrintf("%s: Done!", src);
+	OSThread *trd = OSGetCurrentThread();
+	debugPrintf("%s: 0x%08X/0x%08X", src, OSCheckThreadStackUsage(trd), ((uint32_t)trd->stackStart) - ((uint32_t)trd->stackEnd));
 }
 
 #endif // ifdef NUSSPLI_DEBUG

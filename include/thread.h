@@ -79,17 +79,22 @@ static inline bool spinTryLock(spinlock lock)
 
 OSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksize, OSThreadEntryPointFn mainfunc, int argc, char *argv, OSThreadAttributes attribs);
 
+#ifdef NUSSPLI_DEBUG
+#define stopThread(thread, ret)																																\
+{																																							\
+	OSJoinThread(thread, ret);																																\
+	debugPrintf("STACK: %s: 0x%08X/0x%08X", thread->name, OSCheckThreadStackUsage(thread), ((uint32_t)thread->stackStart) - ((uint32_t)thread->stackEnd));	\
+	OSDetachThread(thread);																																	\
+	MEMFreeToDefaultHeap(thread);																															\
+}
+#else
 #define stopThread(thread, ret)																	\
 {																								\
 	OSJoinThread(thread, ret);																	\
-/*																								\
-#ifdef NUSSPLI_DEBUG																			\
-	debugPrintf("%s used %d bytes of stack", thread->name, OSCheckThreadStackUsage(thread));	\
-#endif																							\
-*/																								\
 	OSDetachThread(thread);																		\
 	MEMFreeToDefaultHeap(thread);																\
 }
+#endif
 
 #ifdef __cplusplus
     }

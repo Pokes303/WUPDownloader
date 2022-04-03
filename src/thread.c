@@ -43,10 +43,10 @@ OSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksi
 		if(OSCreateThread(ost, mainfunc, argc, argv, thread + stacksize + sizeof(OSThread), stacksize, priority, attribs))
 		{
 			OSSetThreadName(ost, name);
-//#ifdef NUSSPLI_DEBUG
-//			if(!OSSetThreadStackUsage(ost))
-//				debugPrintf("Tracking stack usage failed for %s", name);
-//#endif
+#ifdef NUSSPLI_DEBUG
+			if(!OSSetThreadStackUsage(ost))
+				debugPrintf("Tracking stack usage failed for %s", name);
+#endif
 			OSResumeThread(ost);
 			t = OSGetSystemTime() - t;
 			addEntropy(&t, sizeof(OSTime));
