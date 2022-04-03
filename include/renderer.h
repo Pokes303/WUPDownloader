@@ -57,6 +57,8 @@
 #define FRAMERATE_60FPS 1
 #define FRAMERATE_30FPS 2
 
+#define TO_FRAME_BUFFER_SIZE (1024 * 1024)
+
 #ifdef __cplusplus
 	extern "C" {
 #endif
@@ -84,6 +86,7 @@ void flagToFrame(int line, int column, TITLE_REGION flag);
 int addErrorOverlay(const char *err);
 void removeErrorOverlay(int id);
 uint32_t getSpaceWidth();
+char *getToFrameBuffer();
 
 #ifdef __cplusplus
 	}

@@ -45,7 +45,6 @@ struct DownloadLogList
 };
 
 DownloadLogList *downloadLogList = NULL;
-char toFrameBuffer[TO_FRAME_BUFFER_SIZE];
 
 void addToScreenLog(const char *str, ...)
 {
@@ -164,11 +163,6 @@ void drawErrorFrame(const char *text, ErrorOptions option)
 	lineToFrame(--line, SCREEN_COLOR_WHITE);
 	textToFrame(--line, 0, "NUSspli v" NUSSPLI_VERSION);
 	drawFrame();
-}
-
-char *getToFrameBuffer()
-{
-	return toFrameBuffer;
 }
 
 bool checkSystemTitleFromEntry(const TitleEntry *entry)

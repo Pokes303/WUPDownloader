@@ -31,8 +31,6 @@
 	extern "C" {
 #endif
 
-#define TO_FRAME_BUFFER_SIZE 4096
-
 typedef enum {
 	ANY_RETURN	= 0xFFFFFFFF,
 	B_RETURN	= 1,
@@ -44,7 +42,6 @@ void addToScreenLog(const char *str, ...);
 void clearScreenLog();
 void writeScreenLog(int line);
 void drawErrorFrame(const char *text, ErrorOptions option);
-char *getToFrameBuffer();
 bool checkSystemTitleFromEntry(const TitleEntry *entry);
 bool checkSystemTitleFromTid(uint64_t tid);
 

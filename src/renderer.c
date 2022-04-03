@@ -70,11 +70,14 @@ static SDL_Texture *barTex;
 static SDL_Texture *bgTex;
 static SDL_Texture *byeTex;
 
+static char *toFrameBuffer = NULL;
+static char *lineBuffer = NULL;
+
 #define screenColorToSDLcolor(color) (SDL_Color){ .a = color & 0xFFu, .b = (color & 0x0000FF00u) >> 8, .g = (color & 0x00FF0000u) >> 16, .r = (color & 0xFF000000u) >> 24 }
 
 void textToFrameCut(int line, int column, const char *str, int maxWidth)
 {
-	if(font == NULL)
+	if(lineBuffer == NULL)
 		return;
 
 	++line;
@@ -82,11 +85,10 @@ void textToFrameCut(int line, int column, const char *str, int maxWidth)
 	line -= 7;
 	SDL_Rect text = { .w = FC_GetWidth(font, str), .h = FONT_SIZE, .y = line };
 
-	int i = strlen(str);
-	char cpy[++i ];
 	if(maxWidth != 0 && text.w > maxWidth)
 	{
-		char *tmp = cpy;
+		int i = strlen(str);
+		char *tmp = lineBuffer;
 		OSBlockMove(tmp, str, i, false);
 		tmp += i;
 
@@ -96,14 +98,14 @@ void textToFrameCut(int line, int column, const char *str, int maxWidth)
 		*--tmp = '.';
 
 		char *tmp2;
-		text.w = FC_GetWidth(font, cpy);
+		text.w = FC_GetWidth(font, lineBuffer);
 		while(text.w > maxWidth)
 		{
 			tmp2 = tmp;
 			*--tmp = '.';
 			++tmp2;
 			*++tmp2 = '\0';
-			text.w = FC_GetWidth(font, cpy);
+			text.w = FC_GetWidth(font, lineBuffer);
 		}
 
 		if(*--tmp == ' ')
@@ -112,7 +114,7 @@ void textToFrameCut(int line, int column, const char *str, int maxWidth)
 			tmp[3] = '\0';
 		}
 
-		str = cpy;
+		str = lineBuffer;
 	}
 
 	switch(column)
@@ -520,6 +522,8 @@ void resumeRenderer()
 
 			t = OSGetSystemTime() - t;
 			addEntropy(&t, sizeof(OSTime));
+			toFrameBuffer = MEMAllocFromDefaultHeap(TO_FRAME_BUFFER_SIZE);
+			lineBuffer = MEMAllocFromDefaultHeap(TO_FRAME_BUFFER_SIZE);
 			return;
 		}
 
@@ -668,6 +672,11 @@ void pauseRenderer()
 		return;
 	
 	clearFrame();
+
+	MEMFreeToDefaultHeap(toFrameBuffer);
+	toFrameBuffer = NULL;
+	MEMFreeToDefaultHeap(lineBuffer);
+	lineBuffer = NULL;
 	
 	FC_FreeFont(font);
 	SDL_DestroyTexture(arrowTex);
@@ -774,4 +783,9 @@ void drawKeyboard(bool tv)
 uint32_t getSpaceWidth()
 {
 	return spaceWidth;
+}
+
+char *getToFrameBuffer()
+{
+	return toFrameBuffer;
 }
