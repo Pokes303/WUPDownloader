@@ -59,15 +59,15 @@
 #define SET_JPN		"Japan"
 #define SET_ALL		"All"
 
-bool changed = false;
-bool useTitleDB = true;
-bool checkForUpdates = true;
-bool autoResume = true;
-Swkbd_LanguageType lang = Swkbd_LanguageType__Invalid;
-Swkbd_LanguageType sysLang;
-int configInitTries = 0;
-bool dlToUSB = true;
-reg regionSetting = regALL;
+static bool changed = false;
+static bool useTitleDB = true;
+static bool checkForUpdates = true;
+static bool autoResume = true;
+static Swkbd_LanguageType lang = Swkbd_LanguageType__Invalid;
+static Swkbd_LanguageType sysLang;
+static int configInitTries = 0;
+static bool dlToUSB = true;
+static reg regionSetting = regALL;
 
 bool initConfig()
 {
