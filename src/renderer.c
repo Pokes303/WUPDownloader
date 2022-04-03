@@ -55,6 +55,7 @@ static const SDL_Point screen = { .x = 1280, .y = 720 };
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static FC_Font *font = NULL;
+static void *bgmBuffer = NULL;
 static Mix_Chunk *backgroundMusic = NULL;
 
 static int32_t spaceWidth;
@@ -542,6 +543,11 @@ static inline void quitSDL()
 		Mix_CloseAudio();
 		backgroundMusic = NULL;
 	}
+	if(bgmBuffer != NULL)
+	{
+		MEMFreeToDefaultHeap(bgmBuffer);
+		bgmBuffer = NULL;
+	}
 
 // TODO:
 	if(TTF_WasInit())
@@ -580,20 +586,23 @@ bool initRenderer()
 						if(f != NULL)
 						{
 							size_t fs = getFilesize(f);
-							void *buf = MEMAllocFromDefaultHeap(fs);
-							if(buf != NULL)
+							bgmBuffer = MEMAllocFromDefaultHeap(fs);
+							if(bgmBuffer != NULL)
 							{
-								if(fread(buf, fs, 1, f) == 1)
+								if(fread(bgmBuffer, fs, 1, f) == 1)
 								{
 									if(Mix_OpenAudio(22050, AUDIO_S16MSB, 2, 4096) == 0)
 									{
-										SDL_RWops *rw = SDL_RWFromMem(buf, fs);
+										SDL_RWops *rw = SDL_RWFromConstMem(bgmBuffer, fs);
 										backgroundMusic = Mix_LoadWAV_RW(rw, true);
 										if(backgroundMusic != NULL)
 										{
 											Mix_VolumeChunk(backgroundMusic, 15);
 											if(Mix_PlayChannel(0, backgroundMusic, -1) == 0)
+											{
+												fclose(f);
 												goto audioRunning;
+											}
 
 											Mix_FreeChunk(backgroundMusic);
 											backgroundMusic = NULL;
@@ -602,7 +611,8 @@ bool initRenderer()
 										Mix_CloseAudio();
 									}
 								}
-								MEMFreeToDefaultHeap(buf);
+								MEMFreeToDefaultHeap(bgmBuffer);
+								bgmBuffer = NULL;
 							}
 							fclose(f);
 						}
