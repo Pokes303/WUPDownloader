@@ -338,7 +338,7 @@ int str16cmp(const char16_t *s1, const char16_t *s2)
 #include <coreinit/time.h>
 #include <whb/log.h>
 
-char days[7][4] = {
+static const char days[7][4] = {
 	"Sun",
 	"Mon",
 	"Tue",
@@ -348,7 +348,7 @@ char days[7][4] = {
 	"Sat",
 };
 
-char months[12][4] = {
+static const char months[12][4] = {
 	"Jan",
 	"Feb",
 	"Mar",
