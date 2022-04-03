@@ -183,7 +183,7 @@ bool queueStalled = false;
 #endif
 size_t addToIOQueue(const void *buf, size_t size, size_t n, NUSFILE *file)
 {
-	if(!size || !n || checkForQueueErrors())
+	if(checkForQueueErrors())
 		return 0;
 
     volatile WriteQueueEntry *entry;
@@ -219,6 +219,12 @@ retryAddingToQueue:
 	if(buf != NULL)
 	{
 		size *= n;
+		if(size == 0)
+		{
+			n = 0;
+			goto queueExit;
+		}
+
 		if(size > IO_BUFSIZE)
 		{
             spinReleaseLock(ioWriteLock);
@@ -241,6 +247,7 @@ retryAddingToQueue:
 	if(++activeReadBuffer == MAX_IO_QUEUE_ENTRIES)
 		activeReadBuffer = 0;
 
+queueExit:
 	spinReleaseLock(ioWriteLock);
 	return n;
 }
