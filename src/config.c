@@ -94,96 +94,106 @@ bool initConfig()
 	long fileSize = getFilesize(fp);
 	bool ret = fileSize > 0;
 	if(!ret)
-		fileSize = 1;
-	char fileContent[fileSize];
-	ret = ret && fread(fileContent, fileSize, 1, fp) == 1;
+		return false;
+
+	ret = false;
+	char *fileContent = MEMAllocFromDefaultHeap(fileSize);
+	if(fileContent != NULL)
+	{
+		if(fread(fileContent, fileSize, 1, fp) == 1)
+		{
+			cJSON *json = cJSON_ParseWithLength(fileContent, fileSize);
+			if(json)
+			{
+				cJSON *configEntry = cJSON_GetObjectItemCaseSensitive(json, "Use online title DB");
+				if(configEntry != NULL && cJSON_IsBool(configEntry))
+					useTitleDB = cJSON_IsTrue(configEntry);
+				else
+					changed = true;
+
+				configEntry = cJSON_GetObjectItemCaseSensitive(json, "Check for updates");
+				if(configEntry != NULL && cJSON_IsBool(configEntry))
+					checkForUpdates = cJSON_IsTrue(configEntry);
+				else
+					changed = true;
+
+				configEntry = cJSON_GetObjectItemCaseSensitive(json, "Auto resume failed downloads");
+				if(configEntry != NULL && cJSON_IsBool(configEntry))
+					autoResume = cJSON_IsTrue(configEntry);
+				else
+					changed = true;
+
+				configEntry = cJSON_GetObjectItemCaseSensitive(json, "Language");
+				if(configEntry != NULL && cJSON_IsString(configEntry))
+				{
+					if(strcmp(configEntry->valuestring, LANG_JAP) == 0)
+						lang = Swkbd_LanguageType__Japanese;
+					else if(strcmp(configEntry->valuestring, LANG_ENG) == 0)
+						lang = Swkbd_LanguageType__English;
+					else if(strcmp(configEntry->valuestring, LANG_GER) == 0)
+						lang = Swkbd_LanguageType__French;
+					else if(strcmp(configEntry->valuestring, LANG_ITA) == 0)
+						lang = Swkbd_LanguageType__Italian;
+					else if(strcmp(configEntry->valuestring, LANG_SPA) == 0)
+						lang = Swkbd_LanguageType__Spanish;
+					else if(strcmp(configEntry->valuestring, LANG_CHI) == 0)
+						lang = Swkbd_LanguageType__Chinese1;
+					else if(strcmp(configEntry->valuestring, LANG_KOR) == 0)
+						lang = Swkbd_LanguageType__Korean;
+					else if(strcmp(configEntry->valuestring, LANG_DUT) == 0)
+						lang = Swkbd_LanguageType__Dutch;
+					else if(strcmp(configEntry->valuestring, LANG_POR) == 0)
+						lang = Swkbd_LanguageType__Potuguese;
+					else if(strcmp(configEntry->valuestring, LANG_RUS) == 0)
+						lang = Swkbd_LanguageType__Russian;
+					else if(strcmp(configEntry->valuestring, LANG_TCH) == 0)
+						lang = Swkbd_LanguageType__Chinese2;
+					else
+						lang = Swkbd_LanguageType__Invalid;
+				}
+				else
+					changed = true;
+
+				configEntry = cJSON_GetObjectItemCaseSensitive(json, "Region");
+				if(configEntry != NULL && cJSON_IsString(configEntry))
+				{
+					if(strcmp(configEntry->valuestring, SET_ALL) == 0)
+						regionSetting = regALL;
+					else if(strcmp(configEntry->valuestring, SET_EUR) == 0)
+						regionSetting = regEUR;
+					else if(strcmp(configEntry->valuestring, SET_USA) == 0)
+						regionSetting = regUSA;
+					else if(strcmp(configEntry->valuestring, SET_JPN) == 0)
+						regionSetting = regJPN;
+					else
+						regionSetting = regALL;
+				}
+				else
+					changed = true;
+
+				configEntry = cJSON_GetObjectItemCaseSensitive(json, "Download to USB");
+				if(configEntry != NULL && cJSON_IsBool(configEntry))
+					dlToUSB = cJSON_IsTrue(configEntry);
+				else
+					changed = true;
+
+				configEntry = cJSON_GetObjectItemCaseSensitive(json, "Seed");
+				if(configEntry != NULL && cJSON_IsNumber(configEntry))
+					addEntropy(&(configEntry->valueint), 4);
+
+				cJSON_Delete(json);
+				ret = true;
+			}
+		}
+
+		MEMFreeToDefaultHeap(fileContent);
+	}
+
 	fclose(fp);
 	t = OSGetTime() - t;
 	addEntropy(&t, sizeof(OSTime));
 	if(!ret)
 		return false;
-	
-	cJSON *json = cJSON_ParseWithLength(fileContent, fileSize);
-	if(json == NULL)
-		return false;
-	
-	cJSON *configEntry = cJSON_GetObjectItemCaseSensitive(json, "Use online title DB");
-	if(configEntry != NULL && cJSON_IsBool(configEntry))
-		useTitleDB = cJSON_IsTrue(configEntry);
-	else
-		changed = true;
-	
-	configEntry = cJSON_GetObjectItemCaseSensitive(json, "Check for updates");
-	if(configEntry != NULL && cJSON_IsBool(configEntry))
-		checkForUpdates = cJSON_IsTrue(configEntry);
-	else
-		changed = true;
-	
-	configEntry = cJSON_GetObjectItemCaseSensitive(json, "Auto resume failed downloads");
-	if(configEntry != NULL && cJSON_IsBool(configEntry))
-		autoResume = cJSON_IsTrue(configEntry);
-	else
-		changed = true;
-	
-	configEntry = cJSON_GetObjectItemCaseSensitive(json, "Language");
-	if(configEntry != NULL && cJSON_IsString(configEntry))
-	{
-		if(strcmp(configEntry->valuestring, LANG_JAP) == 0)
-			lang = Swkbd_LanguageType__Japanese;
-		else if(strcmp(configEntry->valuestring, LANG_ENG) == 0)
-			lang = Swkbd_LanguageType__English;
-		else if(strcmp(configEntry->valuestring, LANG_GER) == 0)
-			lang = Swkbd_LanguageType__French;
-		else if(strcmp(configEntry->valuestring, LANG_ITA) == 0)
-			lang = Swkbd_LanguageType__Italian;
-		else if(strcmp(configEntry->valuestring, LANG_SPA) == 0)
-			lang = Swkbd_LanguageType__Spanish;
-		else if(strcmp(configEntry->valuestring, LANG_CHI) == 0)
-			lang = Swkbd_LanguageType__Chinese1;
-		else if(strcmp(configEntry->valuestring, LANG_KOR) == 0)
-			lang = Swkbd_LanguageType__Korean;
-		else if(strcmp(configEntry->valuestring, LANG_DUT) == 0)
-			lang = Swkbd_LanguageType__Dutch;
-		else if(strcmp(configEntry->valuestring, LANG_POR) == 0)
-			lang = Swkbd_LanguageType__Potuguese;
-		else if(strcmp(configEntry->valuestring, LANG_RUS) == 0)
-			lang = Swkbd_LanguageType__Russian;
-		else if(strcmp(configEntry->valuestring, LANG_TCH) == 0)
-			lang = Swkbd_LanguageType__Chinese2;
-		else
-			lang = Swkbd_LanguageType__Invalid;
-	}
-	else
-		changed = true;
-
-	configEntry = cJSON_GetObjectItemCaseSensitive(json, "Region");
-	if(configEntry != NULL && cJSON_IsString(configEntry))
-	{
-		if(strcmp(configEntry->valuestring, SET_ALL) == 0)
-			regionSetting = regALL;
-		else if(strcmp(configEntry->valuestring, SET_EUR) == 0)
-			regionSetting = regEUR;
-		else if(strcmp(configEntry->valuestring, SET_USA) == 0)
-			regionSetting = regUSA;
-		else if(strcmp(configEntry->valuestring, SET_JPN) == 0)
-			regionSetting = regJPN;
-		else
-			regionSetting = regALL;
-	}
-	else
-		changed = true;
-	
-	configEntry = cJSON_GetObjectItemCaseSensitive(json, "Download to USB");
-	if(configEntry != NULL && cJSON_IsBool(configEntry))
-		dlToUSB = cJSON_IsTrue(configEntry);
-	else
-		changed = true;
-
-	configEntry = cJSON_GetObjectItemCaseSensitive(json, "Seed");
-	if(configEntry != NULL && cJSON_IsNumber(configEntry))
-		addEntropy(&(configEntry->valueint), 4);
-	
-	cJSON_Delete(json);
 	
 	if(changed)
 		saveConfig(false);
@@ -347,17 +357,22 @@ bool saveConfig(bool force)
 	
 	OSTime t = OSGetTime();
 	FILE *fp = fopen(CONFIG_PATH, "w");
-	if(fp == NULL)
-		return false;
+	bool ret;
+	if(fp != NULL)
+	{
+		ret = fwrite(configString, strlen(configString), 1, fp) == 1;
+		debugPrintf("Config written!");
+		fclose(fp);
+		t = OSGetTime() - t;
+		addEntropy(&t, sizeof(OSTime));
 	
-	fwrite(configString, strlen(configString), 1, fp);
-	debugPrintf("Config written!");
-	fclose(fp);
-	t = OSGetTime() - t;
-	addEntropy(&t, sizeof(OSTime));
-	
-	changed = false;
-	return true;
+		changed = false;
+	}
+	else
+		ret = false;
+
+	MEMFreeToDefaultHeap(configString);
+	return ret;
 }
 
 bool useOnlineTitleDB()
