@@ -41,10 +41,10 @@
 
 #define TITLE_DB NAPI_URL "t"
 
-char *titleMemArea = NULL;
-size_t titleEntries[5] = { 0, 0, 0, 0, 0 };
-TitleEntry *titleEntry = NULL;
-TitleEntry *filteredEntry[4] = { NULL, NULL, NULL, NULL }; // Games, Updates, DLC, Demos
+static char *titleMemArea = NULL;
+static size_t titleEntries[5] = { 0, 0, 0, 0, 0 };
+static TitleEntry *titleEntry = NULL;
+static TitleEntry *filteredEntry[4] = { NULL, NULL, NULL, NULL }; // Games, Updates, DLC, Demos
 
 TRANSFORMED_TID_HIGH transformTidHigh(TID_HIGH tidHigh)
 {
