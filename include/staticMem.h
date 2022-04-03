@@ -32,10 +32,10 @@
 bool initStaticMem();
 void shutdownStaticMem();
 
-void *getStaticScreenBuffer();
-void *getStaticLineBuffer();
-void *getStaticInstallerPathArea();
-void *getStaticPathBuffer(uint32_t i);
+char *getStaticScreenBuffer();
+char *getStaticLineBuffer();
+char *getStaticInstallerPathArea();
+char *getStaticPathBuffer(uint32_t i);
 
 #ifdef __cplusplus
 	}

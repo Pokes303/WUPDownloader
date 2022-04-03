@@ -94,6 +94,6 @@ uint32_t getSpaceWidth();
 
 //#define startNewFrame					colorStartNewFrame(SCREEN_COLOR_BLUE)
 #define textToFrame(line, column, str)	textToFrameCut(line, column, str, 0)
-#define getToFrameBuffer()				((char *)getStaticScreenBuffer())
+#define getToFrameBuffer()				getStaticScreenBuffer()
 
 #endif // ifndef NUSSPLI_RENDERER_H

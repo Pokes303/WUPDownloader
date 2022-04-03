@@ -27,67 +27,39 @@
 #include <renderer.h>
 #include <staticMem.h>
 
-void *pointers[6];
+static char *staticPointer;
 
 bool initStaticMem()
 {
-	pointers[0] = MEMAllocFromDefaultHeap(TO_FRAME_BUFFER_SIZE);
-	if(pointers[0] != NULL)
-	{
-		pointers[1] = MEMAllocFromDefaultHeap(TO_FRAME_BUFFER_SIZE);
-		if(pointers[1] != NULL)
-		{
-			pointers[2] = MEMAllocFromDefaultHeap(0x27F);
-			if(pointers[2] != NULL)
-			{
-				pointers[3] = MEMAllocFromDefaultHeap(PATH_MAX);
-				if(pointers[3] != NULL)
-				{
-					pointers[4] = MEMAllocFromDefaultHeap(PATH_MAX);
-					if(pointers[4] != NULL)
-					{
-						pointers[5] = MEMAllocFromDefaultHeap(PATH_MAX);
-						if(pointers[5] != NULL)
-							return true;
-
-						MEMFreeToDefaultHeap(pointers[4]);
-					}
-
-					MEMFreeToDefaultHeap(pointers[3]);
-				}
-
-				MEMFreeToDefaultHeap(pointers[2]);
-			}
-
-			MEMFreeToDefaultHeap(pointers[1]);
-		}
-		MEMFreeToDefaultHeap(pointers[0]);
-	}
-	return false;
+	staticPointer = MEMAllocFromDefaultHeap((TO_FRAME_BUFFER_SIZE * 2) + (PATH_MAX * 3) + 0x27F);
+	return staticPointer != NULL;
 }
 
 void shutdownStaticMem()
 {
-	for(int i = 0; i < 6; i++)
-		MEMFreeToDefaultHeap(pointers[i]);
+	MEMFreeToDefaultHeap(staticPointer);
 }
 
-void *getStaticScreenBuffer()
+char *getStaticScreenBuffer()
 {
-	return pointers[0];
+	return staticPointer;
 }
 
-void *getStaticLineBuffer()
+char *getStaticLineBuffer()
 {
-	return pointers[1];
+	return staticPointer + TO_FRAME_BUFFER_SIZE;
 }
 
-void *getStaticInstallerPathArea()
+char *getStaticInstallerPathArea()
 {
-	return pointers[2];
+	return staticPointer + (TO_FRAME_BUFFER_SIZE * 2);
 }
 
-void *getStaticPathBuffer(uint32_t i)
+char *getStaticPathBuffer(uint32_t i)
 {
-	return pointers[3 + i];
+	char *ptr = staticPointer + ((TO_FRAME_BUFFER_SIZE * 2) + 0x27F);
+	for(uint32_t j = 0; j < i; ++j)
+		ptr += PATH_MAX;
+
+	return ptr;
 }
