@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <wchar.h>
 
+#include <staticMem.h>
 #include <titles.h>
 
 #define FONT_SIZE 28
@@ -86,7 +87,6 @@ void flagToFrame(int line, int column, TITLE_REGION flag);
 int addErrorOverlay(const char *err);
 void removeErrorOverlay(int id);
 uint32_t getSpaceWidth();
-char *getToFrameBuffer();
 
 #ifdef __cplusplus
 	}
@@ -94,5 +94,6 @@ char *getToFrameBuffer();
 
 //#define startNewFrame					colorStartNewFrame(SCREEN_COLOR_BLUE)
 #define textToFrame(line, column, str)	textToFrameCut(line, column, str, 0)
+#define getToFrameBuffer()				((char *)getStaticScreenBuffer())
 
 #endif // ifndef NUSSPLI_RENDERER_H

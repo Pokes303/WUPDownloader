@@ -44,6 +44,7 @@
 #include <osdefs.h>
 #include <renderer.h>
 #include <romfs.h>
+#include <staticMem.h>
 #include <swkbd_wrapper.h>
 #include <utils.h>
 #include <menu/utils.h>
@@ -70,14 +71,11 @@ static SDL_Texture *barTex;
 static SDL_Texture *bgTex;
 static SDL_Texture *byeTex;
 
-static char *toFrameBuffer = NULL;
-static char *lineBuffer = NULL;
-
 #define screenColorToSDLcolor(color) (SDL_Color){ .a = color & 0xFFu, .b = (color & 0x0000FF00u) >> 8, .g = (color & 0x00FF0000u) >> 16, .r = (color & 0xFF000000u) >> 24 }
 
 void textToFrameCut(int line, int column, const char *str, int maxWidth)
 {
-	if(lineBuffer == NULL)
+	if(font == NULL)
 		return;
 
 	++line;
@@ -88,6 +86,7 @@ void textToFrameCut(int line, int column, const char *str, int maxWidth)
 	if(maxWidth != 0 && text.w > maxWidth)
 	{
 		int i = strlen(str);
+		char *lineBuffer = (char *)getStaticLineBuffer();
 		char *tmp = lineBuffer;
 		OSBlockMove(tmp, str, i, false);
 		tmp += i;
@@ -522,8 +521,6 @@ void resumeRenderer()
 
 			t = OSGetSystemTime() - t;
 			addEntropy(&t, sizeof(OSTime));
-			toFrameBuffer = MEMAllocFromDefaultHeap(TO_FRAME_BUFFER_SIZE);
-			lineBuffer = MEMAllocFromDefaultHeap(TO_FRAME_BUFFER_SIZE);
 			return;
 		}
 
@@ -672,11 +669,6 @@ void pauseRenderer()
 		return;
 	
 	clearFrame();
-
-	MEMFreeToDefaultHeap(toFrameBuffer);
-	toFrameBuffer = NULL;
-	MEMFreeToDefaultHeap(lineBuffer);
-	lineBuffer = NULL;
 	
 	FC_FreeFont(font);
 	SDL_DestroyTexture(arrowTex);
@@ -783,9 +775,4 @@ void drawKeyboard(bool tv)
 uint32_t getSpaceWidth()
 {
 	return spaceWidth;
-}
-
-char *getToFrameBuffer()
-{
-	return toFrameBuffer;
 }
