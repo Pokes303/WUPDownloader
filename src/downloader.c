@@ -454,12 +454,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	//Results: 0 = OK | 1 = Error | 2 = No ticket aviable | 3 = Exit
 	//Types: 0 = .app | 1 = .h3 | 2 = title.tmd | 3 = tilte.tik
 	bool toRam = (type & FILE_TYPE_TORAM) == FILE_TYPE_TORAM;
-
-	if(resume)
-	{
-		if(!(type & FILE_TYPE_APP))
-			resume = false;
-	}
 	
 	debugPrintf("Download URL: %s", url);
 	debugPrintf("Download PATH: %s", toRam ? "<RAM>" : file);
@@ -496,7 +490,8 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 			fileExist = fileSize > 0;
 			if(fileExist)
 			{
-				if(fileSize == data->cs)
+				// TODO: Check .h3 files size
+				if((type & FILE_TYPE_H3) || fileSize == data->cs)
 				{
 					sprintf(toScreen, "Download %s skipped!", name);
 					addToScreenLog(toScreen);
