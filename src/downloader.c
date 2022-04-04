@@ -486,7 +486,8 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
 		if(fileExist)
 		{
-			fileSize = getFilesize(((NUSFILE *)fp)->fd);
+			fseek(((NUSFILE *)fp)->fd, 0, SEEK_END);
+			fileSize = ftello(((NUSFILE *)fp)->fd);
 			fileExist = fileSize > 0;
 			if(fileExist)
 			{
@@ -552,8 +553,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	}
 
 	setDefaultDataValues(cdata);
-	if(fileExist)
-		fseek(((NUSFILE *)fp)->fd, 0, SEEK_END);
 	
 	debugPrintf("Calling curl_easy_perform()");
 	OSTime t = OSGetSystemTime();
