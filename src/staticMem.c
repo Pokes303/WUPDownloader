@@ -31,7 +31,7 @@ static char *staticPointer;
 
 bool initStaticMem()
 {
-	staticPointer = MEMAllocFromDefaultHeap((TO_FRAME_BUFFER_SIZE * 2) + (PATH_MAX * 3) + 0x27F);
+	staticPointer = MEMAllocFromDefaultHeap((TO_FRAME_BUFFER_SIZE * 2) + (PATH_MAX * 3));
 	return staticPointer != NULL;
 }
 
@@ -50,14 +50,9 @@ char *getStaticLineBuffer()
 	return staticPointer + TO_FRAME_BUFFER_SIZE;
 }
 
-char *getStaticInstallerPathArea()
-{
-	return staticPointer + (TO_FRAME_BUFFER_SIZE * 2);
-}
-
 char *getStaticPathBuffer(uint32_t i)
 {
-	char *ptr = staticPointer + ((TO_FRAME_BUFFER_SIZE * 2) + 0x27F);
+	char *ptr = staticPointer + (TO_FRAME_BUFFER_SIZE * 2);
 	for(uint32_t j = 0; j < i; ++j)
 		ptr += PATH_MAX;
 

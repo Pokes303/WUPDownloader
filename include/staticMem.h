@@ -33,7 +33,6 @@ void shutdownStaticMem();
 
 char *getStaticScreenBuffer();
 char *getStaticLineBuffer();
-char *getStaticInstallerPathArea();
 char *getStaticPathBuffer(uint32_t i);
 
 #ifdef __cplusplus
