@@ -90,7 +90,7 @@ bool initConfig()
 	if(fp == NULL)
 		return false;
 	
-	long fileSize = getFilesize(fp);
+	size_t fileSize = getFilesize(fp);
 	bool ret = fileSize > 0;
 	if(!ret)
 		return false;

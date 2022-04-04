@@ -208,14 +208,14 @@ NUSFS_ERR moveDirectory(const char *src, const char *dest)
 	return NUSFS_ERR_NOERR;
 }
 
-long getFilesize(FILE *fp)
+size_t getFilesize(FILE *fp)
 {
 	OSTime t = OSGetTime();
 	off_t i = ftello(fp);
 	if(fseek(fp, 0, SEEK_END) != 0)
 		return -1;
 	
-	long fileSize = ftello(fp);
+	size_t fileSize = ftello(fp);
 	if(fileSize == -1)
 		debugPrintf("ftello() failed: %s", strerror(errno));
 	

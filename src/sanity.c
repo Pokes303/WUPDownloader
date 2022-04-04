@@ -90,7 +90,7 @@ bool sanityCheck()
 
 		char newPath[64];
 		FILE *f;
-		uint32_t s;
+		size_t s;
 		void *buf;
 		uint8_t m[16];
 		bool ret = true;

@@ -229,7 +229,7 @@ void generateFakeTicket()
 		return;
 	}
 
-	long fs = getFilesize(f);
+	size_t fs = getFilesize(f);
 	void *buf = MEMAllocFromDefaultHeap(fs);
 	if(buf == NULL)
 	{
