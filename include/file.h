@@ -71,7 +71,7 @@ void removeDirectory(const char *path);
 NUSFS_ERR moveDirectory(const char *src, const char *dest);
 NUSFS_ERR createDirectory(const char *path, mode_t mode);
 const char *translateNusfsErr(NUSFS_ERR err);
-off_t getFilesize(FILE *fp);
+long getFilesize(FILE *fp);
 
 #ifdef __cplusplus
 	}
