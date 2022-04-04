@@ -101,7 +101,17 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	drawFrame();
 	showFrame();
 	
-	char *newPath = getStaticInstallerPathArea(); // MCP mounts the card at another point, so we have to adjust the path -  The length of 0x27F is important!
+	char *newPath = MEMAllocFromDefaultHeapEx(0x27F, 0x40); // MCP mounts the card at another point, so we have to adjust the path -  Size and alignmnt is important!
+	if(newPath == NULL)
+		return false;
+
+	MCPInstallTitleInfo *info = MEMAllocFromDefaultHeapEx(sizeof(MCPInstallTitleInfo), 0x40);
+	if(info == NULL)
+	{
+		MEMFreeToDefaultHeap(newPath);
+		return false;
+	}
+
 	switch(dev)
 	{
 		case NUSDEV_USB:
@@ -117,12 +127,11 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 			strcpy(newPath + 18, path + 4);
 	}
 	
-	MCPInstallTitleInfo info;
 	McpData data;
 	
 	// Let's see if MCP is able to parse the TMD...
 	OSTime t = OSGetSystemTime();
-	data.err = MCP_InstallGetInfo(mcpHandle, newPath, (MCPInstallInfo *)&info);
+	data.err = MCP_InstallGetInfo(mcpHandle, newPath, (MCPInstallInfo *)info);
     t = OSGetSystemTime() - t;
 	addEntropy(&t, sizeof(OSTime));
 	if(data.err != 0)
@@ -161,7 +170,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 			if(vpad.trigger)
 				break;
 		}
-		return false;
+		goto installError;
 	}
 	
 	// Allright, let's set if we want to install to USB or NAND
@@ -195,7 +204,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 			if(vpad.trigger)
 				break;
 		}
-		return false;
+		goto installError;
 	}
 	
 	// Just some debugging stuff
@@ -204,13 +213,13 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	
 	// Last preparing step...
 	disableShutdown();
-	glueMcpData(&info, &data);
+	glueMcpData(info, &data);
 	
 	flushIOQueue(); // Make sure all game files are on disc
 	
 	// Start the installation process
 	t = OSGetSystemTime();
-	MCPError err = MCP_InstallTitleAsync(mcpHandle, newPath, &info);
+	MCPError err = MCP_InstallTitleAsync(mcpHandle, newPath, info);
 	
 	if(err != 0)
 	{
@@ -232,7 +241,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 				break;
 		}
 		enableShutdown();
-		return false;
+		goto installError;
 	}
 	
 	showMcpProgress(&data, game, true);
@@ -240,6 +249,8 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	addEntropy(&t, sizeof(OSTime));
 	// Quarkys ASAN catched this / seems like MCP already frees it for us
 //	MEMFreeToDefaultHeap(progress);
+	MEMFreeToDefaultHeap(newPath);
+	MEMFreeToDefaultHeap(info);
 	
 	// MCP thread finished. Let's see if we got any error - TODO: This is a 1:1 copy&paste from WUP Installer GX2 which itself stole it from WUP Installer Y mod which got it from WUP Installer minor edit by Nexocube who got it from WUP installer JHBL Version by Dimrok who portet it from the ASM of WUP Installer. So I think it's time for something new... ^^
 	if(data.err != 0)
@@ -346,4 +357,9 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 			break;
 	}
 	return true;
+
+installError:
+	MEMFreeToDefaultHeap(newPath);
+	MEMFreeToDefaultHeap(info);
+	return false;
 }
