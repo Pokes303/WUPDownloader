@@ -34,10 +34,10 @@
 #include <iosuhax.h>
 #include <iosuhax_devoptab.h>
 
-int fsaHandle = -1;
-bool usbMounted = false;
-bool mlcMounted = false;
-bool usb01;
+static int fsaHandle = -1;
+static bool usbMounted = false;
+static bool mlcMounted = false;
+static bool usb01;
 
 bool isUSB01()
 {
