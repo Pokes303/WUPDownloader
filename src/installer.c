@@ -39,6 +39,7 @@
 #include <ioThread.h>
 #include <renderer.h>
 #include <rumbleThread.h>
+#include <staticMem.h>
 #include <status.h>
 #include <utils.h>
 #include <menu/utils.h>
@@ -66,7 +67,7 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUs
 	if(!keepFiles)
 		removeDirectory(path);
 
-	char importPath[1024];
+	char *importPath = getStaticPathBuffer(2);
 	strcpy(importPath, toUsb ? "usb:/usr/import/" : "mlc:/usr/import/");
 	DIR *dir = opendir(importPath);
 
