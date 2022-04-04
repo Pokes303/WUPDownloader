@@ -89,22 +89,22 @@ static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData
 	addEntropy(&t, sizeof(OSTick));
 
 	size *= multi;
-	uint32_t data = *(uint32_t *)rawData;
+	off_t data = *(uint32_t *)rawData;
 	if(data)
 	{
 		char *h = (char *)buf;
 		h[size - 1] = '\0';
 		toLowercase(h);
-		uint32_t contentLength = 0;
-		if(sscanf(h, "content-length: %u", &contentLength) == 1)
+		off_t contentLength = 0;
+		if(sscanf(h, "content-length: %lld", &contentLength) == 1)
 		{
-			debugPrintf("rawData: %d", data);
-			debugPrintf("contentLength: %d", contentLength);
+			debugPrintf("rawData: %lld", data);
+			debugPrintf("contentLength: %lld", contentLength);
 
 			if(data == contentLength)
 			{
 				debugPrintf("equal!");
-				*(uint32_t *)rawData = 0;
+				*(off_t *)rawData = 0;
 				return 0;
 			}
 		}
@@ -493,7 +493,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	
 	bool fileExist;
 	void *fp;
-	uint32_t fileSize;
+	off_t fileSize;
 	if(toRam)
 	{
 		fileExist = false;
@@ -515,7 +515,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	}
 
 	curlError[0] = '\0';
-	uint32_t realFileSize = fileSize;
+	off_t realFileSize = fileSize;
 	volatile curlProgressData cdata;
 
 	CURLcode ret = curl_easy_setopt(curl, CURLOPT_URL, url);

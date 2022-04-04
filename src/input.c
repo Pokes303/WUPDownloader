@@ -51,7 +51,7 @@
 
 //WIP. This need a better implementation
 
-static VPADStatus vpad;
+VPADStatus vpad;
 static KPADStatus kpad[4];
 static ControllerType lastUsedController;
 
