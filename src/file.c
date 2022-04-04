@@ -208,6 +208,7 @@ NUSFS_ERR moveDirectory(const char *src, const char *dest)
 	return NUSFS_ERR_NOERR;
 }
 
+// There are no files > 4 GB on the Wii U, so size_t should be more than enough.
 size_t getFilesize(FILE *fp)
 {
 	OSTime t = OSGetTime();
