@@ -88,13 +88,13 @@ void secsToTime(uint32_t seconds, char *out)
 	}
 	if (minute || visible)
 	{
-		sprintf(out, "%u minutes ", minute);
+		sprintf(out, "%02u minutes ", minute);
 		out += strlen(out);
 		visible = true;
 	}
 
 	if (seconds || visible)
-		sprintf(out, "%u seconds ", seconds);
+		sprintf(out, "%02u seconds ", seconds);
 	else
 		strcpy(out, "N/A");
 }
