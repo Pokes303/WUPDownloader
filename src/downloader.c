@@ -65,8 +65,8 @@
 #include <openssl/x509.h>
 
 #define USERAGENT		"NUSspli/" NUSSPLI_VERSION // TODO: Spoof eShop here?
-#define DLBGT_STACK_SIZE	MIN_STACKSIZE
-#define DLT_STACK_SIZE		MIN_STACKSIZE
+#define DLBGT_STACK_SIZE	0x2000
+#define DLT_STACK_SIZE		DEFAULT_STACKSIZE
 #define SOCKLIB_BUFSIZE		(IO_BUFSIZE * 2) // double buffering
 
 #define MAX_CERTS	2

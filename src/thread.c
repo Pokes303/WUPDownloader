@@ -30,7 +30,7 @@
 // Our current implementation glues the threads stack to the OSThread, returning something 100% OSThread compatible
 OSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksize, OSThreadEntryPointFn mainfunc, int argc, char *argv, OSThreadAttributes attribs)
 {
-	if(name == NULL || stacksize < MIN_STACKSIZE)
+	if(name == NULL)
 		return NULL;
 
 	OSTime t;

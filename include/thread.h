@@ -29,7 +29,7 @@
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/thread.h>
 
-#define MIN_STACKSIZE		0xFFF8
+#define DEFAULT_STACKSIZE		0xFFF8
 
 #ifdef __cplusplus
 	extern "C" {

@@ -32,7 +32,7 @@
 #include <thread.h>
 #include <utils.h>
 
-#define RUMBLE_STACK_SIZE MIN_STACKSIZE
+#define RUMBLE_STACK_SIZE 0x400
 #define RUMBLE_QUEUE_SIZE 2
 
 static OSThread *rumbleThread;
