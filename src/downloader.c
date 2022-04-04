@@ -1183,30 +1183,26 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	data.dlnow = data.dltmp = data.dltotal = 0.0D;
 	data.eta = 0;
 	
-	char apps[data.contents][9];
-	bool h3[data.contents];
-	
 	//Get .app and .h3 files
 	for(int i = 0; i < tmd->num_contents; ++i)
 	{
-		hex(tmd->contents[i].cid, 8, apps[i]);
-		h3[i] = (tmd->contents[i].type & 0x0003) == 0x0003;
-		if(h3[i])
+		data.dltotal += (double)(tmd->contents[i].size);
+		if(tmd->contents[i].type & 0x0002)
 		{
 			++data.contents;
-			data.dltotal += 20;
+			data.dltotal += 20; //TODO
 		}
-		
-		data.dltotal += (double)(tmd->contents[i].size);
 	}
 	
 	disableApd();
 	char *dupp = dup + 8;
 	char *idpp = idp + 8;
+	char cid[9];
 	for(int i = 0; i < tmd->num_contents && AppRunning(); ++i)
 	{
-		strcpy(dup, apps[i]);
-		strcpy(idp, apps[i]);
+		hex(tmd->contents[i].cid, 8, cid);
+		strcpy(dup, cid);
+		strcpy(idp, cid);
 		strcpy(idpp, ".app");
 		
 		data.cs = tmd->contents[i].size;
@@ -1217,7 +1213,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		}
 		++data.dcontent;
 		
-		if(h3[i])
+		if(tmd->contents[i].type & 0x0002)
 		{
 			strcpy(dupp, ".h3");
 			strcpy(idpp, ".h3");
