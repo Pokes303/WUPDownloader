@@ -46,6 +46,7 @@ typedef struct WUT_PACKED
 	double dltotal;
 	double dltmp;
 	uint32_t eta;
+	size_t cs;
 } downloadData;
 
 #define DOWNLOAD_URL "http://ccs.cdn.wup.shop.nintendo.net/ccs/download/"

@@ -83,35 +83,6 @@ static OSThread *dlbgThread = NULL;
 
 static int cancelOverlayId = -1;
 
-static size_t headerCallback(void *buf, size_t size, size_t multi, void *rawData)
-{
-	OSTick t = OSGetTick();
-	addEntropy(&t, sizeof(OSTick));
-
-	size *= multi;
-	size_t data = *(uint32_t *)rawData;
-	if(data)
-	{
-		char *h = (char *)buf;
-		h[size - 1] = '\0';
-		toLowercase(h);
-		size_t contentLength = 0;
-		if(sscanf(h, "content-length: %u", &contentLength) == 1)
-		{
-			debugPrintf("rawData: %u", data);
-			debugPrintf("contentLength: %u", contentLength);
-
-			if(data == contentLength)
-			{
-				debugPrintf("equal!");
-				*(size_t *)rawData = 0;
-				return 0;
-			}
-		}
-	}
-	return size;
-}
-
 typedef struct
 {
 	bool running;
@@ -367,22 +338,18 @@ bool initDownloader()
 					ret = curl_easy_setopt(curl, CURLOPT_USERAGENT, USERAGENT);
 					if(ret == CURLE_OK)
 					{
-						ret = curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerCallback);
+						ret = curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressCallback);
 						if(ret == CURLE_OK)
 						{
-							ret = curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressCallback);
+							ret = curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
 							if(ret == CURLE_OK)
 							{
-								ret = curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+								ret = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 								if(ret == CURLE_OK)
 								{
-									ret = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+									ret = curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, certloader);
 									if(ret == CURLE_OK)
-									{
-										ret = curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, certloader);
-										if(ret == CURLE_OK)
-											return true;
-									}
+										return true;
 								}
 							}
 						}
@@ -487,10 +454,28 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	//Results: 0 = OK | 1 = Error | 2 = No ticket aviable | 3 = Exit
 	//Types: 0 = .app | 1 = .h3 | 2 = title.tmd | 3 = tilte.tik
 	bool toRam = (type & FILE_TYPE_TORAM) == FILE_TYPE_TORAM;
+
+	if(resume)
+	{
+		if(!(type & FILE_TYPE_APP))
+			resume = false;
+	}
 	
 	debugPrintf("Download URL: %s", url);
 	debugPrintf("Download PATH: %s", toRam ? "<RAM>" : file);
+
+	char *name;
+	if(toRam)
+		name = file;
+	else
+	{
+		int haystack;
+		for(haystack = strlen(file); file[haystack] != '/'; haystack--)
+			;
+		name = file + haystack + 1;
+	}
 	
+	char *toScreen = getToFrameBuffer();
 	bool fileExist;
 	void *fp;
 	size_t fileSize;
@@ -509,13 +494,20 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		{
 			fileSize = getFilesize(((NUSFILE *)fp)->fd);
 			fileExist = fileSize > 0;
+			if(fileExist && fileSize == data->cs)
+			{
+				sprintf(toScreen, "Download %s skipped!", name);
+				addToScreenLog(toScreen);
+				addToIOQueue(NULL, 0, 0, (NUSFILE *)fp);
+				data->dltmp += (double) fileSize;
+				return 0;
+			}
 		}
 		else
 			fileSize = 0;
 	}
 
 	curlError[0] = '\0';
-	size_t realFileSize = fileSize;
 	volatile curlProgressData cdata;
 
 	CURLcode ret = curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -538,11 +530,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				{
 					ret = curl_easy_setopt(curl, CURLOPT_WRITEDATA, (FILE *)fp);
 					if(ret == CURLE_OK)
-					{
-						ret = curl_easy_setopt(curl, CURLOPT_WRITEHEADER, &fileSize);
-						if(ret == CURLE_OK)
-							ret = curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &cdata);
-					}
+						ret = curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &cdata);
 				}
 			}
 		}
@@ -559,17 +547,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		return 1;
 	}
 
-	char *name;
-	if(toRam)
-		name = file;
-	else
-	{
-		int haystack;
-		for(haystack = strlen(file); file[haystack] != '/'; haystack--)
-			;
-		name = file + haystack + 1;
-	}
-
 	setDefaultDataValues(cdata);
 	if(fileExist)
 		fseek(((NUSFILE *)fp)->fd, 0, SEEK_END);
@@ -584,7 +561,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
 	double multiplier;
 	char *multiplierName;
-	char *toScreen = getToFrameBuffer();
 	double downloaded = 0.0D;
 	double dlnow;
 	double dltotal;
@@ -786,7 +762,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	else
 		addToIOQueue(NULL, 0, 0, (NUSFILE *)fp);
 	
-	if(ret != CURLE_OK && !(fileExist && ret == CURLE_WRITE_ERROR && fileSize == 0))
+	if(ret != CURLE_OK)
 	{
 		debugPrintf("curl_easy_perform returned an error: %s (%d/%d)\nFile: %s\n\n", curlError, ret, cdata.error, toRam ? "<RAM>" : file);
 		
@@ -880,95 +856,81 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	debugPrintf("curl_easy_perform executed successfully");
 	
 	double dld;
-	sprintf(toScreen, "Download %s ", name);
-	if(!toRam && fileExist && fileSize == 0) // File skipped by headerCallback
-	{
+	ret = curl_easy_getinfo(curl, CURLINFO_SIZE_DOWNLOAD, &dld);
+	if(ret != CURLE_OK)
 		dld = 0.0D;
-		strcat(toScreen, "skipped!");
-	}
-	else
-	{
-		ret = curl_easy_getinfo(curl, CURLINFO_SIZE_DOWNLOAD, &dld);
-		if(ret != CURLE_OK)
-			dld = 0.0D;
 		
-		long resp;
-		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &resp);
-		switch(resp)
+	long resp;
+	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &resp);
+	if(resp == 206) // Resumed download OK
+		resp = 200;
+
+	debugPrintf("The download returned: %u", resp);
+	if(resp != 200)
+	{
+		if(!toRam)
 		{
-			case 206: // Resumed download OK
-			case 416: // Invalid range request (we assume file already completely on disc)
-				resp = 200;
+			flushIOQueue();
+			remove(file);
 		}
 
-		debugPrintf("The download returned: %u", resp);
-		if(resp != 200)
+		if(resp == 404 && (type & FILE_TYPE_TMD) == FILE_TYPE_TMD) //Title.tmd not found
 		{
-			if(!toRam)
+			drawErrorFrame("The download of title.tmd failed with error: 404\n\nThe title cannot be found on the NUS, maybe the provided title ID doesn't exists or\nthe TMD was deleted", B_RETURN | Y_RETRY);
+
+			while(AppRunning())
 			{
-				flushIOQueue();
-				remove(file);
+				if(app == APP_STATE_BACKGROUND)
+					continue;
+				if(app == APP_STATE_RETURNING)
+					drawErrorFrame("The download of title.tmd failed with error: 404\n\nThe title cannot be found on the NUS, maybe the provided title ID doesn't exists or\nthe TMD was deleted", B_RETURN | Y_RETRY);
+
+				showFrame();
+
+				if(vpad.trigger & VPAD_BUTTON_B)
+					break;
+				if(vpad.trigger & VPAD_BUTTON_Y)
+					return downloadFile(url, file, data, type, resume);
 			}
-
-			if(resp == 404 && (type & FILE_TYPE_TMD) == FILE_TYPE_TMD) //Title.tmd not found
-			{
-				drawErrorFrame("The download of title.tmd failed with error: 404\n\nThe title cannot be found on the NUS, maybe the provided title ID doesn't exists or\nthe TMD was deleted", B_RETURN | Y_RETRY);
-
-				while(AppRunning())
-				{
-					if(app == APP_STATE_BACKGROUND)
-						continue;
-					if(app == APP_STATE_RETURNING)
-						drawErrorFrame("The download of title.tmd failed with error: 404\n\nThe title cannot be found on the NUS, maybe the provided title ID doesn't exists or\nthe TMD was deleted", B_RETURN | Y_RETRY);
-
-					showFrame();
-
-					if(vpad.trigger & VPAD_BUTTON_B)
-						break;
-					if(vpad.trigger & VPAD_BUTTON_Y)
-						return downloadFile(url, file, data, type, resume);
-				}
-				return 1;
-			}
-			else if (resp == 404 && (type & FILE_TYPE_TIK) == FILE_TYPE_TIK) { //Fake ticket needed
-				return 2;
-			}
-			else
-			{
-				sprintf(toScreen, "The download returned a result different to 200 (OK): %ld\nFile: %s\n\n", resp, file);
-				if(resp == 400)
-					strcat(toScreen, "Request failed. Try again\n\n");
-				drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
-
-				while(AppRunning())
-				{
-					if(app == APP_STATE_BACKGROUND)
-						continue;
-					if(app == APP_STATE_RETURNING)
-						drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
-
-					showFrame();
-
-					if(vpad.trigger & VPAD_BUTTON_B)
-						break;
-					if(vpad.trigger & VPAD_BUTTON_Y)
-						return downloadFile(url, file, data, type, resume);
-				}
-				return 1;
-			}
+			return 1;
 		}
+		else if (resp == 404 && (type & FILE_TYPE_TIK) == FILE_TYPE_TIK) { //Fake ticket needed
+			return 2;
+		}
+		else
+		{
+			sprintf(toScreen, "The download returned a result different to 200 (OK): %ld\nFile: %s\n\n", resp, file);
+			if(resp == 400)
+				strcat(toScreen, "Request failed. Try again\n\n");
+			drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
 
-		strcat(toScreen, "finished!");
+			while(AppRunning())
+			{
+				if(app == APP_STATE_BACKGROUND)
+					continue;
+				if(app == APP_STATE_RETURNING)
+					drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
+
+				showFrame();
+
+				if(vpad.trigger & VPAD_BUTTON_B)
+					break;
+				if(vpad.trigger & VPAD_BUTTON_Y)
+					return downloadFile(url, file, data, type, resume);
+			}
+			return 1;
+		}
 	}
-	
+
 	if(data != NULL)
 	{
 		if(fileExist)
-			dld += (double) realFileSize;
+			dld += (double) fileSize;
 		
 		data->dltmp += dld;
 	}
 	
+	sprintf(toScreen, "Download %s finished!", name);
 	addToScreenLog(toScreen);
 	return 0;
 }
@@ -1245,6 +1207,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		strcpy(idp, apps[i]);
 		strcpy(idpp, ".app");
 		
+		data.cs = tmd->contents[i].size;
 		if(downloadFile(downloadUrl, installDir, &data, FILE_TYPE_APP, true) == 1)
 		{
 			enableApd();
