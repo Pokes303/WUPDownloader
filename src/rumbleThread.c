@@ -37,8 +37,8 @@
 
 static OSThread *rumbleThread;
 static uint8_t pattern[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-OSMessageQueue rumble_queue;
-OSMessage rumble_msg[2];
+static OSMessageQueue rumble_queue;
+static OSMessage rumble_msg[2];
 
 static int rumbleThreadMain(int argc, const char **argv)
 {

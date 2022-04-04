@@ -51,17 +51,17 @@
 
 //WIP. This need a better implementation
 
-VPADStatus vpad;
-KPADStatus kpad[4];
-ControllerType lastUsedController;
+static VPADStatus vpad;
+static KPADStatus kpad[4];
+static ControllerType lastUsedController;
 
-int io = -1;
+static int io = -1;
 
-Swkbd_CreateArg createArg;
-FSClient swkbd_fsc;
+static Swkbd_CreateArg createArg;
+static FSClient swkbd_fsc;
 
-OSMessageQueue swkbd_queue;
-OSMessage swkbd_msg[SWKBD_QUEUE_SIZE];
+static OSMessageQueue swkbd_queue;
+static OSMessage swkbd_msg[SWKBD_QUEUE_SIZE];
 
 static OSTime lastButtonPress = 0;
 
