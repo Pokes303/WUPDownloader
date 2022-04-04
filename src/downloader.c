@@ -494,13 +494,21 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		{
 			fileSize = getFilesize(((NUSFILE *)fp)->fd);
 			fileExist = fileSize > 0;
-			if(fileExist && fileSize == data->cs)
+			if(fileExist)
 			{
-				sprintf(toScreen, "Download %s skipped!", name);
-				addToScreenLog(toScreen);
-				addToIOQueue(NULL, 0, 0, (NUSFILE *)fp);
-				data->dltmp += (double) fileSize;
-				return 0;
+				if(fileSize == data->cs)
+				{
+					sprintf(toScreen, "Download %s skipped!", name);
+					addToScreenLog(toScreen);
+					addToIOQueue(NULL, 0, 0, (NUSFILE *)fp);
+					data->dltmp += (double) fileSize;
+					return 0;
+				}
+				if(fileSize > data->cs)
+				{
+					addToIOQueue(NULL, 0, 0, (NUSFILE *)fp);
+					return downloadFile(url, file, data, type, false);
+				}
 			}
 		}
 		else
