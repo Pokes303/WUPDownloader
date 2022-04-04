@@ -502,6 +502,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				if(fileSize > data->cs)
 				{
 					addToIOQueue(NULL, 0, 0, (NUSFILE *)fp);
+					flushIOQueue();
 					return downloadFile(url, file, data, type, false);
 				}
 			}
