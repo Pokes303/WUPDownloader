@@ -470,46 +470,45 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	}
 	
 	char *toScreen = getToFrameBuffer();
-	bool fileExist;
 	void *fp;
 	size_t fileSize;
 	if(toRam)
 	{
-		fileExist = false;
 		fileSize = 0;
 		fp = (void *)open_memstream((char **)&ramBuf, (size_t *)&ramBufSize);
 	}
 	else
 	{
-		fileExist = resume && fileExists(file);
-		fp = (void *)openFile(file, fileExist ? "rb+" : "wb");
-
-		if(fileExist)
+		if(resume && fileExists(file))
 		{
-			fseek(((NUSFILE *)fp)->fd, 0, SEEK_END);
-			fileSize = ftello(((NUSFILE *)fp)->fd);
-			fileExist = fileSize > 0;
-			if(fileExist)
+			NUSFILE *nf = openFile(file, "rb+");
+			fseek(nf->fd, 0, SEEK_END);
+			fileSize = ftello(nf->fd);
+			if(fileSize)
 			{
 				// TODO: Check .h3 files size
 				if((type & FILE_TYPE_H3) || fileSize == data->cs)
 				{
 					sprintf(toScreen, "Download %s skipped!", name);
 					addToScreenLog(toScreen);
-					addToIOQueue(NULL, 0, 0, (NUSFILE *)fp);
+					addToIOQueue(NULL, 0, 0, nf);
 					data->dltmp += (double) fileSize;
 					return 0;
 				}
 				if(fileSize > data->cs)
 				{
-					addToIOQueue(NULL, 0, 0, (NUSFILE *)fp);
+					addToIOQueue(NULL, 0, 0, nf);
 					flushIOQueue();
 					return downloadFile(url, file, data, type, false);
 				}
 			}
+			fp = (void *)nf;
 		}
 		else
+		{
+			fp = (void *)openFile(file, "wb");
 			fileSize = 0;
+		}
 	}
 
 	curlError[0] = '\0';
@@ -927,7 +926,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
 	if(data != NULL)
 	{
-		if(fileExist)
+		if(fileSize)
 			dld += (double) fileSize;
 		
 		data->dltmp += dld;
