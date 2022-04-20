@@ -218,7 +218,7 @@ size_t getFilesize(FILE *fp)
 	
 	size_t fileSize = ftello(fp);
 	if(fileSize == -1)
-		debugPrintf("ftello() failed: %s", strerror(errno));
+		debugPrintf("ftello() failed: %s", errnoToString(errno));
 	
 	fseeko(fp, i, SEEK_SET);
     t = OSGetTime() - t;
@@ -268,6 +268,6 @@ const char *translateNusfsErr(NUSFS_ERR err)
 		case NUSFS_ERR_DONTEXIST:
 			return "Not found!";
         default:
-            return err > 1000 ? strerror(err - 1000) : NULL;
+            return err > 1000 ? errnoToString(err - 1000) : NULL;
 	}
 }

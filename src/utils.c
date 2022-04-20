@@ -328,6 +328,17 @@ int str16cmp(const char16_t *s1, const char16_t *s2)
 	}
 }
 
+char *errnoToString(int err)
+{
+	char *ret = strerror(err);
+	if(ret)
+		return ret;
+
+	static char errMsg[16];
+	sprintf(errMsg, "Errno: %i", err);
+	return errMsg;
+}
+
 #ifdef NUSSPLI_DEBUG
 
 #include <stdarg.h>

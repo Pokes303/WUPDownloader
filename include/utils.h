@@ -96,6 +96,7 @@ char16_t *str16str(char16_t *haystack, char16_t *needle);
 char16_t tolower16(char16_t in);
 char16_t *str16cpy(char16_t *target, const char16_t *source);
 int str16cmp(const char16_t *s1, const char16_t *s2);
+char *errnoToString(int err);
 #ifdef NUSSPLI_DEBUG
 void debugInit();
 void debugPrintfUnlocked(const char *str, ...);
