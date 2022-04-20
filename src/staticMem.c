@@ -24,8 +24,8 @@
 
 #include <coreinit/memdefaultheap.h>
 
-#include <renderer.h>
 #include <staticMem.h>
+#include <renderer.h>
 
 static char staticMemToFrameBuffer[TO_FRAME_BUFFER_SIZE];
 static char staticMemLineBuffer[TO_FRAME_BUFFER_SIZE];
