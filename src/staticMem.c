@@ -27,34 +27,31 @@
 #include <renderer.h>
 #include <staticMem.h>
 
-static char *staticPointer;
+static char staticMemToFrameBuffer[TO_FRAME_BUFFER_SIZE];
+static char staticMemLineBuffer[TO_FRAME_BUFFER_SIZE];
+static char staticMemPathBuffer[3][PATH_MAX];
 
 bool initStaticMem()
 {
-	staticPointer = MEMAllocFromDefaultHeap((TO_FRAME_BUFFER_SIZE * 2) + (PATH_MAX * 3));
-	return staticPointer != NULL;
+	return true;
 }
 
 void shutdownStaticMem()
 {
-	MEMFreeToDefaultHeap(staticPointer);
+	// STUB
 }
 
 char *getStaticScreenBuffer()
 {
-	return staticPointer;
+	return staticMemToFrameBuffer;
 }
 
 char *getStaticLineBuffer()
 {
-	return staticPointer + TO_FRAME_BUFFER_SIZE;
+	return staticMemLineBuffer;
 }
 
 char *getStaticPathBuffer(uint32_t i)
 {
-	char *ptr = staticPointer + (TO_FRAME_BUFFER_SIZE * 2);
-	for(uint32_t j = 0; j < i; ++j)
-		ptr += PATH_MAX;
-
-	return ptr;
+	return staticMemPathBuffer[i];
 }
