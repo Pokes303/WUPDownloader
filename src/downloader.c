@@ -69,8 +69,6 @@
 #define DLT_STACK_SIZE		DEFAULT_STACKSIZE
 #define SOCKLIB_BUFSIZE		(IO_BUFSIZE * 2) // double buffering
 
-#define MAX_CERTS	2
-
 static STACK_OF(X509_INFO) *inf;
 
 static volatile char *ramBuf = NULL;
