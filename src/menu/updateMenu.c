@@ -28,7 +28,7 @@
 
 #include <string.h>
 
-void drawUpdateMenuFrame(char *newVersion)
+static void drawUpdateMenuFrame(char *newVersion)
 {
 	startNewFrame();
 	boxToFrame(0, 5);

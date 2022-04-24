@@ -44,10 +44,10 @@
 
 #define MAX_TITLEBROWSER_LINES (MAX_LINES - 4)
 
-TitleEntry *filteredTitleEntries;
-size_t filteredTitleEntrySize;
+static TitleEntry *filteredTitleEntries;
+static size_t filteredTitleEntrySize;
 
-void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cursor, char16_t *search)
+static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cursor, char16_t *search)
 {
 	startNewFrame();
 	

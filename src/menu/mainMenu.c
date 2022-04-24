@@ -40,9 +40,9 @@
 
 #include <string.h>
 
-bool cfwWarningShown = false;
+static bool cfwWarningShown = false;
 
-void drawMainMenuFrame()
+static void drawMainMenuFrame()
 {
 	startNewFrame();
 	boxToFrame(0, 5);

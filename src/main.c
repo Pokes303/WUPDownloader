@@ -70,7 +70,7 @@
 #include <sysapp/launch.h>
 #include <whb/crash.h>
 
-void innerMain(bool validCfw)
+static void innerMain(bool validCfw)
 {
 	OSThread *mainThread = OSGetCurrentThread();
 	OSSetThreadName(mainThread, "NUSspli");

@@ -36,7 +36,7 @@
 
 #define MAX_FILEBROWSER_LINES (MAX_LINES - 5)
 
-void drawFBMenuFrame(char **folders, size_t foldersSize, const size_t pos, const size_t cursor, const NUSDEV activeDevice, bool usbMounted)
+static void drawFBMenuFrame(char **folders, size_t foldersSize, const size_t pos, const size_t cursor, const NUSDEV activeDevice, bool usbMounted)
 {
 	startNewFrame();
 	textToFrame(0, 6, "Select a folder:");

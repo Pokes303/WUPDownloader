@@ -39,7 +39,7 @@
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
 
-bool vibrateWhenFinished = true;
+static bool vibrateWhenFinished = true;
 
 static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
 {
@@ -51,7 +51,7 @@ static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
 	return MCP_GetTitleInfo(mcpHandle, entry->tid, out) == 0;
 }
 
-void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t size, bool installed, const char *folderName, bool usbMounted, NUSDEV dlDev, bool keepFiles)
+static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t size, bool installed, const char *folderName, bool usbMounted, NUSDEV dlDev, bool keepFiles)
 {
 	startNewFrame();
 	textToFrame(0, 0, "Name:");
@@ -154,7 +154,7 @@ void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t siz
 	drawFrame();
 }
 
-void drawPDDemoFrame(const TitleEntry *entry, bool inst)
+static void drawPDDemoFrame(const TitleEntry *entry, bool inst)
 {
 	startNewFrame();
 	char *toFrame = getToFrameBuffer();

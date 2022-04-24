@@ -31,7 +31,7 @@
 
 #include <string.h>
 
-void drawConfigMenu()
+static void drawConfigMenu()
 {
 	startNewFrame();
 	char *toScreen = getToFrameBuffer();

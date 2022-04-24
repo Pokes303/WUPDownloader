@@ -33,7 +33,7 @@
 #include <stdio.h>
 #include <string.h>
 
-void drawInstallerMenuFrame(const char *name, NUSDEV dev, bool keepFiles)
+static void drawInstallerMenuFrame(const char *name, NUSDEV dev, bool keepFiles)
 {
 	startNewFrame();
 	
@@ -59,7 +59,7 @@ void drawInstallerMenuFrame(const char *name, NUSDEV dev, bool keepFiles)
 	drawFrame();
 }
 
-bool brickCheck(const char* dir)
+static bool brickCheck(const char* dir)
 {
 	char tmdPath[strlen(dir) + 11];
 	strcpy(tmdPath, dir);
