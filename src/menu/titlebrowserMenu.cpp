@@ -145,7 +145,7 @@ void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cu
 				strcpy(toFrame, "[UPD] ");
 			else
 			{
-				textToFrame(l, 10, filteredTitleEntries[j].name);
+				textToFrameCut(l, 10, filteredTitleEntries[j].name, (1280 - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
 				continue;
 			}
 			
