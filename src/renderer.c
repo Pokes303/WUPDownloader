@@ -67,6 +67,7 @@ static SDL_Texture *arrowTex;
 static SDL_Texture *checkmarkTex;
 static SDL_Texture *tabTex;
 static SDL_Texture *flagTex[6];
+static SDL_Texture *deviceTex[3];
 static SDL_Texture *barTex;
 static SDL_Texture *bgTex;
 static SDL_Texture *byeTex;
@@ -312,6 +313,25 @@ void flagToFrame(int line, int column, TITLE_REGION flag)
 	SDL_RenderCopy(renderer, fd, NULL, &fl);
 }
 
+void deviceToFrame(int line, int column, DEVICE_TYPE dev)
+{
+	if(font == NULL)
+		return;
+
+	++line;
+	line *= FONT_SIZE;
+	column *= spaceWidth;
+	column += spaceWidth >> 1;
+
+	SDL_Rect fl =
+	{
+		.x = column + FONT_SIZE,
+		.y = line,
+	};
+	SDL_QueryTexture(deviceTex[dev], NULL, NULL, &(fl.w), &(fl.h));
+	SDL_RenderCopy(renderer, deviceTex[dev], NULL, &fl);
+}
+
 void tabToFrame(int line, int column, char *label, bool active)
 {
 	if(font == NULL)
@@ -517,6 +537,23 @@ void resumeRenderer()
 						break;
 				}
 				loadTexture(tex, flagTex + i);
+			}
+
+			for(int i = 0; i < 3; i++)
+			{
+				switch(i)
+				{
+					case 0:
+						tex = ROMFS_PATH "textures/dev/unk.png";
+						break;
+					case 1:
+						tex = ROMFS_PATH "textures/dev/usb.png";
+						break;
+					case 2:
+						tex = ROMFS_PATH "textures/dev/nand.png";
+						break;
+				}
+				loadTexture(tex, deviceTex + i);
 			}
 
 			t = OSGetSystemTime() - t;

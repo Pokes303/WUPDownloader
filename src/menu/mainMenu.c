@@ -31,6 +31,7 @@
 #include <menu/config.h>
 #include <menu/filebrowser.h>
 #include <menu/installer.h>
+#include <menu/insttitlebrowser.h>
 #include <menu/titlebrowser.h>
 #include <menu/main.h>
 #include <menu/utils.h>
@@ -50,9 +51,10 @@ void drawMainMenuFrame()
 	
 	textToFrame(4, ALIGNED_CENTER, NUSSPLI_COPYRIGHT);
 	
-	textToFrame(11, 0, "Press " BUTTON_A " to download content");
-	textToFrame(12, 0, "Press " BUTTON_X " to install content");
-	textToFrame(13, 0, "Press " BUTTON_Y " to generate a fake <title.tik> file");
+	textToFrame(10, 0, "Press " BUTTON_A " to download content");
+	textToFrame(11, 0, "Press " BUTTON_X " to install content");
+	textToFrame(12, 0, "Press " BUTTON_Y " to generate a fake <title.tik> file");
+	textToFrame(13, 0, "Press " BUTTON_RIGHT " to uninstall a title");
 	textToFrame(14, 0, "Press " BUTTON_LEFT " for options");
 	textToFrame(15, 0, "Press " BUTTON_HOME " or " BUTTON_B " to exit");
 	
@@ -135,6 +137,11 @@ void mainMenu()
 			else if(vpad.trigger & VPAD_BUTTON_Y)
 			{
 				generateFakeTicket();
+				drawMainMenuFrame();
+			}
+			else if(vpad.trigger & VPAD_BUTTON_RIGHT)
+			{
+				ititleBrowserMenu();
 				drawMainMenuFrame();
 			}
 			else if(vpad.trigger & VPAD_BUTTON_B)
