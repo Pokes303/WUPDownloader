@@ -66,7 +66,7 @@
 
 #define USERAGENT		"NUSspli/" NUSSPLI_VERSION // TODO: Spoof eShop here?
 #define DLBGT_STACK_SIZE	0x2000
-#define DLT_STACK_SIZE		DEFAULT_STACKSIZE
+#define DLT_STACK_SIZE		0x8000
 #define SOCKLIB_BUFSIZE		(IO_BUFSIZE * 2) // double buffering
 
 static STACK_OF(X509_INFO) *inf;
