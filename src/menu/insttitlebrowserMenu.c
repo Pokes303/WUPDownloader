@@ -170,7 +170,10 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 			}
 
 			if(name == NULL)
-				name = "N/A";
+			{
+				hex(ititleEntries[j].titleId, 16, tid);
+				name = tid;
+			}
 		}
 		else
 		{
