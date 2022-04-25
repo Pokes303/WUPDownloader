@@ -284,7 +284,7 @@ void ititleBrowserMenu()
 		}
 		else if(vpad.trigger & VPAD_BUTTON_DOWN)
 		{
-			if(cursor + pos >= ititleEntrySize - 1 || cursor >= MAX_ITITLEBROWSER_LINES - 1)
+			if(cursor + pos > ititleEntrySize || cursor > MAX_ITITLEBROWSER_LINES)
 			{
 				if(!mov || ++pos + cursor >= ititleEntrySize)
 					cursor = pos = 0;

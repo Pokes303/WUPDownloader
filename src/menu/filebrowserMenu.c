@@ -162,7 +162,7 @@ refreshDirList:
 		}
 		else if(vpad.trigger & VPAD_BUTTON_DOWN)
 		{
-			if(cursor + pos >= foldersSize - 1 || cursor >= MAX_FILEBROWSER_LINES - 1)
+			if(cursor + pos > foldersSize || cursor > MAX_FILEBROWSER_LINES)
 			{
 				if(!mov || ++pos + cursor >= foldersSize)
 					cursor = pos = 0;

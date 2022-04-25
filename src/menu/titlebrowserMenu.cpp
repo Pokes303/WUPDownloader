@@ -224,7 +224,7 @@ void titleBrowserMenu()
 		}
 		else if(vpad.trigger & VPAD_BUTTON_DOWN)
 		{
-			if(cursor + pos >= filteredTitleEntrySize - 1 || cursor >= MAX_TITLEBROWSER_LINES - 1)
+			if(cursor + pos > filteredTitleEntrySize || cursor > MAX_TITLEBROWSER_LINES)
 			{
 				if(!mov || ++pos + cursor >= filteredTitleEntrySize)
 					cursor = pos = 0;
