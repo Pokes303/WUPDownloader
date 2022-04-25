@@ -64,6 +64,7 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 	mxml_node_t *xt, *xm, *xn;
 	MCPRegion xr;
 	TITLE_REGION region;
+	bool isDlc, isUpd;
 	for(size_t i = 0; i < max; ++i)
 	{
 		l = i + 2;
@@ -71,7 +72,6 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 			arrowToFrame(l, 1);
 		
 		j = i + pos;
-
 		switch(ititleEntries[j].indexedDevice[0])
 		{
 			case 'u':
@@ -85,15 +85,27 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 		}
 
 		deviceToFrame(l, 4, dt);
-		name = NULL;
 		buf = NULL;
 		xt = NULL;
-		region = TITLE_REGION_UNKNOWN;
 
 		e = getTitleEntryByTid(ititleEntries[j].titleId);
 		if(e == NULL)
 		{
-			toFrame[0] = '\0';
+			region = TITLE_REGION_UNKNOWN;
+
+			switch(getTidHighFromTid(ititleEntries[j].titleId))
+			{
+				case TID_HIGH_UPDATE:
+					isDlc = false;
+					isUpd = true;
+					break;
+				case TID_HIGH_DLC:
+					isDlc = true;
+					isUpd = false;
+					break;
+				default:
+					isDlc = isUpd = false;
+			}
 
 			switch(dt)
 			{
@@ -111,6 +123,7 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 					goto nameSet;
 			}
 
+			name = NULL;
 			strcpy(xmlPath + 5, ititleEntries[j].path + 19);
 			strcat(xmlPath, "/meta/meta.xml");
 			f = fopen(xmlPath, "rb");
@@ -162,18 +175,21 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 		else
 		{
 			name = e->name;
-			if(e->isDLC)
-				strcpy(toFrame, "[DLC] ");
-			else if(e->isUpdate)
-				strcpy(toFrame, "[UPD] ");
-			else
-				toFrame[0] = '\0';
-
 			region = e->region;
+			isDlc = e->isDLC;
+			isUpd = e->isUpdate;
 		}
 
 nameSet:
+		if(isDlc)
+			strcpy(toFrame, "[DLC] ");
+		else if(isUpd)
+			strcpy(toFrame, "[UPD] ");
+		else
+			toFrame[0] = '\0';
+
 		strcat(toFrame, name);
+
 		if(xt)
 			mxmlDelete(xt);
 		if(buf)
@@ -181,6 +197,7 @@ nameSet:
 
 		textToFrameCut(l, 10, toFrame, (1280 - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
 		flagToFrame(l, 7, region);
+
 	}
 	drawFrame();
 }
