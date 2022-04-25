@@ -43,7 +43,6 @@
 #include <titles.h>
 #include <updater.h>
 #include <utils.h>
-#include <cJSON.h>
 #include <menu/download.h>
 #include <menu/main.h>
 #include <menu/utils.h>
@@ -154,17 +153,6 @@ static void innerMain(bool validCfw)
 								{
 									addToScreenLog("Downloader initialized!");
 
-									startNewFrame();
-									textToFrame(0, 0, "Loading cJSON...");
-									writeScreenLog(1);
-									drawFrame();
-
-									cJSON_Hooks ch;
-									ch.malloc_fn = MEMAllocFromDefaultHeap;
-									ch.free_fn = MEMFreeToDefaultHeap;
-									cJSON_InitHooks(&ch);
-
-									addToScreenLog("cJSON initialized!");
 									startNewFrame();
 									textToFrame(0, 0, "Loading SWKBD...");
 									writeScreenLog(1);

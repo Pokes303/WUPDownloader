@@ -24,7 +24,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <cJSON.h>
 #include <config.h>
 #include <crypto.h>
 #include <file.h>
@@ -37,6 +36,8 @@
 
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/time.h>
+
+#include <jansson.h>
 
 #define CONFIG_VERSION 1
 
@@ -86,107 +87,86 @@ bool initConfig()
 	}
 	
 	OSTime t = OSGetTime();
-	FILE *fp = fopen(CONFIG_PATH, "rb");
-	if(fp == NULL)
-		return false;
-	
-	size_t fileSize = getFilesize(fp);
-	bool ret = fileSize > 0;
-	if(!ret)
+	json_t *json = json_load_file(CONFIG_PATH, 0, NULL);
+	if(!json)
 		return false;
 
-	ret = false;
-	char *fileContent = MEMAllocFromDefaultHeap(fileSize);
-	if(fileContent != NULL)
+	json_t *configEntry = json_object_get(json, "Check for updates");
+	if(configEntry != NULL && json_is_boolean(configEntry))
+		checkForUpdates = json_is_true(configEntry);
+	else
+		changed = true;
+
+	configEntry = json_object_get(json, "Auto resume failed downloads");
+	if(configEntry != NULL && json_is_boolean(configEntry))
+		autoResume = json_is_true(configEntry);
+	else
+		changed = true;
+
+	configEntry = json_object_get(json, "Language");
+	if(configEntry != NULL && json_is_string(configEntry))
 	{
-		if(fread(fileContent, fileSize, 1, fp) == 1)
-		{
-			cJSON *json = cJSON_ParseWithLength(fileContent, fileSize);
-			if(json)
-			{
-				cJSON *configEntry = cJSON_GetObjectItemCaseSensitive(json, "Check for updates");
-				if(configEntry != NULL && cJSON_IsBool(configEntry))
-					checkForUpdates = cJSON_IsTrue(configEntry);
-				else
-					changed = true;
+		if(strcmp(json_string_value(configEntry), LANG_JAP) == 0)
+			lang = Swkbd_LanguageType__Japanese;
+		else if(strcmp(json_string_value(configEntry), LANG_ENG) == 0)
+			lang = Swkbd_LanguageType__English;
+		else if(strcmp(json_string_value(configEntry), LANG_GER) == 0)
+			lang = Swkbd_LanguageType__French;
+		else if(strcmp(json_string_value(configEntry), LANG_ITA) == 0)
+			lang = Swkbd_LanguageType__Italian;
+		else if(strcmp(json_string_value(configEntry), LANG_SPA) == 0)
+			lang = Swkbd_LanguageType__Spanish;
+		else if(strcmp(json_string_value(configEntry), LANG_CHI) == 0)
+			lang = Swkbd_LanguageType__Chinese1;
+		else if(strcmp(json_string_value(configEntry), LANG_KOR) == 0)
+			lang = Swkbd_LanguageType__Korean;
+		else if(strcmp(json_string_value(configEntry), LANG_DUT) == 0)
+			lang = Swkbd_LanguageType__Dutch;
+		else if(strcmp(json_string_value(configEntry), LANG_POR) == 0)
+			lang = Swkbd_LanguageType__Potuguese;
+		else if(strcmp(json_string_value(configEntry), LANG_RUS) == 0)
+			lang = Swkbd_LanguageType__Russian;
+		else if(strcmp(json_string_value(configEntry), LANG_TCH) == 0)
+			lang = Swkbd_LanguageType__Chinese2;
+		else
+			lang = Swkbd_LanguageType__Invalid;
+	}
+	else
+		changed = true;
 
-				configEntry = cJSON_GetObjectItemCaseSensitive(json, "Auto resume failed downloads");
-				if(configEntry != NULL && cJSON_IsBool(configEntry))
-					autoResume = cJSON_IsTrue(configEntry);
-				else
-					changed = true;
+	configEntry = json_object_get(json, "Region");
+	if(configEntry != NULL && json_is_string(configEntry))
+	{
+		if(strcmp(json_string_value(configEntry), SET_ALL) == 0)
+			regionSetting = regALL;
+		else if(strcmp(json_string_value(configEntry), SET_EUR) == 0)
+			regionSetting = regEUR;
+		else if(strcmp(json_string_value(configEntry), SET_USA) == 0)
+			regionSetting = regUSA;
+		else if(strcmp(json_string_value(configEntry), SET_JPN) == 0)
+			regionSetting = regJPN;
+		else
+			regionSetting = regALL;
+	}
+	else
+		changed = true;
 
-				configEntry = cJSON_GetObjectItemCaseSensitive(json, "Language");
-				if(configEntry != NULL && cJSON_IsString(configEntry))
-				{
-					if(strcmp(configEntry->valuestring, LANG_JAP) == 0)
-						lang = Swkbd_LanguageType__Japanese;
-					else if(strcmp(configEntry->valuestring, LANG_ENG) == 0)
-						lang = Swkbd_LanguageType__English;
-					else if(strcmp(configEntry->valuestring, LANG_GER) == 0)
-						lang = Swkbd_LanguageType__French;
-					else if(strcmp(configEntry->valuestring, LANG_ITA) == 0)
-						lang = Swkbd_LanguageType__Italian;
-					else if(strcmp(configEntry->valuestring, LANG_SPA) == 0)
-						lang = Swkbd_LanguageType__Spanish;
-					else if(strcmp(configEntry->valuestring, LANG_CHI) == 0)
-						lang = Swkbd_LanguageType__Chinese1;
-					else if(strcmp(configEntry->valuestring, LANG_KOR) == 0)
-						lang = Swkbd_LanguageType__Korean;
-					else if(strcmp(configEntry->valuestring, LANG_DUT) == 0)
-						lang = Swkbd_LanguageType__Dutch;
-					else if(strcmp(configEntry->valuestring, LANG_POR) == 0)
-						lang = Swkbd_LanguageType__Potuguese;
-					else if(strcmp(configEntry->valuestring, LANG_RUS) == 0)
-						lang = Swkbd_LanguageType__Russian;
-					else if(strcmp(configEntry->valuestring, LANG_TCH) == 0)
-						lang = Swkbd_LanguageType__Chinese2;
-					else
-						lang = Swkbd_LanguageType__Invalid;
-				}
-				else
-					changed = true;
+	configEntry = json_object_get(json, "Download to USB");
+	if(configEntry != NULL && json_is_boolean(configEntry))
+		dlToUSB = json_is_true(configEntry);
+	else
+		changed = true;
 
-				configEntry = cJSON_GetObjectItemCaseSensitive(json, "Region");
-				if(configEntry != NULL && cJSON_IsString(configEntry))
-				{
-					if(strcmp(configEntry->valuestring, SET_ALL) == 0)
-						regionSetting = regALL;
-					else if(strcmp(configEntry->valuestring, SET_EUR) == 0)
-						regionSetting = regEUR;
-					else if(strcmp(configEntry->valuestring, SET_USA) == 0)
-						regionSetting = regUSA;
-					else if(strcmp(configEntry->valuestring, SET_JPN) == 0)
-						regionSetting = regJPN;
-					else
-						regionSetting = regALL;
-				}
-				else
-					changed = true;
-
-				configEntry = cJSON_GetObjectItemCaseSensitive(json, "Download to USB");
-				if(configEntry != NULL && cJSON_IsBool(configEntry))
-					dlToUSB = cJSON_IsTrue(configEntry);
-				else
-					changed = true;
-
-				configEntry = cJSON_GetObjectItemCaseSensitive(json, "Seed");
-				if(configEntry != NULL && cJSON_IsNumber(configEntry))
-					addEntropy(&(configEntry->valueint), 4);
-
-				cJSON_Delete(json);
-				ret = true;
-			}
-		}
-
-		MEMFreeToDefaultHeap(fileContent);
+	configEntry = json_object_get(json, "Seed");
+	if(configEntry != NULL && json_is_integer(configEntry))
+	{
+		int ent = (int)json_integer_value(configEntry);
+		addEntropy(&ent, 4);
 	}
 
-	fclose(fp);
+	json_decref(json);
 	t = OSGetTime() - t;
 	addEntropy(&t, sizeof(OSTime));
-	if(!ret)
-		return false;
 	
 	if(changed)
 		saveConfig(false);
@@ -278,74 +258,64 @@ bool saveConfig(bool force)
 	if(!changed && !force)
 		return true;
 	
-	cJSON *config = cJSON_CreateObject();
+	json_t *config = json_object();
 	if(config == NULL )
 		return false;
 	
-	cJSON *entry = cJSON_CreateNumber(CONFIG_VERSION);
-	if(entry == NULL)
+	json_t *value = json_integer(CONFIG_VERSION);
+	if(value == NULL || json_object_set(config, "File Version", value))
 	{
-		cJSON_Delete(config);
+		json_decref(config);
 		return false;;
 	}
-	cJSON_AddItemToObject(config, "File Version", entry);
 
-	entry = cJSON_CreateBool(checkForUpdates);
-	if(entry == NULL)
+	value = checkForUpdates ? json_true() : json_false();
+	if(value == NULL || json_object_set(config, "Check for updates", value))
 	{
-		cJSON_Delete(config);
-		return false;
+		json_decref(config);
+		return false;;
 	}
-	cJSON_AddItemToObject(config, "Check for updates", entry);
 	
-	entry = cJSON_CreateBool(autoResume);
-	if(entry == NULL)
+	value = autoResume ? json_true() : json_false();
+	if(value == NULL || json_object_set(config, "Auto resume failed downloads", value))
 	{
-		cJSON_Delete(config);
-		return false;
+		json_decref(config);
+		return false;;
 	}
-	cJSON_AddItemToObject(config, "Auto resume failed downloads", entry);
 	
-	entry = cJSON_CreateString(getLanguageString(lang));
-	if(entry == NULL)
+	value = json_string(getLanguageString(lang));
+	if(value == NULL || json_object_set(config, "Language", value))
 	{
-		cJSON_Delete(config);
-		return false;
+		json_decref(config);
+		return false;;
 	}
-	cJSON_AddItemToObject(config, "Language", entry);
 
-	entry = cJSON_CreateString(getFormattedRegion(getRegion()));
-	if(entry == NULL)
+	value = json_string(getFormattedRegion(getRegion()));
+	if(value == NULL || json_object_set(config, "Region", value))
 	{
-		cJSON_Delete(config);
-		return false;
+		json_decref(config);
+		return false;;
 	}
-	cJSON_AddItemToObject(config, "Region", entry);
 	
-	entry = cJSON_CreateBool(dlToUSB);
-	if(entry == NULL)
+	value = dlToUSB ? json_true() : json_false();
+	if(value == NULL || json_object_set(config, "Download to USB", value))
 	{
-		cJSON_Delete(config);
-		return false;
+		json_decref(config);
+		return false;;
 	}
-	cJSON_AddItemToObject(config, "Download to USB", entry);
 
 	uint32_t entropy;
 	osslBytes((unsigned char *)&entropy, 4);
-	entry = cJSON_CreateNumber(entropy);
-		cJSON_AddItemToObject(config, "Seed", entry);
-	
-	char *configString = cJSON_Print(config);
-	cJSON_Delete(config);
-	if(configString == NULL)
-		return false;
+	value = json_integer(entropy);
+	if(value != NULL)
+		json_object_set(config, "Seed", value);
 	
 	OSTime t = OSGetTime();
-	FILE *fp = fopen(CONFIG_PATH, "w");
+	FILE *fp = fopen(CONFIG_PATH, "wb");
 	bool ret;
 	if(fp != NULL)
 	{
-		ret = fwrite(configString, strlen(configString), 1, fp) == 1;
+		ret = json_dumpf(config, fp, JSON_INDENT(4));
 		debugPrintf("Config written!");
 		fclose(fp);
 		t = OSGetTime() - t;
@@ -356,7 +326,7 @@ bool saveConfig(bool force)
 	else
 		ret = false;
 
-	MEMFreeToDefaultHeap(configString);
+	json_decref(config);
 	return ret;
 }
 

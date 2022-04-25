@@ -28,8 +28,6 @@
 #include <utils.h>
 #include <menu/utils.h>
 
-#include <cJSON.h>
-
 #include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -38,6 +36,8 @@
 
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
+
+#include <jansson.h>
 
 #define TITLE_DB NAPI_URL "t"
 
@@ -203,66 +203,48 @@ bool initTitles()
 	drawFrame();
 	showFrame();
 
-	FILE *f = fopen(ROMFS_PATH "titleDB.json", "rb");
-	if(f == NULL)
-		return false;
-
-	size_t fileSize = getFilesize(f);
-	void *raw = MEMAllocFromDefaultHeap(fileSize);
-	if(raw == NULL)
-	{
-		fclose(f);
-		return false;
-	}
-	if(fread(raw, fileSize, 1, f) != 1)
-	{
-		MEMFreeToDefaultHeap(raw);
-		fclose(f);
-		return false;
-	}
-
-	fclose(f);
-	cJSON *json = cJSON_ParseWithLength((char *)raw, fileSize);
+	json_t *json = json_load_file(ROMFS_PATH "titleDB.json", 0, NULL);
 	if(json == NULL)
 	{
 		debugPrintf("json == NULL");
-		MEMFreeToDefaultHeap(raw);
 		return false;
 	}
 	
-	cJSON *curr[3];
+	json_t *curr[3];
 	TRANSFORMED_TID_HIGH i;
 	size_t ma = 0;
 	size_t size;
 	size_t entries = 0;
 	reg currentRegion = getRegion();
+	const char *key[2];
 
-	cJSON_ArrayForEach(curr[0], json)
+	json_object_foreach(json, key[0], curr[0])
 	{
-		if(curr[0]->string[0] == 's')
+		if(key[0][0] == 's')
 			continue; // TODO
-		
-		i = atoi(curr[0]->string);
+
+		i = atoi(key[0]);
 		if(i > TRANSFORMED_TID_HIGH_UPDATE)
 			continue;
-		
-		cJSON_ArrayForEach(curr[1], curr[0])
+
+		json_object_foreach(curr[0], key[1], curr[1])
 		{
-			size = strlen(curr[1]->string);
+			size = strlen(key[1]);
 			if(size != 7)
 				continue;
-			
-			curr[2] = cJSON_GetArrayItem(curr[1], 0);
-			size = strlen(curr[2]->valuestring) + 1;
+
+			curr[2] = json_array_get(curr[1], 0);
+			size = strlen(json_string_value(curr[2])) + 1;
 			if(size > 256)
 			{
-				debugPrintf("Too long title name detected: %s", curr[2]->valuestring);
+				debugPrintf("Too long title name detected: %s", json_string_value(curr[2]));
 				continue;
 			}
 
-			if(!(cJSON_GetArrayItem(curr[1], 1)->valueint & currentRegion))
+			curr[2] = json_array_get(curr[1], 1);
+			if(!(((int)json_integer_value(curr[2])) & currentRegion))
 				continue;
-			
+
 			ma += size;
 			++entries;
 		}
@@ -286,12 +268,12 @@ bool initTitles()
 	char *sjm = sj + 1;
 	reg regio;
 
-	cJSON_ArrayForEach(curr[0], json)
+	json_object_foreach(json, key[0], curr[0])
 	{
-		if(curr[0]->string[0] == 's')
+		if(key[0][0] == 's')
 			continue; // TODO
-		
-		i = atoi(curr[0]->string);
+
+		i = atoi(key[0]);
 		if(i > TRANSFORMED_TID_HIGH_UPDATE)
 			continue;
 		
@@ -313,37 +295,39 @@ bool initTitles()
 				cat = 4;
 				break;
 		}
-		
 		if(cat != 4)
 			filteredEntry[cat] = titleEntry + entries;
 		
-		cJSON_ArrayForEach(curr[1], curr[0])
+		json_object_foreach(curr[0], key[1], curr[1])
 		{
-			size = strlen(curr[1]->string);
+			size = strlen(key[1]);
 			if(size != 7)
 				continue;
-			
-			curr[2] = cJSON_GetArrayItem(curr[1], 0);
-			size = strlen(curr[2]->valuestring) + 1;
-			if(size > 256)
-				continue;
 
-			regio = cJSON_GetArrayItem(curr[1], 1)->valueint;
+			curr[2] = json_array_get(curr[1], 1);
+			regio = json_integer_value(curr[2]);
 			if(!(regio & currentRegion))
 				continue;
 
-			strcpy(sjm, curr[1]->string);
+
+			curr[2] = json_array_get(curr[1], 0);
+			size = strlen(json_string_value(curr[2])) + 1;
+			if(size > 256)
+				continue;
+
+			strcpy(sjm, key[1]);
 			hexToByte(sj, (uint8_t *)&j);
 			
-			strcpy(ptr, curr[2]->valuestring);
+			strcpy(ptr, json_string_value(curr[2]));
 //			debugPrintf("titleNames[%d][0x%08X] = %s", i, j, ptr);
 			titleEntry[entries].name = ptr;
 			ptr += size;
 			
 			titleEntry[entries].region = regio;
-			titleEntry[entries].isDLC = i == TRANSFORMED_TID_HIGH_DLC;
-			titleEntry[entries].isUpdate = i == TRANSFORMED_TID_HIGH_UPDATE;
-			titleEntry[entries].key = cJSON_GetArrayItem(curr[1], 2)->valueint;
+			titleEntry[entries].isDLC = cat == 2;
+			titleEntry[entries].isUpdate = cat == 1;
+			curr[2] = json_array_get(curr[1], 2);
+			titleEntry[entries].key = json_integer_value(curr[2]);
 
 			tid = retransformTidHigh(i);
 			tid <<= 32;
@@ -356,18 +340,14 @@ bool initTitles()
 			++titleEntries[cat];
 		}
 	}
-	
-	cJSON_Delete(json);
-	MEMFreeToDefaultHeap(raw);
 
+	json_decref(json);
 	addToScreenLog("title database parsed!");
 	debugPrintf("%d titles parsed", getTitleEntriesSize(TITLE_CATEGORY_ALL));
 	return true;
 
 titleError:
-	cJSON_Delete(json);
-	MEMFreeToDefaultHeap(raw);
-
+	json_decref(json);
 	clearTitles();
 	return false;
 }

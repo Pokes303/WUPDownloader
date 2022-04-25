@@ -32,7 +32,6 @@
 #include <rumbleThread.h>
 #include <status.h>
 #include <utils.h>
-#include <cJSON.h>
 #include <menu/update.h>
 #include <menu/utils.h>
 
@@ -51,6 +50,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+
+#include <jansson.h>
 
 #define UPDATE_CHECK_URL NAPI_URL "s?t="
 #define UPDATE_DL_URL NAPI_URL "d?t="
@@ -123,7 +124,7 @@ bool updateCheck()
 	drawFrame();
 	showFrame();
 	
-	cJSON *json = cJSON_ParseWithLength(getRamBuf(), getRamBufSize());
+	json_t *json = json_loadb(getRamBuf(), getRamBufSize(), 0, NULL);
 	if(json == NULL)
 	{
 		clearRamBuf();
@@ -131,47 +132,47 @@ bool updateCheck()
 		return false;
 	}
 	
-	cJSON *jsonObj = cJSON_GetObjectItemCaseSensitive(json, "s");
-	if(jsonObj == NULL || !cJSON_IsNumber(jsonObj))
+	json_t *jsonObj = json_object_get(json, "s");
+	if(jsonObj == NULL || !json_is_integer(jsonObj))
 	{
-		cJSON_Delete(json);
+		json_decref(json);
 		clearRamBuf();
 		debugPrintf("Invalid JSON data");
 		return false;
 	}
 	
-	char *newVer;
-	switch(jsonObj->valueint)
+	const char *newVer;
+	switch(json_integer_value(jsonObj))
 	{
 		case 0:
 			debugPrintf("Newest version!");
-			cJSON_Delete(json);
+			json_decref(json);
 			clearRamBuf();
 			return false;
 		case 1:
-			newVer = cJSON_GetObjectItemCaseSensitive(json, "v")->valuestring;
+			newVer = json_string_value(json_object_get(json, "v"));
 			break;
 		case 2: //TODO
 			showUpdateErrorf("The %s version of NUSspli is deprecated!", isAroma() ? "Aroma" : isChannel() ? "Channel" : "HBL");
-			cJSON_Delete(json);
+			json_decref(json);
 			clearRamBuf();
 			return false;
 		case 3: // TODO
 		case 4:
 			showUpdateError("Internal server error!");
-			cJSON_Delete(json);
+			json_decref(json);
 			clearRamBuf();
 			return false;
 		default: // TODO
-			showUpdateErrorf("Invalid state value: %d", jsonObj->valueint);
-			cJSON_Delete(json);
+			showUpdateErrorf("Invalid state value: %d", json_integer_value(jsonObj));
+			json_decref(json);
 			clearRamBuf();
 			return false;
 	}
 	
 	char versionString[strlen(newVer) + 1];
 	strcpy(versionString, newVer);
-	cJSON_Delete(json);
+	json_decref(json);
 	clearRamBuf();
 	
 	return updateMenu(versionString);
