@@ -31,15 +31,17 @@ INCLUDES	:=	include \
 
 ifeq ($(strip $(HBL)), 1)
 ROMFS		:=	data
+include $(PORTLIBS_PATH)/wiiu/share/romfs-wiiu.mk
 else
-ROMFS		:=	
+ROMFS_CFLAGS	:=
+ROMFS_LIBS	:=
+ROMFS_TARGET	:=
 endif
 
 
 #-------------------------------------------------------------------------------
 # options for code generation
 #-------------------------------------------------------------------------------
-include $(PORTLIBS_PATH)/wiiu/share/romfs-wiiu.mk
 
 CFLAGS		:=	$(MACHDEP) -Ofast -flto=auto -fno-fat-lto-objects \
 				-fuse-linker-plugin -pipe -D__WIIU__ -D__WUT__ \
