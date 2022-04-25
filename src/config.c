@@ -311,22 +311,16 @@ bool saveConfig(bool force)
 		json_object_set(config, "Seed", value);
 	
 	OSTime t = OSGetTime();
-	FILE *fp = fopen(CONFIG_PATH, "wb");
-	bool ret;
-	if(fp != NULL)
+	bool ret = !json_dump_file(config, CONFIG_PATH, JSON_INDENT(4));
+	json_decref(config);
+	if(ret)
 	{
-		ret = json_dumpf(config, fp, JSON_INDENT(4));
 		debugPrintf("Config written!");
-		fclose(fp);
 		t = OSGetTime() - t;
 		addEntropy(&t, sizeof(OSTime));
-	
 		changed = false;
 	}
-	else
-		ret = false;
 
-	json_decref(config);
 	return ret;
 }
 
