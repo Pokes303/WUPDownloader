@@ -50,8 +50,9 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 	boxToFrame(1, MAX_LINES - 2);
 	textToFrame(MAX_LINES - 1, ALIGNED_CENTER, "Press " BUTTON_A " to delete || " BUTTON_B " to return");
 	
-	size_t max = MAX_ITITLEBROWSER_LINES < ititleEntrySize ? MAX_ITITLEBROWSER_LINES : ititleEntrySize;
-	size_t j, l;
+	size_t j = ititleEntrySize - pos;
+	size_t max = j < MAX_ITITLEBROWSER_LINES ? j : MAX_ITITLEBROWSER_LINES;
+	size_t l;
 	char *toFrame = getToFrameBuffer();
 	TitleEntry *e;
 	char tid[17];
@@ -283,11 +284,9 @@ void ititleBrowserMenu()
 		}
 		else if(vpad.trigger & VPAD_BUTTON_DOWN)
 		{
-			if(cursor >= ititleEntrySize - 1 || cursor >= MAX_ITITLEBROWSER_LINES - 1)
+			if(cursor + pos >= ititleEntrySize - 1 || cursor >= MAX_ITITLEBROWSER_LINES - 1)
 			{
-				if(mov && pos < ititleEntrySize - MAX_ITITLEBROWSER_LINES)
-					++pos;
-				else
+				if(!mov || ++pos + cursor >= ititleEntrySize)
 					cursor = pos = 0;
 			}
 			else
@@ -300,7 +299,7 @@ void ititleBrowserMenu()
 			if(vpad.trigger & VPAD_BUTTON_RIGHT)
 			{
 				pos += MAX_ITITLEBROWSER_LINES;
-				if(pos >= ititleEntrySize - MAX_ITITLEBROWSER_LINES)
+				if(pos >= ititleEntrySize)
 					pos = 0;
 				cursor = 0;
 				redraw = true;

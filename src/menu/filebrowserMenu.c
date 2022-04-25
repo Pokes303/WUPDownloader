@@ -55,7 +55,7 @@ static void drawFBMenuFrame(char **folders, size_t foldersSize, const size_t pos
 	textToFrame(MAX_LINES - 1, ALIGNED_CENTER, toWrite);
 	
 	foldersSize -= pos;
-	size_t max = MAX_FILEBROWSER_LINES < foldersSize ? MAX_FILEBROWSER_LINES : foldersSize;
+	size_t max = foldersSize < MAX_FILEBROWSER_LINES ? foldersSize : MAX_FILEBROWSER_LINES;
 	for(size_t i = 0; i < max; ++i)
 	{
 		textToFrame(i + 2, 5, folders[i + pos]);
@@ -162,11 +162,9 @@ refreshDirList:
 		}
 		else if(vpad.trigger & VPAD_BUTTON_DOWN)
 		{
-			if(cursor >= foldersSize - 1 || cursor >= MAX_FILEBROWSER_LINES - 1)
+			if(cursor + pos >= foldersSize - 1 || cursor >= MAX_FILEBROWSER_LINES - 1)
 			{
-				if(mov && pos < foldersSize - MAX_FILEBROWSER_LINES)
-					++pos;
-				else
+				if(!mov || ++pos + cursor >= foldersSize)
 					cursor = pos = 0;
 			}
 			else
@@ -179,7 +177,7 @@ refreshDirList:
 			if(vpad.trigger & VPAD_BUTTON_RIGHT)
 			{
 				pos += MAX_FILEBROWSER_LINES;
-				if(pos >= foldersSize - MAX_FILEBROWSER_LINES)
+				if(pos >= foldersSize)
 					pos = 0;
 				cursor = 0;
 				redraw = true;

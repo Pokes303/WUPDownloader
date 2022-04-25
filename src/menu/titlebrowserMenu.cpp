@@ -121,8 +121,9 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
 		for(size_t i = 0; i < filteredTitleEntrySize; ++i)
 			filteredTitleEntries[i] = titleEntrys[i];
 	
-	size_t max = MAX_TITLEBROWSER_LINES < filteredTitleEntrySize ? MAX_TITLEBROWSER_LINES : filteredTitleEntrySize;
-	size_t j, l;
+	size_t j = filteredTitleEntrySize - pos;
+	size_t max = j < MAX_TITLEBROWSER_LINES ? j : MAX_TITLEBROWSER_LINES;
+	size_t l;
 	MCPTitleListType titleList;
 	char *toFrame = getToFrameBuffer();
 	for(size_t i = 0; i < max; ++i)
@@ -223,11 +224,9 @@ void titleBrowserMenu()
 		}
 		else if(vpad.trigger & VPAD_BUTTON_DOWN)
 		{
-			if(cursor >= filteredTitleEntrySize - 1 || cursor >= MAX_TITLEBROWSER_LINES - 1)
+			if(cursor + pos >= filteredTitleEntrySize - 1 || cursor >= MAX_TITLEBROWSER_LINES - 1)
 			{
-				if(mov && pos < filteredTitleEntrySize - MAX_TITLEBROWSER_LINES)
-					++pos;
-				else
+				if(!mov || ++pos + cursor >= filteredTitleEntrySize)
 					cursor = pos = 0;
 			}
 			else
@@ -240,7 +239,7 @@ void titleBrowserMenu()
 			if(vpad.trigger & VPAD_BUTTON_RIGHT)
 			{
 				pos += MAX_TITLEBROWSER_LINES;
-				if(pos >= filteredTitleEntrySize - MAX_TITLEBROWSER_LINES)
+				if(pos >= filteredTitleEntrySize)
 					pos = 0;
 				cursor = 0;
 				redraw = true;
