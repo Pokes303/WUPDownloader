@@ -91,6 +91,7 @@ void arrowToFrame(int line, int column);
 void checkmarkToFrame(int line, int column);
 void tabToFrame(int line, int column, char *label, bool active);
 void flagToFrame(int line, int column, TITLE_REGION flag);
+void deviceToFrame(int line, int column, DEVICE_TYPE dev);
 int addErrorOverlay(const char *err);
 void removeErrorOverlay(int id);
 uint32_t getSpaceWidth();

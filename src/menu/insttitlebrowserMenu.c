@@ -21,6 +21,8 @@
 #include <wut-fixups.h>
 
 #include <deinstaller.h>
+#include <file.h>
+#include <filesystem.h>
 #include <input.h>
 #include <renderer.h>
 #include <status.h>
@@ -34,6 +36,8 @@
 
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
+
+#include <mxml.h>
 
 #define MAX_ITITLEBROWSER_LINES (MAX_LINES - 4)
 
@@ -51,7 +55,15 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 	char *toFrame = getToFrameBuffer();
 	TitleEntry *e;
 	char tid[17];
-	char *name;
+	const char *name;
+	DEVICE_TYPE dt;
+	char *xmlPath = getStaticPathBuffer(0);
+	FILE *f;
+	uint32_t fs;
+	char *buf;
+	mxml_node_t *xt, *xm, *xn;
+	MCPRegion xr;
+	TITLE_REGION region;
 	for(size_t i = 0; i < max; ++i)
 	{
 		l = i + 2;
@@ -59,21 +71,93 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 			arrowToFrame(l, 1);
 		
 		j = i + pos;
-		e = getTitleEntryByTid(ititleEntries[j].titleId);
-		flagToFrame(l, 7, e == NULL ? TITLE_REGION_UNKNOWN : e->region);
 
-		if(ititleEntries[j].indexedDevice[0] == 'u')
-			deviceToFrame(l, 4, DEVICE_TYPE_USB);
-		else if(ititleEntries[j].indexedDevice[0] == 'm')
-			deviceToFrame(l, 4, DEVICE_TYPE_NAND);
-		else
-			deviceToFrame(l, 4, DEVICE_TYPE_UNKNOWN); // TODO: bt. drh, slc
-		
+		switch(ititleEntries[j].indexedDevice[0])
+		{
+			case 'u':
+				dt = DEVICE_TYPE_USB;
+				break;
+			case 'm':
+				dt = DEVICE_TYPE_NAND;
+				break;
+			default: // TODO: bt. drh, slc
+				dt = DEVICE_TYPE_UNKNOWN;
+		}
+
+		deviceToFrame(l, 4, dt);
+		name = NULL;
+		buf = NULL;
+		xt = NULL;
+		region = TITLE_REGION_UNKNOWN;
+
+		e = getTitleEntryByTid(ititleEntries[j].titleId);
 		if(e == NULL)
 		{
-			hex(ititleEntries[j].titleId, 16, tid);
-			name = tid;
 			toFrame[0] = '\0';
+
+			switch(dt)
+			{
+				case DEVICE_TYPE_USB:
+					mountUSB();
+					strcpy(xmlPath, "usb:/");
+					break;
+				case DEVICE_TYPE_NAND:
+					mountMLC();
+					strcpy(xmlPath, "mlc:/");
+					break;
+				default: // DEVICE_TYPE_UNKNOWN
+					hex(ititleEntries[j].titleId, 16, tid);
+					name = tid;
+					goto nameSet;
+			}
+
+			strcpy(xmlPath + 5, ititleEntries[j].path + 19);
+			strcat(xmlPath, "/meta/meta.xml");
+			f = fopen(xmlPath, "rb");
+			if(f != NULL)
+			{
+				// mxmls file parsing is slow, so we load everything to RAM
+				fs = getFilesize(f);
+				buf = MEMAllocFromDefaultHeap(fs);
+				if(buf != NULL)
+				{
+					if(fread(buf, fs, 1, f) == 1)
+					{
+						xt = mxmlLoadString(NULL, buf, MXML_OPAQUE_CALLBACK);
+						if(xt != NULL)
+						{
+							xm = mxmlGetFirstChild(xt);
+							if(xm != NULL)
+							{
+								xn = mxmlFindElement(xm, xt, "region", "type", "hexBinary", MXML_DESCEND);
+								if(xn != NULL)
+								{
+									name = mxmlGetOpaque(xn);
+									if(name != NULL)
+									{
+										hexToByte(name, (uint8_t *)&xr);
+										name = NULL;
+										if(xr & MCP_REGION_EUROPE)
+											region |= TITLE_REGION_EUR;
+										if(xr & MCP_REGION_USA)
+											region |= TITLE_REGION_USA;
+										if(xr & MCP_REGION_JAPAN)
+											region |= TITLE_REGION_JAP;
+									}
+								}
+
+								xn = mxmlFindElement(xm, xt, "shortname_en", "type", "string", MXML_DESCEND);
+								if(xn != NULL)
+									name = mxmlGetOpaque(xn);
+							}
+						}
+					}
+				}
+				fclose(f);
+			}
+
+			if(name == NULL)
+				name = "N/A";
 		}
 		else
 		{
@@ -84,10 +168,19 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 				strcpy(toFrame, "[UPD] ");
 			else
 				toFrame[0] = '\0';
+
+			region = e->region;
 		}
 
+nameSet:
 		strcat(toFrame, name);
+		if(xt)
+			mxmlDelete(xt);
+		if(buf)
+			MEMFreeToDefaultHeap(buf);
+
 		textToFrameCut(l, 10, toFrame, (1280 - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
+		flagToFrame(l, 7, region);
 	}
 	drawFrame();
 }
