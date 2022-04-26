@@ -276,21 +276,21 @@ void checkmarkToFrame(int line, int column)
 
 static inline SDL_Texture *getFlagData(MCPRegion flag)
 {
-	switch(flag)
+	if(flag & MCP_REGION_EUROPE)
 	{
-		case MCP_REGION_EUROPE:
-			return flagTex[1];
-		case MCP_REGION_USA:
-			return flagTex[2];
-		case MCP_REGION_JAPAN:
-			return flagTex[3];
-		case MCP_REGION_EUROPE | MCP_REGION_USA:
-			return flagTex[4];
-		case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
-			return flagTex[0];
-		default:
-			return flagTex[5];
+		if(flag & MCP_REGION_USA)
+			return flagTex[flag & MCP_REGION_JAPAN ? 0 : 4];
+
+		return flagTex[1]; // TODO: EUR + JAP
 	}
+
+	if(flag & MCP_REGION_USA)
+		return flagTex[2]; // TODO: USA + JAP
+
+	if(flag & MCP_REGION_JAPAN)
+		return flagTex[3];
+
+	return flagTex[5];
 }
 
 void flagToFrame(int line, int column, MCPRegion flag)
