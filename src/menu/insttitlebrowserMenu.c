@@ -40,13 +40,14 @@
 #include <mxml.h>
 
 #define MAX_ITITLEBROWSER_LINES (MAX_LINES - 3)
+#define MAX_TITLENAME_LENGTH 128
 
 static MCPTitleListType *ititleEntries;
 static size_t ititleEntrySize;
 
 typedef struct
 {
-	char name[256];
+	char name[MAX_TITLENAME_LENGTH];
 	TITLE_REGION region;
 	bool isDlc;
 	bool isUpdate;
