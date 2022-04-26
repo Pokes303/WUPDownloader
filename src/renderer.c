@@ -66,7 +66,7 @@ static SDL_Texture *errorOverlay[MAX_OVERLAYS];
 static SDL_Texture *arrowTex;
 static SDL_Texture *checkmarkTex;
 static SDL_Texture *tabTex;
-static SDL_Texture *flagTex[6];
+static SDL_Texture *flagTex[8];
 static SDL_Texture *deviceTex[3];
 static SDL_Texture *barTex;
 static SDL_Texture *bgTex;
@@ -279,18 +279,18 @@ static inline SDL_Texture *getFlagData(MCPRegion flag)
 	if(flag & MCP_REGION_EUROPE)
 	{
 		if(flag & MCP_REGION_USA)
-			return flagTex[flag & MCP_REGION_JAPAN ? 0 : 4];
+			return flagTex[flag & MCP_REGION_JAPAN ? 7 : 4];
 
-		return flagTex[1]; // TODO: EUR + JAP
+		return flagTex[flag & MCP_REGION_JAPAN ? 5 : 1];
 	}
 
 	if(flag & MCP_REGION_USA)
-		return flagTex[2]; // TODO: USA + JAP
+		return flagTex[flag & MCP_REGION_JAPAN ? 6 : 2];
 
 	if(flag & MCP_REGION_JAPAN)
 		return flagTex[3];
 
-	return flagTex[5];
+	return flagTex[0];
 }
 
 void flagToFrame(int line, int column, MCPRegion flag)
@@ -513,12 +513,12 @@ void resumeRenderer()
 			SDL_SetRenderTarget(renderer, frameBuffer);
 
 			const char *tex;
-			for(int i = 0; i < 6; ++i)
+			for(int i = 0; i < 8; ++i)
 			{
 				switch(i)
 				{
 					case 0:
-						tex = ROMFS_PATH "textures/flags/multi.png";
+						tex = ROMFS_PATH "textures/flags/unk.png";
 						break;
 					case 1:
 						tex = ROMFS_PATH "textures/flags/eur.png";
@@ -533,7 +533,13 @@ void resumeRenderer()
 						tex = ROMFS_PATH "textures/flags/eurUsa.png";
 						break;
 					case 5:
-						tex = ROMFS_PATH "textures/flags/unk.png";
+						tex = ROMFS_PATH "textures/flags/eurJap.png";
+						break;
+					case 6:
+						tex = ROMFS_PATH "textures/flags/usaJap.png";
+						break;
+					case 7:
+						tex = ROMFS_PATH "textures/flags/multi.png";
 						break;
 				}
 				loadTexture(tex, flagTex + i);
@@ -714,7 +720,7 @@ void pauseRenderer()
 	SDL_DestroyTexture(barTex);
 	SDL_DestroyTexture(bgTex);
 	
-	for(int i = 0; i < 6; ++i)
+	for(int i = 0; i < 8; ++i)
 		SDL_DestroyTexture(flagTex[i]);
 	
 	font = NULL;
