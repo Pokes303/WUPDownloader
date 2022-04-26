@@ -262,10 +262,16 @@ void flushIOQueue()
 	spinLock(ioWriteLock);
 
 	while(queueEntries[activeWriteBuffer].file)
+	{
 		OSSleepTicks(1024);
+		if(checkForQueueErrors())
+			break;
+	}
 
 	spinReleaseLock(ioWriteLock);
 	removeErrorOverlay(ovl);
+
+	checkForQueueErrors();
 }
 
 NUSFILE *openFile(const char *path, const char *mode)
