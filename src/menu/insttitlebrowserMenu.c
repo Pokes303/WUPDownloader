@@ -152,7 +152,11 @@ static INST_META getInstalledMeta(MCPTitleListType *entry)
 
 						xn = mxmlFindElement(xm, xt, "shortname_en", "type", "string", MXML_DESCEND);
 						if(xn != NULL)
+						{
 							name = mxmlGetOpaque(xn);
+							if(strcmp(name, "Short Title Name (EN)") == 0)
+								name = NULL;
+						}
 					}
 
 					mxmlDelete(xt);
