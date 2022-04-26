@@ -39,7 +39,7 @@
 
 #include <mxml.h>
 
-#define MAX_ITITLEBROWSER_LINES (MAX_LINES - 4)
+#define MAX_ITITLEBROWSER_LINES (MAX_LINES - 3)
 
 static MCPTitleListType *ititleEntries;
 static size_t ititleEntrySize;
@@ -177,17 +177,16 @@ static INST_META getInstalledMeta(MCPTitleListType *entry)
 static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 {
 	startNewFrame();
-	boxToFrame(1, MAX_LINES - 2);
+	boxToFrame(0, MAX_LINES - 2);
 	textToFrame(MAX_LINES - 1, ALIGNED_CENTER, "Press " BUTTON_A " to delete || " BUTTON_B " to return");
 	
 	size_t max = ititleEntrySize - pos;
 	if(max > MAX_ITITLEBROWSER_LINES)
 		max = MAX_ITITLEBROWSER_LINES;
 
-	size_t l;
 	INST_META im;
 	char *toFrame = getToFrameBuffer();
-	for(size_t i = 0; i < max; ++i)
+	for(size_t i = 0, l = 1; i < max; ++i, ++l)
 	{
 		im = getInstalledMeta(ititleEntries + pos + i);
 		if(im.isDlc)
@@ -197,7 +196,6 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 		else
 			toFrame[0] = '\0';
 
-		l = i + 2;
 		if(cursor == i)
 			arrowToFrame(l, 1);
 
