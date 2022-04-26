@@ -408,32 +408,35 @@ loopEntry:
 		}
 	}
 
-	INST_META im = getInstalledMeta(entry);
-	char *toFrame = getToFrameBuffer();
-	strcpy(toFrame, "Do you really want to uninstall\n");
-	strcat(toFrame, im.name);
-	strcat(toFrame, "\nfrom your ");
-	strcat(toFrame, im.dt == DEVICE_TYPE_USB ? "USB" : im.dt == DEVICE_TYPE_NAND ? "NAND" : "unknown");
-	strcat(toFrame, " drive?");
-	r = addErrorOverlay(toFrame);
-
-	while(AppRunning())
-	{
-		showFrame();
-
-		if(vpad.trigger & VPAD_BUTTON_B)
-		{
-			removeErrorOverlay(r);
-			goto loopEntry;
-		}
-		if(vpad.trigger & VPAD_BUTTON_A)
-			break;
-	}
-
-	removeErrorOverlay(r);
-
 	if(AppRunning())
-		deinstall(*entry, false);
+	{
+		INST_META im = getInstalledMeta(entry);
+		char *toFrame = getToFrameBuffer();
+		strcpy(toFrame, "Do you really want to uninstall\n");
+		strcat(toFrame, im.name);
+		strcat(toFrame, "\nfrom your ");
+		strcat(toFrame, im.dt == DEVICE_TYPE_USB ? "USB" : im.dt == DEVICE_TYPE_NAND ? "NAND" : "unknown");
+		strcat(toFrame, " drive?");
+		r = addErrorOverlay(toFrame);
+
+		while(AppRunning())
+		{
+			showFrame();
+
+			if(vpad.trigger & VPAD_BUTTON_B)
+			{
+				removeErrorOverlay(r);
+				goto loopEntry;
+			}
+			if(vpad.trigger & VPAD_BUTTON_A)
+				break;
+		}
+
+		removeErrorOverlay(r);
+
+		if(AppRunning())
+			deinstall(*entry, false);
+	}
 
 	MEMFreeToDefaultHeap(ititleEntries);
 }
