@@ -95,17 +95,17 @@ static INST_META getInstalledMeta(MCPTitleListType *entry)
 	}
 
 	ret.region = TITLE_REGION_UNKNOWN;
-	char *xmlPath = getStaticPathBuffer(0);
+	char *buf = getStaticPathBuffer(0);
 	char tid[17];
 	switch(ret.dt)
 	{
 		case DEVICE_TYPE_USB:
 			mountUSB();
-			strcpy(xmlPath, "usb:/");
+			strcpy(buf, "usb:/");
 			break;
 		case DEVICE_TYPE_NAND:
 			mountMLC();
-			strcpy(xmlPath, "mlc:/");
+			strcpy(buf, "mlc:/");
 			break;
 		default: // DEVICE_TYPE_UNKNOWN
 			hex(entry->titleId, 16, tid);
@@ -113,12 +113,12 @@ static INST_META getInstalledMeta(MCPTitleListType *entry)
 			return ret;
 	}
 
-	strcpy(xmlPath + 5, entry->path + 19);
-	strcat(xmlPath, "/meta/meta.xml");
+	strcpy(buf + 5, entry->path + 19);
+	strcat(buf, "/meta/meta.xml");
 	const char *name = NULL;
 	mxml_node_t *xt = NULL;
-	char *buf = NULL;
-	FILE *f = fopen(xmlPath, "rb");
+	FILE *f = fopen(buf, "rb");
+	buf = NULL;
 	if(f != NULL)
 	{
 		// mxmls file parsing is slow, so we load everything to RAM
@@ -180,9 +180,9 @@ static INST_META getInstalledMeta(MCPTitleListType *entry)
 	if(buf)
 		MEMFreeToDefaultHeap(buf);
 
-	for(char *ptr = ret.name; *ptr != '\0'; ++ptr)
-		if(*ptr == '\n')
-			*ptr = ' ';
+	for(buf = ret.name; *buf != '\0'; ++buf)
+		if(*buf == '\n')
+			*buf = ' ';
 
 	return ret;
 }
