@@ -180,6 +180,10 @@ static INST_META getInstalledMeta(MCPTitleListType *entry)
 	if(buf)
 		MEMFreeToDefaultHeap(buf);
 
+	for(char *ptr = ret.name; *ptr != '\0'; ++ptr)
+		if(*ptr == '\n')
+			*ptr = ' ';
+
 	return ret;
 }
 
