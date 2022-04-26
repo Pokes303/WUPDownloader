@@ -180,15 +180,16 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 	boxToFrame(1, MAX_LINES - 2);
 	textToFrame(MAX_LINES - 1, ALIGNED_CENTER, "Press " BUTTON_A " to delete || " BUTTON_B " to return");
 	
-	size_t j = ititleEntrySize - pos;
-	size_t max = j < MAX_ITITLEBROWSER_LINES ? j : MAX_ITITLEBROWSER_LINES;
+	size_t max = ititleEntrySize - pos;
+	if(max > MAX_ITITLEBROWSER_LINES)
+		max = MAX_ITITLEBROWSER_LINES;
+
 	size_t l;
-	char *toFrame = getToFrameBuffer();
 	INST_META im;
+	char *toFrame = getToFrameBuffer();
 	for(size_t i = 0; i < max; ++i)
 	{
-		j = i + pos;
-		im = getInstalledMeta(ititleEntries + j);
+		im = getInstalledMeta(ititleEntries + pos + i);
 		if(im.isDlc)
 			strcpy(toFrame, "[DLC] ");
 		else if(im.isUpdate)
@@ -204,8 +205,8 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 		flagToFrame(l, 7, im.region);
 		strcat(toFrame, im.name);
 		textToFrameCut(l, 10, toFrame, (1280 - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
-
 	}
+
 	drawFrame();
 }
 
