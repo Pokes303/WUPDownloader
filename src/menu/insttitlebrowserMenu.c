@@ -138,7 +138,7 @@ static INST_META getInstalledMeta(MCPTitleListType *entry)
 						if(xn != NULL)
 						{
 							name = mxmlGetOpaque(xn);
-							if(ret.name != NULL)
+							if(name != NULL)
 							{
 								MCPRegion xr;
 								hexToByte(name, (uint8_t *)&xr);
