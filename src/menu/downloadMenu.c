@@ -55,7 +55,7 @@ bool downloadMenu()
 		e.name = "UNKNOWN";
 		e.tid = tid;
 		e.isDLC = e.isUpdate = false;
-		e.region = TITLE_REGION_UNKNOWN;
+		e.region = MCP_REGION_UNKNOWN;
 		e.key = 99;
 		entry = &e;
 	}

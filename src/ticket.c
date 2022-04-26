@@ -294,7 +294,7 @@ void generateFakeTicket()
 					te.name = "UNKNOWN";
 					te.tid = tid;
 					te.isDLC = te.isUpdate = false;
-					te.region = TITLE_REGION_UNKNOWN;
+					te.region = 0;
 					te.key = TITLE_KEY_mypass;
 					entry = &te;
 				}

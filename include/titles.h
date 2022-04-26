@@ -26,11 +26,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <coreinit/mcp.h>
+
 #ifdef __cplusplus
 	extern "C" {
 #endif
 
-#define MAX_TITLENAME_LENGTH 256 // incl '\0'
+#define MAX_TITLENAME_LENGTH	256 // incl '\0'
+#define MCP_REGION_UNKNOWN		0
 
 typedef enum
 {
@@ -62,15 +65,6 @@ typedef enum
 
 typedef enum
 {
-	TITLE_REGION_UNKNOWN =	0,
-	TITLE_REGION_EUR = 	1,
-	TITLE_REGION_USA = 	1 << 1,
-	TITLE_REGION_JAP = 	1 << 2,
-	TITLE_REGION_ALL =	TITLE_REGION_EUR | TITLE_REGION_USA | TITLE_REGION_JAP,
-} TITLE_REGION;
-
-typedef enum
-{
 	TITLE_CATEGORY_GAME = 0,
 	TITLE_CATEGORY_UPDATE = 1,
 	TITLE_CATEGORY_DLC = 2,
@@ -97,7 +91,7 @@ typedef struct
 	uint64_t tid;
 	bool isDLC;
 	bool isUpdate;
-	TITLE_REGION region;
+	MCPRegion region;
 	TITLE_KEY key;
 } TitleEntry;
 

@@ -203,15 +203,15 @@ bool checkSystemTitleFromEntry(const TitleEntry *entry)
 	switch(region)
 	{
 		case MCP_REGION_EUROPE:
-			if(entry->region & TITLE_REGION_EUR)
+			if(entry->region & MCP_REGION_EUROPE)
 				return true;
 			break;
 		case MCP_REGION_USA:
-			if(entry->region & TITLE_REGION_USA)
+			if(entry->region & MCP_REGION_USA)
 				return true;
 			break;
 		case MCP_REGION_JAPAN:
-			if(entry->region & TITLE_REGION_JAP)
+			if(entry->region & MCP_REGION_JAPAN)
 				return true;
 			break;
 		default:

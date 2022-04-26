@@ -274,26 +274,26 @@ void checkmarkToFrame(int line, int column)
 	SDL_RenderCopy(renderer, checkmarkTex, NULL, &cm);
 }
 
-static inline SDL_Texture *getFlagData(TITLE_REGION flag)
+static inline SDL_Texture *getFlagData(MCPRegion flag)
 {
 	switch(flag)
 	{
-		case TITLE_REGION_ALL:
-			return flagTex[0];
-		case TITLE_REGION_EUR:
+		case MCP_REGION_EUROPE:
 			return flagTex[1];
-		case TITLE_REGION_USA:
+		case MCP_REGION_USA:
 			return flagTex[2];
-		case TITLE_REGION_JAP:
+		case MCP_REGION_JAPAN:
 			return flagTex[3];
-		case TITLE_REGION_EUR | TITLE_REGION_USA:
+		case MCP_REGION_EUROPE | MCP_REGION_USA:
 			return flagTex[4];
+		case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
+			return flagTex[0];
 		default:
 			return flagTex[5];
 	}
 }
 
-void flagToFrame(int line, int column, TITLE_REGION flag)
+void flagToFrame(int line, int column, MCPRegion flag)
 {
 	if(font == NULL)
 		return;

@@ -215,7 +215,7 @@ bool initTitles()
 	size_t ma = 0;
 	size_t size;
 	size_t entries = 0;
-	reg currentRegion = getRegion();
+	MCPRegion currentRegion = getRegion();
 	const char *key[2];
 
 	json_object_foreach(json, key[0], curr[0])
@@ -266,7 +266,7 @@ bool initTitles()
 	char sj[32];
 	sj[0] = '0';
 	char *sjm = sj + 1;
-	reg regio;
+	MCPRegion regio;
 
 	json_object_foreach(json, key[0], curr[0])
 	{

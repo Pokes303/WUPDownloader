@@ -31,6 +31,8 @@
 
 #include <string.h>
 
+#include <coreinit/mcp.h>
+
 static void drawConfigMenu()
 {
 	startNewFrame();
@@ -83,17 +85,17 @@ void configMenu()
 		{
 			switch(getRegion())
 			{
-				case regALL:
-					setRegion(regJPN);
+				case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
+					setRegion(MCP_REGION_JAPAN);
 					break;
-				case regJPN:
-					setRegion(regUSA);
+				case MCP_REGION_JAPAN:
+					setRegion(MCP_REGION_USA);
 					break;
-				case regUSA:
-					setRegion(regEUR);
+				case MCP_REGION_USA:
+					setRegion(MCP_REGION_EUROPE);
 					break;
-				case regEUR:
-					setRegion(regALL);
+				case MCP_REGION_EUROPE:
+					setRegion(MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN);
 			}
 			redraw = true;
 		}
@@ -101,17 +103,17 @@ void configMenu()
 		{
 			switch(getRegion())
 			{
-				case regALL:
-					setRegion(regEUR);
+				case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
+					setRegion(MCP_REGION_EUROPE);
 					break;
-				case regEUR:
-					setRegion(regUSA);
+				case MCP_REGION_EUROPE:
+					setRegion(MCP_REGION_USA);
 					break;
-				case regUSA:
-					setRegion(regJPN);
+				case MCP_REGION_USA:
+					setRegion(MCP_REGION_JAPAN);
 					break;
-				case regJPN:
-					setRegion(regALL);
+				case MCP_REGION_JAPAN:
+					setRegion(MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN);
 			}
 			redraw = true;
 		}

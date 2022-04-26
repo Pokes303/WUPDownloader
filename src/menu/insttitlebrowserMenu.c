@@ -48,7 +48,7 @@ static size_t ititleEntrySize;
 typedef struct
 {
 	char name[MAX_TITLENAME_LENGTH];
-	TITLE_REGION region;
+	MCPRegion region;
 	bool isDlc;
 	bool isUpdate;
 	DEVICE_TYPE dt;
@@ -94,7 +94,7 @@ static INST_META getInstalledMeta(MCPTitleListType *entry)
 			ret.isDlc = ret.isUpdate = false;
 	}
 
-	ret.region = TITLE_REGION_UNKNOWN;
+	ret.region = MCP_REGION_UNKNOWN;
 	char *buf = getStaticPathBuffer(0);
 	char tid[17];
 	switch(ret.dt)
@@ -140,15 +140,8 @@ static INST_META getInstalledMeta(MCPTitleListType *entry)
 							name = mxmlGetOpaque(xn);
 							if(name != NULL)
 							{
-								MCPRegion xr;
-								hexToByte(name, (uint8_t *)&xr);
+								hexToByte(name, (uint8_t *)&ret.region);
 								name = NULL;
-								if(xr & MCP_REGION_EUROPE)
-									ret.region |= TITLE_REGION_EUR;
-								if(xr & MCP_REGION_USA)
-									ret.region |= TITLE_REGION_USA;
-								if(xr & MCP_REGION_JAPAN)
-									ret.region |= TITLE_REGION_JAP;
 							}
 						}
 

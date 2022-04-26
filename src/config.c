@@ -34,6 +34,7 @@
 #include <utils.h>
 #include <menu/utils.h>
 
+#include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/time.h>
 
@@ -67,7 +68,7 @@ static Swkbd_LanguageType lang = Swkbd_LanguageType__Invalid;
 static Swkbd_LanguageType sysLang;
 static int configInitTries = 0;
 static bool dlToUSB = true;
-static reg regionSetting = regALL;
+static MCPRegion regionSetting = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN;
 
 bool initConfig()
 {
@@ -137,16 +138,14 @@ bool initConfig()
 	configEntry = json_object_get(json, "Region");
 	if(configEntry != NULL && json_is_string(configEntry))
 	{
-		if(strcmp(json_string_value(configEntry), SET_ALL) == 0)
-			regionSetting = regALL;
-		else if(strcmp(json_string_value(configEntry), SET_EUR) == 0)
-			regionSetting = regEUR;
+		if(strcmp(json_string_value(configEntry), SET_EUR) == 0)
+			regionSetting = MCP_REGION_EUROPE;
 		else if(strcmp(json_string_value(configEntry), SET_USA) == 0)
-			regionSetting = regUSA;
+			regionSetting = MCP_REGION_USA;
 		else if(strcmp(json_string_value(configEntry), SET_JPN) == 0)
-			regionSetting = regJPN;
+			regionSetting = MCP_REGION_JAPAN;
 		else
-			regionSetting = regALL;
+			regionSetting = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN;
 	}
 	else
 		changed = true;
@@ -376,27 +375,27 @@ Swkbd_LanguageType getUnfilteredLanguage()
 	return lang;
 }
 
-reg getRegion()
+MCPRegion getRegion()
 {
 	return regionSetting;
 }
 
-char *getFormattedRegion(reg region)
+char *getFormattedRegion(MCPRegion region)
 {
 	switch(region)
 	{
-		case regEUR:
+		case MCP_REGION_EUROPE:
 			return SET_EUR;
-		case regUSA:
+		case MCP_REGION_USA:
 			return SET_USA;
-		case regJPN:
+		case MCP_REGION_JAPAN:
 			return SET_JPN;
 		default:
 			return SET_ALL;
 	}
 }
 
-void setRegion(reg region)
+void setRegion(MCPRegion region)
 {
 	if(region == regionSetting)
 		return;

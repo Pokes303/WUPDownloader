@@ -29,6 +29,8 @@
 #include <staticMem.h>
 #include <titles.h>
 
+#include <coreinit/mcp.h>
+
 #define FONT_SIZE 28
 
 #define SCREEN_COLOR_BG1		0x911EFFFF
@@ -90,7 +92,7 @@ void barToFrame(int line, int column, uint32_t width, double progress);
 void arrowToFrame(int line, int column);
 void checkmarkToFrame(int line, int column);
 void tabToFrame(int line, int column, char *label, bool active);
-void flagToFrame(int line, int column, TITLE_REGION flag);
+void flagToFrame(int line, int column, MCPRegion flag);
 void deviceToFrame(int line, int column, DEVICE_TYPE dev);
 int addErrorOverlay(const char *err);
 void removeErrorOverlay(int id);

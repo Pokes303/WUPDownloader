@@ -27,20 +27,14 @@
 
 #include <swkbd_wrapper.h>
 
+#include <coreinit/mcp.h>
+
 #define CONFIG_PATH "fs:/vol/external01/NUSspli.txt"
 #define TITLE_KEY_URL_MAX_SIZE 1024
 
 #ifdef __cplusplus
 	extern "C" {
 #endif
-
-typedef enum
-{
-	regEUR = 1,
-	regUSA = 1 << 1,
-	regJPN = 1 << 2,
-	regALL = regEUR | regUSA | regJPN,
-} reg;
 
 bool initConfig();
 bool saveConfig(bool force);
@@ -50,9 +44,9 @@ bool autoResumeEnabled();
 void setAutoResume(bool enabled);
 Swkbd_LanguageType getKeyboardLanguage();
 Swkbd_LanguageType getUnfilteredLanguage();
-reg getRegion();
-void setRegion(reg region);
-char *getFormattedRegion(reg region);
+MCPRegion getRegion();
+void setRegion(MCPRegion region);
+char *getFormattedRegion(MCPRegion region);
 void setKeyboardLanguage(Swkbd_LanguageType language);
 char *getLanguageString(Swkbd_LanguageType language);
 bool dlToUSBenabled();
