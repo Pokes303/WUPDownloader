@@ -116,17 +116,19 @@ static INST_META getInstalledMeta(MCPTitleListType *entry)
 	strcpy(xmlPath + 5, entry->path + 19);
 	strcat(xmlPath, "/meta/meta.xml");
 	const char *name = NULL;
+	mxml_node_t *xt = NULL;
+	char *buf = NULL;
 	FILE *f = fopen(xmlPath, "rb");
 	if(f != NULL)
 	{
 		// mxmls file parsing is slow, so we load everything to RAM
 		uint32_t fs = getFilesize(f);
-		char *buf = MEMAllocFromDefaultHeap(fs);
+		buf = MEMAllocFromDefaultHeap(fs);
 		if(buf != NULL)
 		{
 			if(fread(buf, fs, 1, f) == 1)
 			{
-				mxml_node_t *xt = mxmlLoadString(NULL, buf, MXML_OPAQUE_CALLBACK);
+				xt = mxmlLoadString(NULL, buf, MXML_OPAQUE_CALLBACK);
 				if(xt != NULL)
 				{
 					mxml_node_t *xm = mxmlGetFirstChild(xt);
@@ -158,12 +160,8 @@ static INST_META getInstalledMeta(MCPTitleListType *entry)
 								name = NULL;
 						}
 					}
-
-					mxmlDelete(xt);
 				}
 			}
-
-			MEMFreeToDefaultHeap(buf);
 		}
 
 		fclose(f);
@@ -176,6 +174,12 @@ static INST_META getInstalledMeta(MCPTitleListType *entry)
 	}
 
 	strcpy(ret.name, name);
+
+	if(xt)
+		mxmlDelete(xt);
+	if(buf)
+		MEMFreeToDefaultHeap(buf);
+
 	return ret;
 }
 
