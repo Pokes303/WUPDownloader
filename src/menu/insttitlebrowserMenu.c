@@ -152,11 +152,11 @@ static INST_META getInstalledMeta(MCPTitleListType *entry)
 							}
 						}
 
-						xn = mxmlFindElement(xm, xt, "shortname_en", "type", "string", MXML_DESCEND);
+						xn = mxmlFindElement(xm, xt, "longname_en", "type", "string", MXML_DESCEND);
 						if(xn != NULL)
 						{
 							name = mxmlGetOpaque(xn);
-							if(strcmp(name, "Short Title Name (EN)") == 0)
+							if(strcmp(name, "Long Title Name (EN)") == 0)
 								name = NULL;
 						}
 					}
@@ -173,7 +173,8 @@ static INST_META getInstalledMeta(MCPTitleListType *entry)
 		name = tid;
 	}
 
-	strcpy(ret.name, name);
+	strncpy(ret.name, name, MAX_TITLENAME_LENGTH - 1);
+	ret.name[MAX_TITLENAME_LENGTH - 1] = '\0';
 
 	if(xt)
 		mxmlDelete(xt);
