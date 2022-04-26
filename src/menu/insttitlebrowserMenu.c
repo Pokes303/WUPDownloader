@@ -187,10 +187,6 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 	INST_META im;
 	for(size_t i = 0; i < max; ++i)
 	{
-		l = i + 2;
-		if(cursor == i)
-			arrowToFrame(l, 1);
-		
 		j = i + pos;
 		im = getInstalledMeta(ititleEntries + j);
 		if(im.isDlc)
@@ -199,6 +195,10 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 			strcpy(toFrame, "[UPD] ");
 		else
 			toFrame[0] = '\0';
+
+		l = i + 2;
+		if(cursor == i)
+			arrowToFrame(l, 1);
 
 		deviceToFrame(l, 4, im.dt);
 		flagToFrame(l, 7, im.region);
