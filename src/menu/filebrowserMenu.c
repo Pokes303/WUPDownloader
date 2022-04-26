@@ -198,7 +198,7 @@ refreshDirList:
 
 			if(dpadAction)
 			{
-				if(cursor + pos > foldersSize || cursor > MAX_FILEBROWSER_LINES)
+				if(cursor + pos >= foldersSize -1 || cursor >= MAX_FILEBROWSER_LINES - 1)
 				{
 					if(!mov || ++pos + cursor >= foldersSize)
 						cursor = pos = 0;

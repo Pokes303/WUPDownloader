@@ -260,7 +260,7 @@ void titleBrowserMenu()
 
 			if(dpadAction)
 			{
-				if(cursor + pos > filteredTitleEntrySize || cursor > MAX_TITLEBROWSER_LINES)
+				if(cursor + pos >= filteredTitleEntrySize - 1 || cursor >= MAX_TITLEBROWSER_LINES - 1)
 				{
 					if(!mov || ++pos + cursor >= filteredTitleEntrySize)
 						cursor = pos = 0;
