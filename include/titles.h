@@ -30,6 +30,8 @@
 	extern "C" {
 #endif
 
+#define MAX_TITLENAME_LENGTH 256 // incl '\0'
+
 typedef enum
 {
 	TID_HIGH_GAME =			0x00050000,

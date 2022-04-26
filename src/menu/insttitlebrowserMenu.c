@@ -26,6 +26,7 @@
 #include <input.h>
 #include <renderer.h>
 #include <status.h>
+#include <titles.h>
 #include <utils.h>
 #include <menu/insttitlebrowser.h>
 #include <menu/utils.h>
@@ -40,7 +41,6 @@
 #include <mxml.h>
 
 #define MAX_ITITLEBROWSER_LINES (MAX_LINES - 3)
-#define MAX_TITLENAME_LENGTH 128
 
 static MCPTitleListType *ititleEntries;
 static size_t ititleEntrySize;

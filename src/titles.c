@@ -235,7 +235,7 @@ bool initTitles()
 
 			curr[2] = json_array_get(curr[1], 0);
 			size = strlen(json_string_value(curr[2])) + 1;
-			if(size > 256)
+			if(size > MAX_TITLENAME_LENGTH)
 			{
 				debugPrintf("Too long title name detected: %s", json_string_value(curr[2]));
 				continue;
@@ -312,7 +312,7 @@ bool initTitles()
 
 			curr[2] = json_array_get(curr[1], 0);
 			size = strlen(json_string_value(curr[2])) + 1;
-			if(size > 256)
+			if(size > MAX_TITLENAME_LENGTH)
 				continue;
 
 			strcpy(sjm, key[1]);
