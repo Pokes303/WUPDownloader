@@ -373,10 +373,11 @@ void readInput()
 	bool altCon = false;
 	uint32_t controllerType;
 	int32_t controllerProbe;
-	uint32_t oldV;
+	uint32_t oldV, oldH;
 	uint32_t tv;
 	KPADStatus *kps = kpad + 4;
 	int i = 4;
+	bool cont;
 	while(i)
 	{
 		--kps;
@@ -396,6 +397,8 @@ void readInput()
 		}
 		
 		oldV = vpad.trigger;
+		oldH = vpad.hold;
+		cont = false;
 
 		if(controllerType == WPAD_EXT_PRO_CONTROLLER || // With a simple input like ours we're able to handle Wii u pro as Wii classic controllers.
 				controllerType == WPAD_EXT_CLASSIC ||
@@ -438,8 +441,29 @@ void readInput()
 				if(kbdHidden && vpad.trigger != oldV)
 					lastUsedController = i;
 
-				continue;
+				cont = true;
 			}
+
+			tv = kps->classic.hold;
+			if(tv)
+			{
+				if(tv & WPAD_CLASSIC_BUTTON_UP)
+					vpad.hold |= VPAD_BUTTON_UP;
+				if(tv & WPAD_CLASSIC_BUTTON_DOWN)
+					vpad.hold |= VPAD_BUTTON_DOWN;
+				if(tv & WPAD_CLASSIC_BUTTON_LEFT)
+					vpad.hold |= VPAD_BUTTON_LEFT;
+				if(tv & WPAD_CLASSIC_BUTTON_RIGHT)
+					vpad.hold |= VPAD_BUTTON_RIGHT;
+
+				if(kbdHidden && vpad.hold != oldH)
+					lastUsedController = i;
+
+				cont = true;
+			}
+
+			if(cont)
+				continue;
 		}
 
 		tv = kps->trigger;
@@ -475,6 +499,19 @@ void readInput()
 			if(kbdHidden && vpad.trigger != oldV)
 				lastUsedController = i;
 		}
+
+		tv = kps->hold;
+		if(tv & WPAD_BUTTON_UP)
+			vpad.hold |= VPAD_BUTTON_UP;
+		if(tv & WPAD_BUTTON_DOWN)
+			vpad.hold |= VPAD_BUTTON_DOWN;
+		if(tv & WPAD_BUTTON_LEFT)
+			vpad.hold |= VPAD_BUTTON_LEFT;
+		if(tv & WPAD_BUTTON_RIGHT)
+			vpad.hold |= VPAD_BUTTON_RIGHT;
+
+		if(kbdHidden && vpad.hold != oldH)
+			lastUsedController = i;
 	}
 
 	if(vpad.trigger != 0)

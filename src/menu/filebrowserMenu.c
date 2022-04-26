@@ -113,6 +113,9 @@ refreshDirList:
 	mov = foldersSize >= MAX_FILEBROWSER_LINES;
 	char *ret = NULL;
 	bool redraw = false;
+	uint32_t oldHold = 0;
+	size_t frameCount = 0;
+	bool dpadAction;
 	while(AppRunning())
 	{
 		if(app == APP_STATE_BACKGROUND)
@@ -138,58 +141,126 @@ refreshDirList:
 			}
 		}
 		
-		if(vpad.trigger & VPAD_BUTTON_UP)
+		if(vpad.hold & VPAD_BUTTON_UP)
 		{
-			if(cursor)
-				cursor--;
+			if(oldHold != VPAD_BUTTON_UP)
+			{
+				oldHold = VPAD_BUTTON_UP;
+				frameCount = 30;
+				dpadAction = true;
+			}
+			else if(frameCount == 0)
+				dpadAction = true;
 			else
 			{
-				if(mov)
+				--frameCount;
+				dpadAction = false;
+			}
+
+			if(dpadAction)
+			{
+				if(cursor)
+					cursor--;
+				else
 				{
-					if(pos)
-						pos--;
-					else
+					if(mov)
 					{
-						cursor = MAX_FILEBROWSER_LINES - 1;
-						pos = foldersSize - MAX_FILEBROWSER_LINES;
+						if(pos)
+							pos--;
+						else
+						{
+							cursor = MAX_FILEBROWSER_LINES - 1;
+							pos = foldersSize - MAX_FILEBROWSER_LINES;
+						}
 					}
+					else
+						cursor = foldersSize - 1;
+				}
+
+				redraw = true;
+			}
+		}
+		else if(vpad.hold & VPAD_BUTTON_DOWN)
+		{
+			if(oldHold != VPAD_BUTTON_DOWN)
+			{
+				oldHold = VPAD_BUTTON_DOWN;
+				frameCount = 30;
+				dpadAction = true;
+			}
+			else if(frameCount == 0)
+				dpadAction = true;
+			else
+			{
+				--frameCount;
+				dpadAction = false;
+			}
+
+			if(dpadAction)
+			{
+				if(cursor + pos > foldersSize || cursor > MAX_FILEBROWSER_LINES)
+				{
+					if(!mov || ++pos + cursor >= foldersSize)
+						cursor = pos = 0;
 				}
 				else
-					cursor = foldersSize - 1;
+					++cursor;
+
+				redraw = true;
 			}
-			
-			redraw = true;
-		}
-		else if(vpad.trigger & VPAD_BUTTON_DOWN)
-		{
-			if(cursor + pos > foldersSize || cursor > MAX_FILEBROWSER_LINES)
-			{
-				if(!mov || ++pos + cursor >= foldersSize)
-					cursor = pos = 0;
-			}
-			else
-				++cursor;
-			
-			redraw = true;
 		}
 		else if(mov)
 		{
-			if(vpad.trigger & VPAD_BUTTON_RIGHT)
+			if(vpad.hold & VPAD_BUTTON_RIGHT)
 			{
-				pos += MAX_FILEBROWSER_LINES;
-				if(pos >= foldersSize)
-					pos = 0;
-				cursor = 0;
-				redraw = true;
-			}
-			else if(vpad.trigger & VPAD_BUTTON_LEFT)
-			{
-				if(pos >= MAX_FILEBROWSER_LINES)
-					pos -= MAX_FILEBROWSER_LINES;
+				if(oldHold != VPAD_BUTTON_RIGHT)
+				{
+					oldHold = VPAD_BUTTON_RIGHT;
+					frameCount = 30;
+					dpadAction = true;
+				}
+				else if(frameCount == 0)
+					dpadAction = true;
 				else
-					pos = foldersSize - MAX_FILEBROWSER_LINES;
-				cursor = 0;
-				redraw = true;
+				{
+					--frameCount;
+					dpadAction = false;
+				}
+
+				if(dpadAction)
+				{
+					pos += MAX_FILEBROWSER_LINES;
+					if(pos >= foldersSize)
+						pos = 0;
+					cursor = 0;
+					redraw = true;
+				}
+			}
+			else if(vpad.hold & VPAD_BUTTON_LEFT)
+			{
+				if(oldHold != VPAD_BUTTON_LEFT)
+				{
+					oldHold = VPAD_BUTTON_LEFT;
+					frameCount = 30;
+					dpadAction = true;
+				}
+				else if(frameCount == 0)
+					dpadAction = true;
+				else
+				{
+					--frameCount;
+					dpadAction = false;
+				}
+
+				if(dpadAction)
+				{
+					if(pos >= MAX_FILEBROWSER_LINES)
+						pos -= MAX_FILEBROWSER_LINES;
+					else
+						pos = foldersSize - MAX_FILEBROWSER_LINES;
+					cursor = 0;
+					redraw = true;
+				}
 			}
 		}
 		
@@ -211,6 +282,9 @@ refreshDirList:
 		if(vpad.trigger & VPAD_BUTTON_Y)
 			goto refreshDirList;
 		
+		if(oldHold && !(vpad.hold & (VPAD_BUTTON_UP | VPAD_BUTTON_DOWN | VPAD_BUTTON_LEFT | VPAD_BUTTON_RIGHT)))
+			oldHold = 0;
+
 		if(redraw)
 		{
 			drawFBMenuFrame(folders, foldersSize, pos, cursor, activeDevice, usbMounted);
