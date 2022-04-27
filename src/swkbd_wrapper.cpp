@@ -38,12 +38,12 @@ uint32_t Swkbd_GetWorkMemorySize(uint32_t unk)
 
 bool Swkbd_AppearInputForm(const Swkbd_AppearArg args)
 {
-	return nn::swkbd::AppearInputForm(*(nn::swkbd::AppearArg*)&args);
+	return nn::swkbd::AppearInputForm(*(reinterpret_cast<const nn::swkbd::AppearArg *> (&args)));
 }
 
 bool Swkbd_Create(const Swkbd_CreateArg args)
 {
-	kbd_initialized = nn::swkbd::Create(*(nn::swkbd::CreateArg*)&args);
+	kbd_initialized = nn::swkbd::Create(*(reinterpret_cast<const nn::swkbd::CreateArg *> (&args)));
 	return kbd_initialized;
 }
 
@@ -111,7 +111,7 @@ void Swkbd_SetInputFormString16(const char16_t *str)
 
 void Swkbd_Calc(const Swkbd_ControllerInfo controllerInfo)
 {
-	nn::swkbd::Calc(*(nn::swkbd::ControllerInfo*)&controllerInfo);
+	nn::swkbd::Calc(*(reinterpret_cast<const nn::swkbd::ControllerInfo *> (&controllerInfo)));
 }
 
 bool Swkbd_IsNeedCalcSubThreadFont()
