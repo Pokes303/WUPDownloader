@@ -95,7 +95,7 @@ typedef struct
 	TITLE_KEY key;
 } TitleEntry;
 
-#define getTidHighFromTid(tid) *(uint32_t *)&tid
+#define getTidHighFromTid(tid) (*(uint32_t *)((void *)&tid))
 
 TitleEntry *getTitleEntries(TITLE_CATEGORY cat);
 size_t getTitleEntriesSize(TITLE_CATEGORY cat);

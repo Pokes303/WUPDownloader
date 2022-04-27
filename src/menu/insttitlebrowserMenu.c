@@ -40,8 +40,9 @@
 
 #include <mxml.h>
 
-#define MAX_ITITLEBROWSER_LINES (MAX_LINES - 3)
-#define MAX_ITITLEBROWSER_TITLE_LENGTH (MAX_TITLENAME_LENGTH >> 1)
+#define MAX_ITITLEBROWSER_LINES			(MAX_LINES - 3)
+#define MAX_ITITLEBROWSER_TITLE_LENGTH	(MAX_TITLENAME_LENGTH >> 1)
+#define DPAD_COOLDOWN_FRAMES			30 // half a second at 60 FPS
 
 static MCPTitleListType *ititleEntries;
 static size_t ititleEntrySize;
@@ -250,8 +251,8 @@ void ititleBrowserMenu()
 	bool mov = ititleEntrySize >= MAX_ITITLEBROWSER_LINES;
 	bool redraw = false;
 	MCPTitleListType *entry;
-	uint32_t oldHold = 0;
-	size_t frameCount = 0;
+	uint32_t oldHold = VPAD_BUTTON_RIGHT;
+	size_t frameCount = DPAD_COOLDOWN_FRAMES;
 	bool dpadAction;
 
 loopEntry:
@@ -280,7 +281,7 @@ loopEntry:
 			if(oldHold != VPAD_BUTTON_UP)
 			{
 				oldHold = VPAD_BUTTON_UP;
-				frameCount = 30;
+				frameCount = DPAD_COOLDOWN_FRAMES;
 				dpadAction = true;
 			}
 			else if(frameCount == 0)
@@ -319,7 +320,7 @@ loopEntry:
 			if(oldHold != VPAD_BUTTON_DOWN)
 			{
 				oldHold = VPAD_BUTTON_DOWN;
-				frameCount = 30;
+				frameCount = DPAD_COOLDOWN_FRAMES;
 				dpadAction = true;
 			}
 			else if(frameCount == 0)
@@ -350,7 +351,7 @@ loopEntry:
 				if(oldHold != VPAD_BUTTON_RIGHT)
 				{
 					oldHold = VPAD_BUTTON_RIGHT;
-					frameCount = 30;
+					frameCount = DPAD_COOLDOWN_FRAMES;
 					dpadAction = true;
 				}
 				else if(frameCount == 0)
@@ -375,7 +376,7 @@ loopEntry:
 				if(oldHold != VPAD_BUTTON_LEFT)
 				{
 					oldHold = VPAD_BUTTON_LEFT;
-					frameCount = 30;
+					frameCount = DPAD_COOLDOWN_FRAMES;
 					dpadAction = true;
 				}
 				else if(frameCount == 0)
