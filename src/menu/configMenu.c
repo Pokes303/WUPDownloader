@@ -83,7 +83,7 @@ void configMenu()
 		}
 		if(vpad.trigger & VPAD_BUTTON_LEFT)
 		{
-			switch(getRegion())
+			switch((int)getRegion())
 			{
 				case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
 					setRegion(MCP_REGION_JAPAN);
@@ -101,7 +101,7 @@ void configMenu()
 		}
 		else if(vpad.trigger & VPAD_BUTTON_RIGHT)
 		{
-			switch(getRegion())
+			switch((int)getRegion())
 			{
 				case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
 					setRegion(MCP_REGION_EUROPE);
