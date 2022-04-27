@@ -1077,7 +1077,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	char *toScreen = getToFrameBuffer();
 	strcpy(toScreen, "=>Title type: ");
 	bool hasDependencies;
-	switch(*(uint32_t *)&(tmd->tid)) //Title type
+	switch(getTidHighFromTid(tmd->tid)) //Title type
 	{
 		case TID_HIGH_GAME:
 			strcat(toScreen, "eShop or Packed");
