@@ -41,13 +41,14 @@
 #include <mxml.h>
 
 #define MAX_ITITLEBROWSER_LINES (MAX_LINES - 3)
+#define MAX_ITITLEBROWSER_TITLE_LENGTH (MAX_TITLENAME_LENGTH >> 1)
 
 static MCPTitleListType *ititleEntries;
 static size_t ititleEntrySize;
 
 typedef struct
 {
-	char name[MAX_TITLENAME_LENGTH];
+	char name[MAX_ITITLEBROWSER_TITLE_LENGTH];
 	MCPRegion region;
 	bool isDlc;
 	bool isUpdate;
@@ -166,8 +167,8 @@ static INST_META getInstalledMeta(MCPTitleListType *entry)
 		name = tid;
 	}
 
-	strncpy(ret.name, name, MAX_TITLENAME_LENGTH - 1);
-	ret.name[MAX_TITLENAME_LENGTH - 1] = '\0';
+	strncpy(ret.name, name, MAX_ITITLEBROWSER_TITLE_LENGTH - 1);
+	ret.name[MAX_ITITLEBROWSER_TITLE_LENGTH - 1] = '\0';
 
 	if(xt)
 		mxmlDelete(xt);
