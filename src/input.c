@@ -159,7 +159,7 @@ static void SWKBD_Render(SWKBD_Args *args, KeyboardChecks check)
 	for(int i = 4; i; --i)
 		*++ciksp = ++ksp;
 	
-	Swkbd_Calc(controllerInfo);
+	Swkbd_Calc(&controllerInfo);
 
 	if(Swkbd_IsNeedCalcSubThreadFont())
 	{
@@ -255,7 +255,7 @@ static bool SWKBD_Show(SWKBD_Args *args, KeyboardLayout layout, KeyboardType typ
 	appearArg.inputFormArg.unk_0x1E = true;
 	args->globalMaxlength = appearArg.inputFormArg.maxTextLength = maxlength;
 	
-	bool kbdVisible = Swkbd_AppearInputForm(appearArg);
+	bool kbdVisible = Swkbd_AppearInputForm(&appearArg);
 	debugPrintf("Swkbd_AppearInputForm(): %s", kbdVisible ? "true" : "false");
 	
 	if(okStrL != NULL)
@@ -337,7 +337,7 @@ bool SWKBD_Init()
 	OSDynLoadAllocFn oAlloc;
 	OSDynLoadFreeFn oFree;
 	OSDynLoad_GetAllocator(&oAlloc, &oFree);
-	bool ret = Swkbd_Create(createArg);
+	bool ret = Swkbd_Create(&createArg);
 	OSDynLoad_SetAllocator(oAlloc, oFree);
 	
 	return ret;

@@ -183,15 +183,15 @@ WUT_CHECK_SIZE(Swkbd_ControllerInfo, 0x14);
 
 //Wrapper functions
 uint32_t Swkbd_GetWorkMemorySize(uint32_t unk);
-bool Swkbd_AppearInputForm(const Swkbd_AppearArg args);
-bool Swkbd_Create(const Swkbd_CreateArg args);
+bool Swkbd_AppearInputForm(const Swkbd_AppearArg *args);
+bool Swkbd_Create(const Swkbd_CreateArg *args);
 void Swkbd_SetEnableOkButton(bool enable);
 void Swkbd_DeleteCppChar(const char *str);
 char *Swkbd_GetInputFormString();
 const char16_t *Swkbd_GetInputFormString16();
 void Swkbd_SetInputFormString(const char *str);
 void Swkbd_SetInputFormString16(const char16_t *str);
-void Swkbd_Calc(const Swkbd_ControllerInfo controllerInfo);
+void Swkbd_Calc(const Swkbd_ControllerInfo *controllerInfo);
 bool Swkbd_IsNeedCalcSubThreadFont();
 void Swkbd_CalcSubThreadFont();
 bool Swkbd_IsNeedCalcSubThreadPredict();
