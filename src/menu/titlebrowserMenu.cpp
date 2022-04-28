@@ -48,7 +48,7 @@
 static TitleEntry **filteredTitleEntries;
 static size_t filteredTitleEntrySize;
 
-static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cursor, char16_t *search)
+static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cursor, char *search)
 {
 	startNewFrame();
 	
@@ -64,58 +64,51 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
 	filteredTitleEntrySize = getTitleEntriesSize(tab);
 	const TitleEntry *titleEntrys = getTitleEntries(tab);
 	MCPRegion currentRegion = getRegion();
-	size_t ts;
+	size_t ts = 0;
 	
-	if(search[0] != u'\0')
+	if(search[0] != '\0')
 	{
-		ts = strlen16(search);
-		char16_t lowerSearch[ts + 1];
-		ts = 0;
 		do
-			lowerSearch[ts] = tolower16(search[ts]);
+			search[ts] = tolower(search[ts]);
 		while(search[ts++]);
 		
 		ts = 0;
 		size_t ss;
-		std::u16string u16s;
-		char16_t *ptr[2];
+		char *ptr[2];
 		bool found;
-		std::wstring_convert<codecvt<char16_t, char, std::mbstate_t>, char16_t> conv;
 		for(size_t i = 0 ; i < filteredTitleEntrySize; ++i)
 		{
 			if(!(currentRegion & titleEntrys[i].region))
 				continue;
 
 			ss = strlen(titleEntrys[i].name);
-			char tmpName[ss + 1];
+			char tmpName[ss];
 			for(size_t j = 0; j < ss; ++j)
 				tmpName[j] = tolower(titleEntrys[i].name[j]);
 			
-			u16s = conv.from_bytes(tmpName, tmpName+ss);
-			char16_t *tmp16Name = (char16_t *)u16s.c_str();
-			
-			ptr[0] = lowerSearch;
-			ptr[1] = str16str(ptr[0], (char16_t *)u" ");
-			do
+			ptr[0] = search;
+			ptr[1] = strstr(ptr[0], const_cast<char *>(" "));
+			while(true)
 			{
 				if(ptr[1] != NULL)
-					ptr[1][0] = u'\0';
-				
-				found = str16str(tmp16Name, ptr[0]) != NULL;
-				
+					ptr[1][0] = '\0';
+
+				found = strstr(tmpName, ptr[0]) != NULL;
+
 				if(ptr[1] != NULL)
 				{
-					ptr[1][0] = u' ';
+					ptr[1][0] = ' ';
 					if(found)
 					{
-						ptr[0] = ptr[1] + 1;
-						ptr[1] = str16str(ptr[0], (char16_t *)u" ");
+						ptr[0] = ptr[1];
+						ptr[1] = strstr(++ptr[0], const_cast<char *>(" "));
 					}
+					else
+						break;
 				}
 				else
 					break;
 			}
-			while(found);
 			
 			if(found)
 				filteredTitleEntries[ts++] = const_cast<TitleEntry *>(titleEntrys + i);
@@ -123,7 +116,6 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
 	}
 	else
 	{
-		ts = 0;
 		for(size_t i = 0; i < filteredTitleEntrySize; ++i)
 			if(currentRegion & titleEntrys[i].region)
 				filteredTitleEntries[ts++] = const_cast<TitleEntry *>(titleEntrys + i);
@@ -181,7 +173,7 @@ void titleBrowserMenu()
 	TITLE_CATEGORY tab = TITLE_CATEGORY_GAME;
 	size_t cursor = 0;
 	size_t pos = 0;
-	char16_t search[129];
+	char search[129];
 	search[0] = u'\0';
 	
 	drawTBMenuFrame(tab, pos, cursor, search);
@@ -344,10 +336,10 @@ void titleBrowserMenu()
 		}
 		if(vpad.trigger & VPAD_BUTTON_Y)
 		{
-			char16_t oldSearch[sizeof(search)];
-			str16cpy(oldSearch, search);
-			showKeyboard(KEYBOARD_LAYOUT_NORMAL, KEYBOARD_TYPE_NORMAL, (char *)search, CHECK_NONE, 128, false, (const char *)search, "Search");
-			if(str16cmp(oldSearch, search) != 0)
+			char oldSearch[sizeof(search)];
+			strcpy(oldSearch, search);
+			showKeyboard(KEYBOARD_LAYOUT_NORMAL, KEYBOARD_TYPE_NORMAL, search, CHECK_NONE, 128, false, search, "Search");
+			if(strcmp(oldSearch, search) != 0)
 			{
 				cursor = pos = 0;
 				redraw = true;

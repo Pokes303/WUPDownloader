@@ -553,12 +553,7 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 	debugPrintf("SWKBD initialised successfully");
 	
 	if(input != NULL)
-	{
-		if(layout == KEYBOARD_LAYOUT_NORMAL)
-			Swkbd_SetInputFormString16((char16_t *)input);
-		else
-			Swkbd_SetInputFormString(input);
-	}
+		Swkbd_SetInputFormString(input);
 	
 	bool dummy;
 	OSTime t = OSGetSystemTime();
@@ -572,24 +567,9 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 		if(args.okButtonEnabled && (Swkbd_IsDecideOkButton(&dummy) || (lastUsedController == CT_VPAD_0 && vpad.trigger & VPAD_BUTTON_A) || vpad.trigger & VPAD_BUTTON_PLUS))
 		{
 			debugPrintf("SWKBD Ok button pressed");
-			if(layout == KEYBOARD_LAYOUT_NORMAL)
-			{
-				const char16_t *outputStr = Swkbd_GetInputFormString16();
-				size_t i = 0;
-				size_t j = -1;
-				do
-				{
-					output[++j] = (char)(outputStr[i] >> 8);
-					output[++j] = (char)(outputStr[i]);
-				}
-				while(outputStr[i++]);
-			}
-			else
-			{
-				char *outputStr = Swkbd_GetInputFormString();
-				strcpy(output, outputStr);
-				MEMFreeToDefaultHeap(outputStr);
-			}
+			char *outputStr = Swkbd_GetInputFormString();
+			strcpy(output, outputStr);
+			MEMFreeToDefaultHeap(outputStr);
 			SWKBD_Hide(&args);
             t = OSGetSystemTime() - t;
 			addEntropy(&t, sizeof(OSTime));
@@ -599,20 +579,11 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 		bool close = vpad.trigger & VPAD_BUTTON_B || vpad.trigger & VPAD_BUTTON_MINUS;
 		if(close)
 		{
-			if(layout == KEYBOARD_LAYOUT_NORMAL)
+			char *inputFormString = Swkbd_GetInputFormString();
+			if(inputFormString != NULL)
 			{
-				const char16_t *inputFormString = Swkbd_GetInputFormString16();
-				if(inputFormString != NULL)
-					close = strlen16((char16_t *)inputFormString) == 0;
-			}
-			else
-			{
-				char *inputFormString = Swkbd_GetInputFormString();
-				if(inputFormString != NULL)
-				{
-					close = strlen(inputFormString) == 0;
-					MEMFreeToDefaultHeap(inputFormString);
-				}
+				close = strlen(inputFormString) == 0;
+				MEMFreeToDefaultHeap(inputFormString);
 			}
 		}
 		

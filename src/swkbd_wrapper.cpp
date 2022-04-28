@@ -75,7 +75,8 @@ char *Swkbd_GetInputFormString()
 	do
 		outputStr[i] = cppRet[i] > 0x7F ? '?' : (char)cppRet[i];
 	while(outputStr[i++] != '\0');
-	
+
+	outputStr[i] = '\0';
 	return outputStr;
 }
 
