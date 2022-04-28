@@ -1,4 +1,4 @@
-data/titleDB.json
+src/gtitles.c
 debug
 release
 payload
