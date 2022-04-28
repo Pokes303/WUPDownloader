@@ -20,6 +20,7 @@
 
 #include <wut-fixups.h>
 
+#include <config.h>
 #include <filesystem.h>
 #include <input.h>
 #include <renderer.h>
@@ -62,10 +63,12 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
 	
 	filteredTitleEntrySize = getTitleEntriesSize(tab);
 	const TitleEntry *titleEntrys = getTitleEntries(tab);
+	MCPRegion currentRegion = getRegion();
+	size_t ts;
 	
 	if(search[0] != u'\0')
 	{
-		size_t ts = strlen16(search);
+		ts = strlen16(search);
 		char16_t lowerSearch[ts + 1];
 		ts = 0;
 		do
@@ -80,6 +83,9 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
 		std::wstring_convert<codecvt<char16_t, char, std::mbstate_t>, char16_t> conv;
 		for(size_t i = 0 ; i < filteredTitleEntrySize; ++i)
 		{
+			if(!(currentRegion & titleEntrys[i].region))
+				continue;
+
 			ss = strlen(titleEntrys[i].name);
 			char tmpName[ss + 1];
 			for(size_t j = 0; j < ss; ++j)
@@ -114,13 +120,16 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
 			if(found)
 				filteredTitleEntries[ts++] = const_cast<TitleEntry *>(titleEntrys + i);
 		}
-		
-		filteredTitleEntrySize = ts;
 	}
 	else
+	{
+		ts = 0;
 		for(size_t i = 0; i < filteredTitleEntrySize; ++i)
-			filteredTitleEntries[i] = const_cast<TitleEntry *>(titleEntrys + i);
+			if(currentRegion & titleEntrys[i].region)
+				filteredTitleEntries[ts++] = const_cast<TitleEntry *>(titleEntrys + i);
+	}
 	
+	filteredTitleEntrySize = ts;
 	size_t j = filteredTitleEntrySize - pos;
 	size_t max = j < MAX_TITLEBROWSER_LINES ? j : MAX_TITLEBROWSER_LINES;
 	size_t l;
