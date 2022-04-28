@@ -332,7 +332,7 @@ void deviceToFrame(int line, int column, DEVICE_TYPE dev)
 	SDL_RenderCopy(renderer, deviceTex[dev], NULL, &fl);
 }
 
-void tabToFrame(int line, int column, char *label, bool active)
+void tabToFrame(int line, int column, const char *label, bool active)
 {
 	if(font == NULL)
 		return;

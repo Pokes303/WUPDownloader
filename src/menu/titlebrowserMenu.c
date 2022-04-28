@@ -44,84 +44,89 @@
 
 static TitleEntry **filteredTitleEntries;
 static size_t filteredTitleEntrySize;
+static size_t oldPos;
 
 static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cursor, char *search)
 {
 	startNewFrame();
-	
+
 	// Games, Updates, DLC, Demos, All
-	const char *tabLabels[5] = { "Games", "Updates", "DLC", "Demos", "All" };
+	static const char *tabLabels[5] = { "Games", "Updates", "DLC", "Demos", "All" };
 	for(int i = 0; i < 5; ++i)
-		tabToFrame(0, i, (char *)tabLabels[i], i == tab);
-	
+		tabToFrame(0, i, tabLabels[i], i == tab);
+
 	boxToFrame(1, MAX_LINES - 2);
-	
+
 	textToFrame(MAX_LINES - 1, ALIGNED_CENTER, "Press " BUTTON_A " to select || " BUTTON_B " to return || " BUTTON_X " to enter a title ID || " BUTTON_Y " to search");
-	
-	filteredTitleEntrySize = getTitleEntriesSize(tab);
-	const TitleEntry *titleEntrys = getTitleEntries(tab);
-	MCPRegion currentRegion = getRegion();
-	size_t ts = 0;
-	
-	if(search[0] != '\0')
+
+	size_t j;
+	size_t max;
+	size_t l;
+	if(pos != oldPos)
 	{
-		do
-			search[ts] = tolower(search[ts]);
-		while(search[ts++]);
-		
-		ts = 0;
-		size_t ss;
-		char *ptr[2];
-		bool found;
-		for(size_t i = 0 ; i < filteredTitleEntrySize; ++i)
+		filteredTitleEntrySize = getTitleEntriesSize(tab);
+		const TitleEntry *titleEntrys = getTitleEntries(tab);
+		MCPRegion currentRegion = getRegion();
+		l = 0;
+
+		if(search[0] != '\0')
 		{
-			if(!(currentRegion & titleEntrys[i].region))
-				continue;
+			do
+				search[l] = tolower(search[l]);
+			while(search[l++]);
 
-			ss = strlen(titleEntrys[i].name);
-			char tmpName[ss];
-			for(size_t j = 0; j < ss; ++j)
-				tmpName[j] = tolower(titleEntrys[i].name[j]);
-			
-			ptr[0] = search;
-			ptr[1] = strstr(ptr[0], " ");
-			while(true)
+			l = 0;
+			char *ptr[2];
+			bool found;
+			char tmpName[MAX_TITLENAME_LENGTH];
+			for(size_t i = 0 ; i < filteredTitleEntrySize; ++i)
 			{
-				if(ptr[1] != NULL)
-					ptr[1][0] = '\0';
+				if(!(currentRegion & titleEntrys[i].region))
+					continue;
 
-				found = strstr(tmpName, ptr[0]) != NULL;
+				max = strlen(titleEntrys[i].name);
+				for(j = 0; j < max; ++j)
+					tmpName[j] = tolower(titleEntrys[i].name[j]);
 
-				if(ptr[1] != NULL)
+				tmpName[j] = '\0';
+				ptr[0] = search;
+				ptr[1] = strstr(ptr[0], " ");
+				while(true)
 				{
-					ptr[1][0] = ' ';
-					if(found)
+					if(ptr[1] != NULL)
+						ptr[1][0] = '\0';
+
+					found = strstr(tmpName, ptr[0]) != NULL;
+
+					if(ptr[1] != NULL)
 					{
-						ptr[0] = ptr[1];
-						ptr[1] = strstr(++ptr[0], " ");
+						ptr[1][0] = ' ';
+						if(found)
+						{
+							ptr[0] = ptr[1];
+							ptr[1] = strstr(++ptr[0], " ");
+						}
+						else
+							break;
 					}
 					else
 						break;
 				}
-				else
-					break;
+
+				if(found)
+					filteredTitleEntries[l++] = (TitleEntry *)titleEntrys + i;
 			}
-			
-			if(found)
-				filteredTitleEntries[ts++] = (TitleEntry *)titleEntrys + i;
 		}
+		else
+			for(size_t i = 0; i < filteredTitleEntrySize; ++i)
+				if(currentRegion & titleEntrys[i].region)
+					filteredTitleEntries[l++] = (TitleEntry *)titleEntrys + i;
+
+		filteredTitleEntrySize = l;
 	}
-	else
-	{
-		for(size_t i = 0; i < filteredTitleEntrySize; ++i)
-			if(currentRegion & titleEntrys[i].region)
-				filteredTitleEntries[ts++] = (TitleEntry *)titleEntrys + i;
-	}
-	
-	filteredTitleEntrySize = ts;
-	size_t j = filteredTitleEntrySize - pos;
-	size_t max = j < MAX_TITLEBROWSER_LINES ? j : MAX_TITLEBROWSER_LINES;
-	size_t l;
+
+	j = filteredTitleEntrySize - pos;
+	max = j < MAX_TITLEBROWSER_LINES ? j : MAX_TITLEBROWSER_LINES;
 	MCPTitleListType titleList;
 	char *toFrame = getToFrameBuffer();
 	for(size_t i = 0; i < max; ++i)
@@ -129,13 +134,13 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
 		l = i + 2;
 		if(cursor == i)
 			arrowToFrame(l, 1);
-		
+
 		j = i + pos;
 		if(MCP_GetTitleInfo(mcpHandle, filteredTitleEntries[j]->tid, &titleList) == 0)
 			checkmarkToFrame(l, 4);
-		
+
 		flagToFrame(l, 7, filteredTitleEntries[j]->region);
-		
+
 		if(tab == TITLE_CATEGORY_ALL)
 		{
 			if(isDLC(filteredTitleEntries[j]))
@@ -147,7 +152,7 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
 				textToFrameCut(l, 10, filteredTitleEntries[j]->name, (1280 - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
 				continue;
 			}
-			
+
 			strcat(toFrame, filteredTitleEntries[j]->name);
 			textToFrameCut(l, 10, toFrame, (1280 - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
 		}
@@ -166,15 +171,16 @@ void titleBrowserMenu()
 		debugPrintf("Titlebrowser: OUT OF MEMORY!");
 		return;
 	}
-	
+
 	TITLE_CATEGORY tab = TITLE_CATEGORY_GAME;
 	size_t cursor = 0;
 	size_t pos = 0;
 	char search[129];
 	search[0] = u'\0';
-	
+	oldPos = 99;
+
 	drawTBMenuFrame(tab, pos, cursor, search);
-	
+
 	bool mov = filteredTitleEntrySize >= MAX_TITLEBROWSER_LINES;
 	bool redraw = false;
 	const TitleEntry *entry;
