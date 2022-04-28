@@ -36,9 +36,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include <wctype.h>
-#include <string>
-#include <locale>
 
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
@@ -87,7 +84,7 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
 				tmpName[j] = tolower(titleEntrys[i].name[j]);
 			
 			ptr[0] = search;
-			ptr[1] = strstr(ptr[0], const_cast<char *>(" "));
+			ptr[1] = strstr(ptr[0], " ");
 			while(true)
 			{
 				if(ptr[1] != NULL)
@@ -101,7 +98,7 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
 					if(found)
 					{
 						ptr[0] = ptr[1];
-						ptr[1] = strstr(++ptr[0], const_cast<char *>(" "));
+						ptr[1] = strstr(++ptr[0], " ");
 					}
 					else
 						break;
@@ -111,14 +108,14 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
 			}
 			
 			if(found)
-				filteredTitleEntries[ts++] = const_cast<TitleEntry *>(titleEntrys + i);
+				filteredTitleEntries[ts++] = (TitleEntry *)titleEntrys + i;
 		}
 	}
 	else
 	{
 		for(size_t i = 0; i < filteredTitleEntrySize; ++i)
 			if(currentRegion & titleEntrys[i].region)
-				filteredTitleEntries[ts++] = const_cast<TitleEntry *>(titleEntrys + i);
+				filteredTitleEntries[ts++] = (TitleEntry *)titleEntrys + i;
 	}
 	
 	filteredTitleEntrySize = ts;
