@@ -44,7 +44,7 @@
 
 #define MAX_TITLEBROWSER_LINES (MAX_LINES - 4)
 
-static TitleEntry *filteredTitleEntries;
+static TitleEntry **filteredTitleEntries;
 static size_t filteredTitleEntrySize;
 
 static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const size_t cursor, char16_t *search)
@@ -61,7 +61,7 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
 	textToFrame(MAX_LINES - 1, ALIGNED_CENTER, "Press " BUTTON_A " to select || " BUTTON_B " to return || " BUTTON_X " to enter a title ID || " BUTTON_Y " to search");
 	
 	filteredTitleEntrySize = getTitleEntriesSize(tab);
-	TitleEntry *titleEntrys = getTitleEntries(tab);
+	const TitleEntry *titleEntrys = getTitleEntries(tab);
 	
 	if(search[0] != u'\0')
 	{
@@ -112,14 +112,14 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
 			while(found);
 			
 			if(found)
-				filteredTitleEntries[ts++] = titleEntrys[i];
+				filteredTitleEntries[ts++] = const_cast<TitleEntry *>(titleEntrys + i);
 		}
 		
 		filteredTitleEntrySize = ts;
 	}
 	else
 		for(size_t i = 0; i < filteredTitleEntrySize; ++i)
-			filteredTitleEntries[i] = titleEntrys[i];
+			filteredTitleEntries[i] = const_cast<TitleEntry *>(titleEntrys + i);
 	
 	size_t j = filteredTitleEntrySize - pos;
 	size_t max = j < MAX_TITLEBROWSER_LINES ? j : MAX_TITLEBROWSER_LINES;
@@ -133,28 +133,28 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
 			arrowToFrame(l, 1);
 		
 		j = i + pos;
-		if(MCP_GetTitleInfo(mcpHandle, filteredTitleEntries[j].tid, &titleList) == 0)
+		if(MCP_GetTitleInfo(mcpHandle, filteredTitleEntries[j]->tid, &titleList) == 0)
 			checkmarkToFrame(l, 4);
 		
-		flagToFrame(l, 7, filteredTitleEntries[j].region);
+		flagToFrame(l, 7, filteredTitleEntries[j]->region);
 		
 		if(tab == TITLE_CATEGORY_ALL)
 		{
-			if(filteredTitleEntries[j].isDLC)
+			if(isDLC(filteredTitleEntries[j]))
 				strcpy(toFrame, "[DLC] ");
-			else if(filteredTitleEntries[j].isUpdate)
+			else if(isUpdate(filteredTitleEntries[j]))
 				strcpy(toFrame, "[UPD] ");
 			else
 			{
-				textToFrameCut(l, 10, filteredTitleEntries[j].name, (1280 - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
+				textToFrameCut(l, 10, filteredTitleEntries[j]->name, (1280 - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
 				continue;
 			}
 			
-			strcat(toFrame, filteredTitleEntries[j].name);
+			strcat(toFrame, filteredTitleEntries[j]->name);
 			textToFrameCut(l, 10, toFrame, (1280 - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
 		}
 		else
-			textToFrameCut(l, 10, filteredTitleEntries[j].name, (1280 - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
+			textToFrameCut(l, 10, filteredTitleEntries[j]->name, (1280 - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
 	}
 	drawFrame();
 }
@@ -162,7 +162,7 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
 void titleBrowserMenu()
 {
 	filteredTitleEntrySize = getTitleEntriesSize(TITLE_CATEGORY_ALL);
-	filteredTitleEntries = (TitleEntry *)MEMAllocFromDefaultHeap(filteredTitleEntrySize * sizeof(TitleEntry));
+	filteredTitleEntries = (TitleEntry **)MEMAllocFromDefaultHeap(filteredTitleEntrySize * sizeof(uintptr_t));
 	if(filteredTitleEntries == NULL)
 	{
 		debugPrintf("Titlebrowser: OUT OF MEMORY!");
@@ -179,7 +179,7 @@ void titleBrowserMenu()
 	
 	bool mov = filteredTitleEntrySize >= MAX_TITLEBROWSER_LINES;
 	bool redraw = false;
-	TitleEntry *entry;
+	const TitleEntry *entry;
 	uint32_t oldHold = 0;
 	size_t frameCount = 0;
 	bool dpadAction;
@@ -193,7 +193,7 @@ void titleBrowserMenu()
 		showFrame();
 		if(vpad.trigger & VPAD_BUTTON_A)
 		{
-			entry = filteredTitleEntries + cursor + pos;
+			entry = filteredTitleEntries[cursor + pos];
 			break;
 		}
 		

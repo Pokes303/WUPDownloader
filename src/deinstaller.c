@@ -48,7 +48,7 @@ bool deinstall(MCPTitleListType title, bool channelHaxx)
 {
 	char tid[17];
 	hex(title.titleId, 16, tid);
-	char *game = tid2name(tid);
+	const char *game = tid2name(tid);
 	
 	startNewFrame();
 	textToFrame(0, 0, "Uninstalling");

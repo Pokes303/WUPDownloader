@@ -44,7 +44,7 @@ struct DownloadLogList
 	DownloadLogList *nextEntry;
 };
 
-DownloadLogList *downloadLogList = NULL;
+static DownloadLogList *downloadLogList = NULL;
 
 void addToScreenLog(const char *str, ...)
 {
@@ -291,6 +291,6 @@ bool checkSystemTitleFromEntry(const TitleEntry *entry)
 
 bool checkSystemTitleFromTid(uint64_t tid)
 {
-	TitleEntry *entry = getTitleEntryByTid(tid);
+	const TitleEntry *entry = getTitleEntryByTid(tid);
 	return entry == NULL ? true : checkSystemTitleFromEntry(entry);
 }

@@ -1,7 +1,6 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
- * Copyright (c) 2019-2020 Pokes303                                        *
- * Copyright (c) 2020-2021 V10lator <v10lator@myway.de>                    *
+ * Copyright (c) 2022 V10lator <v10lator@myway.de>                         *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
@@ -18,45 +17,54 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#include <wut-fixups.h>
+#ifndef NUSSPLI_GTITLES_H
+#define NUSSPLI_GTITLES_H
 
-#include <input.h>
-#include <renderer.h>
-#include <status.h>
-#include <titles.h>
-#include <utils.h>
-#include <menu/download.h>
-#include <menu/predownload.h>
-#include <menu/utils.h>
+#include <wut-fixups.h>
 
 #include <stdint.h>
 
-static TitleEntry staticEntry = { .name = "UNKNOWN", .region = MCP_REGION_UNKNOWN, .key = 99 };
+#include <coreinit/mcp.h>
 
-bool downloadMenu()
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
+typedef enum
 {
-	char titleID[17];
-	char titleVer[33];
-	char folderName[FILENAME_MAX - 11];
-	titleID[0] = titleVer[0] = folderName[0] = '\0';
-	
-	if(!showKeyboard(KEYBOARD_LAYOUT_TID, KEYBOARD_TYPE_RESTRICTED, titleID, CHECK_HEXADECIMAL, 16, true, "00050000101", NULL))
-		return false;
-	
-	if(!AppRunning())
-		return true;
-	
-	toLowercase(titleID);
+	TITLE_CATEGORY_GAME = 0,
+	TITLE_CATEGORY_UPDATE = 1,
+	TITLE_CATEGORY_DLC = 2,
+	TITLE_CATEGORY_DEMO = 3,
+	TITLE_CATEGORY_ALL = 4,
+} TITLE_CATEGORY;
+
+typedef enum
+{
+	TITLE_KEY_mypass	= 0,
+	TITLE_KEY_nintendo	= 1,
+	TITLE_KEY_test		= 2,
+	TITLE_KEY_1234567890	= 3,
+	TITLE_KEY_Lucy131211	= 4,
+	TITLE_KEY_fbf10		= 5,
+	TITLE_KEY_5678		= 6,
+	TITLE_KEY_1234		= 7,
+	TITLE_KEY_		= 8
+} TITLE_KEY;
+
+typedef struct
+{
+	const char *name;
 	uint64_t tid;
-	hexToByte(titleID, (uint8_t *)&tid);
-	
-	const TitleEntry *entry = getTitleEntryByTid(tid);
-	if(entry == NULL)
-	{
-		staticEntry.tid = tid;
-		entry = (const TitleEntry *)&staticEntry;
+	const MCPRegion region;
+	const TITLE_KEY key;
+} TitleEntry;
+
+const TitleEntry *getAllTitleEntries();
+size_t getTitleEntriesSize(TITLE_CATEGORY cat);
+
+#ifdef __cplusplus
 	}
-	
-	predownloadMenu(entry);
-	return true;
-}
+#endif
+
+#endif // ifndef NUSSPLI_TITLES_H

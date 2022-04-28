@@ -82,8 +82,8 @@ all: debug
 
 real:
 	@git submodule update --init --recursive
-	@rm -f data/titleDB.json
-	@wget -U "NUSspli builder" -O data/titleDB.json https://napi.nbg01.v10lator.de/v2/t
+	@rm -f src/gtitles.c
+	@wget -U "NUSspli builder" -O src/gtitles.c https://napi.nbg01.v10lator.de/db
 	@rm -f zlib/contrib/minizip/iowin* zlib/contrib/minizip/mini* zlib/contrib/minizip/zip.? zlib/contrib/minizip/mztools.? zlib/contrib/minizip/configure.ac zlib/contrib/minizip/Makefile zlib/contrib/minizip/Makefile.am zlib/contrib/minizip/*.com zlib/contrib/minizip/*.txt
 	@cd zlib && git apply ../minizip.patch || true
 	@cd SDL_FontCache && for patch in $(TOPDIR)/SDL_FontCache-patches/*.patch; do echo Applying $$patch && git apply $$patch; done || true
@@ -93,7 +93,7 @@ real:
 #-------------------------------------------------------------------------------
 clean:
 	@git submodule deinit --force --all
-	@rm -fr debug release $(TARGET).rpx $(TARGET).elf
+	@rm -fr debug release $(TARGET).rpx $(TARGET).elf src/gtitles.c
 
 #-------------------------------------------------------------------------------
 debug:		MAKE_CMD	:=	debug

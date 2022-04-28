@@ -71,15 +71,15 @@ static void getInstalledMeta(MCPTitleListType *entry, INST_META *out)
 			out->dt = DEVICE_TYPE_UNKNOWN;
 	}
 
-	TitleEntry *e = getTitleEntryByTid(entry->titleId);
+	const TitleEntry *e = getTitleEntryByTid(entry->titleId);
 	if(e)
 	{
 		strncpy(out->name, e->name, MAX_ITITLEBROWSER_TITLE_LENGTH - 1);
 		out->name[MAX_ITITLEBROWSER_TITLE_LENGTH - 1] = '\0';
 
 		out->region = e->region;
-		out->isDlc = e->isDLC;
-		out->isUpdate = e->isUpdate;
+		out->isDlc = isDLC(e);
+		out->isUpdate = isUpdate(e);
 		return;
 	}
 

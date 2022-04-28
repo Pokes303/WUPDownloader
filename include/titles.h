@@ -1,6 +1,6 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
- * Copyright (c) 2020-2021 V10lator <v10lator@myway.de>                    *
+ * Copyright (c) 2020-2022 V10lator <v10lator@myway.de>                    *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
@@ -26,6 +26,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <gtitles.h>
+
 #include <coreinit/mcp.h>
 
 #ifdef __cplusplus
@@ -49,58 +51,11 @@ typedef enum
 	TID_HIGH_UPDATE =		0x0005000E,
 } TID_HIGH;
 
-typedef enum
-{
-	TRANSFORMED_TID_HIGH_GAME =		0,
-	TRANSFORMED_TID_HIGH_DEMO =		1,
-	TRANSFORMED_TID_HIGH_SYSTEM_APP =	2,
-	TRANSFORMED_TID_HIGH_SYSTEM_DATA =	3,
-	TRANSFORMED_TID_HIGH_SYSTEM_APPLET =	4,
-	TRANSFORMED_TID_HIGH_VWII_IOS =		5,
-	TRANSFORMED_TID_HIGH_VWII_SYSTEM_APP =	6,
-	TRANSFORMED_TID_HIGH_VWII_SYSTEM =	7,
-	TRANSFORMED_TID_HIGH_DLC =		8,
-	TRANSFORMED_TID_HIGH_UPDATE =		9,
-} TRANSFORMED_TID_HIGH;
-
-typedef enum
-{
-	TITLE_CATEGORY_GAME = 0,
-	TITLE_CATEGORY_UPDATE = 1,
-	TITLE_CATEGORY_DLC = 2,
-	TITLE_CATEGORY_DEMO = 3,
-	TITLE_CATEGORY_ALL = 4,
-} TITLE_CATEGORY;
-
-typedef enum
-{
-	TITLE_KEY_mypass	= 0,
-	TITLE_KEY_nintendo	= 1,
-	TITLE_KEY_test		= 2,
-	TITLE_KEY_1234567890	= 3,
-	TITLE_KEY_Lucy131211	= 4,
-	TITLE_KEY_fbf10		= 5,
-	TITLE_KEY_5678		= 6,
-	TITLE_KEY_1234		= 7,
-	TITLE_KEY_		= 8
-} TITLE_KEY;
-
-typedef struct
-{
-	char *name;
-	uint64_t tid;
-	bool isDLC;
-	bool isUpdate;
-	MCPRegion region;
-	TITLE_KEY key;
-} TitleEntry;
-
 #define getTidHighFromTid(tid) (*(uint32_t *)&tid)
 
-TitleEntry *getTitleEntries(TITLE_CATEGORY cat);
-size_t getTitleEntriesSize(TITLE_CATEGORY cat);
-TitleEntry *getTitleEntryByTid(uint64_t tid);
-char *tid2name(const char *tid);
+const TitleEntry *getTitleEntries(TITLE_CATEGORY cat);
+const TitleEntry *getTitleEntryByTid(uint64_t tid);
+const char *tid2name(const char *tid);
 bool name2tid(const char *name, char *out);
 bool initTitles();
 void clearTitles();
