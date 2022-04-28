@@ -28,10 +28,15 @@
 
 #include <coreinit/ios.h>
 #include <coreinit/mcp.h>
+#include <nn/acp/title.h>
 
 #ifdef __cplusplus
 	extern "C" {
 #endif
+
+// ACP
+extern void ACPInitialize();
+extern ACPResult ACPGetTitleMetaXmlByTitleListType(MCPTitleListType *titleListType, ACPMetaXml *out);
 
 // KPAD
 extern void KPADShutdown();

@@ -24,6 +24,8 @@
 
 #include <stdint.h>
 
+#include <nn/acp/title.h>
+
 #ifdef __cplusplus
 	extern "C" {
 #endif
@@ -34,6 +36,7 @@ void shutdownStaticMem();
 char *getStaticScreenBuffer();
 char *getStaticLineBuffer();
 char *getStaticPathBuffer(uint32_t i);
+ACPMetaXml *getStaticMetaXmlBuffer();
 
 #ifdef __cplusplus
 	}

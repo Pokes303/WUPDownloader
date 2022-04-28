@@ -23,6 +23,7 @@
 #include <stdint.h>
 
 #include <coreinit/memdefaultheap.h>
+#include <nn/acp/title.h>
 
 #include <staticMem.h>
 #include <renderer.h>
@@ -30,15 +31,21 @@
 static char staticMemToFrameBuffer[TO_FRAME_BUFFER_SIZE];
 static char staticMemLineBuffer[TO_FRAME_BUFFER_SIZE];
 static char staticMemPathBuffer[3][PATH_MAX];
+static ACPMetaXml *meta = NULL;
 
 bool initStaticMem()
 {
-	return true;
+	meta = MEMAllocFromDefaultHeapEx(sizeof(ACPMetaXml), 0x40);
+	return meta != NULL;
 }
 
 void shutdownStaticMem()
 {
-	// STUB
+	if(meta != NULL)
+	{
+		MEMFreeToDefaultHeap(meta);
+		meta = NULL;
+	}
 }
 
 char *getStaticScreenBuffer()
@@ -54,4 +61,9 @@ char *getStaticLineBuffer()
 char *getStaticPathBuffer(uint32_t i)
 {
 	return staticMemPathBuffer[i];
+}
+
+ACPMetaXml *getStaticMetaXmlBuffer()
+{
+	return meta;
 }

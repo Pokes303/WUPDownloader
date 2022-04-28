@@ -24,7 +24,9 @@
 #include <file.h>
 #include <filesystem.h>
 #include <input.h>
+#include <osdefs.h>
 #include <renderer.h>
+#include <staticMem.h>
 #include <status.h>
 #include <titles.h>
 #include <utils.h>
@@ -37,8 +39,7 @@
 
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
-
-#include <mxml.h>
+#include <nn/acp/title.h>
 
 #define MAX_ITITLEBROWSER_LINES			(MAX_LINES - 3)
 #define MAX_ITITLEBROWSER_TITLE_LENGTH	(MAX_TITLENAME_LENGTH >> 1)
@@ -56,131 +57,67 @@ typedef struct
 	DEVICE_TYPE dt;
 } INST_META;
 
-static INST_META getInstalledMeta(MCPTitleListType *entry)
+static void getInstalledMeta(MCPTitleListType *entry, INST_META *out)
 {
-	INST_META ret;
-
 	switch(entry->indexedDevice[0])
 	{
 		case 'u':
-			ret.dt = DEVICE_TYPE_USB;
+			out->dt = DEVICE_TYPE_USB;
 			break;
 		case 'm':
-			ret.dt = DEVICE_TYPE_NAND;
+			out->dt = DEVICE_TYPE_NAND;
 			break;
 		default: // TODO: bt. drh, slc
-			ret.dt = DEVICE_TYPE_UNKNOWN;
+			out->dt = DEVICE_TYPE_UNKNOWN;
 	}
 
 	TitleEntry *e = getTitleEntryByTid(entry->titleId);
 	if(e)
 	{
-		strcpy(ret.name, e->name);
-		ret.region = e->region;
-		ret.isDlc = e->isDLC;
-		ret.isUpdate = e->isUpdate;
-		return ret;
+		strncpy(out->name, e->name, MAX_ITITLEBROWSER_TITLE_LENGTH - 1);
+		out->name[MAX_ITITLEBROWSER_TITLE_LENGTH - 1] = '\0';
+
+		out->region = e->region;
+		out->isDlc = e->isDLC;
+		out->isUpdate = e->isUpdate;
+		return;
 	}
 
 	switch(getTidHighFromTid(entry->titleId))
 	{
 		case TID_HIGH_UPDATE:
-			ret.isDlc = false;
-			ret.isUpdate = true;
+			out->isDlc = false;
+			out->isUpdate = true;
 			break;
 		case TID_HIGH_DLC:
-			ret.isDlc = true;
-			ret.isUpdate = false;
+			out->isDlc = true;
+			out->isUpdate = false;
 			break;
 		default:
-			ret.isDlc = ret.isUpdate = false;
+			out->isDlc = out->isUpdate = false;
 	}
 
-	ret.region = MCP_REGION_UNKNOWN;
-	char *buf = getStaticPathBuffer(0);
-	char tid[17];
-	switch(ret.dt)
+	ACPMetaXml *meta = getStaticMetaXmlBuffer();
+	if(ACPGetTitleMetaXmlByTitleListType(entry, meta) == ACP_RESULT_SUCCESS)
 	{
-		case DEVICE_TYPE_USB:
-			mountUSB();
-			strcpy(buf, "usb:/");
-			break;
-		case DEVICE_TYPE_NAND:
-			mountMLC();
-			strcpy(buf, "mlc:/");
-			break;
-		default: // DEVICE_TYPE_UNKNOWN
-			hex(entry->titleId, 16, tid);
-			strcpy(ret.name, tid);
-			return ret;
-	}
+		strncpy(out->name, meta->longname_en, MAX_ITITLEBROWSER_TITLE_LENGTH - 1);
+		out->name[MAX_ITITLEBROWSER_TITLE_LENGTH - 1] = '\0';
 
-	strcpy(buf + 5, entry->path + 19);
-	strcat(buf, "/meta/meta.xml");
-	const char *name = NULL;
-	mxml_node_t *xt = NULL;
-	FILE *f = fopen(buf, "rb");
-	buf = NULL;
-	if(f != NULL)
-	{
-		// mxmls file parsing is slow, so we load everything to RAM
-		uint32_t fs = getFilesize(f);
-		buf = MEMAllocFromDefaultHeap(fs);
-		if(buf != NULL)
+		if(strcmp(out->name, "Long Title Name (EN)"))
 		{
-			if(fread(buf, fs, 1, f) == 1)
-			{
-				xt = mxmlLoadString(NULL, buf, MXML_OPAQUE_CALLBACK);
-				if(xt != NULL)
-				{
-					mxml_node_t *xm = mxmlGetFirstChild(xt);
-					if(xm != NULL)
-					{
-						mxml_node_t *xn = mxmlFindElement(xm, xt, "region", "type", "hexBinary", MXML_DESCEND);
-						if(xn != NULL)
-						{
-							name = mxmlGetOpaque(xn);
-							if(name != NULL)
-							{
-								hexToByte(name, (uint8_t *)&ret.region);
-								name = NULL;
-							}
-						}
+			for(char *buf = out->name; *buf != '\0'; ++buf)
+				if(*buf == '\n')
+					*buf = ' ';
 
-						xn = mxmlFindElement(xm, xt, "longname_en", "type", "string", MXML_DESCEND);
-						if(xn != NULL)
-						{
-							name = mxmlGetOpaque(xn);
-							if(strcmp(name, "Long Title Name (EN)") == 0)
-								name = NULL;
-						}
-					}
-				}
-			}
+			out->region = meta->region;
+			return;
 		}
-
-		fclose(f);
 	}
-
-	if(name == NULL)
-	{
-		hex(entry->titleId, 16, tid);
-		name = tid;
-	}
-
-	strncpy(ret.name, name, MAX_ITITLEBROWSER_TITLE_LENGTH - 1);
-	ret.name[MAX_ITITLEBROWSER_TITLE_LENGTH - 1] = '\0';
-
-	if(xt)
-		mxmlDelete(xt);
-	if(buf)
-		MEMFreeToDefaultHeap(buf);
-
-	for(buf = ret.name; *buf != '\0'; ++buf)
-		if(*buf == '\n')
-			*buf = ' ';
-
-	return ret;
+	char tid[17];
+	hex(entry->titleId, 16, tid);
+	strcpy(out->name, tid);
+	out->region = MCP_REGION_UNKNOWN;
+	return;
 }
 
 static void drawITBMenuFrame(const size_t pos, const size_t cursor)
@@ -197,7 +134,7 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 	char *toFrame = getToFrameBuffer();
 	for(size_t i = 0, l = 1; i < max; ++i, ++l)
 	{
-		im = getInstalledMeta(ititleEntries + pos + i);
+		getInstalledMeta(ititleEntries + pos + i, &im);
 		if(im.isDlc)
 			strcpy(toFrame, "[DLC] ");
 		else if(im.isUpdate)
@@ -412,7 +349,8 @@ loopEntry:
 
 	if(AppRunning())
 	{
-		INST_META im = getInstalledMeta(entry);
+		INST_META im;
+		getInstalledMeta(entry, &im);
 		char *toFrame = getToFrameBuffer();
 		strcpy(toFrame, "Do you really want to uninstall\n");
 		strcat(toFrame, im.name);
