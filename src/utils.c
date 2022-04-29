@@ -381,39 +381,32 @@ void debugInit()
 	WHBLogUdpInit();
 }
 
+#define debugPrintInternal(newStr, str)																																			\
+{																																												\
+	va_list va;																																									\
+	va_start(va, str);																																							\
+																																												\
+	OSCalendarTime now;																																							\
+    OSTicksToCalendarTime(OSGetTime(), &now);																																	\
+	sprintf(newStr, "%s %02d %s %d %02d:%02d:%02d.%03d\t", days[now.tm_wday], now.tm_mday, months[now.tm_mon], now.tm_year, now.tm_hour, now.tm_min, now.tm_sec, now.tm_msec);	\
+																																												\
+	size_t tss = strlen(newStr);																																				\
+	vsnprintf(newStr + tss, 512 - tss, str, va);																																\
+	va_end(va);																																									\
+}
+
 void debugPrintfUnlocked(const char *str, ...)
 {
-	va_list va;
-	va_start(va, str);
 	char newStr[512];
-
-	OSCalendarTime now;
-    OSTicksToCalendarTime(OSGetTime(), &now);
-	sprintf(newStr, "%s %02d %s %d %02d:%02d:%02d.%03d\t", days[now.tm_wday], now.tm_mday, months[now.tm_mon], now.tm_year, now.tm_hour, now.tm_min, now.tm_sec, now.tm_msec);
-
-	size_t tss = strlen(newStr);
-
-	vsnprintf(newStr + tss, 512 - tss, str, va);
-	va_end(va);
-
+	debugPrintInternal(newStr, str);
 	WHBLogPrint(newStr);
 }
 
 void debugPrintf(const char *str, ...)
 {
-	va_list va;
-	va_start(va, str);
 	char newStr[512];
-	
-	OSCalendarTime now;
-    OSTicksToCalendarTime(OSGetTime(), &now);
-	sprintf(newStr, "%s %02d %s %d %02d:%02d:%02d.%03d\t", days[now.tm_wday], now.tm_mday, months[now.tm_mon], now.tm_year, now.tm_hour, now.tm_min, now.tm_sec, now.tm_msec);
+	debugPrintInternal(newStr, str);
 
-	size_t tss = strlen(newStr);
-	
-	vsnprintf(newStr + tss, 512 - tss, str, va);
-	va_end(va);
-	
 	spinLock(debugLock);
 	WHBLogPrint(newStr);
 	spinReleaseLock(debugLock);
