@@ -314,7 +314,7 @@ naNedNa:
 		{
 			clearRamBuf();
 			saveConfig(false);
-			deinstall(&titleList, false);
+			deinstall(&titleList, entry->name, false);
 			return;
 		}
 		

@@ -394,7 +394,7 @@ void update(char *newVersion)
 			goto updateError;
 		}
 
-		deinstall(&ownInfo, true);
+		deinstall(&ownInfo, "NUSspli v" NUSSPLI_VERSION, true);
         OSSleepTicks(OSSecondsToTicks(10)); // channelHaxx...
 		
 		if(isAroma())

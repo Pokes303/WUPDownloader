@@ -375,7 +375,7 @@ loopEntry:
 		removeErrorOverlay(r);
 
 		if(checkSystemTitle(entry->titleId, im.region) && AppRunning())
-			deinstall(entry, false);
+			deinstall(entry, im.name, false);
 		else
 			goto loopEntry;
 	}

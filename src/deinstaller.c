@@ -44,15 +44,14 @@
 #include <utils.h>
 #include <menu/utils.h>
 
-bool deinstall(MCPTitleListType *title, bool channelHaxx)
+bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx)
 {
 	char tid[17];
 	hex(title->titleId, 16, tid);
-	const char *game = tid2name(tid);
 	
 	startNewFrame();
 	textToFrame(0, 0, "Uninstalling");
-	textToFrame(0, 19, game);
+	textToFrame(0, 19, name);
 	textToFrame(1, 0, "Preparing...");
 	writeScreenLog(2);
 	drawFrame();
@@ -79,7 +78,7 @@ bool deinstall(MCPTitleListType *title, bool channelHaxx)
 	}
 	
 	if(!channelHaxx)
-		showMcpProgress(&data, game, false);
+		showMcpProgress(&data, name, false);
     t = OSGetTick() - t;
 	addEntropy(&t, sizeof(OSTick));
 	addToScreenLog("Deinstallation finished!");
@@ -91,7 +90,7 @@ bool deinstall(MCPTitleListType *title, bool channelHaxx)
 	startRumble();
 	
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-	textToFrame(0, 0, game);
+	textToFrame(0, 0, name);
 	textToFrame(1, 0, "Uninstalled successfully!");
 	writeScreenLog(2);
 	drawFrame();
@@ -103,7 +102,7 @@ bool deinstall(MCPTitleListType *title, bool channelHaxx)
 		if(app == APP_STATE_RETURNING)
 		{
 			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-			textToFrame(0, 0, game);
+			textToFrame(0, 0, name);
 			textToFrame(1, 0, "Uninstalled successfully!");
 			writeScreenLog(2);
 			drawFrame();
