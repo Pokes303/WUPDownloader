@@ -60,7 +60,7 @@ typedef struct
 	const TITLE_KEY key;
 } TitleEntry;
 
-const TitleEntry *getAllTitleEntries();
+const TitleEntry *getTitleEntries(TITLE_CATEGORY cat);
 size_t getTitleEntriesSize(TITLE_CATEGORY cat);
 
 #ifdef __cplusplus

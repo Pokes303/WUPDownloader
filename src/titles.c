@@ -38,47 +38,36 @@
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 
-static TitleEntry *filteredEntry[4] = { NULL, NULL, NULL, NULL }; // Games, Updates, DLC, Demos
-
-const TitleEntry *getTitleEntries(TITLE_CATEGORY cat)
-{
-	return cat == TITLE_CATEGORY_ALL ? getAllTitleEntries() : filteredEntry[cat];
-	
-}
-
 const TitleEntry *getTitleEntryByTid(uint64_t tid)
 {
-	const TitleEntry *haystack;
-	size_t haySize;
-	
+	static TITLE_CATEGORY cat;
+
 	switch(getTidHighFromTid(tid))
 	{
 		case TID_HIGH_GAME:
-			haystack = filteredEntry[TITLE_CATEGORY_GAME];
-			haySize = getTitleEntriesSize(TITLE_CATEGORY_GAME);
+			cat = TITLE_CATEGORY_GAME;
 			break;
 		case TID_HIGH_UPDATE:
-			haystack = filteredEntry[TITLE_CATEGORY_UPDATE];
-			haySize = getTitleEntriesSize(TITLE_CATEGORY_UPDATE);
+			cat = TITLE_CATEGORY_UPDATE;
 			break;
 		case TID_HIGH_DLC:
-			haystack = filteredEntry[TITLE_CATEGORY_DLC];
-			haySize = getTitleEntriesSize(TITLE_CATEGORY_DLC);
+			cat = TITLE_CATEGORY_DLC;
 			break;
 		case TID_HIGH_DEMO:
-			haystack = filteredEntry[TITLE_CATEGORY_DEMO];
-			haySize = getTitleEntriesSize(TITLE_CATEGORY_DEMO);
+			cat = TITLE_CATEGORY_DEMO;
 			break;
 		default:
-			haystack = getAllTitleEntries();
-			haySize = getTitleEntriesSize(TITLE_CATEGORY_ALL);
+			cat = TITLE_CATEGORY_ALL;
 		
 	}
-	
-	for(size_t i = 0; i < haySize; ++i, ++haystack)
+
+	const TitleEntry *haystack = getTitleEntries(cat);
+	size_t haySize = getTitleEntriesSize(cat);
+
+	for(++haySize; --haySize; ++haystack)
 		if(haystack->tid == tid)
 			return haystack;
-	
+
 	return NULL;
 }
 
@@ -97,7 +86,7 @@ bool name2tid(const char *name, char *out)
 	size_t current = upper / 2;
 	int strret;
 	
-	const TitleEntry *titleEntry = getAllTitleEntries();
+	const TitleEntry *titleEntry = getTitleEntries(TITLE_CATEGORY_ALL);
 	while(lower != upper)
 	{
 		strret =  strcmp(titleEntry[current].name, name);
@@ -126,42 +115,32 @@ bool name2tid(const char *name, char *out)
 
 bool initTitles()
 {
-	startNewFrame();
-	textToFrame(0, 0, "Initialising title database");
-	writeScreenLog(1);
-	drawFrame();
-	showFrame();
-	
-	const TitleEntry *entries = getAllTitleEntries();
-	uint32_t cat;
-	uint32_t oldCat = 99;
-	for(size_t i = 0; i < getTitleEntriesSize(TITLE_CATEGORY_ALL); ++i)
+#ifdef NUSSPLI_DEBUG
+	const char *pre;
+	for(int i = 0; i < 5; ++i)
 	{
-		switch(getTidHighFromTid(entries[i].tid))
+		switch(i)
 		{
-			case TID_HIGH_GAME:
-				cat = 0;
+			case TITLE_CATEGORY_GAME:
+				pre = "Games";
 				break;
-			case TID_HIGH_UPDATE:
-				cat = 1;
+			case TITLE_CATEGORY_UPDATE:
+				pre = "Updates";
 				break;
-			case TID_HIGH_DLC:
-				cat = 2;
+			case TITLE_CATEGORY_DLC:
+				pre = "DLC";
 				break;
-			case TID_HIGH_DEMO:
-				cat = 3;
+			case TITLE_CATEGORY_DEMO:
+				pre = "Demos";
 				break;
+			case TITLE_CATEGORY_ALL:
+				pre = "All";
 		}
 
-		if(oldCat != cat)
-		{
-			filteredEntry[cat] = (TitleEntry *)entries + i;
-			oldCat = cat;
-		}
+		debugPrintf("%s: %u", pre, getTitleEntriesSize(i));
 	}
-
-	addToScreenLog("title database ready!");
-	debugPrintf("%d titles", getTitleEntriesSize(TITLE_CATEGORY_ALL));
+#endif
+	// STUB
 	return true;
 }
 
