@@ -385,7 +385,7 @@ void debugPrintfUnlocked(const char *str, ...)
 {
 	va_list va;
 	va_start(va, str);
-	char newStr[2048];
+	char newStr[512];
 
 	OSCalendarTime now;
     OSTicksToCalendarTime(OSGetTime(), &now);
@@ -393,7 +393,7 @@ void debugPrintfUnlocked(const char *str, ...)
 
 	size_t tss = strlen(newStr);
 
-	vsnprintf(newStr + tss, 2048 - tss, str, va);
+	vsnprintf(newStr + tss, 512 - tss, str, va);
 	va_end(va);
 
 	WHBLogPrint(newStr);
@@ -403,7 +403,7 @@ void debugPrintf(const char *str, ...)
 {
 	va_list va;
 	va_start(va, str);
-	char newStr[2048];
+	char newStr[512];
 	
 	OSCalendarTime now;
     OSTicksToCalendarTime(OSGetTime(), &now);
@@ -411,7 +411,7 @@ void debugPrintf(const char *str, ...)
 
 	size_t tss = strlen(newStr);
 	
-	vsnprintf(newStr + tss, 2048 - tss, str, va);
+	vsnprintf(newStr + tss, 512 - tss, str, va);
 	va_end(va);
 	
 	spinLock(debugLock);
