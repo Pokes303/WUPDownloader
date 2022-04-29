@@ -83,33 +83,27 @@ bool name2tid(const char *name, char *out)
 {
 	size_t lower = 0;
 	size_t upper = getTitleEntriesSize(TITLE_CATEGORY_ALL);
-	size_t current = upper / 2;
+	size_t current = upper >> 1;
 	int strret;
-	
+
 	const TitleEntry *titleEntry = getTitleEntries(TITLE_CATEGORY_ALL);
 	while(lower != upper)
 	{
 		strret =  strcmp(titleEntry[current].name, name);
 		if(strret == 0)
-        {
+		{
 			hex(titleEntry[current].tid, 16, out);
             return true;
         }
-		
+
 		if(strret < 0)
 			upper = current;
 		else
 			lower = current;
-		
-/*		if(lower == upper + 1)
-		{
-			current = current == lower ? current + 1 : current - 1;
-			strret =  strcmp(titleEntry[current].name, name);
-			return strret == 0 ? titleEntry[current].tid : 0;
-		}
-		*/
-		current = ((upper - lower) / 2) + lower;
+
+		current = ((upper - lower) >> 1) + lower;
 	}
+
 	return false;
 }
 
