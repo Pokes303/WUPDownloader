@@ -356,7 +356,7 @@ loopEntry:
 		strcat(toFrame, im.name);
 		strcat(toFrame, "\nfrom your ");
 		strcat(toFrame, im.dt == DEVICE_TYPE_USB ? "USB" : im.dt == DEVICE_TYPE_NAND ? "NAND" : "unknown");
-		strcat(toFrame, " drive?");
+		strcat(toFrame, " drive?\n\n" BUTTON_A " Yes || " BUTTON_B " No");
 		r = addErrorOverlay(toFrame);
 
 		while(AppRunning())
