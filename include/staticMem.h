@@ -24,6 +24,8 @@
 
 #include <stdint.h>
 
+#include <titles.h>
+
 #include <nn/acp/title.h>
 
 #ifdef __cplusplus
@@ -37,6 +39,7 @@ char *getStaticScreenBuffer();
 char *getStaticLineBuffer();
 char *getStaticPathBuffer(uint32_t i);
 ACPMetaXml *getStaticMetaXmlBuffer();
+TitleEntry *getStaticTitleEntry();
 
 #ifdef __cplusplus
 	}

@@ -22,6 +22,7 @@
 
 #include <input.h>
 #include <renderer.h>
+#include <staticMem.h>
 #include <status.h>
 #include <titles.h>
 #include <utils.h>
@@ -30,8 +31,6 @@
 #include <menu/utils.h>
 
 #include <stdint.h>
-
-static TitleEntry staticEntry = { .name = "UNKNOWN", .region = MCP_REGION_UNKNOWN, .key = 99 };
 
 bool downloadMenu()
 {
@@ -53,8 +52,9 @@ bool downloadMenu()
 	const TitleEntry *entry = getTitleEntryByTid(tid);
 	if(entry == NULL)
 	{
-		staticEntry.tid = tid;
-		entry = (const TitleEntry *)&staticEntry;
+		TitleEntry *staticEntry = getStaticTitleEntry();
+		staticEntry->tid = tid;
+		entry = staticEntry;
 	}
 	
 	predownloadMenu(entry);

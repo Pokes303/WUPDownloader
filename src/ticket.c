@@ -286,11 +286,14 @@ void generateFakeTicket()
 				showFrame();
 				
 				strcpy(ptr, ".tik");
-				TitleEntry te = { .name = "UNKNOWN", .tid = tid, .region = 0, .key = TITLE_KEY_mypass };
 
 				const TitleEntry *entry = getTitleEntryByTid(tid);
 				if(entry == NULL)
-					entry = (const TitleEntry *)&te;
+				{
+					TitleEntry *te = getStaticTitleEntry();
+					te->tid = tid;
+					entry = te;
+				}
 
 				generateTik(tikPath, entry);
 

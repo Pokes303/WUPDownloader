@@ -27,24 +27,26 @@
 
 #include <staticMem.h>
 #include <renderer.h>
+#include <titles.h>
 
 static char staticMemToFrameBuffer[TO_FRAME_BUFFER_SIZE];
 static char staticMemLineBuffer[TO_FRAME_BUFFER_SIZE];
 static char staticMemPathBuffer[3][PATH_MAX];
-static ACPMetaXml *meta = NULL;
+static ACPMetaXml *staticMeta = NULL;
+static TitleEntry staticTitleEntry = { .name = "UNKNOWN", .region = MCP_REGION_UNKNOWN, .key = 99 };
 
 bool initStaticMem()
 {
-	meta = MEMAllocFromDefaultHeapEx(sizeof(ACPMetaXml), 0x40);
-	return meta != NULL;
+	staticMeta = MEMAllocFromDefaultHeapEx(sizeof(ACPMetaXml), 0x40);
+	return staticMeta != NULL;
 }
 
 void shutdownStaticMem()
 {
-	if(meta != NULL)
+	if(staticMeta != NULL)
 	{
-		MEMFreeToDefaultHeap(meta);
-		meta = NULL;
+		MEMFreeToDefaultHeap(staticMeta);
+		staticMeta = NULL;
 	}
 }
 
@@ -65,5 +67,10 @@ char *getStaticPathBuffer(uint32_t i)
 
 ACPMetaXml *getStaticMetaXmlBuffer()
 {
-	return meta;
+	return staticMeta;
+}
+
+TitleEntry *getStaticTitleEntry()
+{
+	return &staticTitleEntry;
 }
