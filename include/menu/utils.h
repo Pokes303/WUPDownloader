@@ -27,6 +27,8 @@
 
 #include <titles.h>
 
+#include <coreinit/mcp.h>
+
 #ifdef __cplusplus
 	extern "C" {
 #endif
@@ -42,8 +44,10 @@ void addToScreenLog(const char *str, ...);
 void clearScreenLog();
 void writeScreenLog(int line);
 void drawErrorFrame(const char *text, ErrorOptions option);
+bool checkSystemTitle(uint64_t tid, MCPRegion region);
 bool checkSystemTitleFromEntry(const TitleEntry *entry);
 bool checkSystemTitleFromTid(uint64_t tid);
+bool checkSystemTitleFromListType(MCPTitleListType *entry);
 
 #ifdef __cplusplus
 	}

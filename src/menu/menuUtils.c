@@ -165,9 +165,9 @@ void drawErrorFrame(const char *text, ErrorOptions option)
 	drawFrame();
 }
 
-bool checkSystemTitleFromEntry(const TitleEntry *entry)
+bool checkSystemTitle(uint64_t tid, MCPRegion region)
 {
-	switch(getTidHighFromTid(entry->tid))
+	switch(getTidHighFromTid(tid))
 	{
 		case TID_HIGH_SYSTEM_APP:
 		case TID_HIGH_SYSTEM_DATA:
@@ -177,12 +177,12 @@ bool checkSystemTitleFromEntry(const TitleEntry *entry)
 			return true;
 	}
 
-	MCPRegion region;
+	MCPRegion reg;
 	MCPSysProdSettings *settings = MEMAllocFromDefaultHeapEx(sizeof(MCPSysProdSettings), 0x40);
 	if(settings == NULL)
 	{
 		debugPrintf("OUT OF MEMORY!");
-		region = 0;
+		reg = 0;
 	}
 	else
 	{
@@ -190,37 +190,37 @@ bool checkSystemTitleFromEntry(const TitleEntry *entry)
 		if(err)
 		{
 			debugPrintf("Error reading settings: %d!", err);
-			region = 0;
+			reg = 0;
 		}
 		else
-			region = settings->game_region;
+			reg = settings->game_region;
 
 		MEMFreeToDefaultHeap(settings);
 	}
 
-	debugPrintf("Console region: %d", region);
-	debugPrintf("TMD region: %d", entry->region);
-	switch(region)
+	debugPrintf("Console region: 0x%08X", reg);
+	debugPrintf("Title region: 0x%08X", region);
+	switch(reg)
 	{
 		case MCP_REGION_EUROPE:
-			if(entry->region & MCP_REGION_EUROPE)
+			if(region & MCP_REGION_EUROPE)
 				return true;
 			break;
 		case MCP_REGION_USA:
-			if(entry->region & MCP_REGION_USA)
+			if(region & MCP_REGION_USA)
 				return true;
 			break;
 		case MCP_REGION_JAPAN:
-			if(entry->region & MCP_REGION_JAPAN)
+			if(region & MCP_REGION_JAPAN)
 				return true;
 			break;
 		default:
 			// TODO: MCP_REGION_CHINA, MCP_REGION_KOREA, MCP_REGION_TAIWAN
-			debugPrintf("Unknwon region: %d", region);
+			debugPrintf("Unknwon region: %d", reg);
 			return true;
 	}
 
-	int ovl = addErrorOverlay("Installing out of region system apps is a reliable way to brick your console!\n"
+	int ovl = addErrorOverlay("This is a reliable way to brick your console!\n"
 		"Are you sure you want to do that?\n"
 		"\n"
 		BUTTON_A " Yes || " BUTTON_B " No");
@@ -245,7 +245,7 @@ bool checkSystemTitleFromEntry(const TitleEntry *entry)
 	removeErrorOverlay(ovl);
 	if(ret)
 	{
-		ovl = addErrorOverlay("Are you sure you want to brick your Wii U?\n"
+		ovl = addErrorOverlay("Are you really sure you want to brick your Wii U?\n"
 			"\n"
 			BUTTON_A " Yes || " BUTTON_B " No");
 
@@ -289,8 +289,19 @@ bool checkSystemTitleFromEntry(const TitleEntry *entry)
 	return ret;
 }
 
+bool checkSystemTitleFromEntry(const TitleEntry *entry)
+{
+	return checkSystemTitle(entry->tid, entry->region);
+}
+
 bool checkSystemTitleFromTid(uint64_t tid)
 {
 	const TitleEntry *entry = getTitleEntryByTid(tid);
-	return entry == NULL ? true : checkSystemTitleFromEntry(entry);
+	return entry == NULL ? true : checkSystemTitle(tid, entry->region);
+}
+
+bool checkSystemTitleFromListType(MCPTitleListType *entry)
+{
+	const TitleEntry *e = getTitleEntryByTid(entry->titleId);
+	return e == NULL ?  true : checkSystemTitle(entry->titleId, e->region);
 }

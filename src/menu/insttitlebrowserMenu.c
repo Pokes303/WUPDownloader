@@ -374,8 +374,10 @@ loopEntry:
 
 		removeErrorOverlay(r);
 
-		if(AppRunning())
-			deinstall(*entry, false);
+		if(checkSystemTitle(entry->titleId, im.region) && AppRunning())
+			deinstall(entry, false);
+		else
+			goto loopEntry;
 	}
 
 	MEMFreeToDefaultHeap(ititleEntries);
