@@ -44,10 +44,10 @@
 #include <utils.h>
 #include <menu/utils.h>
 
-bool deinstall(MCPTitleListType title, bool channelHaxx)
+bool deinstall(MCPTitleListType *title, bool channelHaxx)
 {
 	char tid[17];
-	hex(title.titleId, 16, tid);
+	hex(title->titleId, 16, tid);
 	const char *game = tid2name(tid);
 	
 	startNewFrame();
@@ -65,11 +65,11 @@ bool deinstall(MCPTitleListType title, bool channelHaxx)
 	if(!channelHaxx)
 		disableShutdown();
 	
-	//err = MCP_UninstallTitleAsync(mcpHandle, title.path, &info);
+	//err = MCP_UninstallTitleAsync(mcpHandle, title->path, &info);
 	// The above crashes MCP, so let's leave WUT:
-	debugPrintf("Deleting %s", title.path);
+	debugPrintf("Deleting %s", title->path);
 	OSTick t = OSGetTick();
-	MCPError err = MCP_DeleteTitleAsync(mcpHandle, title.path, &info);
+	MCPError err = MCP_DeleteTitleAsync(mcpHandle, title->path, &info);
 	if(err != 0)
 	{
 		debugPrintf("Err1: %#010x (%d)", err, err);
