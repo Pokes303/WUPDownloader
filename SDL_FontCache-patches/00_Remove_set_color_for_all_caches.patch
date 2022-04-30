@@ -1,0 +1,13 @@
+diff --git a/SDL_FontCache.c b/SDL_FontCache.c
+index 72483ac..ab44a67 100644
+--- a/SDL_FontCache.c
++++ b/SDL_FontCache.c
+@@ -1769,7 +1769,7 @@ FC_Rect FC_Draw(FC_Font* font, FC_Target* dest, float x, float y, const char* fo
+ 
+     FC_EXTRACT_VARARGS(fc_buffer, formatted_text);
+ 
+-    set_color_for_all_caches(font, font->default_color);
++    // set_color_for_all_caches(font, font->default_color);
+ 
+     return FC_RenderLeft(font, dest, x, y, FC_MakeScale(1,1), fc_buffer);
+ }
