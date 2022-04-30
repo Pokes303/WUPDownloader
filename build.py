@@ -62,6 +62,7 @@ shutil.make_archive(f"zips/NUSspli-{version}-Channel-DEBUG", "zip", ".", "NUSspl
 shutil.rmtree("NUSspli")
 
 if not isBeta:
+    os.system("make clean")
     os.system("make -j8 release")
     os.system(f"{wuhbtool} NUSspli.rpx NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga --tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga --content=data")
     shutil.make_archive(f"zips/NUSspli-{version}-Aroma", "zip", ".", "NUSspli.wuhb")
@@ -71,6 +72,7 @@ if not isBeta:
     shutil.make_archive(f"zips/NUSspli-{version}-Channel", "zip", ".", "NUSspli")
     shutil.rmtree("NUSspli")
 
+shutil.rmtree("NUStmp")
 os.system("make clean")
 os.system("make HBL=1 -j8 debug")
 os.makedirs("NUSspli", exist_ok=True)
@@ -78,14 +80,16 @@ hblFiles = ["NUSspli.rpx", "meta/hbl/meta.xml", "meta/hbl/icon.png"]
 for file in hblFiles:
     shutil.copy(file, "NUSspli")
 shutil.make_archive(f"zips/NUSspli-{version}-HBL-DEBUG", "zip", ".", "NUSspli")
+shutil.rmtree("NUSspli")
 
 if not isBeta:
-    os.system("make HBL=1 -j8")
+    os.system("make clean")
+    os.system("make HBL=1 -j8 release")
     os.makedirs("NUSspli", exist_ok=True)
     for file in hblFiles:
         shutil.copy(file, "NUSspli")
     shutil.make_archive(f"zips/NUSspli-{version}-HBL", "zip", ".", "NUSspli")
+    shutil.rmtree("NUSspli")
 
-shutil.rmtree("NUSspli")
 checkAndDeleteDir("NUSspli")
 checkAndDeleteDir("NUStmp")
