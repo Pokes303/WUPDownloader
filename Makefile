@@ -17,7 +17,7 @@ include $(DEVKITPRO)/wut/share/wut_rules
 # DATA is a list of directories containing data files
 # INCLUDES is a list of directories containing header files
 #-------------------------------------------------------------------------------
-TARGET		:=	$(notdir $(CURDIR))
+TARGET		:=	NUSspli
 BUILD		?=	debug
 
 SOURCES		:=	zlib/contrib/minizip \
@@ -61,7 +61,7 @@ LIBS		:=	-lcurl -lssl -lcrypto `$(PREFIX)pkg-config --libs SDL2_mixer SDL2_ttf S
 # list of directories containing libraries, this must be the top level
 # containing include and lib
 #-------------------------------------------------------------------------------
-LIBDIRS	:= $(PORTLIBS) $(WUT_ROOT)
+LIBDIRS	:= $(PORTLIBS) $(WUT_ROOT) $(WUT_ROOT)/usr
 
 
 #-------------------------------------------------------------------------------
