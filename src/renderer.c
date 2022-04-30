@@ -130,7 +130,7 @@ void textToFrameCut(int line, int column, const char *str, int maxWidth)
 			text.x = column + FONT_SIZE;
 	}
 
-	FC_DrawBoxColor(font, renderer, text, screenColorToSDLcolor(SCREEN_COLOR_WHITE), str);
+	FC_DrawBox(font, renderer, text, str);
 }
 
 void lineToFrame(int column, uint32_t color)
