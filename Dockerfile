@@ -123,7 +123,7 @@ index a9eae36..4a81d98 100644\n\
 
 RUN ./Configure wiiu \
   no-threads no-shared no-asm no-ui-console no-unit-test no-tests no-buildtest-c++ no-external-tests no-autoload-config \
-  --with-rand-seed=os -static
+  --with-rand-seed=none -static --prefix=$DEVKITPRO/portlibs/wiiu --openssldir=openssldir
 
 RUN make build_generated
 RUN make libssl.a libcrypto.a -j$(nproc)
