@@ -30,7 +30,7 @@ jobs:
           if-no-files-found: warn
       - uses: actions/upload-artifact@v3
         with:
-          path: zips/*-Cuannel-DEBUG.zip
+          path: zips/*-Channel-DEBUG.zip
       - uses: actions/upload-artifact@v3
         with:
           path: zips/*-HBL.zip
