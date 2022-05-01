@@ -218,10 +218,11 @@ COPY --from=libromfsbuild /opt/devkitpro/portlibs/wiiu/share/ /opt/devkitpro/por
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2
-
 RUN apt-get update && \
- mkdir -p /usr/share/man/man1 && \
- apt-get -y install openjdk-11-jre
+ apt-get -y install openjdk-11-jre &&
+ mkdir /nuspacker
+
+WORKDIR /nuspacker
+RUN wget https://github.com/Maschell/nuspacker/raw/master/NUSPacker.jar
 
 WORKDIR /project
