@@ -8,23 +8,22 @@ RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
 
 ENV PATH=$DEVKITPPC/bin:$PATH
 
+# Install libs
+WORKDIR /
+RUN wget https://apt.devkitpro.org/install-devkitpro-pacman && \
+ chmod +x /install-devkitpro-pacman && \
+ /install-devkitpro-pacman && \
+ pacman -Syu --noconfirm wiiu-sdl2 wiiu-sdl2_gfx wiiu-sdl2_image wiiu-sdl2_mixer wiiu-sdl2_ttf
+
 WORKDIR /
 RUN git clone https://github.com/devkitPro/wut
 WORKDIR /wut
 RUN git checkout cd6b4fb45d054d53af92bc0b3685e8bd9f01445d && make -j$(nproc) && make install
 ENV WUT_ROOT=$DEVKITPRO/wut
 
-# build SDL2
-WORKDIR /
-RUN git clone -b wiiu-2.0.9 --single-branch https://github.com/yawut/SDL
-WORKDIR /SDL
-RUN mkdir build
-WORKDIR /SDL/build
-RUN /opt/devkitpro/portlibs/wiiu/bin/powerpc-eabi-cmake .. -DCMAKE_INSTALL_PREFIX=$DEVKITPRO/portlibs/wiiu && \
- make -j$(nproc) && make install
-
 ARG openssl_ver=1.1.1n
 
+WORKDIR /
 RUN wget https://www.openssl.org/source/openssl-$openssl_ver.tar.gz && mkdir /openssl && tar xf openssl-$openssl_ver.tar.gz -C /openssl --strip-components=1
 WORKDIR /openssl
 
