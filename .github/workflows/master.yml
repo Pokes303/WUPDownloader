@@ -16,7 +16,7 @@ jobs:
       - name: build binary
         run: |
           docker build . -t builder
-          docker run --rm -v ${PWD}:/project builder python3 build.py
+          docker run --rm -v ${PWD}:/project builder bash build.sh
       - uses: actions/upload-artifact@master
         with:
           name: binary
