@@ -35,7 +35,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: NUSspli-Channel-DEBUG
-          path: out/Channel/*
+          path: out/Channel-DEBUG/*
           if-no-files-found: error
       - uses: actions/upload-artifact@v3
         with:
