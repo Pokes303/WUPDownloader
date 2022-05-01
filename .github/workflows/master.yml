@@ -13,13 +13,13 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - name: build binary
+      - name: build binaries
         run: |
           docker build . -t builder
           docker run --rm -v ${PWD}:/project builder python3 build.py
       - uses: actions/upload-artifact@master
         with:
-          name: binary
+          name: binaries
           path: "zips/*.zip"
   deploy-binary:
     needs: build-binary
@@ -32,7 +32,11 @@ jobs:
           echo DATETIME=$(echo $(date '+%Y%m%d-%H%M%S')) >> $GITHUB_ENV
       - uses: actions/download-artifact@master
         with:
-          name: binary
+          name: binaries
           path: wiiu/apps/NUSspli
-      - name: zip artifact
-        run: zip -r ${{ env.REPOSITORY_NAME }}_${{ env.DATETIME }}.zip wiiu
+      - name: Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifacts
+          path: |
+            zips/*.zip

@@ -15,6 +15,13 @@ FROM devkitpro/devkitppc:20220128 AS builder
 
 RUN apt-get update && apt-get -y install --no-install-recommends wget tar autoconf automake libtool python3 && rm -rf /var/lib/apt/lists/*
 COPY --from=wutbuild /opt/devkitpro/wut /opt/devkitpro/wut
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2
+
+RUN apt-get update && \
+apt-get install -y --no-install-recommends \
+        openjdk-11-jre
 
 # build SDL2
 FROM builder AS sdlbuild
