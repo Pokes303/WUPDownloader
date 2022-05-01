@@ -4,7 +4,7 @@ FROM devkitpro/devkitppc:20220128 AS final
 ENV DEBIAN_FRONTEND=noninteractive
 RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
  apt-get update && \
- apt-get -y install --no-install-recommends wget tar autoconf automake libtool openjdk-11-jre && rm -rf /var/lib/apt/lists/*
+ apt-get -y install --no-install-recommends wget tar autoconf automake libtool openjdk-11-jre-headless && rm -rf /var/lib/apt/lists/*
 
 ENV PATH=$DEVKITPPC/bin:$PATH
 
