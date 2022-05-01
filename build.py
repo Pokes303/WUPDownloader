@@ -58,8 +58,11 @@ for file in code:
     shutil.copy(file, "NUStmp/code")
 shutil.copytree("data", "NUStmp/content")
 os.system(f"java -jar {nuspacker} -in NUStmp -out NUSspli")
-shutil.make_archive(f"zips/NUSspli-{version}-Channel-DEBUG", "zip", ".", "NUSspli")
-shutil.rmtree("NUSspli")
+try:
+    shutil.make_archive(f"zips/NUSspli-{version}-Channel-DEBUG", "zip", ".", "NUSspli")
+    shutil.rmtree("NUSspli")
+except:
+    print("Failed to create Channel-DEBUG zip")
 
 if not isBeta:
     os.system("make clean")
@@ -69,8 +72,11 @@ if not isBeta:
     os.remove("NUStmp/code/NUSspli.rpx")
     shutil.move("NUSspli.rpx", "NUStmp/code")
     os.system(f"java -jar {nuspacker} -in NUStmp -out NUSspli")
-    shutil.make_archive(f"zips/NUSspli-{version}-Channel", "zip", ".", "NUSspli")
-    shutil.rmtree("NUSspli")
+    try:
+        shutil.make_archive(f"zips/NUSspli-{version}-Channel", "zip", ".", "NUSspli")
+        shutil.rmtree("NUSspli")
+    except:
+        print("Failed to create Channel zip")
 
 shutil.rmtree("NUStmp")
 os.system("make clean")
