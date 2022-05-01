@@ -57,50 +57,6 @@ index 61c6689..efe686a 100644\n\
 +        asm_arch         => '"'"'ppc32'"'"',\n\
 +    },\n\
 +\n ####\n #### Variety of LINUX:-)\n ####\n\
-diff --git a/crypto/rand/rand_unix.c b/crypto/rand/rand_unix.c\n\
-index 0f45251..d303e8e 100644\n\
---- a/crypto/rand/rand_unix.c\n\
-+++ b/crypto/rand/rand_unix.c\n\
-@@ -202,6 +202,41 @@ void rand_pool_keep_random_devices_open(int keep)\n\
- {\n\
- }\n\
- \n\
-+# elif defined(__WIIU__)\n\
-+\n\
-+#include <coreinit/time.h>\n\
-+\n\
-+size_t rand_pool_acquire_entropy(RAND_POOL *pool)\n\
-+{\n\
-+    int i;\n\
-+    size_t bytes_needed;\n\
-+    unsigned char v;\n\
-+\n\
-+    bytes_needed = rand_pool_bytes_needed(pool, 4 /*entropy_factor*/);\n\
-+\n\
-+    for (i = 0; i < bytes_needed; i++) {\n\
-+        srand(OSGetSystemTick());\n\
-+        v = rand() & 0xff;\n\
-+\n\
-+        rand_pool_add(pool, &v, sizeof(v), 2);\n\
-+    }\n\
-+\n\
-+    return rand_pool_entropy_available(pool);\n\
-+}\n\
-+\n\
-+int rand_pool_init(void)\n\
-+{\n\
-+    return 1;\n\
-+}\n\
-+\n\
-+void rand_pool_cleanup(void)\n\
-+{\n\
-+}\n\
-+\n\
-+void rand_pool_keep_random_devices_open(int keep)\n\
-+{\n\
-+}\n\
-+\n # else\n\
- \n #  if defined(OPENSSL_RAND_SEED_EGD) && \\\n\
 diff --git a/crypto/uid.c b/crypto/uid.c\n\
 index a9eae36..4a81d98 100644\n\
 --- a/crypto/uid.c\n\
