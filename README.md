@@ -1,6 +1,7 @@
 # NUSspli
 Install content directly from the Nintendo Update Servers to your Wii U.
-[![CI-Release](https://github.com/V10lator/NUSspli/actions/workflows/master.yml/badge.svg)](https://github.com/V10lator/NUSspli/actions/workflows/master.yml)
+
+[![build](https://github.com/V10lator/NUSspli/actions/workflows/master.yml/badge.svg)](https://github.com/V10lator/NUSspli/actions/workflows/master.yml)
 
 # Features
 - Download titles from Nintendos servers (NUS).

@@ -1,4 +1,4 @@
-name: CI-Release
+name: build
 
 on:
   pull_request:
