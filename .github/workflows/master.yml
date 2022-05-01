@@ -20,7 +20,7 @@ jobs:
       - uses: actions/upload-artifact@master
         with:
           name: binaries
-          path: /project/zips/*.zip
+          path: zips/*.zip
   deploy-binary:
     needs: build-binary
     runs-on: ubuntu-18.04
