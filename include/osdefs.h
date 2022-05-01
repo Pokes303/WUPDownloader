@@ -38,15 +38,9 @@
 extern void ACPInitialize();
 extern ACPResult ACPGetTitleMetaXmlByTitleListType(MCPTitleListType *titleListType, ACPMetaXml *out);
 
-// KPAD
-extern void KPADShutdown();
-
 // MCP
 extern MCPError MCP_DeleteTitleAsync(int handle, char *path, MCPInstallTitleInfo *out);
 extern MCPError MCP_DeleteTitleDoneAsync(int handle, MCPInstallTitleInfo *out);
-
-// WPAD
-extern void WPADControlMotor(WPADChan controller, int onOff);
 
 // SO
 extern int somemopt (int type, void *buf, size_t bufsize, int unk);
@@ -56,9 +50,6 @@ extern void GX2SetDRCGamma(float gamma);
 extern void GX2SetDRCGammaEx(float gamma);
 extern void GX2SetTVGamma(float gamma);
 extern void GX2SetTVGammaEx(float gamma);
-
-// _SYS
-extern void _SYSLaunchTitleWithStdArgsInNoSplash(uint64_t, void*);
 
 // UC - From:
 // https://github.com/decaf-emu/decaf-emu/blob/master/src/libdecaf/src/cafe/libraries/coreinit/coreinit_userconfig.h

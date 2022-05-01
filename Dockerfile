@@ -9,7 +9,7 @@ RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
 ENV PATH=$DEVKITPPC/bin:$PATH
 
 WORKDIR /
-RUN git clone https://github.com/devkitPro/wut
+RUN git clone https://github.com/devkitPro/wut && git checkout cd6b4fb45d054d53af92bc0b3685e8bd9f01445d
 WORKDIR /wut
 RUN make -j$(nproc) && make install
 ENV WUT_ROOT=$DEVKITPRO/wut
@@ -44,10 +44,10 @@ index 61c6689..efe686a 100644\n\
 +        AR               => "$ENV{DEVKITPPC}/bin/powerpc-eabi-ar",\n\
 +        CFLAGS           => picker(default => "-Wall",\n\
 +                                   debug   => "-O0 -g",\n\
-+                                   release => "-O3"),\n\
++                                   release => "--Ofast -pipe"),\n\
 +        CXXFLAGS         => picker(default => "-Wall",\n\
 +                                   debug   => "-O0 -g",\n\
-+                                   release => "-O3"),\n\
++                                   release => "--Ofast -pipe"),\n\
 +        LDFLAGS          => "-L$ENV{DEVKITPRO}/wut/lib",\n\
 +        cflags           => add("-mcpu=750 -meabi -mhard-float -ffunction-sections -fdata-sections"),\n\
 +        cxxflags         => add("-std=c++11"),\n\
@@ -115,7 +115,7 @@ index a9eae36..4a81d98 100644\n\
 ' >> wiiu.patch && git apply wiiu.patch && \
  ./Configure wiiu \
   no-threads no-shared no-asm no-ui-console no-unit-test no-tests no-buildtest-c++ no-external-tests no-autoload-config \
-  --with-rand-seed=os -static && \
+  --with-rand-seed=none -static --prefix=$DEVKITPRO/portlibs/wiiu --openssldir=openssldir && \
  make build_generated && make libssl.a libcrypto.a -j$(nproc)
 
 # build curl

@@ -44,7 +44,7 @@ static int rumbleThreadMain(int argc, const char **argv)
 {
 	int i;
 	OSMessage msg;
-	
+
 	do
 	{
 		OSReceiveMessage(&rumble_queue, &msg, OS_MESSAGE_FLAGS_BLOCKING);
@@ -53,20 +53,20 @@ static int rumbleThreadMain(int argc, const char **argv)
 			i = 3;
 			for(; i > 1; i--)
 				VPADControlMotor(VPAD_CHAN_0, pattern, 120);
-			
+
 			for(; i > -1; i--)
 			{
-				for(int j = 0; j < 4; ++j)
+				for(WPADChan j = 0; j < 4; ++j)
 					WPADControlMotor(j, i);
-				
+
 				OSSleepTicks(OSSecondsToTicks(i));
 			}
-			
+
 			VPADStopMotor(VPAD_CHAN_0);
 		}
 	}
 	while(msg.message != NUSSPLI_MESSAGE_EXIT);
-	
+
 	return 0;
 }
 
