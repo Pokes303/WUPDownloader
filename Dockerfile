@@ -4,20 +4,15 @@ FROM devkitpro/devkitppc:20220128 AS final
 ENV DEBIAN_FRONTEND=noninteractive
 RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
  apt-get update && \
- apt-get -y install --no-install-recommends wget tar autoconf automake libtool openjdk-11-jre pacman && rm -rf /var/lib/apt/lists/*
+ apt-get -y install --no-install-recommends wget tar autoconf automake libtool openjdk-11-jre && rm -rf /var/lib/apt/lists/*
 
 ENV PATH=$DEVKITPPC/bin:$PATH
 
 # Install libs
 WORKDIR /
-RUN sudo pacman-key --recv BC26F752D25B92CE272E0F44F7FD5492264BB9D0 --keyserver keyserver.ubuntu.com && \
- sudo pacman-key --lsign BC26F752D25B92CE272E0F44F7FD5492264BB9D0 && \
- wget https://pkg.devkitpro.org/devkitpro-keyring.pkg.tar.xz && \
- pacman -U devkitpro-keyring.pkg.tar.xz && \
- echo '[dkp-libs]
-Server = https://pkg.devkitpro.org/packages
-[dkp-linux]
-Server = https://pkg.devkitpro.org/packages/linux/$arch/' >> /etc/pacman.conf && \
+RUN wget https://apt.devkitpro.org/install-devkitpro-pacman && \
+ chmod +x /install-devkitpro-pacman && \
+ /install-devkitpro-pacman && \
  pacman -Syu --noconfirm wiiu-sdl2 wiiu-sdl2_gfx wiiu-sdl2_image wiiu-sdl2_mixer wiiu-sdl2_ttf
 
 WORKDIR /
