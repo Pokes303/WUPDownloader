@@ -32,6 +32,7 @@ if len(wuhbtool) == 0:
 checkAndDeleteFile("NUSspli.wuhb")
 checkAndDeleteDir("NUSspli")
 checkAndDeleteDir("NUStmp")
+checkAndDeleteDir("out")
 
 editionList = ["-DEBUG", ""]
 extList = [".rpx", ".zip", ".wuhb"]
