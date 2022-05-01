@@ -13,7 +13,7 @@ WORKDIR /
 RUN wget https://apt.devkitpro.org/install-devkitpro-pacman && \
  chmod +x /install-devkitpro-pacman && \
  /install-devkitpro-pacman && \
- pacman -Syu --noconfirm wiiu-sdl2 wiiu-sdl2_gfx wiiu-sdl2_image wiiu-sdl2_mixer wiiu-sdl2_ttf
+ dkp-pacman -Syu --noconfirm wiiu-sdl2 wiiu-sdl2_gfx wiiu-sdl2_image wiiu-sdl2_mixer wiiu-sdl2_ttf
 
 WORKDIR /
 RUN git clone https://github.com/devkitPro/wut
