@@ -34,5 +34,9 @@ To install the app, download and unzip the contents of the [latest release](http
 - Open the folder in a terminal and type `./build.sh`.
 - If everything goes fine, you will have the resulting folder "zips".
 
+# Building with docker
+- Use `docker build -t nussplibuilder .` to build the container
+- Use `docker run -it --rm -v ${PWD}:/project nussplibuilder make` to build NUSspli
+
 # Info
 NUSspli is based on [WUPDownloader](https://github.com/Pokes303/WUPDownloader) by Pokes303.
