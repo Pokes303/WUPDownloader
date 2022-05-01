@@ -17,25 +17,24 @@ jobs:
         run: |
           docker build . -t builder
           docker run --rm -v ${PWD}:/project builder python3 build.py
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v3
         with:
-          name: binaries
-          path: zips/*.zip
-  deploy-binary:
-    needs: build-binary
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Get environment variables
-        id: get_repository_name
-        run: |
-          echo REPOSITORY_NAME=$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//") >> $GITHUB_ENV
-          echo DATETIME=$(echo $(date '+%Y%m%d-%H%M%S')) >> $GITHUB_ENV
-      - uses: actions/download-artifact@master
+          path: zips/*-Aroma.zip
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v3
         with:
-          name: binaries
-          path: wiiu/apps/NUSspli
-      - name: Artifacts
-        uses: actions/upload-artifact@v3
+          path: zips/*-Aroma-DEBUG.zip
+      - uses: actions/upload-artifact@v3
         with:
-          name: artifacts
-          path: wiiu/apps/NUSspli/*.zip
+          path: zips/*-Channel.zip
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v3
+        with:
+          path: zips/*-Cuannel-DEBUG.zip
+      - uses: actions/upload-artifact@v3
+        with:
+          path: zips/*-HBL.zip
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v3
+        with:
+          path: zips/*-HBL-DEBUG.zip
