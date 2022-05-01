@@ -1,5 +1,6 @@
 # NUSspli
 Install content directly from the Nintendo Update Servers to your Wii U.
+[![CI-Release](https://github.com/V10lator/NUSspli/actions/workflows/master.yml/badge.svg)](https://github.com/V10lator/NUSspli/actions/workflows/master.yml)
 
 # Features
 - Download titles from Nintendos servers (NUS).
@@ -10,6 +11,7 @@ Install content directly from the Nintendo Update Servers to your Wii U.
 - On screen keyboard.
 - Can download anything available on the NUS.
 - Custom folder names for downloaded titles.
+- Auto update.
 
 # Install
 To install the app, download and unzip the contents of the [latest release](https://github.com/V10lator/NUSspli/releases) and depending on how you will run the app, follow the next steps:
@@ -27,14 +29,6 @@ To install the app, download and unzip the contents of the [latest release](http
 - Run the app from HBL through Haxchi, Browserhax or any exploit you want.
 
 # Building
-- On Linux/WSL/Mac, install devkitPro.
-- Install WUT with devktpros pacman.
-- Install [libiosuhax](https://github.com/wiiu-env/libiosuhax) and [librpxloader](https://github.com/wiiu-env/librpxloader) from wiiu-env.
-- Clone the repo.
-- Open the folder in a terminal and type `./build.sh`.
-- If everything goes fine, you will have the resulting folder "zips".
-
-# Building with docker
 - Use `docker build -t nussplibuilder .` to build the container
 - Use `docker run --rm -v ${PWD}:/project nussplibuilder python3 build.py` to build NUSspli
 
