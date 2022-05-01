@@ -38,9 +38,6 @@
 extern void ACPInitialize();
 extern ACPResult ACPGetTitleMetaXmlByTitleListType(MCPTitleListType *titleListType, ACPMetaXml *out);
 
-// KPAD
-extern void KPADShutdown();
-
 // MCP
 extern MCPError MCP_DeleteTitleAsync(int handle, char *path, MCPInstallTitleInfo *out);
 extern MCPError MCP_DeleteTitleDoneAsync(int handle, MCPInstallTitleInfo *out);
