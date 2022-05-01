@@ -51,10 +51,10 @@ index 61c6689..efe686a 100644\n\
 +        AR               => "$ENV{DEVKITPPC}/bin/powerpc-eabi-ar",\n\
 +        CFLAGS           => picker(default => "-Wall",\n\
 +                                   debug   => "-O0 -g",\n\
-+                                   release => "-O3"),\n\
++                                   release => "--Ofast -pipe"),\n\
 +        CXXFLAGS         => picker(default => "-Wall",\n\
 +                                   debug   => "-O0 -g",\n\
-+                                   release => "-O3"),\n\
++                                   release => "--Ofast -pipe"),\n\
 +        LDFLAGS          => "-L$ENV{DEVKITPRO}/wut/lib",\n\
 +        cflags           => add("-mcpu=750 -meabi -mhard-float -ffunction-sections -fdata-sections"),\n\
 +        cxxflags         => add("-std=c++11"),\n\
