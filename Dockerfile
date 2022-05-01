@@ -6,14 +6,12 @@ ENV PATH=$DEVKITPPC/bin:$PATH
 WORKDIR /
 RUN git clone https://github.com/devkitPro/wut
 WORKDIR /wut
-RUN make -j$(nproc)
-RUN make install
-WORKDIR /
+RUN make -j$(nproc) && make install
 
 # set up builder image
 FROM devkitpro/devkitppc:20220128 AS builder
 
-RUN apt-get update && apt-get -y install --no-install-recommends wget tar autoconf automake libtool python3 && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get -y install --no-install-recommends wget tar autoconf automake libtool && rm -rf /var/lib/apt/lists/*
 COPY --from=wutbuild /opt/devkitpro/wut /opt/devkitpro/wut
 
 # build SDL2
@@ -24,8 +22,8 @@ RUN git clone -b wiiu-2.0.9 --single-branch https://github.com/yawut/SDL
 WORKDIR /SDL
 RUN mkdir build
 WORKDIR /SDL/build
-RUN /opt/devkitpro/portlibs/wiiu/bin/powerpc-eabi-cmake .. -DCMAKE_INSTALL_PREFIX=$DEVKITPRO/portlibs/wiiu
-RUN make -j$(nproc) && make install
+RUN /opt/devkitpro/portlibs/wiiu/bin/powerpc-eabi-cmake .. -DCMAKE_INSTALL_PREFIX=$DEVKITPRO/portlibs/wiiu && \
+ make -j$(nproc) && make install
 WORKDIR /
 
 # build openssl
@@ -119,14 +117,12 @@ index a9eae36..4a81d98 100644\n\
  \n\
  int OPENSSL_issetugid(void)\n\
  {\
-' >> wiiu.patch && git apply wiiu.patch
-
-RUN ./Configure wiiu \
+' >> wiiu.patch && git apply wiiu.patch && \
+ ./Configure wiiu \
   no-threads no-shared no-asm no-ui-console no-unit-test no-tests no-buildtest-c++ no-external-tests no-autoload-config \
-  --with-rand-seed=os -static
+  --with-rand-seed=os -static && \
+ make build_generated && make libssl.a libcrypto.a -j$(nproc)
 
-RUN make build_generated
-RUN make libssl.a libcrypto.a -j$(nproc)
 WORKDIR /
 
 # build curl
@@ -147,8 +143,7 @@ ENV CPPFLAGS "-D__WIIU__ -D__WUT__ -I${DEVKITPRO}/wut/include"
 ENV LDFLAGS "-L${DEVKITPRO}/wut/lib"
 ENV LIBS "-lwut -lm"
 
-RUN autoreconf -fi
-RUN ./configure \
+RUN autoreconf -fi && ./configure \
 --prefix=$DEVKITPRO/portlibs/wiiu/ \
 --host=powerpc-eabi \
 --enable-static \
