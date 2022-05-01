@@ -20,30 +20,30 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: NUSspli-Aroma
-          path: zips/*-Aroma.zip
+          path: out/Aroma/*
           if-no-files-found: warn
       - uses: actions/upload-artifact@v3
         with:
           name: NUSspli-Aroma-DEBUG
-          path: zips/*-Aroma-DEBUG.zip
+          path: out/Aroma-DEBUG/*
           if-no-files-found: error
       - uses: actions/upload-artifact@v3
         with:
           name: NUSspli-Channel
-          path: zips/*-Channel.zip
+          path: out/Channel/*
           if-no-files-found: warn
       - uses: actions/upload-artifact@v3
         with:
           name: NUSspli-Channel-DEBUG
-          path: zips/*-Channel-DEBUG.zip
+          path: out/Channel/*
           if-no-files-found: error
       - uses: actions/upload-artifact@v3
         with:
-          name: NUSspli-HBL.zip
-          path: zips/*-HBL.zip
+          name: NUSspli-HBL
+          path: out/HBL/*
           if-no-files-found: warn
       - uses: actions/upload-artifact@v3
         with:
-          name: NUSspli-HBL-DEBUG.zip
-          path: zips/*-HBL-DEBUG.zip
+          name: NUSspli-HBL-DEBUG
+          path: out/HBL-DEBUG/*
           if-no-files-found: error
