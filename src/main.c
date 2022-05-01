@@ -346,7 +346,7 @@ int main()
 			tid |= 0x000000000000A000;
 		}
 
-		_SYSLaunchTitleWithStdArgsInNoSplash(tid, 0);
+		_SYSLaunchTitleWithStdArgsInNoSplash(tid, NULL);
 #else
 		SYSLaunchMenu();
 #endif
