@@ -8,13 +8,6 @@ RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
 
 ENV PATH=$DEVKITPPC/bin:$PATH
 
-# Install libs
-WORKDIR /
-RUN wget https://apt.devkitpro.org/install-devkitpro-pacman && \
- chmod +x /install-devkitpro-pacman && \
- /install-devkitpro-pacman && \
- dkp-pacman -Syu --noconfirm wiiu-sdl2 wiiu-sdl2_gfx wiiu-sdl2_image wiiu-sdl2_mixer wiiu-sdl2_ttf
-
 WORKDIR /
 RUN git clone https://github.com/devkitPro/wut
 WORKDIR /wut
