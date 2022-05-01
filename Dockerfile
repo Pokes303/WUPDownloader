@@ -1,5 +1,10 @@
 # build wut
-FROM devkitpro/devkitppc:20220128 AS wutbuild
+FROM devkitpro/devkitppc:20220128 AS final
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
+ apt-get update && \
+ apt-get -y install --no-install-recommends wget tar autoconf automake libtool openjdk-11-jre && rm -rf /var/lib/apt/lists/*
 
 ENV PATH=$DEVKITPPC/bin:$PATH
 
@@ -7,27 +12,17 @@ WORKDIR /
 RUN git clone https://github.com/devkitPro/wut
 WORKDIR /wut
 RUN make -j$(nproc) && make install
-
-# set up builder image
-FROM devkitpro/devkitppc:20220128 AS builder
-
-RUN apt-get update && apt-get -y install --no-install-recommends wget tar autoconf automake libtool && rm -rf /var/lib/apt/lists/*
-COPY --from=wutbuild /opt/devkitpro/wut /opt/devkitpro/wut
-
-# build SDL2
-FROM builder AS sdlbuild
 ENV WUT_ROOT=$DEVKITPRO/wut
 
+# build SDL2
+WORKDIR /
 RUN git clone -b wiiu-2.0.9 --single-branch https://github.com/yawut/SDL
 WORKDIR /SDL
 RUN mkdir build
 WORKDIR /SDL/build
 RUN /opt/devkitpro/portlibs/wiiu/bin/powerpc-eabi-cmake .. -DCMAKE_INSTALL_PREFIX=$DEVKITPRO/portlibs/wiiu && \
  make -j$(nproc) && make install
-WORKDIR /
 
-# build openssl
-FROM builder AS opensslbuild
 ARG openssl_ver=1.1.1n
 
 RUN wget https://www.openssl.org/source/openssl-$openssl_ver.tar.gz && mkdir /openssl && tar xf openssl-$openssl_ver.tar.gz -C /openssl --strip-components=1
@@ -123,25 +118,12 @@ index a9eae36..4a81d98 100644\n\
   --with-rand-seed=os -static && \
  make build_generated && make libssl.a libcrypto.a -j$(nproc)
 
-WORKDIR /
-
 # build curl
-FROM builder as curlbuild
+WORKDIR /
 ARG curl_ver=7.83.0
-
-# copy in openssl
-COPY --from=opensslbuild /openssl/libcrypto.a /openssl/libssl.a /opt/devkitpro/portlibs/wiiu/lib/
-COPY --from=opensslbuild /openssl/include/openssl /opt/devkitpro/portlibs/wiiu/include/openssl/
-COPY --from=opensslbuild /openssl/include/crypto /opt/devkitpro/portlibs/wiiu/include/crypto/
 
 RUN wget https://curl.se/download/curl-$curl_ver.tar.gz && mkdir /curl && tar xf curl-$curl_ver.tar.gz -C /curl --strip-components=1
 WORKDIR /curl
-
-ENV CFLAGS "-mcpu=750 -meabi -mhard-float -O3 -ffunction-sections -fdata-sections"
-ENV CXXFLAGS "${CFLAGS}"
-ENV CPPFLAGS "-D__WIIU__ -D__WUT__ -I${DEVKITPRO}/wut/include"
-ENV LDFLAGS "-L${DEVKITPRO}/wut/lib"
-ENV LIBS "-lwut -lm"
 
 RUN autoreconf -fi && ./configure \
 --prefix=$DEVKITPRO/portlibs/wiiu/ \
@@ -154,6 +136,11 @@ RUN autoreconf -fi && ./configure \
 --disable-unix-sockets \
 --disable-socketpair \
 --disable-ntlm-wb \
+CFLAGS="-mcpu=750 -meabi -mhard-float -O3 -ffunction-sections -fdata-sections" \
+CXXFLAGS="-mcpu=750 -meabi -mhard-float -O3 -ffunction-sections -fdata-sections" \
+CPPFLAGS="-D__WIIU__ -D__WUT__ -I$DEVKITPRO/wut/include" \
+LDFLAGS="-L$DEVKITPRO/wut/lib" \
+LIBS="-lwut -lm" \
 CC=$DEVKITPPC/bin/powerpc-eabi-gcc \
 AR=$DEVKITPPC/bin/powerpc-eabi-ar \
 RANLIB=$DEVKITPPC/bin/powerpc-eabi-ranlib \
@@ -163,61 +150,23 @@ WORKDIR /curl/lib
 RUN make -j$(nproc) install
 WORKDIR /curl/include
 RUN make -j$(nproc) install
-WORKDIR /
 
 # build libiosuhax
-FROM builder AS libiosuhaxbuild
-ENV WUT_ROOT=$DEVKITPRO/wut
-
+WORKDIR /
 RUN git clone --recursive https://github.com/Crementif/libiosuhax
 WORKDIR /libiosuhax
 RUN make -j$(nproc) && make install
 WORKDIR /
 
 # build libromfs
-FROM builder AS libromfsbuild
-ENV WUT_ROOT=$DEVKITPRO/wut
-
+WORKDIR /
 RUN git clone --recursive https://github.com/yawut/libromfs-wiiu
 WORKDIR /libromfs-wiiu
 RUN make -j$(nproc) && make install
+
+# build NUSspli
 WORKDIR /
-
-# build final container
-FROM devkitpro/devkitppc:20220128 AS final
-
-# copy in wut
-COPY --from=wutbuild /opt/devkitpro/wut /opt/devkitpro/wut
-
-# copy in SDL2
-COPY --from=sdlbuild /opt/devkitpro/portlibs/wiiu/lib/libSDL2.a /opt/devkitpro/portlibs/wiiu/lib/
-COPY --from=sdlbuild /opt/devkitpro/portlibs/wiiu/include/SDL2 /opt/devkitpro/portlibs/wiiu/include/SDL2/
-
-# copy in openssl
-COPY --from=opensslbuild /openssl/libcrypto.a /openssl/libssl.a /opt/devkitpro/portlibs/wiiu/lib/
-COPY --from=opensslbuild /openssl/include/openssl /opt/devkitpro/portlibs/wiiu/include/openssl/
-COPY --from=opensslbuild /openssl/include/crypto /opt/devkitpro/portlibs/wiiu/include/crypto/
-
-# copy in curl
-COPY --from=curlbuild /opt/devkitpro/portlibs/wiiu/lib/libcurl.a /opt/devkitpro/portlibs/wiiu/lib/
-COPY --from=curlbuild /opt/devkitpro/portlibs/wiiu/include/curl /opt/devkitpro/portlibs/wiiu/include/curl/
-
-# copy in libiosuhax
-COPY --from=libiosuhaxbuild /opt/devkitpro/wut/usr/lib/libiosuhax.a /opt/devkitpro/wut/usr/lib/libiosuhax.a
-COPY --from=libiosuhaxbuild /opt/devkitpro/wut/usr/include/ /opt/devkitpro/wut/usr/include/
-
-# copy in libromfs
-COPY --from=libromfsbuild /opt/devkitpro/portlibs/wiiu/lib/libromfs-wiiu.a /opt/devkitpro/portlibs/wiiu/lib/
-COPY --from=libromfsbuild /opt/devkitpro/portlibs/wiiu/include/romfs-wiiu.h /opt/devkitpro/portlibs/wiiu/include/
-COPY --from=libromfsbuild /opt/devkitpro/portlibs/wiiu/share/ /opt/devkitpro/portlibs/wiiu/share/
-
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
- apt-get update && \
- apt-get -y install openjdk-11-jre && \
- mkdir /nuspacker
-
+RUN mkdir /nuspacker
 WORKDIR /nuspacker
 RUN wget https://github.com/Maschell/nuspacker/raw/master/NUSPacker.jar
 
