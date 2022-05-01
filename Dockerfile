@@ -213,7 +213,8 @@ COPY --from=libromfsbuild /opt/devkitpro/portlibs/wiiu/share/ /opt/devkitpro/por
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && \
+RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
+ apt-get update && \
  apt-get -y install openjdk-11-jre && \
  mkdir /nuspacker
 
