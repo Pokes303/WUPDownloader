@@ -16,11 +16,11 @@ jobs:
       - name: build binary
         run: |
           docker build . -t builder
-          docker run --rm -v ${PWD}:/project builder make
+          docker run --rm -v ${PWD}:/project builder python3 build.py
       - uses: actions/upload-artifact@master
         with:
           name: binary
-          path: "*.rpx"
+          path: "zips/*.zip"
   deploy-binary:
     needs: build-binary
     runs-on: ubuntu-18.04
