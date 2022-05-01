@@ -9,9 +9,9 @@ RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
 ENV PATH=$DEVKITPPC/bin:$PATH
 
 WORKDIR /
-RUN git clone https://github.com/devkitPro/wut && git checkout cd6b4fb45d054d53af92bc0b3685e8bd9f01445d
+RUN git clone https://github.com/devkitPro/wut
 WORKDIR /wut
-RUN make -j$(nproc) && make install
+RUN git checkout cd6b4fb45d054d53af92bc0b3685e8bd9f01445d && make -j$(nproc) && make install
 ENV WUT_ROOT=$DEVKITPRO/wut
 
 # build SDL2
