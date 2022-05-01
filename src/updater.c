@@ -252,9 +252,9 @@ void update(char *newVersion)
 	strcat(url, "/NUSspli-");
 	strcat(url, newVersion);
 #ifdef NUSSPLI_HBL
-	strcat(url, "-HBL" NUSSPLI_DLVER ".zip");
+	strcat(url, "HBL.zip");
 #else
-	strcat(url, isAroma() ? "-Aroma" NUSSPLI_DLVER ".zip" : "-Channel" NUSSPLI_DLVER ".zip");
+	strcat(url, isAroma() ? "Aroma.zip" : "Channel.zip");
 #endif
 	
 	if(downloadFile(url, "NUSspli.zip", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)

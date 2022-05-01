@@ -19,25 +19,31 @@ jobs:
           docker run --rm -v ${PWD}:/project builder python3 build.py
       - uses: actions/upload-artifact@v3
         with:
+          name: NUSspli-Aroma
           path: zips/*-Aroma.zip
           if-no-files-found: warn
       - uses: actions/upload-artifact@v3
         with:
+          name: NUSspli-Aroma-DEBUG
           path: zips/*-Aroma-DEBUG.zip
           if-no-files-found: error
       - uses: actions/upload-artifact@v3
         with:
+          name: NUSspli-Channel
           path: zips/*-Channel.zip
           if-no-files-found: warn
       - uses: actions/upload-artifact@v3
         with:
+          name: NUSspli-Channel-DEBUG
           path: zips/*-Channel-DEBUG.zip
           if-no-files-found: error
       - uses: actions/upload-artifact@v3
         with:
+          name: NUSspli-HBL.zip
           path: zips/*-HBL.zip
           if-no-files-found: warn
       - uses: actions/upload-artifact@v3
         with:
+          name: NUSspli-HBL-DEBUG.zip
           path: zips/*-HBL-DEBUG.zip
           if-no-files-found: error
