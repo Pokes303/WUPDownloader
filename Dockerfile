@@ -13,7 +13,7 @@ WORKDIR /
 # set up builder image
 FROM devkitpro/devkitppc:20220128 AS builder
 
-RUN apt-get update && apt-get -y install --no-install-recommends wget tar autoconf automake libtool libxml2-utils && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get -y install --no-install-recommends wget tar autoconf automake libtool python3 && rm -rf /var/lib/apt/lists/*
 COPY --from=wutbuild /opt/devkitpro/wut /opt/devkitpro/wut
 
 # build SDL2
