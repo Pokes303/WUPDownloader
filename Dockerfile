@@ -141,7 +141,7 @@ COPY --from=opensslbuild /openssl/include/crypto /opt/devkitpro/portlibs/wiiu/in
 RUN wget https://curl.se/download/curl-$curl_ver.tar.gz && mkdir /curl && tar xf curl-$curl_ver.tar.gz -C /curl --strip-components=1
 WORKDIR /curl
 
-ENV CFLAGS "-mcpu=750 -meabi -mhard-float -O3 -ffunction-sections -fdata-sections"
+ENV CFLAGS "-DESPRESSO -mcpu=750 -meabi -mhard-float -Ofast -ffunction-sections -fdata-sections -D__WIIU__ -pipe"
 ENV CXXFLAGS "${CFLAGS}"
 ENV CPPFLAGS "-D__WIIU__ -D__WUT__ -I${DEVKITPRO}/wut/include"
 ENV LDFLAGS "-L${DEVKITPRO}/wut/lib"
