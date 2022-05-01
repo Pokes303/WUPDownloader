@@ -20,7 +20,7 @@ jobs:
       - uses: actions/upload-artifact@master
         with:
           name: binaries
-          path: "zips/*.zip"
+          path: /project/zips/*.zip
   deploy-binary:
     needs: build-binary
     runs-on: ubuntu-18.04
@@ -38,4 +38,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: artifacts
-          path: zips/
+          path: wiiu/apps/NUSspli/*.zip
