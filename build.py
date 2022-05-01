@@ -46,17 +46,17 @@ for edition in editionList:
 os.system("make clean")
 os.system("make -j8 debug")
 os.system(f"{wuhbtool} NUSspli.rpx NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga --tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga --content=data")
-pathsToCreate = ["zips", "NUStmp/code", "NUStmp/content", "NUStmp/meta"]
+pathsToCreate = ["zips", "NUStmp/code"]
 for path in pathsToCreate:
     os.makedirs(path, exist_ok=True)
 shutil.make_archive(f"zips/NUSspli-{version}-Aroma-DEBUG", "zip", ".", "NUSspli.wuhb")
-shutil.copytree("meta/menu", "NUStmp/meta", dirs_exist_ok=True)
+shutil.copytree("meta/menu", "NUStmp/meta")
 os.remove("NUStmp/meta/app.xml")
 os.remove("NUStmp/meta/cos.xml")
 code = ["NUSspli.rpx", "meta/menu/app.xml", "meta/menu/cos.xml"]
 for file in code:
     shutil.copy(file, "NUStmp/code")
-shutil.copytree("data", "NUStmp/content", dirs_exist_ok=True)
+shutil.copytree("data", "NUStmp/content")
 os.system(f"java -jar {nuspacker} -in NUStmp -out NUSspli")
 shutil.make_archive(f"zips/NUSspli-{version}-Channel-DEBUG", "zip", ".", "NUSspli")
 shutil.rmtree("NUSspli")
@@ -90,6 +90,3 @@ if not isBeta:
         shutil.copy(file, "NUSspli")
     shutil.make_archive(f"zips/NUSspli-{version}-HBL", "zip", ".", "NUSspli")
     shutil.rmtree("NUSspli")
-
-checkAndDeleteDir("NUSspli")
-checkAndDeleteDir("NUStmp")
