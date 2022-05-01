@@ -116,7 +116,9 @@ index a9eae36..4a81d98 100644\n\
  ./Configure wiiu \
   no-threads no-shared no-asm no-ui-console no-unit-test no-tests no-buildtest-c++ no-external-tests no-autoload-config \
   --with-rand-seed=none -static --prefix=$DEVKITPRO/portlibs/wiiu --openssldir=openssldir && \
- make build_generated && make libssl.a libcrypto.a -j$(nproc)
+ make build_generated && make libssl.a libcrypto.a -j$(nproc) && \
+ cp lib*.a $DEVKITPRO/portlibs/wiiu/lib/ && \
+ cp -r include/openssl $DEVKITPRO/portlibs/wiiu/include/openssl
 
 # build curl
 WORKDIR /
