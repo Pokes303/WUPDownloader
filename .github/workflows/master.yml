@@ -24,6 +24,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           path: zips/*-Aroma-DEBUG.zip
+          if-no-files-found: error
       - uses: actions/upload-artifact@v3
         with:
           path: zips/*-Channel.zip
@@ -31,6 +32,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           path: zips/*-Channel-DEBUG.zip
+          if-no-files-found: error
       - uses: actions/upload-artifact@v3
         with:
           path: zips/*-HBL.zip
@@ -38,3 +40,4 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           path: zips/*-HBL-DEBUG.zip
+          if-no-files-found: error
