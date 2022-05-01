@@ -4,7 +4,7 @@ FROM devkitpro/devkitppc:20220128 AS wutbuild
 ENV PATH=$DEVKITPPC/bin:$PATH
 
 WORKDIR /
-RUN git clone https://github.com/devkitPro/wut
+RUN git clone https://github.com/devkitPro/wut && git checkout cd6b4fb45d054d53af92bc0b3685e8bd9f01445d
 WORKDIR /wut
 RUN make -j$(nproc)
 RUN make install
