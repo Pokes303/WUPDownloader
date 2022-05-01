@@ -30,7 +30,7 @@ WORKDIR /
 
 # build openssl
 FROM builder AS opensslbuild
-ARG openssl_ver=1.1.1m
+ARG openssl_ver=1.1.1n
 
 RUN wget https://www.openssl.org/source/openssl-$openssl_ver.tar.gz && mkdir /openssl && tar xf openssl-$openssl_ver.tar.gz -C /openssl --strip-components=1
 WORKDIR /openssl
@@ -131,7 +131,7 @@ WORKDIR /
 
 # build curl
 FROM builder as curlbuild
-ARG curl_ver=7.81.0
+ARG curl_ver=7.83.0
 
 # copy in openssl
 COPY --from=opensslbuild /openssl/libcrypto.a /openssl/libssl.a /opt/devkitpro/portlibs/wiiu/lib/
@@ -174,7 +174,7 @@ WORKDIR /
 FROM builder AS libiosuhaxbuild
 ENV WUT_ROOT=$DEVKITPRO/wut
 
-RUN git clone --recursive https://github.com/wiiu-env/libiosuhax
+RUN git clone --recursive https://github.com/Crementif/libiosuhax
 WORKDIR /libiosuhax
 RUN make -j$(nproc) && make install
 WORKDIR /
