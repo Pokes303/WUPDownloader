@@ -48,7 +48,7 @@ for path in pathsToCreate:
     os.makedirs(path)
 os.makedirs("zips", exist_ok=True)
 os.system("make clean")
-os.system("make -j8 debug")
+os.system("make -j$(nroc) debug")
 os.system(f"{wuhbtool} NUSspli.rpx out/Aroma-DEBUG/NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga --tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga --content=data")
 shutil.make_archive(f"zips/NUSspli-{version}-Aroma-DEBUG", "zip", "out/Aroma-DEBUG", ".")
 shutil.copytree("meta/menu", "NUStmp/meta")
@@ -63,7 +63,7 @@ shutil.make_archive(f"zips/NUSspli-{version}-Channel-DEBUG", "zip", "out/Channel
 
 if not isBeta:
     os.system("make clean")
-    os.system("make -j8 release")
+    os.system("make -j$(nroc) release")
     os.makedirs("out/Aroma")
     os.system(f"{wuhbtool} NUSspli.rpx out/Aroma/NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga --tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga --content=data")
     shutil.make_archive(f"zips/NUSspli-{version}-Aroma", "zip", "out/Aroma", ".")
@@ -75,7 +75,7 @@ if not isBeta:
 
 shutil.rmtree("NUStmp")
 os.system("make clean")
-os.system("make HBL=1 -j8 debug")
+os.system("make HBL=1 -j$(nroc) debug")
 hblFiles = ["NUSspli.rpx", "meta/hbl/meta.xml", "meta/hbl/icon.png"]
 for file in hblFiles:
     shutil.copy(file, "out/HBL-DEBUG/NUSspli")
@@ -83,7 +83,7 @@ shutil.make_archive(f"zips/NUSspli-{version}-HBL-DEBUG", "zip", "out/HBL-DEBUG",
 
 if not isBeta:
     os.system("make clean")
-    os.system("make HBL=1 -j8 release")
+    os.system("make HBL=1 -j$(nroc) release")
     os.makedirs("out/HBL/NUSspli")
     for file in hblFiles:
         shutil.copy(file, "out/HBL/NUSspli")
