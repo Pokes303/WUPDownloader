@@ -8,7 +8,7 @@ on:
 jobs:
   build-binary:
     if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') }}
-    name: Build zips
+    name: Build binary
     runs-on: ubuntu-20.04
     steps:
       - name: checkout
@@ -70,7 +70,7 @@ jobs:
         if: ${{ !contains(github.event.head_commit.message, '-ALPHA') && !contains(github.event.head_commit.message, '-BETA') }}
         uses: actions/create-release@v1
         with:
-          draft: true
+          draft: false
           prerelease: false
           tag_name: v${{ steps.version.outputs.version }}
           release_name: v${{ steps.version.outputs.version }}
