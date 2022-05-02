@@ -79,7 +79,7 @@ jobs:
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-Aroma.zip
-          asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-Aroma.zip
+          asset_path: wiiu/apps/NUSspli/NUSspli-${{ steps.version.outputs.version }}-Aroma.zip
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -88,7 +88,7 @@ jobs:
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-Aroma-DEBUG.zip
-          asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-Aroma-DEBUG.zip
+          asset_path: wiiu/apps/NUSspli/NUSspli-${{ steps.version.outputs.version }}-Aroma-DEBUG.zip
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -98,7 +98,7 @@ jobs:
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-Channel.zip
-          asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-Channel.zip
+          asset_path: wiiu/apps/NUSspli/NUSspli-${{ steps.version.outputs.version }}-Channel.zip
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -107,7 +107,7 @@ jobs:
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-Channel-DEBUG.zip
-          asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-Channel-DEBUG.zip
+          asset_path: wiiu/apps/NUSspli/NUSspli-${{ steps.version.outputs.version }}-Channel-DEBUG.zip
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -117,7 +117,7 @@ jobs:
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-HBL.zip
-          asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-HBL.zip
+          asset_path: wiiu/apps/NUSspli/NUSspli-${{ steps.version.outputs.version }}-HBL.zip
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -126,7 +126,7 @@ jobs:
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-HBL-DEBUG.zip
-          asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-HBL-DEBUG.zip
+          asset_path: wiiu/apps/NUSspli/NUSspli-${{ steps.version.outputs.version }}-HBL-DEBUG.zip
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
