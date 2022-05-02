@@ -6,9 +6,9 @@ on:
       - master
 
 jobs:
+  if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') }}
   build-binary:
-    if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') }}
-    name: Deploy release
+    name: Build zips
     runs-on: ubuntu-20.04
     steps:
       - name: checkout
@@ -24,6 +24,11 @@ jobs:
           apt-fast -y install libxml2-utils
           echo "::set-output name=version::$(xmllint --xpath 'app/version/text()' meta/hbl/meta.xml)"
         id: version
+  upload-zips:
+    if: ${{ contains(github.event.head_commit.message, '-ALPHA') || contains(github.event.head_commit.message, '-BETA') }}
+    name: Upload zips
+    runs-on: ubuntu-20.04
+    steps:
       - name: Upload Aroma version
         uses: actions/upload-artifact@v3
         with:
@@ -60,6 +65,11 @@ jobs:
           name: NUSspli-${{ steps.version.outputs.version }}-HBL-DEBUG
           path: out/HBL-DEBUG/*
           if-no-files-found: error
+  upload-release:
+    if: ${{ !contains(github.event.head_commit.message, '-ALPHA') && !contains(github.event.head_commit.message, '-BETA') }}
+    name: Draft release
+    runs-on: ubuntu-20.04
+    steps:
       - name: Prepare release
         uses: actions/create-release@v1
         with:
