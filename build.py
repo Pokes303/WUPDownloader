@@ -44,14 +44,14 @@ for edition in editionList:
     for ext in extList:
         for pkg in pkgList:
             checkAndDeleteFile(f"zips/NUSspli-{version}-{pkg}{edition}{ext}")
-os.system("make clean")
-os.system("make -j8 debug")
-os.system(f"{wuhbtool} NUSspli.rpx NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga --tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga --content=data")
+
 pathsToCreate = [ "out/Aroma-DEBUG", "out/HBL-DEBUG", "zips", "NUStmp/code"]
 for path in pathsToCreate:
     os.makedirs(path, exist_ok=True)
-shutil.copy("NUSspli.wuhb", "out/Aroma-DEBUG");
-shutil.make_archive(f"zips/NUSspli-{version}-Aroma-DEBUG", "zip", ".", "NUSspli.wuhb")
+os.system("make clean")
+os.system("make -j8 debug")
+os.system(f"{wuhbtool} NUSspli.rpx out/Aroma-DEBUG/NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga --tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga --content=data")
+shutil.make_archive(f"zips/NUSspli-{version}-Aroma-DEBUG", "zip", "out/Aroma-DEBUG", ".")
 shutil.copytree("meta/menu", "NUStmp/meta")
 os.remove("NUStmp/meta/app.xml")
 os.remove("NUStmp/meta/cos.xml")
@@ -59,49 +59,33 @@ code = ["NUSspli.rpx", "meta/menu/app.xml", "meta/menu/cos.xml"]
 for file in code:
     shutil.copy(file, "NUStmp/code")
 shutil.copytree("data", "NUStmp/content")
-shutil.copytree("NUStmp", "out/Channel-DEBUG");
-os.system(f"java -jar {nuspacker} -in NUStmp -out NUSspli")
-try:
-    shutil.make_archive(f"zips/NUSspli-{version}-Channel-DEBUG", "zip", ".", "NUSspli")
-    shutil.rmtree("NUSspli")
-except:
-    print("Failed to create Channel-DEBUG zip")
+os.system(f"java -jar {nuspacker} -in NUStmp -out out/Channel-DEBUG")
+shutil.make_archive(f"zips/NUSspli-{version}-Channel-DEBUG", "zip", "out/Channel-DEBUG", ".")
 
 if not isBeta:
     os.system("make clean")
     os.system("make -j8 release")
-    os.system(f"{wuhbtool} NUSspli.rpx NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga --tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga --content=data")
     os.makedirs("out/Aroma", exist_ok=True)
-    shutil.copy("NUSspli.wuhb", "out/Aroma");
-    shutil.make_archive(f"zips/NUSspli-{version}-Aroma", "zip", ".", "NUSspli.wuhb")
+    os.system(f"{wuhbtool} NUSspli.rpx out/Aroma/NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga --tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga --content=data")
+    shutil.make_archive(f"zips/NUSspli-{version}-Aroma", "zip", "out/Aroma", ".")
     os.remove("NUStmp/code/NUSspli.rpx")
     shutil.move("NUSspli.rpx", "NUStmp/code")
-    shutil.copytree("NUStmp", "out/Channel");
-    os.system(f"java -jar {nuspacker} -in NUStmp -out NUSspli")
-    try:
-        shutil.make_archive(f"zips/NUSspli-{version}-Channel", "zip", ".", "NUSspli")
-        shutil.rmtree("NUSspli")
-    except:
-        print("Failed to create Channel zip")
+    os.system(f"java -jar {nuspacker} -in NUStmp -out out/Channel")
+    shutil.make_archive(f"zips/NUSspli-{version}-Channel", "zip", "out/Channel", ".")
 
 shutil.rmtree("NUStmp")
 os.system("make clean")
 os.system("make HBL=1 -j8 debug")
-os.makedirs("NUSspli", exist_ok=True)
+os.makedirs("out/HBL-DEBUG/NUSspli", exist_ok=True)
 hblFiles = ["NUSspli.rpx", "meta/hbl/meta.xml", "meta/hbl/icon.png"]
 for file in hblFiles:
-    shutil.copy(file, "NUSspli")
-    shutil.copy(file, "out/HBL-DEBUG")
-shutil.make_archive(f"zips/NUSspli-{version}-HBL-DEBUG", "zip", ".", "NUSspli")
-shutil.rmtree("NUSspli")
+    shutil.copy(file, "out/HBL-DEBUG/NUSspli")
+shutil.make_archive(f"zips/NUSspli-{version}-HBL-DEBUG", "zip", "out/HBL-DEBUG", ".")
 
 if not isBeta:
     os.system("make clean")
     os.system("make HBL=1 -j8 release")
-    os.makedirs("NUSspli", exist_ok=True)
-    os.makedirs("out/HBL", exist_ok=True)
+    os.makedirs("out/HBL/NUSspli", exist_ok=True)
     for file in hblFiles:
-        shutil.copy(file, "NUSspli")
-        shutil.copy(file, "out/HBL")
-    shutil.make_archive(f"zips/NUSspli-{version}-HBL", "zip", ".", "NUSspli")
-    shutil.rmtree("NUSspli")
+        shutil.copy(file, "out/HBL/NUSspli")
+    shutil.make_archive(f"zips/NUSspli-{version}-HBL", "zip", "out/HBL", ".")
