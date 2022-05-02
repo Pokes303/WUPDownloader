@@ -70,7 +70,7 @@ jobs:
           body_path: CHANGELOG.md
         id: release
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Aroma release
         uses: actions/upload-release-asset@v1
         with:
@@ -80,7 +80,7 @@ jobs:
           if-no-files-found: warn
           asset_content_type: application/zip
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Aroma debug release
         uses: actions/upload-release-asset@v1
         with:
@@ -90,7 +90,7 @@ jobs:
           if-no-files-found: error
           asset_content_type: application/zip
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Channel release
         uses: actions/upload-release-asset@v1
         with:
@@ -100,7 +100,7 @@ jobs:
           if-no-files-found: warn
           asset_content_type: application/zip
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Channel debug release
         uses: actions/upload-release-asset@v1
         with:
@@ -110,7 +110,7 @@ jobs:
           if-no-files-found: error
           asset_content_type: application/zip
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload HBL release
         uses: actions/upload-release-asset@v1
         with:
@@ -120,7 +120,7 @@ jobs:
           if-no-files-found: warn
           asset_content_type: application/zip
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload HBL debug release
         uses: actions/upload-release-asset@v1
         with:
@@ -130,4 +130,4 @@ jobs:
           if-no-files-found: error
           asset_content_type: application/zip
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
