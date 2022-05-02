@@ -49,7 +49,7 @@ jobs:
           name: NUSspli-${{ steps.version.outputs.version }}-Channel-DEBUG
           path: out/Channel-DEBUG/*
           if-no-files-found: error
-      - name: Upload HNL version
+      - name: Upload HBL version
         uses: actions/upload-artifact@v3
         with:
           name: NUSspli-${{ steps.version.outputs.version }}-HBL
@@ -111,7 +111,7 @@ jobs:
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ github.token }}
-      - name: Upload HNL release
+      - name: Upload HBL release
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
