@@ -18,7 +18,8 @@ jobs:
       - name: build artifacts
         run: |
           docker build . -t builder
-          docker run --rm -v ${PWD}:/project builder python3 build.py
+          echo ${{ secrets.ENC_KEY }} > ${PWD}:/project/encryptKeyWith
+          docker run --rm -v builder python3 build.py
       - name: Get version number
         run: |
           apt-fast -y install libxml2-utils
