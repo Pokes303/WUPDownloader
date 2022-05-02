@@ -25,7 +25,7 @@ jobs:
           echo "::set-output name=version::$(xmllint --xpath 'app/version/text()' meta/hbl/meta.xml)"
         id: version
   upload-zips:
-  if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') && (contains(github.event.head_commit.message, '-ALPHA') || contains(github.event.head_commit.message, '-BETA')) }}
+    if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') && (contains(github.event.head_commit.message, '-ALPHA') || contains(github.event.head_commit.message, '-BETA')) }}
     name: Upload zips
     runs-on: ubuntu-20.04
     steps:
@@ -66,7 +66,7 @@ jobs:
           path: out/HBL-DEBUG/*
           if-no-files-found: error
   upload-release:
-  if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') &&  !contains(github.event.head_commit.message, '-ALPHA') && !contains(github.event.head_commit.message, '-BETA') }}
+    if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') &&  !contains(github.event.head_commit.message, '-ALPHA') && !contains(github.event.head_commit.message, '-BETA') }}
     name: Draft release
     runs-on: ubuntu-20.04
     steps:
