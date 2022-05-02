@@ -45,9 +45,10 @@ for edition in editionList:
         for pkg in pkgList:
             checkAndDeleteFile(f"zips/NUSspli-{version}-{pkg}{edition}{ext}")
 
-pathsToCreate = ["out/Aroma-DEBUG", "out/Channel-DEBUG", "out/HBL-DEBUG", "zips", "NUStmp/code"]
+pathsToCreate = ["out/Aroma-DEBUG", "out/Channel-DEBUG", "out/HBL-DEBUG/NUSspli", "NUStmp/code"]
 for path in pathsToCreate:
-    os.makedirs(path, exist_ok=True)
+    os.makedirs(path)
+os.makedirs("zips", exist_ok=True)
 os.system("make clean")
 os.system("make -j8 debug")
 os.system(f"{wuhbtool} NUSspli.rpx out/Aroma-DEBUG/NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga --tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga --content=data")
@@ -65,19 +66,18 @@ shutil.make_archive(f"zips/NUSspli-{version}-Channel-DEBUG", "zip", "out/Channel
 if not isBeta:
     os.system("make clean")
     os.system("make -j8 release")
-    os.makedirs("out/Aroma", exist_ok=True)
+    os.makedirs("out/Aroma")
     os.system(f"{wuhbtool} NUSspli.rpx out/Aroma/NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga --tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga --content=data")
     shutil.make_archive(f"zips/NUSspli-{version}-Aroma", "zip", "out/Aroma", ".")
     os.remove("NUStmp/code/NUSspli.rpx")
     shutil.move("NUSspli.rpx", "NUStmp/code")
-    os.makedirs("out/Channel", exist_ok=True)
+    os.makedirs("out/Channel")
     os.system(f"java -jar {nuspacker} -in NUStmp -out out/Channel/NUSspli")
     shutil.make_archive(f"zips/NUSspli-{version}-Channel", "zip", "out/Channel", ".")
 
 shutil.rmtree("NUStmp")
 os.system("make clean")
 os.system("make HBL=1 -j8 debug")
-os.makedirs("out/HBL-DEBUG/NUSspli", exist_ok=True)
 hblFiles = ["NUSspli.rpx", "meta/hbl/meta.xml", "meta/hbl/icon.png"]
 for file in hblFiles:
     shutil.copy(file, "out/HBL-DEBUG/NUSspli")
@@ -86,7 +86,7 @@ shutil.make_archive(f"zips/NUSspli-{version}-HBL-DEBUG", "zip", "out/HBL-DEBUG",
 if not isBeta:
     os.system("make clean")
     os.system("make HBL=1 -j8 release")
-    os.makedirs("out/HBL/NUSspli", exist_ok=True)
+    os.makedirs("out/HBL/NUSspli")
     for file in hblFiles:
         shutil.copy(file, "out/HBL/NUSspli")
     shutil.make_archive(f"zips/NUSspli-{version}-HBL", "zip", "out/HBL", ".")
