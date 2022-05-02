@@ -29,8 +29,6 @@ if ForceRelease or version.find("BETA") != -1 or version.find("ALPHA") != -1:
 if len(wuhbtool) == 0:
     wuhbtool = "wuhbtool"
 
-checkAndDeleteFile("NUSspli.wuhb")
-checkAndDeleteDir("NUSspli")
 checkAndDeleteDir("NUStmp")
 checkAndDeleteDir("out")
 
