@@ -9,40 +9,123 @@ on:
 
 jobs:
   build-binary:
+    name: build-binary
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-      - name: build binaries
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-deth: 0
+      - name: build artifacts
         run: |
           docker build . -t builder
           docker run --rm -v ${PWD}:/project builder python3 build.py
-      - uses: actions/upload-artifact@v3
+      - name Get version number
+        run: echo "::set-output name=version::$(xmllint --xpath 'app/version/text()' meta/hbl/meta.xml))"
+        id: version
+      - name: Upload Aroma version
+        uses: actions/upload-artifact@v3
         with:
-          name: NUSspli-Aroma
+          name: NUSspli-${{ steps.version.outputs.version }}-Aroma
           path: out/Aroma/*
           if-no-files-found: warn
-      - uses: actions/upload-artifact@v3
+      - name: Upload Aroma debug version
+        uses: actions/upload-artifact@v3
         with:
-          name: NUSspli-Aroma-DEBUG
+          name: NUSspli-${{ steps.version.outputs.version }}-Aroma-DEBUG
           path: out/Aroma-DEBUG/*
           if-no-files-found: error
-      - uses: actions/upload-artifact@v3
+      - name: Upload Channel version
+        uses: actions/upload-artifact@v3
         with:
-          name: NUSspli-Channel
+          name: NUSspli-${{ steps.version.outputs.version }}-Channel
           path: out/Channel/*
           if-no-files-found: warn
-      - uses: actions/upload-artifact@v3
+      - name: Upload Channel debug version
+        uses: actions/upload-artifact@v3
         with:
-          name: NUSspli-Channel-DEBUG
+          name: NUSspli-${{ steps.version.outputs.version }}-Channel-DEBUG
           path: out/Channel-DEBUG/*
           if-no-files-found: error
-      - uses: actions/upload-artifact@v3
+      - name: Upload HNL version
+        uses: actions/upload-artifact@v3
         with:
-          name: NUSspli-HBL
+          name: NUSspli-${{ steps.version.outputs.version }}-HBL
           path: out/HBL/*
           if-no-files-found: warn
-      - uses: actions/upload-artifact@v3
+      - name: Upload HBL debug version
+        uses: actions/upload-artifact@v3
         with:
-          name: NUSspli-HBL-DEBUG
+          name: NUSspli-${{ steps.version.outputs.version }}-HBL-DEBUG
           path: out/HBL-DEBUG/*
           if-no-files-found: error
+      - name: Prepare release
+        uses: actions/create-release@v1
+        with:
+          draft: true
+          prerelease: false
+          tag_name: v${{ steps.version.outputs.version }}
+          body_path: CHANGELOG.md
+          id: release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Upload Aroma release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_name: NUSspli-${{ steps.version.outputs.version }}-Aroma.zip
+          asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-Aroma.zip
+          if-no-files-found: warn
+          asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Upload Aroma debug release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_name: NUSspli-${{ steps.version.outputs.version }}-Aroma-DEBUG.zip
+          asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-Aroma-DEBUG.zip
+          if-no-files-found: error
+          asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Upload Channel release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_name: NUSspli-${{ steps.version.outputs.version }}-Channel.zip
+          asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-Channel.zip
+          if-no-files-found: warn
+          asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Upload Channel debug release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_name: NUSspli-${{ steps.version.outputs.version }}-Channel-DEBUG.zip
+          asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-Channel-DEBUG.zip
+          if-no-files-found: error
+          asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Upload HNL release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_name: NUSspli-${{ steps.version.outputs.version }}-HBL.zip
+          asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-HBL.zip
+          if-no-files-found: warn
+          asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Upload HBL debug release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_name: NUSspli-${{ steps.version.outputs.version }}-HBL-DEBUG.zip
+          asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-HBL-DEBUG.zip
+          if-no-files-found: error
+          asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
