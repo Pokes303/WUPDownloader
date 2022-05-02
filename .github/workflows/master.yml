@@ -2,10 +2,8 @@ name: build
 
 on:
   push:
-    branches:
-      - master
     tag:
-      - 'v*.*'
+      - v*.**
 
 jobs:
   build-binary:
