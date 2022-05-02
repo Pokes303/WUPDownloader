@@ -20,7 +20,7 @@ jobs:
         run: |
           docker build . -t builder
           docker run --rm -v ${PWD}:/project builder python3 build.py
-      - name Get version number
+      - name: Get version number
         run: |
           apt-fast install libxml2-utils
           echo "::set-output name=version::$(xmllint --xpath 'app/version/text()' meta/hbl/meta.xml))"
