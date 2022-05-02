@@ -18,7 +18,7 @@ jobs:
       - name: build artifacts
         run: |
           docker build . -t builder
-          echo ${{ secrets.ENC_KEY }} > ${PWD}:/project/encryptKeyWith
+          echo ${{ secrets.ENC_KEY }} > ${PWD}/project/encryptKeyWith
           docker run --rm -v builder python3 build.py
       - name: Get version number
         run: |
