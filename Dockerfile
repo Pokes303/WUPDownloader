@@ -1,5 +1,5 @@
 # build wut
-FROM devkitpro/devkitppc:20220128 AS final
+FROM devkitpro/devkitppc:20220216 AS final
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
