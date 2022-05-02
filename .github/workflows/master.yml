@@ -80,7 +80,6 @@ jobs:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-Aroma.zip
           asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-Aroma.zip
-          if-no-files-found: warn
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -90,7 +89,6 @@ jobs:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-Aroma-DEBUG.zip
           asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-Aroma-DEBUG.zip
-          if-no-files-found: error
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -100,7 +98,6 @@ jobs:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-Channel.zip
           asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-Channel.zip
-          if-no-files-found: warn
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -110,7 +107,6 @@ jobs:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-Channel-DEBUG.zip
           asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-Channel-DEBUG.zip
-          if-no-files-found: error
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -120,7 +116,6 @@ jobs:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-HBL.zip
           asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-HBL.zip
-          if-no-files-found: warn
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -130,7 +125,6 @@ jobs:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-HBL-DEBUG.zip
           asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-HBL-DEBUG.zip
-          if-no-files-found: error
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
