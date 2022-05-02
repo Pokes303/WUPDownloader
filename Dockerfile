@@ -10,7 +10,7 @@ WORKDIR /
 
 RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
  apt-get update && \
- apt-get upgrade && \
+ apt-get -y --no-install-recommends upgrade && \
  apt-get -y install --no-install-recommends wget tar autoconf automake libtool openjdk-11-jre-headless && \
  apt-get clean && \
  rm -rf /var/lib/apt/lists/* /usr/share/man && \
