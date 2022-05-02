@@ -6,9 +6,8 @@ on:
       - v*.**
 
 jobs:
-  run_if:
+  build-binary:
     if: ${{ startsWith(github.event.commits[0].message, 'v') && contains(github.event.commits[0].message, '.') }}
-    build-binary:
       name: Deploy release
       runs-on: ubuntu-20.04
       steps:
