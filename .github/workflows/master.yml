@@ -68,7 +68,9 @@ jobs:
           prerelease: false
           tag_name: v${{ steps.version.outputs.version }}
           release_name: v${{ steps.version.outputs.version }}
-          body_path: CHANGELOG.md
+          body: |
+            Improvements to stability and usability:
+            Further improvements to overall stability and other minor adjustments have been made to enhance the user experience.
         id: release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
