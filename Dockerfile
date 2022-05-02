@@ -1,11 +1,11 @@
 # build wut
 FROM devkitpro/devkitppc:20220216 AS final
 
-ENV DEBIAN_FRONTEND=noninteractive
-ENV PATH=$DEVKITPPC/bin:$PATH
-ENV WUT_ROOT=$DEVKITPRO/wut
-ARG openssl_ver=1.1.1n
-ARG curl_ver=7.83.0
+ENV openssl_ver=1.1.1n \
+ curl_ver=7.83.0 \
+ DEBIAN_FRONTEND=noninteractive \
+ PATH=$DEVKITPPC/bin:$PATH \
+ WUT_ROOT=$DEVKITPRO/wut
 WORKDIR /
 
 RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
