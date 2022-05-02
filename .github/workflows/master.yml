@@ -24,53 +24,50 @@ jobs:
           apt-fast -y install libxml2-utils
           echo "::set-output name=version::$(xmllint --xpath 'app/version/text()' meta/hbl/meta.xml)"
         id: version
-  upload-zips:
-    if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') && (contains(github.event.head_commit.message, '-ALPHA') || contains(github.event.head_commit.message, '-BETA')) }}
-    name: Upload zips
-    runs-on: ubuntu-20.04
-    steps:
       - name: Upload Aroma version
+        if: ${{ contains(github.event.head_commit.message, '-ALPHA') || contains(github.event.head_commit.message, '-BETA') }}
         uses: actions/upload-artifact@v3
         with:
           name: NUSspli-${{ steps.version.outputs.version }}-Aroma
           path: out/Aroma/*
           if-no-files-found: warn
       - name: Upload Aroma debug version
+        if: ${{ contains(github.event.head_commit.message, '-ALPHA') || contains(github.event.head_commit.message, '-BETA') }}
         uses: actions/upload-artifact@v3
         with:
           name: NUSspli-${{ steps.version.outputs.version }}-Aroma-DEBUG
           path: out/Aroma-DEBUG/*
           if-no-files-found: error
       - name: Upload Channel version
+        if: ${{ contains(github.event.head_commit.message, '-ALPHA') || contains(github.event.head_commit.message, '-BETA') }}
         uses: actions/upload-artifact@v3
         with:
           name: NUSspli-${{ steps.version.outputs.version }}-Channel
           path: out/Channel/*
           if-no-files-found: warn
       - name: Upload Channel debug version
+        if: ${{ contains(github.event.head_commit.message, '-ALPHA') || contains(github.event.head_commit.message, '-BETA') }}
         uses: actions/upload-artifact@v3
         with:
           name: NUSspli-${{ steps.version.outputs.version }}-Channel-DEBUG
           path: out/Channel-DEBUG/*
           if-no-files-found: error
       - name: Upload HBL version
+        if: ${{ contains(github.event.head_commit.message, '-ALPHA') || contains(github.event.head_commit.message, '-BETA') }}
         uses: actions/upload-artifact@v3
         with:
           name: NUSspli-${{ steps.version.outputs.version }}-HBL
           path: out/HBL/*
           if-no-files-found: warn
       - name: Upload HBL debug version
+        if: ${{ contains(github.event.head_commit.message, '-ALPHA') || contains(github.event.head_commit.message, '-BETA') }}
         uses: actions/upload-artifact@v3
         with:
           name: NUSspli-${{ steps.version.outputs.version }}-HBL-DEBUG
           path: out/HBL-DEBUG/*
           if-no-files-found: error
-  upload-release:
-    if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') &&  !contains(github.event.head_commit.message, '-ALPHA') && !contains(github.event.head_commit.message, '-BETA') }}
-    name: Draft release
-    runs-on: ubuntu-20.04
-    steps:
       - name: Prepare release
+        if: ${{ !contains(github.event.head_commit.message, '-ALPHA') && !contains(github.event.head_commit.message, '-BETA') }}
         uses: actions/create-release@v1
         with:
           draft: true
@@ -84,6 +81,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Aroma release
+        if: ${{ !contains(github.event.head_commit.message, '-ALPHA') && !contains(github.event.head_commit.message, '-BETA') }}
         uses: actions/upload-release-asset@v1
         continue-on-error: true
         with:
@@ -94,6 +92,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Aroma debug release
+        if: ${{ !contains(github.event.head_commit.message, '-ALPHA') && !contains(github.event.head_commit.message, '-BETA') }}
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
@@ -103,6 +102,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Channel release
+        if: ${{ !contains(github.event.head_commit.message, '-ALPHA') && !contains(github.event.head_commit.message, '-BETA') }}
         uses: actions/upload-release-asset@v1
         continue-on-error: true
         with:
@@ -113,6 +113,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Channel debug release
+        if: ${{ !contains(github.event.head_commit.message, '-ALPHA') && !contains(github.event.head_commit.message, '-BETA') }}
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
@@ -122,6 +123,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload HBL release
+        if: ${{ !contains(github.event.head_commit.message, '-ALPHA') && !contains(github.event.head_commit.message, '-BETA') }}
         uses: actions/upload-release-asset@v1
         continue-on-error: true
         with:
@@ -132,6 +134,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload HBL debug release
+        if: ${{ !contains(github.event.head_commit.message, '-ALPHA') && !contains(github.event.head_commit.message, '-BETA') }}
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
