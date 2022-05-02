@@ -35,21 +35,17 @@
 #endif
 
 // ACP
-extern void ACPInitialize();
 extern ACPResult ACPGetTitleMetaXmlByTitleListType(MCPTitleListType *titleListType, ACPMetaXml *out);
 
 // MCP
 extern MCPError MCP_DeleteTitleAsync(int handle, char *path, MCPInstallTitleInfo *out);
-extern MCPError MCP_DeleteTitleDoneAsync(int handle, MCPInstallTitleInfo *out);
 
 // SO
 extern int somemopt (int type, void *buf, size_t bufsize, int unk);
 
 // GX2
 extern void GX2SetDRCGamma(float gamma);
-extern void GX2SetDRCGammaEx(float gamma);
 extern void GX2SetTVGamma(float gamma);
-extern void GX2SetTVGammaEx(float gamma);
 
 // UC - From:
 // https://github.com/decaf-emu/decaf-emu/blob/master/src/libdecaf/src/cafe/libraries/coreinit/coreinit_userconfig.h
