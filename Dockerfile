@@ -25,7 +25,7 @@ RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
  mkdir /openssl && \
  tar xf openssl-$openssl_ver.tar.gz -C /openssl --strip-components=1 && \
  rm -f openssl-$openssl_ver.tar.gz && \
- cd openssl &&
+ cd openssl && \
  echo 'diff --git a/Configurations/10-main.conf b/Configurations/10-main.conf\n\
 index 61c6689..efe686a 100644\n\
 --- a/Configurations/10-main.conf\n\
