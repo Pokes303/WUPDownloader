@@ -45,7 +45,7 @@ for edition in editionList:
         for pkg in pkgList:
             checkAndDeleteFile(f"zips/NUSspli-{version}-{pkg}{edition}{ext}")
 
-pathsToCreate = [ "out/Aroma-DEBUG", "out/HBL-DEBUG", "zips", "NUStmp/code"]
+pathsToCreate = ["out/Aroma-DEBUG", "out/Channel-DEBUG", "out/HBL-DEBUG", "zips", "NUStmp/code"]
 for path in pathsToCreate:
     os.makedirs(path, exist_ok=True)
 os.system("make clean")
@@ -59,7 +59,7 @@ code = ["NUSspli.rpx", "meta/menu/app.xml", "meta/menu/cos.xml"]
 for file in code:
     shutil.copy(file, "NUStmp/code")
 shutil.copytree("data", "NUStmp/content")
-os.system(f"java -jar {nuspacker} -in NUStmp -out out/Channel-DEBUG")
+os.system(f"java -jar {nuspacker} -in NUStmp -out out/Channel-DEBUG/NUSspli")
 shutil.make_archive(f"zips/NUSspli-{version}-Channel-DEBUG", "zip", "out/Channel-DEBUG", ".")
 
 if not isBeta:
@@ -70,7 +70,8 @@ if not isBeta:
     shutil.make_archive(f"zips/NUSspli-{version}-Aroma", "zip", "out/Aroma", ".")
     os.remove("NUStmp/code/NUSspli.rpx")
     shutil.move("NUSspli.rpx", "NUStmp/code")
-    os.system(f"java -jar {nuspacker} -in NUStmp -out out/Channel")
+    os.makedirs("out/Channel", exist_ok=True)
+    os.system(f"java -jar {nuspacker} -in NUStmp -out out/Channel/NUSspli")
     shutil.make_archive(f"zips/NUSspli-{version}-Channel", "zip", "out/Channel", ".")
 
 shutil.rmtree("NUStmp")
