@@ -1,15 +1,15 @@
 name: build
 
 on:
-  pull_request:
-    types: [ opened, reopened ]
   push:
     branches:
       - master
+    tag:
+      - 'v*.*'
 
 jobs:
   build-binary:
-    name: build-binary
+    name: Deploy release
     runs-on: ubuntu-20.04
     steps:
       - name: checkout

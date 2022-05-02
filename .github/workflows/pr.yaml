@@ -1,0 +1,37 @@
+name: build
+
+on:
+  pull_request:
+    types: [ opened, reopened ]
+
+jobs:
+  build-binary:
+    name: build-binary
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-deth: 0
+      - name: build artifacts
+        run: |
+          docker build . -t builder
+          docker run --rm -v ${PWD}:/project builder python3 build.py
+      - name: Upload Aroma version
+        uses: actions/upload-artifact@v3
+        with:
+          name: NUSspli-Aroma-DEBUG
+          path: out/Aroma-DEBUG/*
+          if-no-files-found: error
+      - name: Upload Channel version
+        uses: actions/upload-artifact@v3
+        with:
+          name: NUSspli-Channel-DEBUG
+          path: out/Channel-DEBUG/*
+          if-no-files-found: error
+      - name: Upload HBL version
+        uses: actions/upload-artifact@v3
+        with:
+          name: NUSspli-HBL-DEBUG
+          path: out/HBL-DEBUG/*
+          if-no-files-found: error
