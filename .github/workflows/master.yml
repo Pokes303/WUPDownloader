@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-binary:
-    if: ${{ startsWith(github.event.commits[0].message, 'v') && contains(github.event.commits[0].message, '.') && !endsWith(github.event.commits[0].message, '.') }}
+    if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') }}
     name: Deploy release
     runs-on: ubuntu-20.04
     steps:
