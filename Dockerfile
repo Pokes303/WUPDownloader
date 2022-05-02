@@ -2,26 +2,31 @@
 FROM devkitpro/devkitppc:20220216 AS final
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PATH=$DEVKITPPC/bin:$PATH
+ENV WUT_ROOT=$DEVKITPRO/wut
+ARG openssl_ver=1.1.1n
+ARG curl_ver=7.83.0
+WORKDIR /
+
 RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
  apt-get update && \
  apt-get upgrade && \
- apt-get -y install --no-install-recommends wget tar autoconf automake libtool openjdk-11-jre-headless && rm -rf /var/lib/apt/lists/* /usr/share/man
-
-ENV PATH=$DEVKITPPC/bin:$PATH
-
-WORKDIR /
-RUN git clone https://github.com/devkitPro/wut
-WORKDIR /wut
-RUN git checkout cd6b4fb45d054d53af92bc0b3685e8bd9f01445d && make -j$(nproc) && make install
-ENV WUT_ROOT=$DEVKITPRO/wut
-
-ARG openssl_ver=1.1.1n
-
-WORKDIR /
-RUN wget https://www.openssl.org/source/openssl-$openssl_ver.tar.gz && mkdir /openssl && tar xf openssl-$openssl_ver.tar.gz -C /openssl --strip-components=1
-WORKDIR /openssl
-
-RUN echo 'diff --git a/Configurations/10-main.conf b/Configurations/10-main.conf\n\
+ apt-get -y install --no-install-recommends wget tar autoconf automake libtool openjdk-11-jre-headless && \
+ apt-get clean && \
+ rm -rf /var/lib/apt/lists/* /usr/share/man && \
+ git clone https://github.com/devkitPro/wut && \
+ cd wut && \
+ git checkout cd6b4fb45d054d53af92bc0b3685e8bd9f01445d && \
+ make -j$(nproc) && \
+ make install && \
+ cd .. && \
+ rm -rf wut && \
+ wget https://www.openssl.org/source/openssl-$openssl_ver.tar.gz && \
+ mkdir /openssl && \
+ tar xf openssl-$openssl_ver.tar.gz -C /openssl --strip-components=1 && \
+ rm -f openssl-$openssl_ver.tar.gz && \
+ cd openssl &&
+ echo 'diff --git a/Configurations/10-main.conf b/Configurations/10-main.conf\n\
 index 61c6689..efe686a 100644\n\
 --- a/Configurations/10-main.conf\n\
 +++ b/Configurations/10-main.conf\n\
@@ -67,16 +72,15 @@ index a9eae36..4a81d98 100644\n\
   --with-rand-seed=none -static --prefix=$DEVKITPRO/portlibs/wiiu --openssldir=openssldir && \
  make build_generated && make libssl.a libcrypto.a -j$(nproc) && \
  cp lib*.a $DEVKITPRO/portlibs/wiiu/lib/ && \
- cp -r include/openssl $DEVKITPRO/portlibs/wiiu/include/openssl
-
-# build curl
-WORKDIR /
-ARG curl_ver=7.83.0
-
-RUN wget https://curl.se/download/curl-$curl_ver.tar.gz && mkdir /curl && tar xf curl-$curl_ver.tar.gz -C /curl --strip-components=1
-WORKDIR /curl
-
-RUN autoreconf -fi && ./configure \
+ cp -r include/openssl $DEVKITPRO/portlibs/wiiu/include/openssl && \
+ cd .. && \
+ rm -rf openssl && \
+ wget https://curl.se/download/curl-$curl_ver.tar.gz && \
+ mkdir /curl && \
+ tar xf curl-$curl_ver.tar.gz -C /curl --strip-components=1 && \
+ rm -f curl-$curl_ver.tar.gz && \
+ cd curl && \
+ autoreconf -fi && ./configure \
 --prefix=$DEVKITPRO/portlibs/wiiu/ \
 --host=powerpc-eabi \
 --enable-static \
@@ -95,30 +99,27 @@ LIBS="-lwut -lm" \
 CC=$DEVKITPPC/bin/powerpc-eabi-gcc \
 AR=$DEVKITPPC/bin/powerpc-eabi-ar \
 RANLIB=$DEVKITPPC/bin/powerpc-eabi-ranlib \
-PKG_CONFIG=$DEVKITPRO/portlibs/wiiu/bin/powerpc-eabi-pkg-config
-
-WORKDIR /curl/lib
-RUN make -j$(nproc) install
-WORKDIR /curl/include
-RUN make -j$(nproc) install
-
-# build libiosuhax
-WORKDIR /
-RUN git clone --recursive https://github.com/Crementif/libiosuhax
-WORKDIR /libiosuhax
-RUN make -j$(nproc) && make install
-WORKDIR /
-
-# build libromfs
-WORKDIR /
-RUN git clone --recursive https://github.com/yawut/libromfs-wiiu
-WORKDIR /libromfs-wiiu
-RUN make -j$(nproc) && make install
-
-# build NUSspli
-WORKDIR /
-RUN mkdir /nuspacker
-WORKDIR /nuspacker
-RUN wget https://github.com/Maschell/nuspacker/raw/master/NUSPacker.jar
+PKG_CONFIG=$DEVKITPRO/portlibs/wiiu/bin/powerpc-eabi-pkg-config && \
+ cd lib && \
+ make -j$(nproc) install && \
+ cd ../include && \
+ make -j$(nproc) install && \
+ cd ../.. && \
+ rm -rf curl && \
+ git clone --recursive https://github.com/Crementif/libiosuhax && \
+ cd libiosuhax && \
+ make -j$(nproc) && \
+ make install && \
+ cd .. && \
+ rm -rf libiosuhax && \
+ git clone --recursive https://github.com/yawut/libromfs-wiiu && \
+ cd libromfs-wiiu && \
+ make -j$(nproc) && \
+ make install && \
+ cd .. && \
+ rm -rf libromfs-wiiu && \
+ mkdir /nuspacker && \
+ cd /nuspacker && \
+ wget https://github.com/Maschell/nuspacker/raw/master/NUSPacker.jar
 
 WORKDIR /project
