@@ -83,7 +83,6 @@ jobs:
       - name: Upload Aroma release
         if: ${{ !contains(github.event.head_commit.message, '-ALPHA') && !contains(github.event.head_commit.message, '-BETA') }}
         uses: actions/upload-release-asset@v1
-        continue-on-error: true
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-Aroma.zip
@@ -104,7 +103,6 @@ jobs:
       - name: Upload Channel release
         if: ${{ !contains(github.event.head_commit.message, '-ALPHA') && !contains(github.event.head_commit.message, '-BETA') }}
         uses: actions/upload-release-asset@v1
-        continue-on-error: true
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-Channel.zip
@@ -125,7 +123,6 @@ jobs:
       - name: Upload HBL release
         if: ${{ !contains(github.event.head_commit.message, '-ALPHA') && !contains(github.event.head_commit.message, '-BETA') }}
         uses: actions/upload-release-asset@v1
-        continue-on-error: true
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-HBL.zip
