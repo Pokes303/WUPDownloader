@@ -40,11 +40,11 @@
 #define MAX_IO_QUEUE_ENTRIES	((512 * 1024 * 1024) / IO_BUFSIZE) // 512 MB
 #define IO_MAX_FILE_BUFFER	(1024 * 1024) // 1 MB
 
-typedef struct
+typedef struct WUT_PACKED
 {
 	NUSFILE *file;
-	void *buf;
 	size_t size;
+	uint8_t buf[IO_BUFSIZE];
 } WriteQueueEntry;
 
 static OSThread *ioThread;
@@ -77,7 +77,7 @@ static int ioThreadMain(int argc, const char **argv)
 
 		if(entry->size != 0) // WRITE command
 		{
-			if(fwrite(entry->buf, entry->size, 1, entry->file->fd) != 1)
+			if(fwrite((void *)entry->buf, entry->size, 1, entry->file->fd) != 1)
 			{
 				fwriteErrno = errno;
 				debugPrintf("fwrite() error: %d / %d / %u", fwriteErrno, entry->file->fd, entry->size);
@@ -113,25 +113,17 @@ bool initIOThread()
 	queueEntries = MEMAllocFromDefaultHeap(MAX_IO_QUEUE_ENTRIES * sizeof(WriteQueueEntry));
 	if(queueEntries != NULL)
 	{
-		uint8_t *ptr = (uint8_t *)MEMAllocFromDefaultHeap(MAX_IO_QUEUE_ENTRIES * IO_BUFSIZE);
-		if(ptr != NULL)
-		{
-			for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; ++i, ptr += IO_BUFSIZE)
-			{
-                queueEntries[i].file = NULL;
-				queueEntries[i].buf = (void *)ptr;
-			}
+		for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; ++i)
+			queueEntries[i].file = NULL;
 
-			spinCreateLock(ioWriteLock, true);
-			activeReadBuffer = activeWriteBuffer = 0;
-			ioRunning = true;
+		spinCreateLock(ioWriteLock, true);
+		activeReadBuffer = activeWriteBuffer = 0;
+		ioRunning = true;
 
-            ioThread = startThread("NUSspli I/O", THREAD_PRIORITY_HIGH, IOT_STACK_SIZE, ioThreadMain, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_CPU0); // We move this to core 0 for maximum performance. Later on move it back to core 1 as we want download threads on core 0 and 2.
-			if(ioThread != NULL)
-				return true;
+		ioThread = startThread("NUSspli I/O", THREAD_PRIORITY_HIGH, IOT_STACK_SIZE, ioThreadMain, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_CPU0); // We move this to core 0 for maximum performance. Later on move it back to core 1 as we want download threads on core 0 and 2.
+		if(ioThread != NULL)
+			return true;
 
-			MEMFreeToDefaultHeap(queueEntries[0].buf);
-		}
 		MEMFreeToDefaultHeap((void *)queueEntries);
 	}
 	return false;
@@ -174,7 +166,6 @@ void shutdownIOThread()
 #else
 	stopThread(ioThread, NULL);
 #endif
-	MEMFreeToDefaultHeap(queueEntries[0].buf);
 	MEMFreeToDefaultHeap((void *)queueEntries);
 }
 
@@ -236,7 +227,7 @@ retryAddingToQueue:
 			return n;
 		}
 		
-		OSBlockMove(entry->buf, buf, size, false);
+		OSBlockMove((void *)entry->buf, buf, size, false);
 		entry->size = size;
 	}
 	else
