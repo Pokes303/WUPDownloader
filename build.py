@@ -43,29 +43,23 @@ for edition in editionList:
         for pkg in pkgList:
             checkAndDeleteFile(f"zips/NUSspli-{version}-{pkg}{edition}{ext}")
 
-pathsToCreate = ["out/Aroma-DEBUG", "out/Channel-DEBUG", "out/HBL-DEBUG/NUSspli", "NUStmp/code"]
-for path in pathsToCreate:
+tmpArray = ["out/Aroma-DEBUG", "out/Channel-DEBUG", "out/HBL-DEBUG/NUSspli", "NUStmp/code"]
+for path in tmpArray:
     os.makedirs(path)
 os.makedirs("zips", exist_ok=True)
-os.system("make clean")
-os.system("make -j$(nproc) debug")
-os.system(f"{wuhbtool} NUSspli.rpx out/Aroma-DEBUG/NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga --tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga --content=data")
+os.system(f"make clean && make -j$(nproc) debug && {wuhbtool} NUSspli.rpx out/Aroma-DEBUG/NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga --tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga --content=data")
 shutil.make_archive(f"zips/NUSspli-{version}-Aroma-DEBUG", "zip", "out/Aroma-DEBUG", ".")
 shutil.copytree("meta/menu", "NUStmp/meta")
-os.remove("NUStmp/meta/app.xml")
-os.remove("NUStmp/meta/cos.xml")
-code = ["NUSspli.rpx", "meta/menu/app.xml", "meta/menu/cos.xml"]
-for file in code:
-    shutil.copy(file, "NUStmp/code")
+tmpArray = ["NUSspli.rpx", "NUStmp/meta/app.xml",  "NUStmp/meta/cos.xml"]
+for file in tmpArray:
+    shutil.move(file, "NUStmp/code")
 shutil.copytree("data", "NUStmp/content")
 os.system(f"java -jar {nuspacker} -in NUStmp -out out/Channel-DEBUG/NUSspli")
 shutil.make_archive(f"zips/NUSspli-{version}-Channel-DEBUG", "zip", "out/Channel-DEBUG", ".")
 
 if not isBeta:
-    os.system("make clean")
-    os.system("make -j$(proc) release")
     os.makedirs("out/Aroma")
-    os.system(f"{wuhbtool} NUSspli.rpx out/Aroma/NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga --tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga --content=data")
+    os.system(f"make clean && make -j$(proc) release && {wuhbtool} NUSspli.rpx out/Aroma/NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga --tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga --content=data")
     shutil.make_archive(f"zips/NUSspli-{version}-Aroma", "zip", "out/Aroma", ".")
     os.remove("NUStmp/code/NUSspli.rpx")
     shutil.move("NUSspli.rpx", "NUStmp/code")
@@ -74,17 +68,15 @@ if not isBeta:
     shutil.make_archive(f"zips/NUSspli-{version}-Channel", "zip", "out/Channel", ".")
 
 shutil.rmtree("NUStmp")
-os.system("make clean")
-os.system("make HBL=1 -j$(nproc) debug")
-hblFiles = ["NUSspli.rpx", "meta/hbl/meta.xml", "meta/hbl/icon.png"]
-for file in hblFiles:
+os.system("make clean && make HBL=1 -j$(nproc) debug")
+tmpArray = ["NUSspli.rpx", "meta/hbl/meta.xml", "meta/hbl/icon.png"]
+for file in tmpArray:
     shutil.copy(file, "out/HBL-DEBUG/NUSspli")
 shutil.make_archive(f"zips/NUSspli-{version}-HBL-DEBUG", "zip", "out/HBL-DEBUG", ".")
 
 if not isBeta:
-    os.system("make clean")
-    os.system("make HBL=1 -j$(nproc) release")
+    os.system("make clean && make HBL=1 -j$(nproc) release")
     os.makedirs("out/HBL/NUSspli")
-    for file in hblFiles:
+    for file in tmpArray:
         shutil.copy(file, "out/HBL/NUSspli")
     shutil.make_archive(f"zips/NUSspli-{version}-HBL", "zip", "out/HBL", ".")
