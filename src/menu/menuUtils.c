@@ -40,7 +40,7 @@ struct DownloadLogList;
 typedef struct DownloadLogList DownloadLogList;
 struct DownloadLogList
 {
-	char *line;
+	char line[MAX_CHARS + 1];
 	DownloadLogList *nextEntry;
 };
 
@@ -48,34 +48,25 @@ static DownloadLogList *downloadLogList = NULL;
 
 void addToScreenLog(const char *str, ...)
 {
-	va_list va;
-	va_start(va, str);
-	char newStr[MAX_CHARS];
-	vsnprintf(newStr, MAX_CHARS, str, va);
-	va_end(va);
-	debugPrintf(newStr);
-	
 	DownloadLogList *newEntry = MEMAllocFromDefaultHeap(sizeof(DownloadLogList));
 	if(newEntry ==  NULL)
 		return;
-	
-	//TODO: We copy the string here for fast porting purposes
-	newEntry->line = MEMAllocFromDefaultHeap(sizeof(char) * (strlen(newStr) + 1));
-	if(newEntry->line == NULL)
-	{
-		MEMFreeToDefaultHeap(newEntry);
-		return;
-	}
-	strcpy(newEntry->line, newStr);
-	
+
+	va_list va;
+	va_start(va, str);
+	vsnprintf(newEntry->line, MAX_CHARS, str, va);
+	va_end(va);
+	newEntry->line[MAX_CHARS] = '0';
+	debugPrintf(newEntry->line);
+
 	newEntry->nextEntry = NULL;
-	
+
 	if(downloadLogList == NULL)
 	{
 		downloadLogList = newEntry;
 		return;
 	}
-	
+
 	DownloadLogList *last;
 	int i = 0;
 	for(DownloadLogList *c = downloadLogList; c != NULL; c = c->nextEntry)
@@ -84,14 +75,14 @@ void addToScreenLog(const char *str, ...)
 		++i;
 		last = c;
 	}
+
 	if(i == MAX_LINES - 2)
 	{
 		DownloadLogList *tmpList = downloadLogList;
 		downloadLogList = tmpList->nextEntry;
-		MEMFreeToDefaultHeap(tmpList->line);
 		MEMFreeToDefaultHeap(tmpList);
 	}
-	
+
 	last->nextEntry = newEntry;
 }
 
@@ -102,7 +93,6 @@ void clearScreenLog()
 	{
 		tmpList = downloadLogList;
 		downloadLogList = tmpList->nextEntry;
-		MEMFreeToDefaultHeap(tmpList->line);
 		MEMFreeToDefaultHeap(tmpList);
 	}
 }
