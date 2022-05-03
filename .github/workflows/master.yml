@@ -76,17 +76,6 @@ jobs:
           commit: ${{ github.event.head_commit.sha }}
           path: gitrelease
           skip_unpack: true
-        permissions:
-          actions: read
-          checks: none
-          contents: read
-          deployments: read
-          issues: none
-          packages: read
-          pull-requests: none
-          repository-projects: read
-          security-events: none
-          statuses: read
       - name: Display structure of downloaded files
         run: ls -R release/
       - name: Prepare release
