@@ -60,7 +60,7 @@ static inline const char *transformPassword(TITLE_KEY in)
 			return "";
 		default:
 			debugPrintf("Unknown password!");
-			return "mypass"; // TODO
+			return "mypass"; // Seems to work so far even for newest releases
 	}
 }
 
