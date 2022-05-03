@@ -178,37 +178,6 @@ bool updateCheck()
 	return updateMenu(versionString);
 }
 
-//TODO: Quick & dirty, supports absolute paths on fs:/vol/external01 only.
-bool createDirRecursive(char *dir)
-{
-	if(strlen(dir) < 20 || dir[18] != '/')
-		return false;
-	
-	char *ptr = dir + 19;
-	char *needle;
-	do
-	{
-		needle = strchr(ptr, '/');
-		if(needle == NULL)
-		{
-			if(!dirExists(dir))
-				return mkdir(dir, 777) == 0;
-			
-			return true;
-		}
-		
-		needle[0] = '\0';
-		if(!dirExists(dir) && mkdir(dir, 777) != 0)
-			return false;
-		
-		needle[0] = '/';
-		ptr = needle + 1;
-	}
-	while(ptr[0] != '\0');
-	
-	return true;
-}
-
 void update(char *newVersion)
 {
 	OSDynLoad_Module mod;

@@ -70,6 +70,7 @@ bool dirExists(const char *path);
 void removeDirectory(const char *path);
 NUSFS_ERR moveDirectory(const char *src, const char *dest);
 NUSFS_ERR createDirectory(const char *path, mode_t mode);
+bool createDirRecursive(const char *dir);
 const char *translateNusfsErr(NUSFS_ERR err);
 size_t getFilesize(FILE *fp);
 

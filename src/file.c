@@ -255,6 +255,49 @@ NUSFS_ERR createDirectory(const char *path, mode_t mode)
 	return (NUSFS_ERR)ie;
 }
 
+bool createDirRecursive(const char *dir)
+{
+	size_t len = strlen(dir);
+	char *d[++len];
+	OSBlockMove(d. dir, len, false);
+
+	char *needle = strchr(d, ':');
+	char *ptr;
+	if(needle == NULL)
+		needle = d;
+
+	ptr = ++needle;
+	if(*ptr == '/')
+		++ptr;
+	if(*ptr == '\0')
+		return false;
+
+	do
+	{
+		needle = strchr(ptr, '/');
+		if(needle == NULL)
+		{
+			if(!dirExists(d))
+				return createDirectory(d, 777) == NUSFS_ERR_NOERR;
+
+			return true;
+		}
+
+		*needle = '\0';
+		if(!dirExists(d) && createDirectory(d, 777) != NUSFS_ERR_NOERR)
+		{
+			*needle = '/';
+			return false;
+		}
+
+		*needle = '/';
+		ptr = ++needle;
+	}
+	while(*ptr != '\0');
+
+	return true;
+}
+
 const char *translateNusfsErr(NUSFS_ERR err)
 {
 	switch(err)
