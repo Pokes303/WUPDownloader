@@ -26,56 +26,47 @@ jobs:
           echo "::set-output name=version::$(xmllint --xpath 'app/version/text()' meta/hbl/meta.xml)"
         id: version
       - name: Upload Aroma version
-        if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') }}
+        if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') && (contains(github.event.head_commit.message, '-ALPHA') || contains(github.event.head_commit.message, '-BETA')) }}
         uses: actions/upload-artifact@v3
         with:
           name: NUSspli-${{ steps.version.outputs.version }}-Aroma
           path: out/Aroma/*
           if-no-files-found: warn
       - name: Upload Aroma debug version
-        if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') }}
+        if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') && (contains(github.event.head_commit.message, '-ALPHA') || contains(github.event.head_commit.message, '-BETA')) }}
         uses: actions/upload-artifact@v3
         with:
           name: NUSspli-${{ steps.version.outputs.version }}-Aroma-DEBUG
           path: out/Aroma-DEBUG/*
           if-no-files-found: error
       - name: Upload Channel version
-        if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') }}
+        if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') && (contains(github.event.head_commit.message, '-ALPHA') || contains(github.event.head_commit.message, '-BETA')) }}
         uses: actions/upload-artifact@v3
         with:
           name: NUSspli-${{ steps.version.outputs.version }}-Channel
           path: out/Channel/*
           if-no-files-found: warn
       - name: Upload Channel debug version
-        if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') }}
+        if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') && (contains(github.event.head_commit.message, '-ALPHA') || contains(github.event.head_commit.message, '-BETA')) }}
         uses: actions/upload-artifact@v3
         with:
           name: NUSspli-${{ steps.version.outputs.version }}-Channel-DEBUG
           path: out/Channel-DEBUG/*
           if-no-files-found: error
       - name: Upload HBL version
-        if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') }}
+        if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') && (contains(github.event.head_commit.message, '-ALPHA') || contains(github.event.head_commit.message, '-BETA')) }}
         uses: actions/upload-artifact@v3
         with:
           name: NUSspli-${{ steps.version.outputs.version }}-HBL
           path: out/HBL/*
           if-no-files-found: warn
       - name: Upload HBL debug version
-        if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') }}
+        if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') && (contains(github.event.head_commit.message, '-ALPHA') || contains(github.event.head_commit.message, '-BETA')) }}
         uses: actions/upload-artifact@v3
         with:
           name: NUSspli-${{ steps.version.outputs.version }}-HBL-DEBUG
           path: out/HBL-DEBUG/*
           if-no-files-found: error
-      - name: Download zips again
-        if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') && !contains(github.event.head_commit.message, '-ALPHA') && !contains(github.event.head_commit.message, '-BETA') }}
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          workflow: master.yml
-          workflow_conclusion: in_progress
-          commit: ${{ github.event.head_commit.sha }}
-          path: gitrelease
-          skip_unpack: true
       - name: Prepare release
         if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') && !contains(github.event.head_commit.message, '-ALPHA') && !contains(github.event.head_commit.message, '-BETA') }}
         uses: actions/create-release@v1
@@ -96,7 +87,7 @@ jobs:
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-Aroma.zip
-          asset_path: gitrelease/NUSspli-${{ steps.version.outputs.version }}-Aroma.zip
+          asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-Aroma.zip
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -106,7 +97,7 @@ jobs:
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-Aroma-DEBUG.zip
-          asset_path: gitrelease/NUSspli-${{ steps.version.outputs.version }}-Aroma-DEBUG.zip
+          asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-Aroma-DEBUG.zip
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -116,7 +107,7 @@ jobs:
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-Channel.zip
-          asset_path: gitrelease/NUSspli-${{ steps.version.outputs.version }}-Channel.zip
+          asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-Channel.zip
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -126,7 +117,7 @@ jobs:
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-Channel-DEBUG.zip
-          asset_path: gitrelease/NUSspli-${{ steps.version.outputs.version }}-Channel-DEBUG.zip
+          asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-Channel-DEBUG.zip
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -136,7 +127,7 @@ jobs:
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-HBL.zip
-          asset_path: gitrelease/NUSspli-${{ steps.version.outputs.version }}-HBL.zip
+          asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-HBL.zip
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -146,12 +137,7 @@ jobs:
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_name: NUSspli-${{ steps.version.outputs.version }}-HBL-DEBUG.zip
-          asset_path: gitrelease/NUSspli-${{ steps.version.outputs.version }}-HBL-DEBUG.zip
+          asset_path: zips/NUSspli-${{ steps.version.outputs.version }}-HBL-DEBUG.zip
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-       - name: Remove old uploads
-         if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') && !contains(github.event.head_commit.message, '-ALPHA') && !contains(github.event.head_commit.message, '-BETA') }}
-         uses: philips-labs/action-delete-artifacts@v1.0.0
-         with:
-           workflow: master.yml
