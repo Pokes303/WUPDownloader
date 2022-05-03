@@ -163,8 +163,8 @@ jobs:
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-       - name: Remove old uploads
-         if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') && !contains(github.event.head_commit.message, '-ALPHA') && !contains(github.event.head_commit.message, '-BETA') }}
-         uses: philips-labs/action-delete-artifacts@v1.0.0
-         with:
-           workflow: master.yml
+#      - name: Remove old uploads
+#        if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') && !contains(github.event.head_commit.message, '-ALPHA') && !contains(github.event.head_commit.message, '-BETA') }}
+#        uses: philips-labs/action-delete-artifacts@v1.0.0
+#        with:
+#          workflow: master.yml
