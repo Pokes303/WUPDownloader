@@ -259,7 +259,7 @@ bool createDirRecursive(const char *dir)
 {
 	size_t len = strlen(dir);
 	char d[++len];
-	OSBlockMove(d. dir, len, false);
+	OSBlockMove(d, dir, len, false);
 
 	char *needle = strchr(d, ':');
 	char *ptr;
