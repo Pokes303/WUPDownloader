@@ -81,6 +81,7 @@ char *fileBrowserMenu()
 	mountMLC();
 	bool mov;
 	DIR *dir;
+	char *ret = NULL;
 	
 refreshDirList:
     OSTime t = OSGetTime();
@@ -88,7 +89,13 @@ refreshDirList:
 		MEMFreeToDefaultHeap(folders[i]);
 	foldersSize = 0;
 	cursor = pos = 0;
-	
+
+	if(ret != NULL)
+	{
+		MEMFreeToDefaultHeap(ret);
+		ret = NULL;
+	}
+
 	dir = opendir(activeDevice == NUSDEV_USB ? INSTALL_DIR_USB : activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC);
 	if(dir != NULL)
 	{
@@ -111,7 +118,6 @@ refreshDirList:
 	drawFBMenuFrame(folders, ++foldersSize, pos, cursor, activeDevice, usbMounted);
 	
 	mov = foldersSize >= MAX_FILEBROWSER_LINES;
-	char *ret = NULL;
 	bool redraw = false;
 	uint32_t oldHold = 0;
 	size_t frameCount = 0;
@@ -131,7 +137,7 @@ refreshDirList:
 			if(dir != NULL)
 			{
 				size_t len = strlen(activeDevice == NUSDEV_USB ? INSTALL_DIR_USB : activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC) + strlen(folders[cursor + pos]) + 1;
-				ret = MEMAllocFromDefaultHeap(len); //TODO: Free
+				ret = MEMAllocFromDefaultHeap(len);
 				if(ret != NULL)
 				{
 					strcpy(ret, activeDevice == NUSDEV_USB ? INSTALL_DIR_USB : activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC);
