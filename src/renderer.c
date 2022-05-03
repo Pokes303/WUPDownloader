@@ -140,11 +140,10 @@ void lineToFrame(int column, uint32_t color)
 
 	++column;
 	column *= FONT_SIZE;
-	--column;
 	SDL_Rect line =
 	{
 		.x = FONT_SIZE,
-		.y = column + (FONT_SIZE >> 1),
+		.y = column + ((FONT_SIZE >> 1) - 1),
 		.w = screen.x - (FONT_SIZE << 1),
 		.h = 3,
 	};
@@ -159,12 +158,12 @@ void boxToFrame(int lineStart, int lineEnd)
 	if(font == NULL)
 		return;
 
-	int ty = ((++lineStart) * FONT_SIZE) + (FONT_SIZE >> 1);
+	int ty = ((++lineStart) * FONT_SIZE) + ((FONT_SIZE >> 1) - 1);
 	int tw = screen.x - (FONT_SIZE << 1);
 	SDL_Rect box =
 	{
 		.x = FONT_SIZE,
-		.y = --ty,
+		.y = ty,
 		.w = tw,
 		.h = 3,
 	};
@@ -174,7 +173,7 @@ void boxToFrame(int lineStart, int lineEnd)
 	// Horizontal lines
 	SDL_RenderFillRect(renderer, &box);
 
-	box.y = ((++lineEnd) * FONT_SIZE) + (FONT_SIZE >> 1) - 4;
+	box.y = ((++lineEnd) * FONT_SIZE) + ((FONT_SIZE >> 1) - 1) - 3;
 	SDL_RenderFillRect(renderer, &box);
 	
 	// Vertical lines
