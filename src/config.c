@@ -83,8 +83,12 @@ bool initConfig()
 
 	flushIOQueue();
 	OSTime t = OSGetTime();
+#ifdef NUSSPLI_DEBUG
 	json_error_t jerr;
 	json_t *json = json_load_file(CONFIG_PATH, 0, &jerr);
+#else
+	json_t *json = json_load_file(CONFIG_PATH, 0, NULL);
+#endif
 	if(!json)
 	{
 		debugPrintf("json_load_file() failed: %s!", jerr.text);
