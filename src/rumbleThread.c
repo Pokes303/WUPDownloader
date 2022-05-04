@@ -1,6 +1,6 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
- * Copyright (c) 2020-2021 V10lator <v10lator@myway.de>                    *
+ * Copyright (c) 2020-2022 V10lator <v10lator@myway.de>                    *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
@@ -36,7 +36,7 @@
 #define RUMBLE_QUEUE_SIZE 2
 
 static OSThread *rumbleThread;
-static uint8_t pattern[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+static const uint8_t pattern[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 static OSMessageQueue rumble_queue;
 static OSMessage rumble_msg[2];
 
@@ -52,7 +52,7 @@ static int rumbleThreadMain(int argc, const char **argv)
 		{
 			i = 3;
 			for(; i > 1; i--)
-				VPADControlMotor(VPAD_CHAN_0, pattern, 120);
+				VPADControlMotor(VPAD_CHAN_0, (uint8_t *)pattern, 120);
 
 			for(; i > -1; i--)
 			{
