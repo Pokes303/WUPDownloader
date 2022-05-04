@@ -66,18 +66,11 @@ static bool checkForUpdates = true;
 static bool autoResume = true;
 static Swkbd_LanguageType lang = Swkbd_LanguageType__Invalid;
 static Swkbd_LanguageType sysLang;
-static int configInitTries = 0;
 static bool dlToUSB = true;
 static MCPRegion regionSetting = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN;
 
 bool initConfig()
 {
-	if(++configInitTries == 10)
-	{
-		debugPrintf("Giving up!");
-		return false;
-	}
-	
 	debugPrintf("Initializing config file...");
 	
 	if(!fileExists(CONFIG_PATH))
