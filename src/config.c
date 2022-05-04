@@ -317,7 +317,8 @@ bool saveConfig(bool force)
 		return false;
 	}
 
-	addToIOQueue(json, 1, strlen(json) + 1, f);
+	entropy = strlen(json);
+	addToIOQueue(json, 1, ++entropy, f);
 	addToIOQueue(NULL, 0, 0, f);
 	changed = false;
 	return true;
