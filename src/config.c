@@ -256,42 +256,42 @@ bool saveConfig(bool force)
 	if(value == NULL || json_object_set(config, "File Version", value))
 	{
 		json_decref(config);
-		return false;;
+		return false;
 	}
 
 	value = checkForUpdates ? json_true() : json_false();
 	if(value == NULL || json_object_set(config, "Check for updates", value))
 	{
 		json_decref(config);
-		return false;;
+		return false;
 	}
 	
 	value = autoResume ? json_true() : json_false();
 	if(value == NULL || json_object_set(config, "Auto resume failed downloads", value))
 	{
 		json_decref(config);
-		return false;;
+		return false;
 	}
 	
 	value = json_string(getLanguageString(lang));
 	if(value == NULL || json_object_set(config, "Language", value))
 	{
 		json_decref(config);
-		return false;;
+		return false;
 	}
 
 	value = json_string(getFormattedRegion(getRegion()));
 	if(value == NULL || json_object_set(config, "Region", value))
 	{
 		json_decref(config);
-		return false;;
+		return false;
 	}
 	
 	value = dlToUSB ? json_true() : json_false();
 	if(value == NULL || json_object_set(config, "Download to USB", value))
 	{
 		json_decref(config);
-		return false;;
+		return false;
 	}
 
 	uint32_t entropy;
