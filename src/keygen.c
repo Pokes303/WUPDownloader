@@ -27,11 +27,9 @@
 #include <titles.h>
 #include <utils.h>
 
-#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 
-#include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 
 static const uint8_t KEYGEN_SECRET[10] = { 0xfd, 0x04, 0x01, 0x05, 0x06, 0x0b, 0x11, 0x1c, 0x2d, 0x49 };
@@ -82,23 +80,12 @@ bool generateKey(const TitleEntry *te, char *out)
 	}
 
 	uint8_t bh[j];
-	uint8_t *tmp8 = bh;
-	const uint8_t *tmp81 = KEYGEN_SECRET;
-
-	--tmp8;
-	--tmp81;
-	uint8_t *k = tmp8 + 10;
-	while(k != tmp8)
-		*++tmp8 = *++tmp81;
-
-	k += i;
-	while(k != tmp8)
-		*++tmp8 = *++ti;
+	OSBlockMove(bh, KEYGEN_SECRET, 10, false);
+	OSBlockMove(bh + 10, ++ti, i, false);
+	MD5(bh, j, bh);
 
 	const char *pw = transformPassword(te->key);
 	debugPrintf("Using password \"%s\"", pw);
-
-	MD5(bh, j, bh);
 	if(PKCS5_PBKDF2_HMAC_SHA1(pw, strlen(pw), bh, 16, 20, 16, bh) == 0)
 		return false;
 
