@@ -80,17 +80,17 @@ static int ioThreadMain(int argc, const char **argv)
 			if(fwrite((void *)entry->buf, entry->size, 1, entry->file->fd) != 1)
 			{
 				fwriteErrno = errno;
-				debugPrintf("fwrite() error: %d / %d / %u", fwriteErrno, entry->file->fd, entry->size);
+				debugPrintf("fwrite() error: %d / 0x%08X / %u", fwriteErrno, entry->file->fd, entry->size);
 			}
 		}
 		else // Close command
 		{
-			debugPrintf("File close: %d", entry->file->fd);
+			debugPrintf("File close: 0x%08X", entry->file->fd);
 			OSTime t = OSGetTime();
 			if(fclose(entry->file->fd))
 			{
 				fwriteErrno = errno;
-				debugPrintf("fclose() error: %d / %d", fwriteErrno, entry->file->fd);
+				debugPrintf("fclose() error: %d / 0x%08X", fwriteErrno, entry->file->fd);
 			}
 			MEMFreeToDefaultHeap(entry->file->buffer);
 			MEMFreeToDefaultHeap((void *)entry->file);
@@ -286,7 +286,7 @@ NUSFILE *openFile(const char *path, const char *mode)
 			if(setvbuf(ret->fd, ret->buffer, _IOFBF, IO_MAX_FILE_BUFFER) != 0)
 				debugPrintf("Error setting buffer!");
 
-			debugPrintf("File open: %d", ret->fd);
+			debugPrintf("File open: 0x%08X", ret->fd);
 			return ret;
 		}
 		fclose(ret->fd);
