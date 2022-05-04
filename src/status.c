@@ -41,13 +41,13 @@
 #include <stdbool.h>
 
 APP_STATE app;
-bool shutdownEnabled = true;
+static bool shutdownEnabled = true;
 #ifndef NUSSPLI_HBL
-bool channel;
+static bool channel;
 #endif
-bool aroma;
-bool apdEnabled;
-bool apdDisabled = false;
+static bool aroma;
+static bool apdEnabled;
+static bool apdDisabled = false;
 
 void enableApd()
 {
