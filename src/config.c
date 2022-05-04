@@ -303,7 +303,7 @@ bool saveConfig(bool force)
 	char *json = json_dumps(config, JSON_INDENT(4));
 	json_decref(config);
 	if(json == NULL)
-		return NULL;
+		return false;
 
 	NUSFILE *f = openFile(CONFIG_PATH, "w");
 	if(f == NULL)
