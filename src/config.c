@@ -304,7 +304,7 @@ bool saveConfig(bool force)
 	if(value != NULL)
 		json_object_set(config, "Seed", value);
 
-	const char *json = json_dumps(config, JSON_INDENT(4));
+	char *json = json_dumps(config, JSON_INDENT(4));
 	json_decref(config);
 	if(json == NULL)
 		return NULL;
