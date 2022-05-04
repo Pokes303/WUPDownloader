@@ -28,7 +28,7 @@
 #include <input.h>
 #include <installer.h>
 #include <iosuhaxx.h>
-#include <ioThread.h>
+#include <ioQueue.h>
 #include <jailbreak.h>
 #include <osdefs.h>
 #include <otp.h>

@@ -36,7 +36,7 @@
 #include <filesystem.h>
 #include <input.h>
 #include <installer.h>
-#include <ioThread.h>
+#include <ioQueue.h>
 #include <renderer.h>
 #include <rumbleThread.h>
 #include <staticMem.h>

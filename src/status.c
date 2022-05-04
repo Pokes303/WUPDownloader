@@ -22,7 +22,7 @@
 
 #include <crypto.h>
 #include <iosuhaxx.h>
-#include <ioThread.h>
+#include <ioQueue.h>
 #include <renderer.h>
 #include <status.h>
 #include <utils.h>
