@@ -309,6 +309,7 @@ bool saveConfig(bool force)
 	if(json == NULL)
 		return false;
 
+	flushIOQueue();
 	NUSFILE *f = openFile(CONFIG_PATH, "w");
 	if(f == NULL)
 	{
