@@ -81,8 +81,8 @@ bool initConfig()
 			return false;
 	}
 
-	flushIOQueue();
 	OSTime t = OSGetTime();
+	flushIOQueue();
 #ifdef NUSSPLI_DEBUG
 	json_error_t jerr;
 	json_t *json = json_load_file(CONFIG_PATH, 0, &jerr);
