@@ -28,6 +28,7 @@
 #include <crypto.h>
 #include <file.h>
 #include <input.h>
+#include <ioThread.h>
 #include <osdefs.h>
 #include <renderer.h>
 #include <swkbd_wrapper.h>
@@ -72,6 +73,7 @@ static MCPRegion regionSetting = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION
 bool initConfig()
 {
 	debugPrintf("Initializing config file...");
+	flushIOQueue();
 	
 	if(!fileExists(CONFIG_PATH))
 	{
@@ -301,19 +303,24 @@ bool saveConfig(bool force)
 	value = json_integer(entropy);
 	if(value != NULL)
 		json_object_set(config, "Seed", value);
-	
-	OSTime t = OSGetTime();
-	bool ret = !json_dump_file(config, CONFIG_PATH, JSON_INDENT(4));
+
+	const char *json = json_dumps(config, JSON_INDENT(4));
 	json_decref(config);
-	if(ret)
+	if(json == NULL)
+		return NULL;
+
+	NUSFILE *f = openFile(CONFIG_PATH, "wb");
+	if(f == NULL)
 	{
-		debugPrintf("Config written!");
-		t = OSGetTime() - t;
-		addEntropy(&t, sizeof(OSTime));
-		changed = false;
+		MEMFreeToDefaultHeap(json);
+		debugPrintf("Can't open " CONFIG_PATH);
+		return false;
 	}
 
-	return ret;
+	addToIOQueue(json, 1, strlen(json) + 1, f);
+	addToIOQueue(NULL, 0, 0, f);
+	changed = false;
+	return true;
 }
 
 bool updateCheckEnabled()
