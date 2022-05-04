@@ -26,6 +26,8 @@
 
 #include <coreinit/mcp.h>
 
+#include <wut_structsize.h>
+
 #ifdef __cplusplus
 	extern "C" {
 #endif
@@ -52,7 +54,7 @@ typedef enum
 	TITLE_KEY_		= 8
 } TITLE_KEY;
 
-typedef struct
+typedef struct WUT_PACKED
 {
 	const char *name;
 	uint64_t tid;
