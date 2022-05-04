@@ -73,19 +73,23 @@ static MCPRegion regionSetting = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION
 bool initConfig()
 {
 	debugPrintf("Initializing config file...");
-	flushIOQueue();
-	
+
 	if(!fileExists(CONFIG_PATH))
 	{
 		debugPrintf("\tFile not found!");
 		if(!saveConfig(true))
 			return false;
 	}
-	
+
+	flushIOQueue();
 	OSTime t = OSGetTime();
-	json_t *json = json_load_file(CONFIG_PATH, 0, NULL);
+	json_error_t jerr;
+	json_t *json = json_load_file(CONFIG_PATH, 0, &jerr);
 	if(!json)
+	{
+		debugPrintf("json_load_file() failed: %s!", jerr.text);
 		return false;
+	}
 
 	json_t *configEntry = json_object_get(json, "Check for updates");
 	if(configEntry != NULL && json_is_boolean(configEntry))
@@ -161,9 +165,6 @@ bool initConfig()
 	json_decref(json);
 	t = OSGetTime() - t;
 	addEntropy(&t, sizeof(OSTime));
-	
-	if(changed)
-		saveConfig(false);
 	
 	IOSHandle handle = UCOpen();
 	if(handle < 1)
@@ -304,7 +305,7 @@ bool saveConfig(bool force)
 	if(json == NULL)
 		return NULL;
 
-	NUSFILE *f = openFile(CONFIG_PATH, "wb");
+	NUSFILE *f = openFile(CONFIG_PATH, "w");
 	if(f == NULL)
 	{
 		MEMFreeToDefaultHeap(json);
@@ -312,8 +313,8 @@ bool saveConfig(bool force)
 		return false;
 	}
 
-	entropy = strlen(json);
-	addToIOQueue(json, 1, ++entropy, f);
+	addToIOQueue(json, 1, strlen(json), f);
+	MEMFreeToDefaultHeap(json);
 	addToIOQueue(NULL, 0, 0, f);
 	changed = false;
 	return true;
