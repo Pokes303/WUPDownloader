@@ -30,7 +30,7 @@
 #include <osdefs.h>
 #include <renderer.h>
 #include <rumbleThread.h>
-#include <status.h>
+#include <state.h>
 #include <utils.h>
 #include <menu/update.h>
 #include <menu/utils.h>

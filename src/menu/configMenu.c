@@ -23,7 +23,7 @@
 #include <config.h>
 #include <input.h>
 #include <renderer.h>
-#include <status.h>
+#include <state.h>
 #include <titles.h>
 #include <menu/download.h>
 #include <menu/main.h>

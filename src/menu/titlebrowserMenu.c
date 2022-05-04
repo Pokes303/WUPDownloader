@@ -24,7 +24,7 @@
 #include <filesystem.h>
 #include <input.h>
 #include <renderer.h>
-#include <status.h>
+#include <state.h>
 #include <titles.h>
 #include <utils.h>
 #include <menu/download.h>

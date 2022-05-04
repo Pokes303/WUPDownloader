@@ -26,8 +26,8 @@
 #include <input.h>
 #include <osdefs.h>
 #include <renderer.h>
+#include <state.h>
 #include <staticMem.h>
-#include <status.h>
 #include <titles.h>
 #include <utils.h>
 #include <menu/insttitlebrowser.h>

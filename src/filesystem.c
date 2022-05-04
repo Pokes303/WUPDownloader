@@ -1,6 +1,6 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
- * Copyright (c) 2020-2021 V10lator <v10lator@myway.de>                    *
+ * Copyright (c) 2020-2022 V10lator <v10lator@myway.de>                    *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
@@ -22,7 +22,7 @@
 #include <file.h>
 #include <filesystem.h>
 #include <iosuhaxx.h>
-#include <status.h>
+#include <state.h>
 #include <utils.h>
 
 #include <stdbool.h>

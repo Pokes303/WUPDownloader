@@ -25,7 +25,7 @@
 #include <installer.h>
 #include <iosuhaxx.h>
 #include <renderer.h>
-#include <status.h>
+#include <state.h>
 #include <ticket.h>
 #include <utils.h>
 #include <menu/config.h>

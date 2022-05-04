@@ -30,7 +30,7 @@
 
 #include <input.h>
 #include <renderer.h>
-#include <status.h>
+#include <state.h>
 #include <titles.h>
 #include <tmd.h>
 #include <utils.h>

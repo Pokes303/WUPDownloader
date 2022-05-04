@@ -24,7 +24,7 @@
 #include <iosuhaxx.h>
 #include <ioQueue.h>
 #include <renderer.h>
-#include <status.h>
+#include <state.h>
 #include <utils.h>
 
 #include <coreinit/core.h>
@@ -119,7 +119,7 @@ uint32_t homeButtonCallback(void *dummy)
 	return 0;
 }
 
-void initStatus()
+void initState()
 {
 	ProcUIInit(&OSSavesDone_ReadyToRelease);
 	OSTime t = OSGetTime();

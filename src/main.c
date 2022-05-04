@@ -37,7 +37,7 @@
 #include <rumbleThread.h>
 #include <sanity.h>
 #include <staticMem.h>
-#include <status.h>
+#include <state.h>
 #include <thread.h>
 #include <ticket.h>
 #include <titles.h>
@@ -304,7 +304,7 @@ static bool cfwValid()
 
 int main()
 {
-	initStatus();
+	initState();
 #ifdef NUSSPLI_HBL
 	bool jailbreaking;
 	uint64_t tid = OSGetTitleID();

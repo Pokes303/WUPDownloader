@@ -43,7 +43,7 @@
 #include <romfs.h>
 #include <rumbleThread.h>
 #include <staticMem.h>
-#include <status.h>
+#include <state.h>
 #include <thread.h>
 #include <ticket.h>
 #include <titles.h>

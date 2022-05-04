@@ -39,8 +39,8 @@
 #include <ioQueue.h>
 #include <renderer.h>
 #include <rumbleThread.h>
+#include <state.h>
 #include <staticMem.h>
-#include <status.h>
 #include <utils.h>
 #include <menu/utils.h>
 

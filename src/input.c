@@ -26,7 +26,7 @@
 #include <input.h>
 #include <messages.h>
 #include <renderer.h>
-#include <status.h>
+#include <state.h>
 #include <swkbd_wrapper.h>
 #include <thread.h>
 #include <utils.h>

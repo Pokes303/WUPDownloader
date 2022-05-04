@@ -1,7 +1,7 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
  * Copyright (c) 2019-2020 Pokes303                                        *
- * Copyright (c) 2020-2021 V10lator <v10lator@myway.de>                    *
+ * Copyright (c) 2020-2022 V10lator <v10lator@myway.de>                    *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
@@ -18,8 +18,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_STATUS_H
-#define NUSSPLI_STATUS_H
+#ifndef NUSSPLI_STATE_H
+#define NUSSPLI_STATE_H
 
 #include <wut-fixups.h>
 
@@ -42,7 +42,7 @@ typedef enum
 
 extern APP_STATE app;
 
-void initStatus();
+void initState();
 void enableApd();
 void disableApd();
 void enableShutdown();
@@ -60,4 +60,4 @@ uint32_t homeButtonCallback(void *dummy);
 	}
 #endif
 
-#endif // ifndef NUSSPLI_STATUS_H
+#endif // ifndef NUSSPLI_STATE_H
