@@ -204,11 +204,6 @@ bool initConfig()
 	debugPrintf("System language found: %s", getLanguageString(sysLang));
 	
 	addToScreenLog("Config file loaded!");
-	startNewFrame();
-	textToFrame(0, 0, "Loading...");
-	writeScreenLog(1);
-	drawFrame();
-	showFrame();
 	return true;
 }
 

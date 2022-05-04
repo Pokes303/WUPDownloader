@@ -154,29 +154,30 @@ static void innerMain(bool validCfw)
 									addToScreenLog("Downloader initialized!");
 
 									startNewFrame();
-									textToFrame(0, 0, "Loading SWKBD...");
+									textToFrame(0, 0, "Loading I/O thread...");
 									writeScreenLog(1);
 									drawFrame();
 
-									if(initConfig())
+									if(initIOThread())
 									{
-										addToScreenLog("Config loaded!");
+										addToScreenLog("I/O thread initialized!");
+
 										startNewFrame();
-										textToFrame(0, 0, "Loading SWKBD...");
+										textToFrame(0, 0, "Loading config...");
 										writeScreenLog(1);
 										drawFrame();
 
-										if(SWKBD_Init())
+										if(initConfig())
 										{
-											addToScreenLog("SWKBD initialized!");
+											addToScreenLog("Config loaded!");
 											startNewFrame();
-											textToFrame(0, 0, "Loading I/O thread...");
+											textToFrame(0, 0, "Loading SWKBD...");
 											writeScreenLog(1);
 											drawFrame();
 
-											if(initIOThread())
+											if(SWKBD_Init())
 											{
-												addToScreenLog("I/O thread initialized!");
+												addToScreenLog("SWKBD initialized!");
 												startNewFrame();
 												textToFrame(0, 0, "Loading menu...");
 												writeScreenLog(1);
@@ -194,25 +195,26 @@ static void innerMain(bool validCfw)
 
 													debugPrintf("Deinitializing libraries...");
 													clearTitles();
-													saveConfig(false);
 
 													checkStacks("main");
 												}
 
-												shutdownIOThread();
-												debugPrintf("I/O thread closed");
+												SWKBD_Shutdown();
+												debugPrintf("SWKBD closed");
 											}
 											else
-												lerr = "Couldn't load I/O thread!";
+												lerr = "Couldn't initialize SWKBD!";
 
-											SWKBD_Shutdown();
-											debugPrintf("SWKBD closed");
+											saveConfig(false);
 										}
 										else
-											lerr = "Couldn't initialize SWKBD!";
+											lerr = "Couldn't load config file!\n\nMost likely your SD card is write locked!";
+
+										shutdownIOThread();
+										debugPrintf("I/O thread closed");
 									}
 									else
-										lerr = "Couldn't load config file!\n\nMost likely your SD card is write locked!";
+										lerr = "Couldn't load I/O thread!";
 
 									deinitDownloader();
 								}
