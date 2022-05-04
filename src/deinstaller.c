@@ -46,9 +46,6 @@
 
 bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx)
 {
-	char tid[17];
-	hex(title->titleId, 16, tid);
-	
 	startNewFrame();
 	textToFrame(0, 0, "Uninstalling");
 	textToFrame(0, 19, name);
@@ -56,19 +53,22 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx)
 	writeScreenLog(2);
 	drawFrame();
 	showFrame();
-	
+
+	MCPInstallTitleInfo *info = MEMAllocFromDefaultHeapEx(sizeof(MCPInstallTitleInfo), 0x40);
+	if(info == NULL)
+		return false;
+
 	McpData data;
-	MCPInstallTitleInfo info;
-	glueMcpData(&info, &data);
+	glueMcpData(info, &data);
 	
 	if(!channelHaxx)
 		disableShutdown();
 	
-	//err = MCP_UninstallTitleAsync(mcpHandle, title->path, &info);
+	//err = MCP_UninstallTitleAsync(mcpHandle, title->path, info);
 	// The above crashes MCP, so let's leave WUT:
 	debugPrintf("Deleting %s", title->path);
 	OSTick t = OSGetTick();
-	MCPError err = MCP_DeleteTitleAsync(mcpHandle, title->path, &info);
+	MCPError err = MCP_DeleteTitleAsync(mcpHandle, title->path, info);
 	if(err != 0)
 	{
 		debugPrintf("Err1: %#010x (%d)", err, err);
@@ -79,7 +79,8 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx)
 	
 	if(!channelHaxx)
 		showMcpProgress(&data, name, false);
-    t = OSGetTick() - t;
+
+	t = OSGetTick() - t;
 	addEntropy(&t, sizeof(OSTick));
 	addToScreenLog("Deinstallation finished!");
 	
