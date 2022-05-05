@@ -76,13 +76,12 @@ bool initConfig()
 
 	if(!fileExists(CONFIG_PATH))
 	{
-		debugPrintf("\tFile not found!");
-		if(!saveConfig(true))
-			return false;
+		debugPrintf("\tFile not found, using defaults!");
+		changed = true; // trigger a save on app exit
+		return true;
 	}
 
 	OSTime t = OSGetTime();
-	flushIOQueue();
 #ifdef NUSSPLI_DEBUG
 	json_error_t jerr;
 	json_t *json = json_load_file(CONFIG_PATH, 0, &jerr);
