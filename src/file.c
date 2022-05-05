@@ -258,7 +258,6 @@ NUSFS_ERR createDirectory(const char *path, mode_t mode)
 bool createDirRecursive(const char *dir)
 {
 	size_t len = strlen(dir);
-
 	char d[++len];
 	OSBlockMove(d, dir, len, false);
 
@@ -271,7 +270,6 @@ bool createDirRecursive(const char *dir)
 	do
 	{
 		needle = strchr(needle, '/');
-
 		if(needle == NULL)
 			return dirExists(d) ? true : createDirectory(d, 777) == NUSFS_ERR_NOERR;
 
