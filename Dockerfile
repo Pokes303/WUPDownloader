@@ -11,7 +11,7 @@ WORKDIR /
 RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
  apt-get update && \
  apt-get -y --no-install-recommends upgrade && \
- apt-get -y install --no-install-recommends autoconf openjdk-11-jre-headless && \
+ apt-get -y install --no-install-recommends autoconf automake openjdk-11-jre-headless && \
  apt-get clean && \
  rm -rf /var/lib/apt/lists/* /usr/share/man && \
  git clone https://github.com/devkitPro/wut && \
