@@ -63,6 +63,7 @@
 #define SET_ALL		"All"
 
 static bool changed = false;
+static bool saveFailed = false;
 static bool checkForUpdates = true;
 static bool autoResume = true;
 static Swkbd_LanguageType lang = Swkbd_LanguageType__Invalid;
@@ -248,6 +249,9 @@ char *getLanguageString(Swkbd_LanguageType language)
 bool saveConfig(bool force)
 {
 	debugPrintf("saveConfig()");
+	if(saveFailed)
+		return false;
+
 	if(!changed && !force)
 		return true;
 	
@@ -314,6 +318,14 @@ bool saveConfig(bool force)
 	{
 		MEMFreeToDefaultHeap(json);
 		debugPrintf("Can't open " CONFIG_PATH);
+		saveFailed = true;
+
+		drawErrorFrame("Couldn't save config file!\nYour SD card might be write locked.", ANY_RETURN);
+		showFrame();
+
+		while(!(vpad.trigger))
+			showFrame();
+
 		return false;
 	}
 
