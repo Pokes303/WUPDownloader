@@ -41,6 +41,7 @@
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
+#include <nn/acp/drcled_c.h>
 
 #include <unzip.h>
 
@@ -431,6 +432,8 @@ finishUpdate:
 			if(vpad.trigger)
 				return;
 		}
+
+		ACPTurnOffDrcLed();
 	}
 	return;
 

@@ -30,6 +30,7 @@
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
+#include <nn/acp/drcled_c.h>
 
 #include <crypto.h>
 #include <deinstaller.h>
@@ -114,5 +115,7 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx)
 		if(vpad.trigger)
 			break;
 	}
+
+	ACPTurnOffDrcLed();
 	return true;
 }

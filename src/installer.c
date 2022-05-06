@@ -30,6 +30,7 @@
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
+#include <nn/acp/drcled_c.h>
 
 #include <crypto.h>
 #include <file.h>
@@ -356,6 +357,8 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 		if(vpad.trigger)
 			break;
 	}
+
+	ACPTurnOffDrcLed();
 	return true;
 
 installError:

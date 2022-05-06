@@ -37,6 +37,11 @@
 // ACP
 extern ACPResult ACPGetTitleMetaXmlByTitleListType(MCPTitleListType *titleListType, ACPMetaXml *out);
 
+// ACT
+uint32_t GetPersistentId(void)
+	asm("GetPersistentId__Q2_2nn3actFv");
+
+
 // MCP
 extern MCPError MCP_DeleteTitleAsync(int handle, char *path, MCPInstallTitleInfo *out);
 

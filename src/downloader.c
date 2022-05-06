@@ -56,6 +56,7 @@
 #include <coreinit/time.h>
 #include <curl/curl.h>
 #include <nn/ac/ac_c.h>
+#include <nn/acp/drcled_c.h>
 #include <nn/result.h>
 #include <nsysnet/_socket.h>
 
@@ -1267,7 +1268,8 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		if(vpad.trigger)
 			break;
 	}
-	
+
+	ACPTurnOffDrcLed();
 	return true;
 }
 
