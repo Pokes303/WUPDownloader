@@ -77,7 +77,7 @@ bool initConfig()
 
 	if(!fileExists(CONFIG_PATH))
 	{
-		debugPrintf("\tFile not found, using defaults!");
+		addToScreenLog("Config file not found, using defaults!");
 		changed = true; // trigger a save on app exit
 		return true;
 	}
