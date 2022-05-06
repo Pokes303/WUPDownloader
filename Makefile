@@ -111,6 +111,7 @@ else
 CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(TOPDIR)/$(dir)/*.c)))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(TOPDIR)/$(dir)/*.cpp)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(TOPDIR)/$(dir)/*.s)))
+DEFFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(TOPDIR)/$(dir)/*.def)))
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(TOPDIR)/$(dir)/*.*)))
 
 #-------------------------------------------------------------------------------
@@ -128,7 +129,7 @@ endif
 #-------------------------------------------------------------------------------
 
 OFILES_BIN	:=	$(addsuffix .o,$(BINFILES))
-OFILES_SRC	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
+OFILES_SRC	:=	$(DEFFILES:.def=.o) $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
 OFILES 		:=	$(OFILES_BIN) $(OFILES_SRC) $(ROMFS_TARGET)
 HFILES_BIN	:=	$(addsuffix .h,$(subst .,_,$(BINFILES)))
 
@@ -170,6 +171,11 @@ debug: all
 #-------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	@$(bin2o)
+
+%.o: %.def
+	$(SILENTMSG) $(notdir $<)
+	$(SILENTCMD)rplexportgen $< $*.s $(ERROR_FILTER)
+	$(SILENTCMD)$(CC) -x assembler-with-cpp $(ASFLAGS) -c $*.s -o $@ $(ERROR_FILTER)
 
 -include $(DEPENDS)
 
