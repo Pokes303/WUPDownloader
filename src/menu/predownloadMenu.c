@@ -39,8 +39,6 @@
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
 
-static bool notifyWhenFinished = true;
-
 static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
 {
 	if(out == NULL)
@@ -97,11 +95,6 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 	
 	textToFrame(6, 0, "Custom folder name [ASCII only]:");
 	textToFrame(7, 3, folderName);
-	
-	strcpy(toFrame, "Press " BUTTON_PLUS " to ");
-	strcat(toFrame, notifyWhenFinished ? "deactivate" : "activate");
-	strcat(toFrame, " the notification after installing");
-	textToFrame(MAX_LINES - 1, 0, toFrame);
 	
 	int line = MAX_LINES - 2;
 	strcpy(toFrame, "Press " BUTTON_MINUS " to download to ");
@@ -298,11 +291,6 @@ naNedNa:
 						setDlToUSB(false);
 					}
 			}
-			redraw = true;
-		}
-		if(vpad.trigger & VPAD_BUTTON_PLUS)
-		{
-			notifyWhenFinished = !notifyWhenFinished;
 			redraw = true;
 		}
 		if(vpad.trigger & VPAD_BUTTON_LEFT && dlDev == NUSDEV_SD)
