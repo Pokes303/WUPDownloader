@@ -233,7 +233,7 @@ bool initConfig()
 	return true;
 }
 
-char *getLanguageString(Swkbd_LanguageType language)
+const char *getLanguageString(Swkbd_LanguageType language)
 {
 	switch(language)
 	{
@@ -435,7 +435,7 @@ MCPRegion getRegion()
 	return regionSetting;
 }
 
-char *getFormattedRegion(MCPRegion region)
+const char *getFormattedRegion(MCPRegion region)
 {
 	switch(region)
 	{
