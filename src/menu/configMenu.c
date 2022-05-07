@@ -43,19 +43,19 @@ static void drawConfigMenu()
 	char *toScreen = getToFrameBuffer();
 
 	strcpy(toScreen, "Online updates: ");
-	strcat(toScreen, updateCheckEnabled() ? "Enabled" : "Disabled");
+	strcpy(toScreen + 16, updateCheckEnabled() ? "Enabled" : "Disabled");
 	textToFrame(0, 4, toScreen);
 
 	strcpy(toScreen, "Auto resume failed downloads: ");
-	strcat(toScreen, autoResumeEnabled() ? "Enabled" : "Disabled");
+	strcpy(toScreen + 30, autoResumeEnabled() ? "Enabled" : "Disabled");
 	textToFrame(1, 4, toScreen);
 
 	strcpy(toScreen, "Notification method: ");
-	strcat(toScreen, getNotificationString(getNotificationMethod()));
+	strcpy(toScreen + 21, getNotificationString(getNotificationMethod()));
 	textToFrame(2, 4, toScreen);
 
 	strcpy(toScreen, "Region: ");
-	strcat(toScreen, getFormattedRegion(getRegion()));
+	strcpy(toScreen + 8, getFormattedRegion(getRegion()));
 	textToFrame(3, 4, toScreen);
 	
 	lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
