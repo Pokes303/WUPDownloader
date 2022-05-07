@@ -65,6 +65,7 @@
 #define NEWS_RUMBLE	"Rumble"
 #define NEWS_LED	"LED"
 #define NEWS_BOTH	"Both"
+#define NEWS_NONE	"None"
 
 static bool changed = false;
 static bool saveFailed = false;
@@ -171,6 +172,8 @@ bool initConfig()
 			newsSetting = NEWS_METHOD_RUMBLE;
 		else if(strcmp(json_string_value(configEntry), NEWS_LED) == 0)
 			newsSetting = NEWS_METHOD_LED;
+		else if(strcmp(json_string_value(configEntry), NEWS_NONE) == 0)
+			newsSetting = NEWS_METHOD_NONE;
 		else
 			newsSetting = NEWS_METHOD_RUMBLE | NEWS_METHOD_LED;
 	}
@@ -271,6 +274,8 @@ static inline const char *getNewsString(NEWS_METHOD method)
 			return NEWS_RUMBLE;
 		case NEWS_METHOD_LED:
 			return NEWS_LED;
+		case NEWS_METHOD_NONE:
+			return NEWS_NONE;
 		default:
 			return NEWS_BOTH;
 	}
