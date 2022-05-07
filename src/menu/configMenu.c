@@ -57,8 +57,9 @@ static void drawConfigMenu()
 	strcpy(toScreen, "Region: ");
 	strcat(toScreen, getFormattedRegion(getRegion()));
 	textToFrame(++i, 4, toScreen);
-
-	textToFrame(i + 2, 0, "Press " BUTTON_B " to go back");
+	
+	lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
+	textToFrame(MAX_LINES - 1, 0, "Press " BUTTON_B " to go back");
 
 	arrowToFrame(cursorPos, 0);
 
