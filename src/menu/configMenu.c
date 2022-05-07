@@ -48,8 +48,8 @@ static void drawConfigMenu()
 	strcat(toScreen, " auto resuming of failed downloads");
 	textToFrame(++i, 0, toScreen);
 
-	strcpy(toScreen, "Press " BUTTON_Y " to change news announcement method (currently ");
-	strcat(toScreen, getNewsString(getNewsMethod()));
+	strcpy(toScreen, "Press " BUTTON_Y " to change the notification method (currently ");
+	strcat(toScreen, getNotificationString(getNotificationMethod()));
 	strcat(toScreen, ")");
 	textToFrame(++i, 0, toScreen);
 
@@ -88,19 +88,19 @@ void configMenu()
 		}
 		if(vpad.trigger & VPAD_BUTTON_Y)
 		{
-			switch((int)getNewsMethod())
+			switch((int)getNotificationMethod())
 			{
-				case NEWS_METHOD_RUMBLE | NEWS_METHOD_LED:
-					setNewsMethod(NEWS_METHOD_NONE);
+				case NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED:
+					setNotificationMethod(NOTIF_METHOD_NONE);
 					break;
-				case NEWS_METHOD_NONE:
-					setNewsMethod(NEWS_METHOD_RUMBLE);
+				case NOTIF_METHOD_NONE:
+					setNotificationMethod(NOTIF_METHOD_RUMBLE);
 					break;
-				case NEWS_METHOD_RUMBLE:
-					setNewsMethod(NEWS_METHOD_LED);
+				case NOTIF_METHOD_RUMBLE:
+					setNotificationMethod(NOTIF_METHOD_LED);
 					break;
-				case NEWS_METHOD_LED:
-					setNewsMethod(NEWS_METHOD_RUMBLE | NEWS_METHOD_LED);
+				case NOTIF_METHOD_LED:
+					setNotificationMethod(NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED);
 			}
 			redraw = true;
 		}

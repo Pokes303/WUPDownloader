@@ -94,17 +94,17 @@ void deinitNotifications()
 
 void startNotification()
 {
-	if(getNewsMethod() & NEWS_METHOD_RUMBLE)
+	if(getNotificationMethod() & NOTIF_METHOD_RUMBLE)
 	{
 		OSMessage msg = { .message = NUSSPLI_MESSAGE_NONE };
 		OSSendMessage(&rumble_queue, &msg, OS_MESSAGE_FLAGS_NONE);
 	}
-	if(getNewsMethod() & NEWS_METHOD_LED)
+	if(getNotificationMethod() & NOTIF_METHOD_LED)
 		ACPTurnOnDrcLed(pId, LED_ON);
 }
 
 void stopNotification()
 {
-	if(getNewsMethod() & NEWS_METHOD_LED)
+	if(getNotificationMethod() & NOTIF_METHOD_LED)
 		ACPTurnOnDrcLed(pId, LED_OFF);
 }

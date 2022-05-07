@@ -43,29 +43,29 @@
 
 #define CONFIG_VERSION 1
 
-#define LANG_JAP	"Japanese"
-#define LANG_ENG	"English"
-#define LANG_FRE	"French"
-#define LANG_GER	"German"
-#define LANG_ITA	"Italian"
-#define LANG_SPA	"Spanish"
-#define LANG_CHI	"Chinese"
-#define LANG_KOR	"Korean"
-#define LANG_DUT	"Dutch"
-#define LANG_POR	"Potuguese"
-#define LANG_RUS	"Russian"
-#define LANG_TCH	"Traditional chinese"
-#define LANG_SYS	"System settings"
+#define LANG_JAP		"Japanese"
+#define LANG_ENG		"English"
+#define LANG_FRE		"French"
+#define LANG_GER		"German"
+#define LANG_ITA		"Italian"
+#define LANG_SPA		"Spanish"
+#define LANG_CHI		"Chinese"
+#define LANG_KOR		"Korean"
+#define LANG_DUT		"Dutch"
+#define LANG_POR		"Potuguese"
+#define LANG_RUS		"Russian"
+#define LANG_TCH		"Traditional chinese"
+#define LANG_SYS		"System settings"
 
-#define SET_EUR		"Europe"
-#define SET_USA		"USA"
-#define SET_JPN		"Japan"
-#define SET_ALL		"All"
+#define SET_EUR			"Europe"
+#define SET_USA			"USA"
+#define SET_JPN			"Japan"
+#define SET_ALL			"All"
 
-#define NEWS_RUMBLE	"Rumble"
-#define NEWS_LED	"LED"
-#define NEWS_BOTH	"Rumble + LED"
-#define NEWS_NONE	"None"
+#define NOTIF_RUMBLE	"Rumble"
+#define NOTIF_LED		"LED"
+#define NOTIF_BOTH		"Rumble + LED"
+#define NOTIF_NONE		"None"
 
 static bool changed = false;
 static bool saveFailed = false;
@@ -75,7 +75,7 @@ static Swkbd_LanguageType lang = Swkbd_LanguageType__Invalid;
 static Swkbd_LanguageType sysLang;
 static bool dlToUSB = true;
 static MCPRegion regionSetting = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN;
-static NEWS_METHOD newsSetting = NEWS_METHOD_RUMBLE | NEWS_METHOD_LED;
+static NOTIF_METHOD notifSetting = NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED;
 
 bool initConfig()
 {
@@ -165,17 +165,17 @@ bool initConfig()
 	else
 		changed = true;
 
-	configEntry = json_object_get(json, "News method");
+	configEntry = json_object_get(json, "Notification method");
 	if(configEntry != NULL && json_is_string(configEntry))
 	{
-		if(strcmp(json_string_value(configEntry), NEWS_RUMBLE) == 0)
-			newsSetting = NEWS_METHOD_RUMBLE;
-		else if(strcmp(json_string_value(configEntry), NEWS_LED) == 0)
-			newsSetting = NEWS_METHOD_LED;
-		else if(strcmp(json_string_value(configEntry), NEWS_NONE) == 0)
-			newsSetting = NEWS_METHOD_NONE;
+		if(strcmp(json_string_value(configEntry), NOTIF_RUMBLE) == 0)
+			notifSetting = NOTIF_METHOD_RUMBLE;
+		else if(strcmp(json_string_value(configEntry), NOTIF_LED) == 0)
+			notifSetting = NOTIF_METHOD_LED;
+		else if(strcmp(json_string_value(configEntry), NOTIF_NONE) == 0)
+			notifSetting = NOTIF_METHOD_NONE;
 		else
-			newsSetting = NEWS_METHOD_RUMBLE | NEWS_METHOD_LED;
+			notifSetting = NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED;
 	}
 	else
 		changed = true;
@@ -266,18 +266,18 @@ const char *getLanguageString(Swkbd_LanguageType language)
 	}
 }
 
-const char *getNewsString(NEWS_METHOD method)
+const char *getNotificationString(NOTIF_METHOD method)
 {
 	switch((int)method)
 	{
-		case NEWS_METHOD_RUMBLE:
-			return NEWS_RUMBLE;
-		case NEWS_METHOD_LED:
-			return NEWS_LED;
-		case NEWS_METHOD_NONE:
-			return NEWS_NONE;
+		case NOTIF_METHOD_RUMBLE:
+			return NOTIF_RUMBLE;
+		case NOTIF_METHOD_LED:
+			return NOTIF_LED;
+		case NOTIF_METHOD_NONE:
+			return NOTIF_NONE;
 		default:
-			return NEWS_BOTH;
+			return NOTIF_BOTH;
 	}
 }
 
@@ -336,8 +336,8 @@ bool saveConfig(bool force)
 		return false;
 	}
 
-	value = json_string(getNewsString(getNewsMethod()));
-	if(value == NULL || json_object_set(config, "News method", value))
+	value = json_string(getNotificationString(getNotificationMethod()));
+	if(value == NULL || json_object_set(config, "Nofit method", value))
 	{
 		json_decref(config);
 		return false;
@@ -477,16 +477,16 @@ void setKeyboardLanguage(Swkbd_LanguageType language)
 	debugPrintf("CD");
 }
 
-NEWS_METHOD getNewsMethod()
+NOTIF_METHOD getNotificationMethod()
 {
-	return newsSetting;
+	return notifSetting;
 }
 
-void setNewsMethod(NEWS_METHOD method)
+void setNotificationMethod(NOTIF_METHOD method)
 {
-	if(newsSetting == method)
+	if(notifSetting == method)
 		return;
 
-	newsSetting = method;
+	notifSetting = method;
 	changed = true;
 }
