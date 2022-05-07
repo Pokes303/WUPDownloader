@@ -37,6 +37,7 @@
 #include <input.h>
 #include <installer.h>
 #include <ioQueue.h>
+#include <led.h>
 #include <menu/utils.h>
 #include <osdefs.h>
 #include <renderer.h>
@@ -1246,10 +1247,11 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	textToFrame(1, 0, "Downloaded successfully!");
 	writeScreenLog(2);
 	drawFrame();
-	
+
+	startLED();
 	startRumble();
 	enableApd();
-	
+
 	while(AppRunning())
 	{
 		if(app == APP_STATE_BACKGROUND)
@@ -1269,7 +1271,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 			break;
 	}
 
-	ACPTurnOffDrcLed();
+	stopLED();
 	return true;
 }
 

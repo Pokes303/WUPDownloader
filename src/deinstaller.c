@@ -38,6 +38,7 @@
 #include <filesystem.h>
 #include <input.h>
 #include <ioQueue.h>
+#include <led.h>
 #include <osdefs.h>
 #include <renderer.h>
 #include <rumbleThread.h>
@@ -87,10 +88,11 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx)
 	
 	if(channelHaxx)
 		return true;
-	
+
+	startLED();
 	enableShutdown();
 	startRumble();
-	
+
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 	textToFrame(0, 0, name);
 	textToFrame(1, 0, "Uninstalled successfully!");
@@ -116,6 +118,6 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx)
 			break;
 	}
 
-	ACPTurnOffDrcLed();
+	stopLED();
 	return true;
 }

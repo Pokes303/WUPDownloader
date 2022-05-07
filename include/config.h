@@ -36,6 +36,13 @@
 	extern "C" {
 #endif
 
+typedef enum
+{
+	NEWS_METHOD_NONE	= 0x00,
+	NEWS_METHOD_RUMBLE	= 0x01,
+	NEWS_METHOD_LED		= 0x02,
+} NEWS_METHOD;
+
 bool initConfig();
 bool saveConfig(bool force);
 bool updateCheckEnabled();
@@ -51,6 +58,8 @@ void setKeyboardLanguage(Swkbd_LanguageType language);
 char *getLanguageString(Swkbd_LanguageType language);
 bool dlToUSBenabled();
 void setDlToUSB(bool toUSB);
+NEWS_METHOD getNewsMethod();
+void setNewsMethod(NEWS_METHOD method);
 
 #ifdef __cplusplus
 	}

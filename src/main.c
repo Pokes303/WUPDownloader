@@ -30,6 +30,7 @@
 #include <iosuhaxx.h>
 #include <ioQueue.h>
 #include <jailbreak.h>
+#include <led.h>
 #include <osdefs.h>
 #include <otp.h>
 #include <renderer.h>
@@ -142,6 +143,7 @@ static void innerMain(bool validCfw)
 
 							if(initRumble())
 							{
+								initLED();
 								addToScreenLog("Rumble initialized!");
 
 								startNewFrame();

@@ -62,6 +62,10 @@
 #define SET_JPN		"Japan"
 #define SET_ALL		"All"
 
+#define NEWS_RUMBLE	"Rumble"
+#define NEWS_LED	"LED"
+#define NEWS_BOTH	"Both"
+
 static bool changed = false;
 static bool saveFailed = false;
 static bool checkForUpdates = true;
@@ -70,6 +74,7 @@ static Swkbd_LanguageType lang = Swkbd_LanguageType__Invalid;
 static Swkbd_LanguageType sysLang;
 static bool dlToUSB = true;
 static MCPRegion regionSetting = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN;
+static NEWS_METHOD newsSetting = NEWS_METHOD_RUMBLE | NEWS_METHOD_LED;
 
 bool initConfig()
 {
@@ -159,6 +164,19 @@ bool initConfig()
 	else
 		changed = true;
 
+	configEntry = json_object_get(json, "News method");
+	if(configEntry != NULL && json_is_string(configEntry))
+	{
+		if(strcmp(json_string_value(configEntry), NEWS_RUMBLE) == 0)
+			newsSetting = NEWS_METHOD_RUMBLE;
+		else if(strcmp(json_string_value(configEntry), NEWS_LED) == 0)
+			newsSetting = NEWS_METHOD_LED;
+		else
+			newsSetting = NEWS_METHOD_RUMBLE | NEWS_METHOD_LED;
+	}
+	else
+		changed = true;
+
 	configEntry = json_object_get(json, "Seed");
 	if(configEntry != NULL && json_is_integer(configEntry))
 	{
@@ -240,9 +258,21 @@ char *getLanguageString(Swkbd_LanguageType language)
 			return LANG_RUS;
 		case Swkbd_LanguageType__Chinese2:
 			return LANG_TCH;
-			break;
 		default:
 			return LANG_SYS;
+	}
+}
+
+static inline const char *getNewsString(NEWS_METHOD method)
+{
+	switch((int)method)
+	{
+		case NEWS_METHOD_RUMBLE:
+			return NEWS_RUMBLE;
+		case NEWS_METHOD_LED:
+			return NEWS_LED;
+		default:
+			return NEWS_BOTH;
 	}
 }
 
@@ -296,6 +326,13 @@ bool saveConfig(bool force)
 	
 	value = dlToUSB ? json_true() : json_false();
 	if(value == NULL || json_object_set(config, "Download to USB", value))
+	{
+		json_decref(config);
+		return false;
+	}
+
+	value = json_string(getNewsString(getNewsMethod()));
+	if(value == NULL || json_object_set(config, "News method", value))
 	{
 		json_decref(config);
 		return false;
@@ -433,4 +470,18 @@ void setKeyboardLanguage(Swkbd_LanguageType language)
 	debugPrintf("CC");
 //	SWKBD_Init();
 	debugPrintf("CD");
+}
+
+NEWS_METHOD getNewsMethod()
+{
+	return newsSetting;
+}
+
+void setNewsMethod(NEWS_METHOD method)
+{
+	if(newsSetting == method)
+		return;
+
+	newsSetting = method;
+	changed = true;
 }

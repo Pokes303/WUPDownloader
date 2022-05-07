@@ -27,6 +27,7 @@
 #include <input.h>
 #include <installer.h>
 #include <ioQueue.h>
+#include <led.h>
 #include <osdefs.h>
 #include <renderer.h>
 #include <rumbleThread.h>
@@ -407,13 +408,14 @@ aromaInstallation:
 finishUpdate:
 		removeDirectory(UPDATE_TEMP_FOLDER);
 		enableShutdown();
+		startLED();
 		startRumble();
 		colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 		textToFrame(0, 0, "Update");
 		textToFrame(1, 0, "Installed successfully!");
 		writeScreenLog(2);
 		drawFrame();
-		
+
 		while(AppRunning())
 		{
 			if(app == APP_STATE_BACKGROUND)
@@ -430,10 +432,10 @@ finishUpdate:
 			showFrame();
 			
 			if(vpad.trigger)
-				return;
+				break;;
 		}
 
-		ACPTurnOffDrcLed();
+		stopLED();
 	}
 	return;
 

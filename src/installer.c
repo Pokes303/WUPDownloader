@@ -38,6 +38,7 @@
 #include <input.h>
 #include <installer.h>
 #include <ioQueue.h>
+#include <led.h>
 #include <renderer.h>
 #include <rumbleThread.h>
 #include <state.h>
@@ -336,6 +337,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	writeScreenLog(2);
 	drawFrame();
 
+	startLED();
 	startRumble();
 	enableShutdown();
 	
@@ -358,7 +360,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 			break;
 	}
 
-	ACPTurnOffDrcLed();
+	stopLED();
 	return true;
 
 installError:
