@@ -34,7 +34,7 @@
 #include <coreinit/mcp.h>
 
 int cursorPos = 0;
-int entryCount = 4;
+const int entryCount = 3;
 
 static void drawConfigMenu()
 {
@@ -44,23 +44,23 @@ static void drawConfigMenu()
 
 	strcpy(toScreen, "Online updates: ");
 	strcat(toScreen, updateCheckEnabled() ? "< disabled >" : "< enabled >");
-	textToFrame(++i, 1, toScreen);
+	textToFrame(++i, 4, toScreen);
 
 	strcpy(toScreen, "Auto resume failed downloads: ");
 	strcat(toScreen, autoResumeEnabled() ? "< disabled >" : "< enabled >");
-	textToFrame(++i, 1, toScreen);
+	textToFrame(++i, 4, toScreen);
 
 	strcpy(toScreen, "Notification method: ");
 	strcat(toScreen, getNotificationString(getNotificationMethod()));
-	textToFrame(++i, 1, toScreen);
+	textToFrame(++i, 4, toScreen);
 
 	strcpy(toScreen, "Region: ");
 	strcat(toScreen, getFormattedRegion(getRegion()));
-	textToFrame(++i, 1, toScreen);
+	textToFrame(++i, 4, toScreen);
 
 	textToFrame(i + 2, 0, "Press " BUTTON_B " to go back");
 
-	textToFrame(cursorPos, 0, ">");
+	arrowToFrame(cursorPos, 0);
 
 	drawFrame();
 }
@@ -147,7 +147,7 @@ void configMenu()
 							setRegion(MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN);
 					}
 					redraw = true;
-				}
+				} break;
 		}
 		
 		if(vpad.trigger & VPAD_BUTTON_B)
