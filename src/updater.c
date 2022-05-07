@@ -89,8 +89,9 @@ void showUpdateErrorf(const char *msg, ...)
 	va_list va;
 	va_start(va, msg);
 	char newMsg[2048];
-	vsnprintf(newMsg, 2048, msg, va);
+	vsnprintf(newMsg, 2047, msg, va);
 	va_end(va);
+	newMsg[2047] = '\0';
 	showUpdateError(newMsg);
 }
 
