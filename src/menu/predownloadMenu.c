@@ -96,7 +96,7 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 	textToFrame(6, 0, "Custom folder name [ASCII only]:");
 	textToFrame(7, 3, folderName);
 	
-	int line = MAX_LINES - 2;
+	int line = MAX_LINES - 1;
 	strcpy(toFrame, "Press " BUTTON_MINUS " to download to ");
 	switch(dlDev)
 	{
@@ -110,7 +110,6 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 			strcat(toFrame, usbMounted ? "USB" : "SD");
 	}
 	textToFrame(line--, 0, toFrame);
-
 
 	if(dlDev != NUSDEV_SD)
 		textToFrame(line--, 0, "WARNING: Files on USB/NAND will always be deleted after installing!");
