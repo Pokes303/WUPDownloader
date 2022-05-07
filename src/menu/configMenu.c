@@ -33,33 +33,114 @@
 
 #include <coreinit/mcp.h>
 
+static int cursorPos = 0;
+#define ENTRY_COUNT 3
+
 static void drawConfigMenu()
 {
 	startNewFrame();
 	char *toScreen = getToFrameBuffer();
-	int i = -1;
-	strcpy(toScreen, "Press " BUTTON_A " to ");
-	strcat(toScreen, updateCheckEnabled() ? "disable" : "enable");
-	strcat(toScreen, " online updates");
-	textToFrame(++i, 0, toScreen);
+	int i = 0;
 
-	strcpy(toScreen, "Press " BUTTON_X " to ");
-	strcat(toScreen, autoResumeEnabled() ? "disable" : "enable");
-	strcat(toScreen, " auto resuming of failed downloads");
-	textToFrame(++i, 0, toScreen);
+	strcpy(toScreen, "Online updates: ");
+	strcat(toScreen, updateCheckEnabled() ? "Enabled" : "Disabled");
+	textToFrame(i, 4, toScreen);
 
-	strcpy(toScreen, "Press " BUTTON_Y " to change the notification method (currently ");
+	strcpy(toScreen, "Auto resume failed downloads: ");
+	strcat(toScreen, autoResumeEnabled() ? "Enabled" : "Disabled");
+	textToFrame(++i, 4, toScreen);
+
+	strcpy(toScreen, "Notification method: ");
 	strcat(toScreen, getNotificationString(getNotificationMethod()));
-	strcat(toScreen, ")");
-	textToFrame(++i, 0, toScreen);
+	textToFrame(++i, 4, toScreen);
 
-	strcpy(toScreen, "Press " BUTTON_LEFT_RIGHT " to change the region (currently ");
+	strcpy(toScreen, "Region: ");
 	strcat(toScreen, getFormattedRegion(getRegion()));
-	strcat(toScreen, ")");
-	textToFrame(++i, 0, toScreen);
+	textToFrame(++i, 4, toScreen);
+	
+	i = MAX_LINES - 2;
+	lineToFrame(i, SCREEN_COLOR_WHITE);
+	textToFrame(++i, 0, "Press " BUTTON_B " to go back");
 
-	textToFrame(i + 2, 0, "Press " BUTTON_B " to go back");
+	arrowToFrame(cursorPos, 0);
+
 	drawFrame();
+}
+
+static inline void switchNotificationMethod()
+{
+	if(vpad.trigger & VPAD_BUTTON_LEFT)
+	{
+		switch((int)getNotificationMethod())
+		{
+			case NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED:
+				setNotificationMethod(NOTIF_METHOD_NONE);
+				break;
+			case NOTIF_METHOD_NONE:
+				setNotificationMethod(NOTIF_METHOD_RUMBLE);
+				break;
+			case NOTIF_METHOD_RUMBLE:
+				setNotificationMethod(NOTIF_METHOD_LED);
+				break;
+			case NOTIF_METHOD_LED:
+				setNotificationMethod(NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED);
+		}
+	}
+	else
+	{
+		switch((int)getNotificationMethod())
+		{
+			case NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED:
+				setNotificationMethod(NOTIF_METHOD_LED);
+				break;
+			case NOTIF_METHOD_LED:
+				setNotificationMethod(NOTIF_METHOD_RUMBLE);
+				break;
+			case NOTIF_METHOD_RUMBLE:
+				setNotificationMethod(NOTIF_METHOD_NONE);
+				break;
+			case NOTIF_METHOD_NONE:
+				setNotificationMethod(NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED);
+		}
+	}
+}
+
+static inline void switchRegion()
+{
+	if(vpad.trigger & VPAD_BUTTON_LEFT)
+	{
+		switch((int)getRegion())
+		{
+			case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
+				setRegion(MCP_REGION_JAPAN);
+				break;
+			case MCP_REGION_JAPAN:
+				setRegion(MCP_REGION_USA);
+				break;
+			case MCP_REGION_USA:
+				setRegion(MCP_REGION_EUROPE);
+				break;
+			case MCP_REGION_EUROPE:
+				setRegion(MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN);
+		}
+	}
+	else
+	{
+		switch((int)getRegion())
+		{
+			case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
+				setRegion(MCP_REGION_EUROPE);
+				break;
+			case MCP_REGION_EUROPE:
+				setRegion(MCP_REGION_USA);
+				break;
+			case MCP_REGION_USA:
+				setRegion(MCP_REGION_JAPAN);
+				break;
+			case MCP_REGION_JAPAN:
+				setRegion(MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN);
+		}
+	}
 }
 
 void configMenu()
@@ -75,77 +156,47 @@ void configMenu()
 			drawConfigMenu();
 		
 		showFrame();
-		
-		if(vpad.trigger & VPAD_BUTTON_A)
-		{
-			setUpdateCheck(!updateCheckEnabled());
-			redraw = true;
-		}
-		if(vpad.trigger & VPAD_BUTTON_X)
-		{
-			setAutoResume(!autoResumeEnabled());
-			redraw = true;
-		}
-		if(vpad.trigger & VPAD_BUTTON_Y)
-		{
-			switch((int)getNotificationMethod())
-			{
-				case NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED:
-					setNotificationMethod(NOTIF_METHOD_NONE);
-					break;
-				case NOTIF_METHOD_NONE:
-					setNotificationMethod(NOTIF_METHOD_RUMBLE);
-					break;
-				case NOTIF_METHOD_RUMBLE:
-					setNotificationMethod(NOTIF_METHOD_LED);
-					break;
-				case NOTIF_METHOD_LED:
-					setNotificationMethod(NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED);
-			}
-			redraw = true;
-		}
-		if(vpad.trigger & VPAD_BUTTON_LEFT)
-		{
-			switch((int)getRegion())
-			{
-				case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
-					setRegion(MCP_REGION_JAPAN);
-					break;
-				case MCP_REGION_JAPAN:
-					setRegion(MCP_REGION_USA);
-					break;
-				case MCP_REGION_USA:
-					setRegion(MCP_REGION_EUROPE);
-					break;
-				case MCP_REGION_EUROPE:
-					setRegion(MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN);
-			}
-			redraw = true;
-		}
-		else if(vpad.trigger & VPAD_BUTTON_RIGHT)
-		{
-			switch((int)getRegion())
-			{
-				case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
-					setRegion(MCP_REGION_EUROPE);
-					break;
-				case MCP_REGION_EUROPE:
-					setRegion(MCP_REGION_USA);
-					break;
-				case MCP_REGION_USA:
-					setRegion(MCP_REGION_JAPAN);
-					break;
-				case MCP_REGION_JAPAN:
-					setRegion(MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN);
-			}
-			redraw = true;
-		}
 		if(vpad.trigger & VPAD_BUTTON_B)
 		{
 			saveConfig(false);
 			return;
 		}
-		
+
+		if(vpad.trigger & (VPAD_BUTTON_RIGHT | VPAD_BUTTON_LEFT | VPAD_BUTTON_A))
+		{
+			switch(cursorPos)
+			{
+				case 0:
+					setUpdateCheck(!updateCheckEnabled());
+					break;
+				case 1:
+					setAutoResume(!autoResumeEnabled());
+					break;
+				case 2:
+					switchNotificationMethod();
+					break;
+				case 3:
+					switchRegion();
+					break;
+			}
+
+			redraw = true;
+		}
+		else if(vpad.trigger & VPAD_BUTTON_UP)
+		{
+			--cursorPos;
+			if(cursorPos < 0)
+				cursorPos = ENTRY_COUNT;
+			redraw = true;
+		}
+		else if(vpad.trigger & VPAD_BUTTON_DOWN)
+		{
+			++cursorPos;
+			if(cursorPos > ENTRY_COUNT)
+				cursorPos = 0;
+			redraw = true;
+		}
+
 		if(redraw)
 		{
 			drawConfigMenu();
