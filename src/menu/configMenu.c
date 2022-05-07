@@ -184,7 +184,7 @@ void configMenu()
 		{
 			--cursorPos;
 			if(cursorPos < 0)
-				cursorPos = ENTRY_COUNT - 1;
+				cursorPos = ENTRY_COUNT;
 			redraw = true;
 		}
 		else if(vpad.trigger & VPAD_BUTTON_DOWN)
