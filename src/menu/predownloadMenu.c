@@ -39,7 +39,7 @@
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
 
-static bool vibrateWhenFinished = true;
+static bool notifyWhenFinished = true;
 
 static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
 {
@@ -99,9 +99,9 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 	textToFrame(7, 3, folderName);
 	
 	strcpy(toFrame, "Press " BUTTON_PLUS " to ");
-	strcat(toFrame, vibrateWhenFinished ? "deactivate" : "activate");
-	strcat(toFrame, " the vibration after installing");
-	textToFrame(MAX_LINES - 1, 0, toFrame); //Thinking to change this to activate HOME Button led
+	strcat(toFrame, notifyWhenFinished ? "deactivate" : "activate");
+	strcat(toFrame, " the notification after installing");
+	textToFrame(MAX_LINES - 1, 0, toFrame);
 	
 	int line = MAX_LINES - 2;
 	strcpy(toFrame, "Press " BUTTON_MINUS " to download to ");
@@ -302,7 +302,7 @@ naNedNa:
 		}
 		if(vpad.trigger & VPAD_BUTTON_PLUS)
 		{
-			vibrateWhenFinished = !vibrateWhenFinished;
+			notifyWhenFinished = !notifyWhenFinished;
 			redraw = true;
 		}
 		if(vpad.trigger & VPAD_BUTTON_LEFT && dlDev == NUSDEV_SD)
