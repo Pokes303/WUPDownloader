@@ -68,21 +68,23 @@ static void drawConfigMenu()
 
 static inline void switchNotificationMethod()
 {
+	NOTIF_METHOD m;
+
 	if(vpad.trigger & VPAD_BUTTON_LEFT)
 	{
 		switch((int)getNotificationMethod())
 		{
 			case NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED:
-				setNotificationMethod(NOTIF_METHOD_NONE);
+				m = NOTIF_METHOD_NONE;
 				break;
 			case NOTIF_METHOD_NONE:
-				setNotificationMethod(NOTIF_METHOD_RUMBLE);
+				m = NOTIF_METHOD_RUMBLE;
 				break;
 			case NOTIF_METHOD_RUMBLE:
-				setNotificationMethod(NOTIF_METHOD_LED);
+				m = NOTIF_METHOD_LED;
 				break;
 			case NOTIF_METHOD_LED:
-				setNotificationMethod(NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED);
+				m = NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED;
 		}
 	}
 	else
@@ -90,37 +92,41 @@ static inline void switchNotificationMethod()
 		switch((int)getNotificationMethod())
 		{
 			case NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED:
-				setNotificationMethod(NOTIF_METHOD_LED);
+				m = NOTIF_METHOD_LED;
 				break;
 			case NOTIF_METHOD_LED:
-				setNotificationMethod(NOTIF_METHOD_RUMBLE);
+				m = NOTIF_METHOD_RUMBLE;
 				break;
 			case NOTIF_METHOD_RUMBLE:
-				setNotificationMethod(NOTIF_METHOD_NONE);
+				m = NOTIF_METHOD_NONE;
 				break;
 			case NOTIF_METHOD_NONE:
-				setNotificationMethod(NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED);
+				m = NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED;
 		}
 	}
+
+	setNotificationMethod(m);
 }
 
 static inline void switchRegion()
 {
+	MCPRegion reg:
+
 	if(vpad.trigger & VPAD_BUTTON_LEFT)
 	{
 		switch((int)getRegion())
 		{
 			case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
-				setRegion(MCP_REGION_JAPAN);
+				reg = MCP_REGION_JAPAN;
 				break;
 			case MCP_REGION_JAPAN:
-				setRegion(MCP_REGION_USA);
+				reg = MCP_REGION_USA;
 				break;
 			case MCP_REGION_USA:
-				setRegion(MCP_REGION_EUROPE);
+				reg = MCP_REGION_EUROPE;
 				break;
 			case MCP_REGION_EUROPE:
-				setRegion(MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN);
+				reg = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN);
 		}
 	}
 	else
@@ -128,18 +134,20 @@ static inline void switchRegion()
 		switch((int)getRegion())
 		{
 			case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
-				setRegion(MCP_REGION_EUROPE);
+				reg = MCP_REGION_EUROPE;
 				break;
 			case MCP_REGION_EUROPE:
-				setRegion(MCP_REGION_USA);
+				reg = MCP_REGION_USA;
 				break;
 			case MCP_REGION_USA:
-				setRegion(MCP_REGION_JAPAN);
+				reg = MCP_REGION_JAPAN;
 				break;
 			case MCP_REGION_JAPAN:
-				setRegion(MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN);
+				reg = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN;
 		}
 	}
+
+	setRegion(reg);
 }
 
 void configMenu()
