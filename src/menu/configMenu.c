@@ -43,11 +43,11 @@ static void drawConfigMenu()
 	int i = -1;
 
 	strcpy(toScreen, "Online updates: ");
-	strcat(toScreen, updateCheckEnabled() ? "< disabled >" : "< enabled >");
+	strcat(toScreen, updateCheckEnabled() ? "Enabled" : "Disabled");
 	textToFrame(++i, 4, toScreen);
 
 	strcpy(toScreen, "Auto resume failed downloads: ");
-	strcat(toScreen, autoResumeEnabled() ? "< disabled >" : "< enabled >");
+	strcat(toScreen, autoResumeEnabled() ? "Enabled" : "Disabled");
 	textToFrame(++i, 4, toScreen);
 
 	strcpy(toScreen, "Notification method: ");
