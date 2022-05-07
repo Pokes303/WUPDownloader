@@ -40,11 +40,11 @@ static void drawConfigMenu()
 {
 	startNewFrame();
 	char *toScreen = getToFrameBuffer();
-	int i = -1;
+	int i = 0;
 
 	strcpy(toScreen, "Online updates: ");
 	strcat(toScreen, updateCheckEnabled() ? "Enabled" : "Disabled");
-	textToFrame(++i, 4, toScreen);
+	textToFrame(i, 4, toScreen);
 
 	strcpy(toScreen, "Auto resume failed downloads: ");
 	strcat(toScreen, autoResumeEnabled() ? "Enabled" : "Disabled");
@@ -58,8 +58,9 @@ static void drawConfigMenu()
 	strcat(toScreen, getFormattedRegion(getRegion()));
 	textToFrame(++i, 4, toScreen);
 	
-	lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
-	textToFrame(MAX_LINES - 1, 0, "Press " BUTTON_B " to go back");
+	i = MAX_LINES - 2;
+	lineToFrame(i, SCREEN_COLOR_WHITE);
+	textToFrame(++i, 0, "Press " BUTTON_B " to go back");
 
 	arrowToFrame(cursorPos, 0);
 
