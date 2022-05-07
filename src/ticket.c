@@ -288,12 +288,9 @@ void generateFakeTicket()
 				strcpy(ptr, ".tik");
 
 				const TitleEntry *entry = getTitleEntryByTid(tid);
+				const TitleEntry te = { .name = "UNKNOWN", tid = tid, .region = MCP_REGION_UNKNOWN, .key = 99 };
 				if(entry == NULL)
-				{
-					TitleEntry *te = getStaticTitleEntry();
-					te->tid = tid;
-					entry = te;
-				}
+					entry = &te;
 
 				generateTik(tikPath, entry);
 

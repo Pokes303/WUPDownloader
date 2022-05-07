@@ -56,7 +56,7 @@ typedef enum
 typedef struct WUT_PACKED
 {
 	const char *name;
-	uint64_t tid;
+	const uint64_t tid;
 	const MCPRegion region;
 	const TITLE_KEY key;
 } TitleEntry;

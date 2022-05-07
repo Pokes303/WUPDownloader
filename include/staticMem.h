@@ -38,7 +38,6 @@ char *getStaticScreenBuffer();
 char *getStaticLineBuffer();
 char *getStaticPathBuffer(uint32_t i);
 ACPMetaXml *getStaticMetaXmlBuffer();
-TitleEntry *getStaticTitleEntry();
 
 #ifdef __cplusplus
 	}

@@ -50,12 +50,9 @@ bool downloadMenu()
 	hexToByte(titleID, (uint8_t *)&tid);
 	
 	const TitleEntry *entry = getTitleEntryByTid(tid);
+	const TitleEntry e = { .name = "UNKNOWN", .tid = tid, .region = MCP_REGION_UNKNOWN, .key = 99 };
 	if(entry == NULL)
-	{
-		TitleEntry *staticEntry = getStaticTitleEntry();
-		staticEntry->tid = tid;
-		entry = staticEntry;
-	}
+		entry = &e;
 	
 	predownloadMenu(entry);
 	return true;

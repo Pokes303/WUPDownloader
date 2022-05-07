@@ -33,7 +33,6 @@ static char staticMemToFrameBuffer[TO_FRAME_BUFFER_SIZE];
 static char staticMemLineBuffer[TO_FRAME_BUFFER_SIZE];
 static char staticMemPathBuffer[3][PATH_MAX];
 static ACPMetaXml *staticMeta = NULL;
-static TitleEntry staticTitleEntry = { .name = "UNKNOWN", .region = MCP_REGION_UNKNOWN, .key = 99 };
 
 bool initStaticMem()
 {
@@ -68,9 +67,4 @@ char *getStaticPathBuffer(uint32_t i)
 ACPMetaXml *getStaticMetaXmlBuffer()
 {
 	return staticMeta;
-}
-
-TitleEntry *getStaticTitleEntry()
-{
-	return &staticTitleEntry;
 }
