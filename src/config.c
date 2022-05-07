@@ -337,7 +337,7 @@ bool saveConfig(bool force)
 	}
 
 	value = json_string(getNotificationString(getNotificationMethod()));
-	if(value == NULL || json_object_set(config, "Nofit method", value))
+	if(value == NULL || json_object_set(config, "Notification method", value))
 	{
 		json_decref(config);
 		return false;
