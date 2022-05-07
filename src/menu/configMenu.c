@@ -33,34 +33,33 @@
 
 #include <coreinit/mcp.h>
 
-static int cursorPos = 0;
 #define ENTRY_COUNT 3
+
+static int cursorPos = 0;
 
 static void drawConfigMenu()
 {
 	startNewFrame();
 	char *toScreen = getToFrameBuffer();
-	int i = 0;
 
 	strcpy(toScreen, "Online updates: ");
 	strcat(toScreen, updateCheckEnabled() ? "Enabled" : "Disabled");
-	textToFrame(i, 4, toScreen);
+	textToFrame(0, 4, toScreen);
 
 	strcpy(toScreen, "Auto resume failed downloads: ");
 	strcat(toScreen, autoResumeEnabled() ? "Enabled" : "Disabled");
-	textToFrame(++i, 4, toScreen);
+	textToFrame(1, 4, toScreen);
 
 	strcpy(toScreen, "Notification method: ");
 	strcat(toScreen, getNotificationString(getNotificationMethod()));
-	textToFrame(++i, 4, toScreen);
+	textToFrame(2, 4, toScreen);
 
 	strcpy(toScreen, "Region: ");
 	strcat(toScreen, getFormattedRegion(getRegion()));
-	textToFrame(++i, 4, toScreen);
+	textToFrame(3, 4, toScreen);
 	
-	i = MAX_LINES - 2;
-	lineToFrame(i, SCREEN_COLOR_WHITE);
-	textToFrame(++i, 0, "Press " BUTTON_B " to go back");
+	lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
+	textToFrame(MAX_LINES - 1, 0, "Press " BUTTON_B " to go back");
 
 	arrowToFrame(cursorPos, 0);
 
