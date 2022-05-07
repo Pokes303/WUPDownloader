@@ -17,8 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_TITLES_H
-#define NUSSPLI_TITLES_H
+#pragma once
 
 #include <wut-fixups.h>
 
@@ -85,5 +84,3 @@ static inline bool isDemo(const TitleEntry *entry)
 #ifdef __cplusplus
 	}
 #endif
-
-#endif // ifndef NUSSPLI_TITLES_H

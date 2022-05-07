@@ -17,8 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_THREAD_H
-#define NUSSPLI_THREAD_H
+#pragma once
 
 #include <wut-fixups.h>
 
@@ -98,5 +97,3 @@ OSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksi
 #ifdef __cplusplus
     }
 #endif
-
-#endif // NUSSPLI_THREAD_H

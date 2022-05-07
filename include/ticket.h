@@ -18,8 +18,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_TICKET_H
-#define NUSSPLI_TICKET_H
+#pragma once
 
 #include <wut-fixups.h>
 
@@ -39,5 +38,3 @@ void generateFakeTicket();
 #ifdef __cplusplus
 	}
 #endif
-
-#endif // ifndef NUSSPLI_TICKET_H

@@ -17,8 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
  
-#ifndef NUSSPLI_ROMFS_H
-#define NUSSPLI_ROMFS_H
+#pragma once
 
 #include <wut-fixups.h>
 
@@ -27,5 +26,3 @@
 #else
 #define ROMFS_PATH "fs:/vol/content/"
 #endif
-
-#endif // ifndef NUSSPLI_ROMFS_H

@@ -17,8 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_DEINSTALLER_H
-#define NUSSPLI_DEINSTALLER_H
+#pragma once
 
 #include <wut-fixups.h>
 
@@ -37,5 +36,3 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx);
 #ifdef __cplusplus
 	}
 #endif
-
-#endif // ifndef NUSSPLI_DEINSTALLER_H

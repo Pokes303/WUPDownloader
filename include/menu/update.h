@@ -17,8 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_MENU_UPDATE_H
-#define NUSSPLI_MENU_UPDATE_H
+#pragma once
 
 #include <wut-fixups.h>
 
@@ -31,5 +30,3 @@ bool updateMenu(char *newVersion);
 #ifdef __cplusplus
 	}
 #endif
-
-#endif // ifndef NUSSPLI_MENU_UPDATE_H

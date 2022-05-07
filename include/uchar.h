@@ -20,8 +20,7 @@
 // This is a uchar.h implementation as required by C11.
 // It's missing in newlib as newlib is ANSI C only.
 
-#ifndef UCHAR_H
-#define UCHAR_H
+#pragma once
 
 #ifndef __cplusplus
 	#include <wut-fixups.h>
@@ -38,5 +37,3 @@
 	size_t mbrtoc32(char32_t *out, const char *in, size_t size, mbstate_t *mbs);
 	size_t c32rtomb(char *out, char32_t in, mbstate_t *mbs);
 #endif // ifndef __cplusplus
-
-#endif // ifndef UCHAR_H

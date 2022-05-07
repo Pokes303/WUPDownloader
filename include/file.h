@@ -18,8 +18,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_FILE_H
-#define NUSSPLI_FILE_H
+#pragma once
 
 #include <wut-fixups.h>
 
@@ -77,5 +76,3 @@ size_t getFilesize(FILE *fp);
 #ifdef __cplusplus
 	}
 #endif
-
-#endif // ifndef NUSSPLI_FILE_H

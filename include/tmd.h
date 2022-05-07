@@ -17,8 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_TMD_H
-#define NUSSPLI_TMD_H
+#pragma once
 
 #include <wut-fixups.h>
 
@@ -105,5 +104,3 @@ WUT_CHECK_SIZE(TMD, 0x1704);
 #ifdef __cplusplus
 }
 #endif
-
-#endif // ifndef NUSSPLI_TMD_H

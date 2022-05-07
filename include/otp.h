@@ -17,8 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_OTP_H
-#define NUSSPLI_OTP_H
+#pragma once
 
 #include <wut-fixups.h>
 
@@ -31,5 +30,3 @@ uint8_t *getCommonKey();
 #ifdef __cplusplus
 	}
 #endif
-
-#endif // ifndef NUSSPLI_OTPH

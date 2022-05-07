@@ -18,12 +18,9 @@
  ***************************************************************************/
 
 
-#ifndef NUSSPLI_MESSAGES_H
-#define NUSSPLI_MESSAGES_H
+#pragma once
 
 #include <wut-fixups.h>
 
 #define NUSSPLI_MESSAGE_NONE NULL
 #define NUSSPLI_MESSAGE_EXIT ((void *)0xDEADBABE)
-
-#endif // NUSSPLI_MESSAGES_H

@@ -17,8 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_INSTALLER_H
-#define NUSSPLI_INSTALLER_H
+#pragma once
 
 #include <wut-fixups.h>
 
@@ -35,5 +34,3 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 #ifdef __cplusplus
 	}
 #endif
-
-#endif // ifndef NUSSPLI_INSTALLER_H

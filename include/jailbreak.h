@@ -19,8 +19,7 @@
 
 #ifdef NUSSPLI_HBL
 
-#ifndef NUSSPLI_HBL_H
-#define NUSSPLI_HBL_H
+#pragma once
 
 #include <wut-fixups.h>
 
@@ -35,7 +34,5 @@ bool jailbreak();
 #ifdef __cplusplus
 	}
 #endif
-
-#endif // ifndef NUSSPLI_HBL_H
 
 #endif // ifdef NUSSPLI_HB

@@ -17,8 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_SANITY_H
-#define NUSSPLI_SANITY_H
+#pragma once
 
 #include <wut-fixups.h>
 
@@ -29,5 +28,3 @@
 #else
     bool sanityCheck();
 #endif
-
-#endif // NUSSPLI_SANITY_H

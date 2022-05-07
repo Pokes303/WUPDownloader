@@ -17,8 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_SWKBD_MAPPER_H
-#define NUSSPLI_SWKBD_MAPPER_H
+#pragma once
 
 #include <wut-fixups.h>
 
@@ -208,5 +207,3 @@ bool Swkbd_IsReady();
 #ifdef __cplusplus
 	}
 #endif
-
-#endif // ifndef ifndef NUSSPLI_SWKBD_MAPPER_H

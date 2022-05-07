@@ -17,8 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_OSDEFS_H
-#define NUSSPLI_OSDEFS_H
+#pragma once
 
 #include <wut-fixups.h>
 #include <wut_structsize.h>
@@ -38,7 +37,7 @@
 extern ACPResult ACPGetTitleMetaXmlByTitleListType(MCPTitleListType *titleListType, ACPMetaXml *out);
 
 // ACT
-uint32_t GetPersistentId(void)
+uint32_t GetPersistentId()
 	asm("GetPersistentId__Q2_2nn3actFv");
 
 
@@ -93,5 +92,3 @@ extern IOSError UCReadSysConfig(IOSHandle handle, size_t count, UCSysConfig *set
 #ifdef __cplusplus
 	}
 #endif
-
-#endif // ifndef NUSSPLI_OSDEFS_H

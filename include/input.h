@@ -18,8 +18,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_INPUT_H
-#define NUSSPLI_INPUT_H
+#pragma once
 
 #include <wut-fixups.h>
 
@@ -90,5 +89,3 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 #ifdef __cplusplus
 	}
 #endif
-
-#endif //ifndef NUSSPLI_INPUT_H

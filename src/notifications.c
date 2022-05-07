@@ -77,9 +77,9 @@ static int rumbleThreadMain(int argc, const char **argv)
 bool initNotifications()
 {
 	pId = GetPersistentId();
-    OSInitMessageQueueEx(&rumble_queue, rumble_msg, RUMBLE_QUEUE_SIZE, "NUSspli rumble queue");
-    rumbleThread = startThread("NUSspli Rumble", THREAD_PRIORITY_LOW, RUMBLE_STACK_SIZE, rumbleThreadMain, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_ANY);
-    return rumbleThread != NULL;
+	OSInitMessageQueueEx(&rumble_queue, rumble_msg, RUMBLE_QUEUE_SIZE, "NUSspli rumble queue");
+	rumbleThread = startThread("NUSspli Rumble", THREAD_PRIORITY_LOW, RUMBLE_STACK_SIZE, rumbleThreadMain, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_ANY);
+	return rumbleThread != NULL;
 }
 
 void deinitNotifications()

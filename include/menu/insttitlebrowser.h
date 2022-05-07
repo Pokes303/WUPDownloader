@@ -17,11 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_MENU_ITITLEBROWSER_H
-#define NUSSPLI_MENU_ITITLEBROWSER_H
+#pragma once
 
 #include <wut-fixups.h>
 
 void ititleBrowserMenu();
-
-#endif // ifndef NUSSPLI_MENU_ITITLEBROWSER_H

@@ -20,8 +20,7 @@
 // This is to fix some WUT bugs.
 // Inclde it in every other source and header files and DO NOT GUARD IT with ifdefs!
 
-#ifndef NUSSPLI_WUT_FIXUPS_H
-#define NUSSPLI_WUT_FIXUPS_H
+#pragma once
 
 //#ifndef FD_SETSIZE
 #define FD_SETSIZE 32
@@ -38,5 +37,3 @@ void __attribute__((weak))__fini_wut_socket();
 #ifdef __cplusplus
 	}
 #endif
-
-#endif // NUSSPLI_WUT_FIXUPS_H

@@ -17,8 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_RENDERER_H
-#define NUSSPLI_RENDERER_H
+#pragma once
 
 #include <wut-fixups.h>
 
@@ -105,5 +104,3 @@ uint32_t getSpaceWidth();
 //#define startNewFrame					colorStartNewFrame(SCREEN_COLOR_BLUE)
 #define textToFrame(line, column, str)	textToFrameCut(line, column, str, 0)
 #define getToFrameBuffer()				getStaticScreenBuffer()
-
-#endif // ifndef NUSSPLI_RENDERER_H

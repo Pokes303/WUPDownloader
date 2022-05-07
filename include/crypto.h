@@ -17,8 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#ifndef NUSSPLI_CRYPTO_H
-#define NUSSPLI_CRYPTO_H
+#pragma once
 
 #include <wut-fixups.h>
 
@@ -39,5 +38,3 @@ int osslBytes(unsigned char *buf, int num);
 #ifdef __cplusplus
 	}
 #endif
-
-#endif // NUSSPLI_CRYPTO_H
