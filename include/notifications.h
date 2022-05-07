@@ -26,9 +26,10 @@
 	extern "C" {
 #endif
 
-bool initRumble();
-void deinitRumble();
-void startRumble();
+bool initNotifications();
+void deinitNotifications();
+void startNotification();
+void stopNotification();
 
 #ifdef __cplusplus
 	}

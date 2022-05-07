@@ -30,7 +30,6 @@
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
-#include <nn/acp/drcled_c.h>
 
 #include <crypto.h>
 #include <deinstaller.h>
@@ -38,10 +37,9 @@
 #include <filesystem.h>
 #include <input.h>
 #include <ioQueue.h>
-#include <led.h>
+#include <notifications.h>
 #include <osdefs.h>
 #include <renderer.h>
-#include <rumbleThread.h>
 #include <state.h>
 #include <utils.h>
 #include <menu/utils.h>
@@ -89,9 +87,8 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx)
 	if(channelHaxx)
 		return true;
 
-	startLED();
 	enableShutdown();
-	startRumble();
+	startNotification();
 
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 	textToFrame(0, 0, name);
@@ -118,6 +115,6 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx)
 			break;
 	}
 
-	stopLED();
+	stopNotification();
 	return true;
 }

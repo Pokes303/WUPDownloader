@@ -27,10 +27,9 @@
 #include <input.h>
 #include <installer.h>
 #include <ioQueue.h>
-#include <led.h>
+#include <notifications.h>
 #include <osdefs.h>
 #include <renderer.h>
-#include <rumbleThread.h>
 #include <state.h>
 #include <utils.h>
 #include <menu/update.h>
@@ -42,7 +41,6 @@
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
-#include <nn/acp/drcled_c.h>
 
 #include <unzip.h>
 
@@ -408,8 +406,7 @@ aromaInstallation:
 finishUpdate:
 		removeDirectory(UPDATE_TEMP_FOLDER);
 		enableShutdown();
-		startLED();
-		startRumble();
+		startNotification();
 		colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 		textToFrame(0, 0, "Update");
 		textToFrame(1, 0, "Installed successfully!");
@@ -435,7 +432,7 @@ finishUpdate:
 				break;;
 		}
 
-		stopLED();
+		stopNotification();
 	}
 	return;
 

@@ -1,6 +1,7 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
  * Copyright (c) 2020-2022 V10lator <v10lator@myway.de>                    *
+ * Copyright (c) 2022 Xpl0itU <DaThinkingChair@protonmail.com>             *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
@@ -21,9 +22,8 @@
 
 #include <stdlib.h>
 
-#include <coreinit/memdefaultheap.h>
 #include <coreinit/messagequeue.h>
-#include <coreinit/thread.h>
+#include <nn/acp/drcled_c.h>
 #include <padscore/wpad.h>
 #include <vpad/input.h>
 
@@ -33,13 +33,16 @@
 #include <thread.h>
 #include <utils.h>
 
-#define RUMBLE_STACK_SIZE 0x400
-#define RUMBLE_QUEUE_SIZE 2
+#define RUMBLE_STACK_SIZE	0x400
+#define RUMBLE_QUEUE_SIZE	2
+#define LED_ON				1
+#define LED_OFF				0
 
 static OSThread *rumbleThread;
 static const uint8_t pattern[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 static OSMessageQueue rumble_queue;
 static OSMessage rumble_msg[2];
+static uint32_t pId;
 
 static int rumbleThreadMain(int argc, const char **argv)
 {
@@ -71,14 +74,15 @@ static int rumbleThreadMain(int argc, const char **argv)
 	return 0;
 }
 
-bool initRumble()
+bool initNotifications()
 {
+	pId = GetPersistentId();
     OSInitMessageQueueEx(&rumble_queue, rumble_msg, RUMBLE_QUEUE_SIZE, "NUSspli rumble queue");
     rumbleThread = startThread("NUSspli Rumble", THREAD_PRIORITY_LOW, RUMBLE_STACK_SIZE, rumbleThreadMain, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_ANY);
     return rumbleThread != NULL;
 }
 
-void deinitRumble()
+void deinitNotifications()
 {
 	if(rumbleThread != NULL)
 	{
@@ -88,11 +92,19 @@ void deinitRumble()
 	}
 }
 
-void startRumble()
+void startNotification()
 {
 	if(getNewsMethod() & NEWS_METHOD_RUMBLE)
 	{
 		OSMessage msg = { .message = NUSSPLI_MESSAGE_NONE };
 		OSSendMessage(&rumble_queue, &msg, OS_MESSAGE_FLAGS_NONE);
 	}
+	if(getNewsMethod() & NEWS_METHOD_LED)
+		ACPTurnOnDrcLed(pId, LED_ON);
+}
+
+void stopNotification()
+{
+	if(getNewsMethod() & NEWS_METHOD_LED)
+		ACPTurnOnDrcLed(pId, LED_OFF);
 }

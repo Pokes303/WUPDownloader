@@ -37,12 +37,11 @@
 #include <input.h>
 #include <installer.h>
 #include <ioQueue.h>
-#include <led.h>
 #include <menu/utils.h>
+#include <notifications.h>
 #include <osdefs.h>
 #include <renderer.h>
 #include <romfs.h>
-#include <rumbleThread.h>
 #include <staticMem.h>
 #include <state.h>
 #include <thread.h>
@@ -57,7 +56,6 @@
 #include <coreinit/time.h>
 #include <curl/curl.h>
 #include <nn/ac/ac_c.h>
-#include <nn/acp/drcled_c.h>
 #include <nn/result.h>
 #include <nsysnet/_socket.h>
 
@@ -1248,8 +1246,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	writeScreenLog(2);
 	drawFrame();
 
-	startLED();
-	startRumble();
+	startNotification();
 	enableApd();
 
 	while(AppRunning())
@@ -1271,7 +1268,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 			break;
 	}
 
-	stopLED();
+	stopNotification();
 	return true;
 }
 

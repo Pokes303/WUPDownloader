@@ -30,12 +30,11 @@
 #include <iosuhaxx.h>
 #include <ioQueue.h>
 #include <jailbreak.h>
-#include <led.h>
+#include <notifications.h>
 #include <osdefs.h>
 #include <otp.h>
 #include <renderer.h>
 #include <romfs-wiiu.h>
-#include <rumbleThread.h>
 #include <sanity.h>
 #include <staticMem.h>
 #include <state.h>
@@ -137,14 +136,13 @@ static void innerMain(bool validCfw)
 							addToScreenLog("MCP initialized!");
 
 							startNewFrame();
-							textToFrame(0, 0, "Initializing rumble...");
+							textToFrame(0, 0, "Initializing notification system...");
 							writeScreenLog(1);
 							drawFrame();
 
-							if(initRumble())
+							if(initNotifications())
 							{
-								initLED();
-								addToScreenLog("Rumble initialized!");
+								addToScreenLog("Notification system initialized!");
 
 								startNewFrame();
 								textToFrame(0, 0, "Loading downloader...");
@@ -223,8 +221,8 @@ static void innerMain(bool validCfw)
 								else
 									lerr = "Couldn't initialize downloader!";
 
-								deinitRumble();
-								debugPrintf("Rumble closed");
+								deinitNotifications();
+								debugPrintf("Notification system closed");
 							}
 							else
 								lerr = "Couldn't initialize rumble!";
