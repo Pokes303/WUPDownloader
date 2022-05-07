@@ -64,7 +64,7 @@
 
 #define NEWS_RUMBLE	"Rumble"
 #define NEWS_LED	"LED"
-#define NEWS_BOTH	"Both"
+#define NEWS_BOTH	"Rumble + LED"
 #define NEWS_NONE	"None"
 
 static bool changed = false;
@@ -266,7 +266,7 @@ char *getLanguageString(Swkbd_LanguageType language)
 	}
 }
 
-static inline const char *getNewsString(NEWS_METHOD method)
+const char *getNewsString(NEWS_METHOD method)
 {
 	switch((int)method)
 	{

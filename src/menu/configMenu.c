@@ -42,17 +42,22 @@ static void drawConfigMenu()
 	strcat(toScreen, updateCheckEnabled() ? "disable" : "enable");
 	strcat(toScreen, " online updates");
 	textToFrame(++i, 0, toScreen);
-	
+
 	strcpy(toScreen, "Press " BUTTON_X " to ");
 	strcat(toScreen, autoResumeEnabled() ? "disable" : "enable");
 	strcat(toScreen, " auto resuming of failed downloads");
 	textToFrame(++i, 0, toScreen);
-	
+
+	strcpy(toScreen, "Press " BUTTON_Y " to change news announcement method (currently ");
+	strcat(toScreen, getNewsString(getNewsMethod()));
+	strcat(toScreen, ")");
+	textToFrame(++i, 0, toScreen);
+
 	strcpy(toScreen, "Press " BUTTON_LEFT_RIGHT " to change the region (currently ");
 	strcat(toScreen, getFormattedRegion(getRegion()));
 	strcat(toScreen, ")");
 	textToFrame(++i, 0, toScreen);
-	
+
 	textToFrame(i + 2, 0, "Press " BUTTON_B " to go back");
 	drawFrame();
 }
@@ -79,6 +84,24 @@ void configMenu()
 		if(vpad.trigger & VPAD_BUTTON_X)
 		{
 			setAutoResume(!autoResumeEnabled());
+			redraw = true;
+		}
+		if(vpad.trigger & VPAD_BUTTON_Y)
+		{
+			switch((int)getNewsMethod())
+			{
+				case NEWS_METHOD_RUMBLE | NEWS_METHOD_LED:
+					setNewsMethod(NEWS_METHOD_NONE);
+					break;
+				case NEWS_METHOD_NONE:
+					setNewsMethod(NEWS_METHOD_RUMBLE);
+					break;
+				case NEWS_METHOD_RUMBLE:
+					setNewsMethod(NEWS_METHOD_LED);
+					break;
+				case NEWS_METHOD_LED:
+					setNewsMethod(NEWS_METHOD_RUMBLE | NEWS_METHOD_LED);
+			}
 			redraw = true;
 		}
 		if(vpad.trigger & VPAD_BUTTON_LEFT)
