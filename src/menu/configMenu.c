@@ -33,8 +33,8 @@
 
 #include <coreinit/mcp.h>
 
-int cursorPos = 0;
-const int entryCount = 3;
+static int cursorPos = 0;
+#define ENTRY_COUNT 3
 
 static void drawConfigMenu()
 {
@@ -184,13 +184,13 @@ void configMenu()
 		{
 			--cursorPos;
 			if(cursorPos < 0)
-				cursorPos = entryCount - 1;
+				cursorPos = ENTRY_COUNT - 1;
 			redraw = true;
 		}
 		else if(vpad.trigger & VPAD_BUTTON_DOWN)
 		{
 			++cursorPos;
-			if(cursorPos > entryCount)
+			if(cursorPos > ENTRY_COUNT)
 				cursorPos = 0;
 			redraw = true;
 		}
