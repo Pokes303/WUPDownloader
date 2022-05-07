@@ -56,7 +56,7 @@ void setRegion(MCPRegion region);
 char *getFormattedRegion(MCPRegion region);
 void setKeyboardLanguage(Swkbd_LanguageType language);
 char *getLanguageString(Swkbd_LanguageType language);
-const char *getNewsString(NEWS_METHOD method):
+const char *getNewsString(NEWS_METHOD method);
 bool dlToUSBenabled();
 void setDlToUSB(bool toUSB);
 NEWS_METHOD getNewsMethod();
