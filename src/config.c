@@ -295,59 +295,101 @@ bool saveConfig(bool force)
 		return false;
 	
 	json_t *value = json_integer(CONFIG_VERSION);
-	if(value == NULL || json_object_set(config, "File Version", value))
+	if(value == NULL)
 	{
 		json_decref(config);
+		return false;
+	}
+	if(json_object_set(config, "File Version", value))
+	{
+		json_decref(config);
+		json_decref(value);
 		return false;
 	}
 
 	value = checkForUpdates ? json_true() : json_false();
-	if(value == NULL || json_object_set(config, "Check for updates", value))
+	if(value == NULL)
 	{
 		json_decref(config);
+		return false;
+	}
+	if(json_object_set(config, "Check for updates", value))
+	{
+		json_decref(config);
+		json_decref(value);
 		return false;
 	}
 	
 	value = autoResume ? json_true() : json_false();
-	if(value == NULL || json_object_set(config, "Auto resume failed downloads", value))
+	if(value == NULL)
 	{
 		json_decref(config);
+		return false;
+	}
+	if(json_object_set(config, "Auto resume failed downloads", value))
+	{
+		json_decref(config);
+		json_decref(value);
 		return false;
 	}
 	
 	value = json_string(getLanguageString(lang));
-	if(value == NULL || json_object_set(config, "Language", value))
+	if(value == NULL)
 	{
 		json_decref(config);
+		return false;
+	}
+	if(json_object_set(config, "Language", value))
+	{
+		json_decref(config);
+		json_decref(value);
 		return false;
 	}
 
 	value = json_string(getFormattedRegion(getRegion()));
-	if(value == NULL || json_object_set(config, "Region", value))
+	if(value == NULL)
 	{
 		json_decref(config);
+		return false;
+	}
+	if(json_object_set(config, "Region", value))
+	{
+		json_decref(config);
+		json_decref(value);
 		return false;
 	}
 	
 	value = dlToUSB ? json_true() : json_false();
-	if(value == NULL || json_object_set(config, "Download to USB", value))
+	if(value == NULL)
 	{
 		json_decref(config);
 		return false;
 	}
-
-	value = json_string(getNotificationString(getNotificationMethod()));
-	if(value == NULL || json_object_set(config, "Notification method", value))
+	if(json_object_set(config, "Download to USB", value))
 	{
 		json_decref(config);
+		json_decref(value);
+		return false;
+	}
+
+	value = json_string(getNotificationString(getNotificationMethod()));
+	if(value == NULL)
+	{
+		json_decref(config);
+		return false;
+	}
+	if(json_object_set(config, "Notification method", value))
+	{
+		json_decref(config);
+		json_decref(value);
 		return false;
 	}
 
 	uint32_t entropy;
 	osslBytes((unsigned char *)&entropy, 4);
 	value = json_integer(entropy);
-	if(value != NULL)
-		json_object_set(config, "Seed", value);
+	if(value != NULL && json_object_set(config, "Seed", value))
+		json_decref(value);
 
 	char *json = json_dumps(config, JSON_INDENT(4));
 	json_decref(config);
