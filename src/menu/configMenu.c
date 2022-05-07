@@ -65,6 +65,82 @@ static void drawConfigMenu()
 	drawFrame();
 }
 
+static inline void switchNotificationMethod()
+{
+	if(vpad.trigger & VPAD_BUTTON_LEFT)
+	{
+		switch((int)getNotificationMethod())
+		{
+			case NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED:
+				setNotificationMethod(NOTIF_METHOD_NONE);
+				break;
+			case NOTIF_METHOD_NONE:
+				setNotificationMethod(NOTIF_METHOD_RUMBLE);
+				break;
+			case NOTIF_METHOD_RUMBLE:
+				setNotificationMethod(NOTIF_METHOD_LED);
+				break;
+			case NOTIF_METHOD_LED:
+				setNotificationMethod(NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED);
+		}
+	}
+	else
+	{
+		switch((int)getNotificationMethod())
+		{
+			case NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED:
+				setNotificationMethod(NOTIF_METHOD_LED);
+				break;
+			case NOTIF_METHOD_LED:
+				setNotificationMethod(NOTIF_METHOD_RUMBLE);
+				break;
+			case NOTIF_METHOD_RUMBLE:
+				setNotificationMethod(NOTIF_METHOD_NONE);
+				break;
+			case NOTIF_METHOD_NONE:
+				setNotificationMethod(NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED);
+		}
+	}
+}
+
+static inline void switchRegion()
+{
+	if(vpad.trigger & VPAD_BUTTON_LEFT)
+	{
+		switch((int)getRegion())
+		{
+			case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
+				setRegion(MCP_REGION_JAPAN);
+				break;
+			case MCP_REGION_JAPAN:
+				setRegion(MCP_REGION_USA);
+				break;
+			case MCP_REGION_USA:
+				setRegion(MCP_REGION_EUROPE);
+				break;
+			case MCP_REGION_EUROPE:
+				setRegion(MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN);
+		}
+	}
+	else
+	{
+		switch((int)getRegion())
+		{
+			case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
+				setRegion(MCP_REGION_EUROPE);
+				break;
+			case MCP_REGION_EUROPE:
+				setRegion(MCP_REGION_USA);
+				break;
+			case MCP_REGION_USA:
+				setRegion(MCP_REGION_JAPAN);
+				break;
+			case MCP_REGION_JAPAN:
+				setRegion(MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN);
+		}
+	}
+}
+
 void configMenu()
 {
 	drawConfigMenu();
@@ -78,100 +154,33 @@ void configMenu()
 			drawConfigMenu();
 		
 		showFrame();
-
-		switch(cursorPos) {
-			case 0:
-				if(vpad.trigger & VPAD_BUTTON_LEFT || vpad.trigger & VPAD_BUTTON_RIGHT || vpad.trigger & VPAD_BUTTON_A)
-				{
-					setUpdateCheck(!updateCheckEnabled());
-					redraw = true;
-				} break;
-			case 1:
-				if(vpad.trigger & VPAD_BUTTON_LEFT || vpad.trigger & VPAD_BUTTON_RIGHT || vpad.trigger & VPAD_BUTTON_A)
-				{
-					setAutoResume(!autoResumeEnabled());
-					redraw = true;
-				} break;
-			case 2:
-				if(vpad.trigger & VPAD_BUTTON_LEFT || vpad.trigger & VPAD_BUTTON_RIGHT || vpad.trigger & VPAD_BUTTON_A)
-				{
-					switch((int)getNotificationMethod())
-					{
-						case NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED:
-							setNotificationMethod(NOTIF_METHOD_NONE);
-							break;
-						case NOTIF_METHOD_NONE:
-							setNotificationMethod(NOTIF_METHOD_RUMBLE);
-							break;
-						case NOTIF_METHOD_RUMBLE:
-							setNotificationMethod(NOTIF_METHOD_LED);
-							break;
-						case NOTIF_METHOD_LED:
-							setNotificationMethod(NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED);
-					}
-					redraw = true;
-				} break;
-			case 3:
-				if(vpad.trigger & VPAD_BUTTON_LEFT)
-				{
-					switch((int)getRegion())
-					{
-						case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
-							setRegion(MCP_REGION_JAPAN);
-							break;
-						case MCP_REGION_JAPAN:
-							setRegion(MCP_REGION_USA);
-							break;
-						case MCP_REGION_USA:
-							setRegion(MCP_REGION_EUROPE);
-							break;
-						case MCP_REGION_EUROPE:
-							setRegion(MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN);
-					}
-					redraw = true;
-				}
-				else if(vpad.trigger & VPAD_BUTTON_RIGHT)
-				{
-					switch((int)getRegion())
-					{
-						case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
-							setRegion(MCP_REGION_EUROPE);
-							break;
-						case MCP_REGION_EUROPE:
-							setRegion(MCP_REGION_USA);
-							break;
-						case MCP_REGION_USA:
-							setRegion(MCP_REGION_JAPAN);
-							break;
-						case MCP_REGION_JAPAN:
-							setRegion(MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN);
-					}
-					redraw = true;
-				} break;
-		}
-		
 		if(vpad.trigger & VPAD_BUTTON_B)
 		{
 			saveConfig(false);
 			return;
 		}
 
-		if(vpad.trigger & VPAD_BUTTON_UP) 
+		if(vpad.trigger & (VPAD_BUTTON_RIGHT | VPAD_BUTTON_LEFT | VPAD_BUTTON_A))
 		{
-			--cursorPos;
-			if(cursorPos < 0)
-				cursorPos = entryCount - 1;
+			switch(cursorPos)
+			{
+				case 0:
+					setUpdateCheck(!updateCheckEnabled());
+					break;
+				case 1:
+					setAutoResume(!autoResumeEnabled());
+					break;
+				case 2:
+					switchNotificationMethod();
+					break;
+				case 3:
+					switchRegion();
+					break;
+			}
+
 			redraw = true;
 		}
-		
-		if(vpad.trigger & VPAD_BUTTON_DOWN) 
-		{
-			++cursorPos;
-			if(cursorPos > entryCount)
-				cursorPos = 0;
-			redraw = true;
-		}
-		
+
 		if(redraw)
 		{
 			drawConfigMenu();
