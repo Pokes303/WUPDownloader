@@ -180,6 +180,20 @@ void configMenu()
 
 			redraw = true;
 		}
+		else if(vpad.trigger & VPAD_BUTTON_UP)
+		{
+			--cursorPos;
+			if(cursorPos < 0)
+				cursorPos = entryCount - 1;
+			redraw = true;
+		}
+		else if(vpad.trigger & VPAD_BUTTON_DOWN)
+		{
+			++cursorPos;
+			if(cursorPos > entryCount)
+				cursorPos = 0;
+			redraw = true;
+		}
 
 		if(redraw)
 		{
