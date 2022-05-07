@@ -68,11 +68,11 @@ static void drawConfigMenu()
 
 static inline void switchNotificationMethod()
 {
-	NOTIF_METHOD m;
+	NOTIF_METHOD m = getNotificationMethod();
 
 	if(vpad.trigger & VPAD_BUTTON_LEFT)
 	{
-		switch((int)getNotificationMethod())
+		switch((int)m)
 		{
 			case NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED:
 				m = NOTIF_METHOD_NONE;
@@ -89,7 +89,7 @@ static inline void switchNotificationMethod()
 	}
 	else
 	{
-		switch((int)getNotificationMethod())
+		switch((int)m)
 		{
 			case NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED:
 				m = NOTIF_METHOD_LED;
@@ -110,11 +110,11 @@ static inline void switchNotificationMethod()
 
 static inline void switchRegion()
 {
-	MCPRegion reg;
+	MCPRegion reg = getRegion();
 
 	if(vpad.trigger & VPAD_BUTTON_LEFT)
 	{
-		switch((int)getRegion())
+		switch((int)reg)
 		{
 			case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
 				reg = MCP_REGION_JAPAN;
@@ -131,7 +131,7 @@ static inline void switchRegion()
 	}
 	else
 	{
-		switch((int)getRegion())
+		switch((int)reg)
 		{
 			case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
 				reg = MCP_REGION_EUROPE;
