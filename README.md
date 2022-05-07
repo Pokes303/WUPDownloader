@@ -27,7 +27,7 @@ To install the app, download and unzip the contents of the [latest release](http
 
 ### HBL
 - Move the folder to (SD:/wiiu/apps/).
-- Run the app from HBL through Haxchi, Browserhax or any exploit you want.
+- Run the app from HBL through Browserhax or any exploit you want.
 
 # Building
 - Use `docker build -t nussplibuilder .` to build the container
