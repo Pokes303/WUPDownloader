@@ -110,7 +110,7 @@ static inline void switchNotificationMethod()
 
 static inline void switchRegion()
 {
-	MCPRegion reg:
+	MCPRegion reg;
 
 	if(vpad.trigger & VPAD_BUTTON_LEFT)
 	{
@@ -126,7 +126,7 @@ static inline void switchRegion()
 				reg = MCP_REGION_EUROPE;
 				break;
 			case MCP_REGION_EUROPE:
-				reg = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN);
+				reg = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN;
 		}
 	}
 	else
