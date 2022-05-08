@@ -56,8 +56,6 @@ const TitleEntry *getTitleEntries(TITLE_CATEGORY cat);
 const TitleEntry *getTitleEntryByTid(uint64_t tid);
 const char *tid2name(const char *tid);
 bool name2tid(const char *name, char *out);
-bool initTitles();
-void clearTitles();
 
 static inline bool isGame(const TitleEntry *entry)
 {

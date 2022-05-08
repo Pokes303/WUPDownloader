@@ -106,39 +106,3 @@ bool name2tid(const char *name, char *out)
 
 	return false;
 }
-
-bool initTitles()
-{
-#ifdef NUSSPLI_DEBUG
-	const char *pre;
-	for(int i = 0; i < 5; ++i)
-	{
-		switch(i)
-		{
-			case TITLE_CATEGORY_GAME:
-				pre = "Games";
-				break;
-			case TITLE_CATEGORY_UPDATE:
-				pre = "Updates";
-				break;
-			case TITLE_CATEGORY_DLC:
-				pre = "DLC";
-				break;
-			case TITLE_CATEGORY_DEMO:
-				pre = "Demos";
-				break;
-			case TITLE_CATEGORY_ALL:
-				pre = "All";
-		}
-
-		debugPrintf("%s: %u", pre, getTitleEntriesSize(i));
-	}
-#endif
-	// STUB
-	return true;
-}
-
-void clearTitles()
-{
-	// STUB
-}

@@ -186,16 +186,10 @@ static void innerMain(bool validCfw)
 
 												if(!updateCheck())
 												{
-													initTitles();
-
 													checkStacks("main");
-
 													mainMenu(); // main loop
-
-													debugPrintf("Deinitializing libraries...");
-													clearTitles();
-
 													checkStacks("main");
+													debugPrintf("Deinitializing libraries...");
 												}
 
 												SWKBD_Shutdown();
