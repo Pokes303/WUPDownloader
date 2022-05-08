@@ -51,8 +51,9 @@
 
 #define SSAA            8
 #define MAX_OVERLAYS    8
+#define SCREEN_X		1280
+#define SCREEN_Y		720
 
-static const SDL_Point screen = { .x = 1280, .y = 720 };
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static FC_Font *font = NULL;
@@ -120,10 +121,10 @@ void textToFrameCut(int line, int column, const char *str, int maxWidth)
 	switch(column)
 	{
 		case ALIGNED_CENTER:
-			text.x = (screen.x >> 1) - (text.w >> 1);
+			text.x = (SCREEN_X >> 1) - (text.w >> 1);
 			break;
 		case ALIGNED_RIGHT:
-			text.x = screen.x - text.w - FONT_SIZE;
+			text.x = SCREEN_X - text.w - FONT_SIZE;
 			break;
 		default:
 			column *= spaceWidth;
@@ -144,7 +145,7 @@ void lineToFrame(int column, uint32_t color)
 	{
 		.x = FONT_SIZE,
 		.y = column + ((FONT_SIZE >> 1) - 1),
-		.w = screen.x - (FONT_SIZE << 1),
+		.w = SCREEN_X - (FONT_SIZE << 1),
 		.h = 3,
 	};
 
@@ -159,7 +160,7 @@ void boxToFrame(int lineStart, int lineEnd)
 		return;
 
 	int ty = ((++lineStart) * FONT_SIZE) + ((FONT_SIZE >> 1) - 1);
-	int tw = screen.x - (FONT_SIZE << 1);
+	int tw = SCREEN_X - (FONT_SIZE << 1);
 	SDL_Rect box =
 	{
 		.x = FONT_SIZE,
@@ -355,10 +356,14 @@ void tabToFrame(int line, int column, const char *label, bool active)
 	rect.y += 20;
 	rect.y -= FONT_SIZE >> 1;
 
-	SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_WHITE);
-	if(!active)
-		co.a = 159;
+	if(active)
+	{
+		FC_DrawBox(font, renderer, rect, label);
+		return;
+	}
 
+	SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_WHITE);
+	co.a = 159;
 	FC_DrawBoxColor(font, renderer, rect, co, label);
 }
 
@@ -382,7 +387,7 @@ int addErrorOverlay(const char *err)
 	if(w == 0 || h == 0)
 		return -4;
 
-	errorOverlay[i] = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, screen.x, screen.y);
+	errorOverlay[i] = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_X, SCREEN_Y);
 	if(errorOverlay[i] == NULL)
 		return -5;
 
@@ -393,8 +398,8 @@ int addErrorOverlay(const char *err)
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, 0xC0);
 	SDL_RenderClear(renderer);
 
-	int x = (screen.x >> 1) - (w >> 1);
-	int y = (screen.y >> 1) - (h >> 1);
+	int x = (SCREEN_X >> 1) - (w >> 1);
+	int y = (SCREEN_Y >> 1) - (h >> 1);
 
 	SDL_Rect text =
 	{
@@ -425,7 +430,7 @@ int addErrorOverlay(const char *err)
 	text2.y = y;
 	text2.w = w;
 	text2.h = h;
-	FC_DrawBoxColor(font, renderer, text2, screenColorToSDLcolor(SCREEN_COLOR_WHITE), err);
+	FC_DrawBox(font, renderer, text2, err);
 
 	SDL_SetRenderTarget(renderer, frameBuffer);
 	drawFrame();
@@ -444,7 +449,7 @@ void removeErrorOverlay(int id)
 	drawFrame();
 }
 
-static inline bool loadTexture(const char *path, SDL_Texture **out)
+static bool loadTexture(const char *path, SDL_Texture **out)
 {
 	SDL_Surface *surface = IMG_Load_RW(SDL_RWFromFile(path, "rb"), SDL_TRUE);
 	*out = SDL_CreateTextureFromSurface(renderer, surface);
@@ -463,7 +468,7 @@ void resumeRenderer()
 	font = FC_CreateFont();
 	if(font != NULL)
 	{
-		SDL_RWops *rw = SDL_RWFromMem(ttf, size);
+		SDL_RWops *rw = SDL_RWFromConstMem(ttf, size);
 		if(FC_LoadFont_RW(font, renderer, rw, 1, FONT_SIZE, screenColorToSDLcolor(SCREEN_COLOR_WHITE), TTF_STYLE_NORMAL))
 		{
 			FC_GlyphData spaceGlyph;
@@ -505,7 +510,7 @@ void resumeRenderer()
 			r.x = 0;
 			SDL_RenderFillRect(renderer, &r);
 
-			bgTex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, screen.x, screen.y);
+			bgTex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_X, SCREEN_Y);
 			SDL_SetRenderTarget(renderer, bgTex);
 			SDL_RenderCopy(renderer, tt, NULL, NULL);
 			SDL_DestroyTexture(tt);
@@ -612,13 +617,13 @@ bool initRenderer()
 	if(SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO) == 0)
 	{
 
-		window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screen.x, screen.y, 0);
+		window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_X, SCREEN_Y, 0);
 		if(window)
 		{
 			renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 			if(renderer)
 			{
-				frameBuffer = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, screen.x, screen.y);
+				frameBuffer = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_X, SCREEN_Y);
 				if(frameBuffer != NULL)
 				{
 					SDL_SetRenderTarget(renderer, frameBuffer);
@@ -637,7 +642,7 @@ bool initRenderer()
 								{
 									if(Mix_OpenAudio(22050, AUDIO_S16MSB, 2, 4096) == 0)
 									{
-										SDL_RWops *rw = SDL_RWFromConstMem(bgmBuffer, fs);
+										SDL_RWops *rw = SDL_RWFromMem(bgmBuffer, fs);
 										backgroundMusic = Mix_LoadWAV_RW(rw, true);
 										if(backgroundMusic != NULL)
 										{
@@ -739,8 +744,8 @@ void shutdownRenderer()
 
 	SDL_Rect bye;
 	SDL_QueryTexture(byeTex, NULL, NULL, &(bye.w), &(bye.h));
-	bye.x = (screen.x >> 1) - (bye.w >> 1);
-	bye.y = (screen.y >> 1) - (bye.h >> 1);
+	bye.x = (SCREEN_X >> 1) - (bye.w >> 1);
+	bye.y = (SCREEN_Y >> 1) - (bye.h >> 1);
 
 	SDL_RenderCopy(renderer, byeTex, NULL, &bye);
 	SDL_RenderPresent(renderer);
