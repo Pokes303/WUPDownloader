@@ -116,24 +116,23 @@ static void innerMain(bool validCfw)
 					addToScreenLog("OpenSSL initialized!");
 
 					startNewFrame();
-					textToFrame(0, 0, "Checking sanity...");
+					textToFrame(0, 0, "Loading MCP...");
 					writeScreenLog(1);
 					drawFrame();
 
 					mcpHandle = MCP_Open();
-					if(sanityCheck())
+					if(mcpHandle != 0)
 					{
-						addToScreenLog("Sanity checked!");
+						addToScreenLog("MCP initialized!");
 
 						startNewFrame();
-						textToFrame(0, 0, "Loading MCP...");
+						textToFrame(0, 0, "Checking sanity...");
 						writeScreenLog(1);
 						drawFrame();
 
-						mcpHandle = MCP_Open();
-						if(mcpHandle != 0)
+						if(sanityCheck())
 						{
-							addToScreenLog("MCP initialized!");
+							addToScreenLog("Sanity checked!");
 
 							startNewFrame();
 							textToFrame(0, 0, "Initializing notification system...");
@@ -225,16 +224,16 @@ static void innerMain(bool validCfw)
 								debugPrintf("Notification system closed");
 							}
 							else
-								lerr = "Couldn't initialize rumble!";
-
-							MCP_Close(mcpHandle);
-							debugPrintf("MCP closed");
+								lerr = "Couldn't initialize notification system!";
 						}
 						else
-							lerr = "Couldn't initialize MCP!";
+							lerr = "No support for rebrands, use original NUSspli!";
+
+						MCP_Close(mcpHandle);
+						debugPrintf("MCP closed");
 					}
 					else
-						lerr = "No support for rebrands, use original NUSspli!";
+						lerr = "Couldn't initialize MCP!";
 
 					deinitCrypto();
 					debugPrintf("OpenSSL closed");
