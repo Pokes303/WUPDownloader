@@ -14,9 +14,9 @@ RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
  apt-get -y install --no-install-recommends autoconf automake libtool openjdk-11-jre-headless && \
  apt-get clean && \
  rm -rf /var/lib/apt/lists/* /usr/share/man && \
- git clone https://github.com/devkitPro/wut && \
+ git clone -b customheap --single-branch https://github.com/GaryOderNichts/wut && \
  cd wut && \
- git checkout cd6b4fb45d054d53af92bc0b3685e8bd9f01445d && \
+ git checkout 741dbe68671ab5a3df64b19366590d5ec7b5eb0e && \
  make -j$(nproc) && \
  make install && \
  cd .. && \
