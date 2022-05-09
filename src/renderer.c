@@ -55,6 +55,12 @@
 #define SCREEN_Y		720
 #define SDL_RECTS		512
 
+typedef struct
+{
+	SDL_Texture *tex;
+	SDL_Rect rect[2];
+} ErrorOverlay;
+
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static FC_Font *font = NULL;
@@ -64,7 +70,7 @@ static Mix_Chunk *backgroundMusic = NULL;
 static int32_t spaceWidth;
 
 static SDL_Texture *frameBuffer;
-static SDL_Texture *errorOverlay[MAX_OVERLAYS];
+static ErrorOverlay errorOverlay[MAX_OVERLAYS];
 static SDL_Texture *arrowTex;
 static SDL_Texture *checkmarkTex;
 static SDL_Texture *tabTex;
@@ -391,7 +397,7 @@ int addErrorOverlay(const char *err)
 
 	int i = 0;
 	for( ; i < MAX_OVERLAYS + 1; ++i)
-		if(i < MAX_OVERLAYS && errorOverlay[i] == NULL)
+		if(i < MAX_OVERLAYS && errorOverlay[i].tex == NULL)
 			break;
 
 	if(i == MAX_OVERLAYS)
@@ -402,12 +408,12 @@ int addErrorOverlay(const char *err)
 	if(w == 0 || h == 0)
 		return -4;
 
-	errorOverlay[i] = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_X, SCREEN_Y);
-	if(errorOverlay[i] == NULL)
+	errorOverlay[i].tex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_X, SCREEN_Y);
+	if(errorOverlay[i].tex  == NULL)
 		return -5;
 
-	SDL_SetTextureBlendMode(errorOverlay[i], SDL_BLENDMODE_BLEND);
-	SDL_SetRenderTarget(renderer, errorOverlay[i]);
+	SDL_SetTextureBlendMode(errorOverlay[i].tex, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderTarget(renderer, errorOverlay[i].tex);
 
 	SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_BLACK);
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, 0xC0);
@@ -416,23 +422,21 @@ int addErrorOverlay(const char *err)
 	int x = (SCREEN_X >> 1) - (w >> 1);
 	int y = (SCREEN_Y >> 1) - (h >> 1);
 
-	curRect->x = x - (FONT_SIZE >> 1);
-	curRect->y = y - (FONT_SIZE >> 1);
-	curRect->w = w + FONT_SIZE;
-	curRect->h = h + FONT_SIZE;
+	errorOverlay[i].rect[0].x = x - (FONT_SIZE >> 1);
+	errorOverlay[i].rect[0].y = y - (FONT_SIZE >> 1);
+	errorOverlay[i].rect[0].w = w + FONT_SIZE;
+	errorOverlay[i].rect[0].h = h + FONT_SIZE;
 	co = screenColorToSDLcolor(SCREEN_COLOR_RED);
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
-	SDL_RenderFillRect(renderer, curRect);
-	++curRect;
+	SDL_RenderFillRect(renderer, errorOverlay[i].rect);
 
-	curRect->x = x - (FONT_SIZE >> 1) + 2;
-	curRect->y = y - (FONT_SIZE >> 1) + 2;
-	curRect->w = w + FONT_SIZE - 4;
-	curRect->h = h + FONT_SIZE - 4;
+	errorOverlay[i].rect[1].x = x - (FONT_SIZE >> 1) + 2;
+	errorOverlay[i].rect[1].y = y - (FONT_SIZE >> 1) + 2;
+	errorOverlay[i].rect[1].w = w + (FONT_SIZE - 4);
+	errorOverlay[i].rect[1].h = h + (FONT_SIZE - 4);
 	co = screenColorToSDLcolor(SCREEN_COLOR_D_RED);
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
-	SDL_RenderFillRect(renderer, curRect);
-	++curRect;
+	SDL_RenderFillRect(renderer, errorOverlay[i].rect + 1);
 
 	curRect->x = x;
 	curRect->y = y;
@@ -449,11 +453,11 @@ void removeErrorOverlay(int id)
 {
 	OSTick t = OSGetTick();
 	addEntropy(&t, sizeof(OSTick));
-	if(id < 0 || id >= MAX_OVERLAYS || errorOverlay[id] == NULL)
+	if(id < 0 || id >= MAX_OVERLAYS || errorOverlay[id].tex == NULL)
 		return;
 	
-	SDL_DestroyTexture(errorOverlay[id]);
-	errorOverlay[id] = NULL;
+	SDL_DestroyTexture(errorOverlay[id].tex);
+	errorOverlay[id].tex = NULL;
 	drawFrame();
 }
 
@@ -620,7 +624,7 @@ bool initRenderer()
 		return true;
 
 	for(int i = 0; i < MAX_OVERLAYS; ++i)
-		errorOverlay[i] = NULL;
+		errorOverlay[i].tex = NULL;
 	
 	if(SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO) == 0)
 	{
@@ -801,12 +805,12 @@ void showFrame()
 	SDL_SetRenderTarget(renderer, NULL);				\
 	SDL_RenderCopy(renderer, frameBuffer, NULL, NULL);
 
-#define postdrawFrame()												\
-	for(int i = 0; i < MAX_OVERLAYS; ++i)							\
-		if(errorOverlay[i] != NULL)									\
-			SDL_RenderCopy(renderer, errorOverlay[i], NULL, NULL);	\
-																	\
-	SDL_RenderPresent(renderer);									\
+#define postdrawFrame()													\
+	for(int i = 0; i < MAX_OVERLAYS; ++i)								\
+		if(errorOverlay[i].tex != NULL)								\
+			SDL_RenderCopy(renderer, errorOverlay[i].tex, NULL, NULL);	\
+																		\
+	SDL_RenderPresent(renderer);										\
 	SDL_SetRenderTarget(renderer, frameBuffer);
 
 // We need to draw the DRC before the TV, else the DRC is always one frame behind
