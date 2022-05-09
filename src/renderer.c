@@ -74,7 +74,7 @@ static SDL_Texture *barTex;
 static SDL_Texture *bgTex;
 static SDL_Texture *byeTex;
 
-static SDL_Rect retc[SDL_RECTS];
+static SDL_Rect rect[SDL_RECTS];
 static SDL_Rect *curRect;
 
 #define screenColorToSDLcolor(color) (SDL_Color){ .a = color & 0xFFu, .b = (color & 0x0000FF00u) >> 8, .g = (color & 0x00FF0000u) >> 16, .r = (color & 0xFF000000u) >> 24 }
@@ -197,7 +197,7 @@ void boxToFrame(int lineStart, int lineEnd)
 	curRect->w = 3;
 	curRect->h = h;
 	SDL_RenderFillRect(renderer, curRect);
-	++curRect
+	++curRect;
 	
 	// Background - we paint it on top of the gray lines as they look better that way
 	curRect->x = FONT_SIZE + 2;
@@ -215,10 +215,10 @@ void barToFrame(int line, int column, uint32_t width, double progress)
 	if(font == NULL)
 		return;
 	
-	curRect->x = FONT_SIZE + (column * spaceWidth),
-	curRect->y = ((++line ) * FONT_SIZE) - 2,
-	curRect->w = ((int)width) * spaceWidth,
-	curRect->h = FONT_SIZE,
+	curRect->x = FONT_SIZE + (column * spaceWidth);
+	curRect->y = ((++line ) * FONT_SIZE) - 2;
+	curRect->w = ((int)width) * spaceWidth;
+	curRect->h = FONT_SIZE;
 
 	SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_GRAY);
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
@@ -373,7 +373,7 @@ void tabToFrame(int line, int column, const char *label, bool active)
 
 	if(active)
 	{
-		FC_DrawBox(font, renderer, rect, *curRect);
+		FC_DrawBox(font, renderer, *curRect, label);
 		return;
 	}
 
