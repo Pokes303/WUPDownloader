@@ -53,6 +53,7 @@
 #define MAX_OVERLAYS    8
 #define SCREEN_X		1280
 #define SCREEN_Y		720
+#define SDL_RECTS		512
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
@@ -72,6 +73,9 @@ static SDL_Texture *deviceTex[3];
 static SDL_Texture *barTex;
 static SDL_Texture *bgTex;
 static SDL_Texture *byeTex;
+
+static SDL_Rect retc[SDL_RECTS];
+static SDL_Rect *curRect;
 
 #define screenColorToSDLcolor(color) (SDL_Color){ .a = color & 0xFFu, .b = (color & 0x0000FF00u) >> 8, .g = (color & 0x00FF0000u) >> 16, .r = (color & 0xFF000000u) >> 24 }
 
@@ -141,17 +145,15 @@ void lineToFrame(int column, uint32_t color)
 
 	++column;
 	column *= FONT_SIZE;
-	SDL_Rect line =
-	{
-		.x = FONT_SIZE,
-		.y = column + ((FONT_SIZE >> 1) - 1),
-		.w = SCREEN_X - (FONT_SIZE << 1),
-		.h = 3,
-	};
+	curRect->x = FONT_SIZE;
+	curRect->y = column + ((FONT_SIZE >> 1) - 1);
+	curRect->w = SCREEN_X - (FONT_SIZE << 1);
+	curRect->h = 3;
 
 	SDL_Color co = screenColorToSDLcolor(color);
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
-	SDL_RenderFillRect(renderer, &line);
+	SDL_RenderFillRect(renderer, curRect);
+	++curRect;
 }
 
 void boxToFrame(int lineStart, int lineEnd)
@@ -161,40 +163,51 @@ void boxToFrame(int lineStart, int lineEnd)
 
 	int ty = ((++lineStart) * FONT_SIZE) + ((FONT_SIZE >> 1) - 1);
 	int tw = SCREEN_X - (FONT_SIZE << 1);
-	SDL_Rect box =
-	{
-		.x = FONT_SIZE,
-		.y = ty,
-		.w = tw,
-		.h = 3,
-	};
+	curRect->x = FONT_SIZE;
+	curRect->y = ty;
+	curRect->w = tw;
+	curRect->h = 3;
+
 	SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_GRAY);
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
-	
-	// Horizontal lines
-	SDL_RenderFillRect(renderer, &box);
 
-	box.y = ((++lineEnd) * FONT_SIZE) + ((FONT_SIZE >> 1) - 1) - 3;
-	SDL_RenderFillRect(renderer, &box);
+	// Horizontal lines
+	SDL_RenderFillRect(renderer, curRect);
+	++curRect;
+
+	curRect->x = FONT_SIZE;
+	curRect->y = ((++lineEnd) * FONT_SIZE) + ((FONT_SIZE >> 1) - 1) - 3;
+	curRect->w = tw;
+	curRect->h = 3;
+
+	SDL_RenderFillRect(renderer, curRect);
+	++curRect;
 	
 	// Vertical lines
-	box.y = ty;
-	box.w = 3;
-	box.h = (--lineEnd - --lineStart) * FONT_SIZE;
-	SDL_RenderFillRect(renderer, &box);
+	curRect->x = FONT_SIZE;
+	curRect->y = ty;
+	curRect->w = 3;
+	int h = (--lineEnd - --lineStart) * FONT_SIZE;
+	curRect->h = h;
+	SDL_RenderFillRect(renderer, curRect);
+	++curRect;
 
-	box.x += tw - 3;
-	SDL_RenderFillRect(renderer, &box);
+	curRect->x = (FONT_SIZE - 3) + tw;
+	curRect->y = ty;
+	curRect->w = 3;
+	curRect->h = h;
+	SDL_RenderFillRect(renderer, curRect);
+	++curRect
 	
 	// Background - we paint it on top of the gray lines as they look better that way
-	box.x = FONT_SIZE + 2;
-	box.y += 2;
-	box.w = tw;
-	box.w -= 3;
-	box.h -= 3;
+	curRect->x = FONT_SIZE + 2;
+	curRect->y = ty + 2;
+	curRect->w = tw - 3;
+	curRect->h = h - 3;
 	co = screenColorToSDLcolor(SCREEN_COLOR_BLACK);
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, 64);
-	SDL_RenderFillRect(renderer, &box);
+	SDL_RenderFillRect(renderer, curRect);
+	++curRect;
 }
 
 void barToFrame(int line, int column, uint32_t width, double progress)
@@ -202,37 +215,41 @@ void barToFrame(int line, int column, uint32_t width, double progress)
 	if(font == NULL)
 		return;
 	
-	SDL_Rect box =
-	{
-		.x = FONT_SIZE + (column * spaceWidth),
-		.y = ((++line ) * FONT_SIZE) - 2,
-		.w = ((int)width) * spaceWidth,
-		.h = FONT_SIZE,
-	};
+	curRect->x = FONT_SIZE + (column * spaceWidth),
+	curRect->y = ((++line ) * FONT_SIZE) - 2,
+	curRect->w = ((int)width) * spaceWidth,
+	curRect->h = FONT_SIZE,
+
 	SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_GRAY);
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
-	SDL_RenderFillRect(renderer, &box);
+	SDL_RenderFillRect(renderer, curRect);
+	int x = curRect->x * 2;
+	int y = curRect->y * 2;
+	int w = curRect->w - 4;
+	++curRect;
 
-	box.x += 2;
-	box.y += 2;
-	box.h -= 4;
-	int w = box.w - 4;
+	curRect->x = x;
+	curRect->y = y;
+	curRect->h =  FONT_SIZE - 4;
 
 	char text[5];
 	sprintf(text, "%d%%%%", (int)progress);
 
 	progress /= 100.0D;
 	progress *= w;
-	box.w = progress;
+	x = progress;
+	curRect->w = x;
 	
-	SDL_RenderCopy(renderer, barTex, NULL, &box);
+	SDL_RenderCopy(renderer, barTex, NULL, curRect);
+	++curRect;
 	
-	box.x += box.w;
-	box.w = w - box.w;
+	curRect->x += x;
+	curRect->w = w - x;
 	
 	co = screenColorToSDLcolor(SCREEN_COLOR_BLACK);
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, 64);
-	SDL_RenderFillRect(renderer, &box);
+	SDL_RenderFillRect(renderer, curRect);
+	++curRect;
 	
 	textToFrame(--line, column + (width >> 1) - (strlen(text) >> 1), text);
 }
@@ -247,13 +264,12 @@ void arrowToFrame(int line, int column)
 	column *= spaceWidth;
 	column += spaceWidth;
 	
-	SDL_Rect arrow =
-	{
-		.x = column + FONT_SIZE,
-		.y = line,
-	};
-	SDL_QueryTexture(arrowTex, NULL, NULL, &(arrow.w), &(arrow.h));
-	SDL_RenderCopy(renderer, arrowTex, NULL, &arrow);
+	curRect->x = column + FONT_SIZE,
+	curRect->y = line,
+
+	SDL_QueryTexture(arrowTex, NULL, NULL, &(curRect->w), &(curRect->h));
+	SDL_RenderCopy(renderer, arrowTex, NULL, curRect);
+	++curRect;
 }
 
 void checkmarkToFrame(int line, int column)
@@ -266,13 +282,12 @@ void checkmarkToFrame(int line, int column)
 	column *= spaceWidth;
 	column += spaceWidth >> 1;
 
-	SDL_Rect cm =
-	{
-		.x = column + FONT_SIZE,
-		.y = line,
-	};
-	SDL_QueryTexture(checkmarkTex, NULL, NULL, &(cm.w), &(cm.h));
-	SDL_RenderCopy(renderer, checkmarkTex, NULL, &cm);
+	curRect->x = column + FONT_SIZE,
+	curRect->y = line,
+
+	SDL_QueryTexture(checkmarkTex, NULL, NULL, &(curRect->w), &(curRect->h));
+	SDL_RenderCopy(renderer, checkmarkTex, NULL, curRect);
+	++curRect;
 }
 
 static inline SDL_Texture *getFlagData(MCPRegion flag)
@@ -305,13 +320,12 @@ void flagToFrame(int line, int column, MCPRegion flag)
 	column += spaceWidth >> 1;
 	
 	SDL_Texture *fd = getFlagData(flag);
-	SDL_Rect fl =
-	{
-		.x = column + FONT_SIZE,
-		.y = line,
-	};
-	SDL_QueryTexture(fd, NULL, NULL, &(fl.w), &(fl.h));
-	SDL_RenderCopy(renderer, fd, NULL, &fl);
+	curRect->x = column + FONT_SIZE,
+	curRect->y = line,
+
+	SDL_QueryTexture(fd, NULL, NULL, &(curRect->w), &(curRect->h));
+	SDL_RenderCopy(renderer, fd, NULL, curRect);
+	++curRect;
 }
 
 void deviceToFrame(int line, int column, DEVICE_TYPE dev)
@@ -324,13 +338,12 @@ void deviceToFrame(int line, int column, DEVICE_TYPE dev)
 	column *= spaceWidth;
 	column += spaceWidth >> 1;
 
-	SDL_Rect fl =
-	{
-		.x = column + FONT_SIZE,
-		.y = line,
-	};
-	SDL_QueryTexture(deviceTex[dev], NULL, NULL, &(fl.w), &(fl.h));
-	SDL_RenderCopy(renderer, deviceTex[dev], NULL, &fl);
+	curRect->x = column + FONT_SIZE;
+	curRect->y = line;
+
+	SDL_QueryTexture(deviceTex[dev], NULL, NULL, &(curRect->w), &(curRect->h));
+	SDL_RenderCopy(renderer, deviceTex[dev], NULL, curRect);
+	++curRect;
 }
 
 void tabToFrame(int line, int column, const char *label, bool active)
@@ -343,28 +356,30 @@ void tabToFrame(int line, int column, const char *label, bool active)
 	column *= 240;
 	column += 13;
 	
-	SDL_Rect rect =
-	{
-		.x = column + FONT_SIZE,
-		.y = line,
-	};
-	SDL_QueryTexture(tabTex, NULL, NULL, &(rect.w), &(rect.h));
-	SDL_RenderCopy(renderer, tabTex, NULL, &rect);
+	int x = column + FONT_SIZE;
+	curRect->x = x;
+	curRect->y = line;
 
-	rect.x += rect.w >> 1;
-	rect.x -= FC_GetWidth(font, label) >> 1;
-	rect.y += 20;
-	rect.y -= FONT_SIZE >> 1;
+	int w;
+	SDL_QueryTexture(tabTex, NULL, NULL, &w, &(curRect->h));
+	curRect->w = w;
+	SDL_RenderCopy(renderer, tabTex, NULL, curRect);
+	++curRect;
+
+	curRect->x = x + (w >> 1);
+	curRect->x -= FC_GetWidth(font, label) >> 1;
+	curRect->y = line + 20;
+	curRect->y -= FONT_SIZE >> 1;
 
 	if(active)
 	{
-		FC_DrawBox(font, renderer, rect, label);
+		FC_DrawBox(font, renderer, rect, *curRect);
 		return;
 	}
 
 	SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_WHITE);
 	co.a = 159;
-	FC_DrawBoxColor(font, renderer, rect, co, label);
+	FC_DrawBoxColor(font, renderer, *curRect, co, label);
 }
 
 int addErrorOverlay(const char *err)
@@ -401,36 +416,29 @@ int addErrorOverlay(const char *err)
 	int x = (SCREEN_X >> 1) - (w >> 1);
 	int y = (SCREEN_Y >> 1) - (h >> 1);
 
-	SDL_Rect text =
-	{
-		.x = x,
-		.y = y,
-		.w = w,
-		.h = h,
-	};
-
-	text.x -= FONT_SIZE >> 1;
-	text.y -= FONT_SIZE >> 1;
-	text.w += FONT_SIZE;
-	text.h += FONT_SIZE;
+	curRect->x = x - (FONT_SIZE >> 1);
+	curRect->y = y - (FONT_SIZE >> 1);
+	curRect->w = w + FONT_SIZE;
+	curRect->h = h + FONT_SIZE;
 	co = screenColorToSDLcolor(SCREEN_COLOR_RED);
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
-	SDL_RenderFillRect(renderer, &text);
+	SDL_RenderFillRect(renderer, curRect);
+	++curRect;
 
-	SDL_Rect text2 = text; // For some reason transparent pixels will corrupt if we don't copy
-	text2.x += 2;
-	text2.y += 2;
-	text2.w -= 4;
-	text2.h -= 4;
+	curRect->x = x - (FONT_SIZE >> 1) + 2;
+	curRect->y = y - (FONT_SIZE >> 1) + 2;
+	curRect->w = w + FONT_SIZE - 4;
+	curRect->h = h + FONT_SIZE - 4;
 	co = screenColorToSDLcolor(SCREEN_COLOR_D_RED);
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
-	SDL_RenderFillRect(renderer, &text2);
+	SDL_RenderFillRect(renderer, curRect);
+	++curRect;
 
-	text2.x = x;
-	text2.y = y;
-	text2.w = w;
-	text2.h = h;
-	FC_DrawBox(font, renderer, text2, err);
+	curRect->x = x;
+	curRect->y = y;
+	curRect->w = w;
+	curRect->h = h;
+	FC_DrawBox(font, renderer, *curRect, err);
 
 	SDL_SetRenderTarget(renderer, frameBuffer);
 	drawFrame();
@@ -461,7 +469,7 @@ void resumeRenderer()
 {
 	if(font != NULL)
 		return;
-	
+
 	void *ttf;
 	size_t size;
 	OSGetSharedData(OS_SHAREDDATATYPE_FONT_STANDARD, 0, &ttf, &size);
@@ -763,9 +771,10 @@ void colorStartNewFrame(uint32_t color)
 {
 	if(font == NULL)
 		return;
-	
+
 	clearFrame();
-	
+	curRect = rect;
+
 	if(color == SCREEN_COLOR_BLUE)
 		SDL_RenderCopy(renderer, bgTex, NULL, NULL);
 	else
