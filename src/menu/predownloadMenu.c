@@ -39,6 +39,8 @@
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
 
+static int ovl = -1;
+
 static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
 {
 	if(out == NULL)
@@ -52,7 +54,6 @@ static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
 static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t size, bool installed, const char *folderName, bool usbMounted, NUSDEV dlDev, bool keepFiles)
 {
 	startNewFrame();
-	textToFrame(0, 0, "Name:");
 	
 	char *toFrame = getToFrameBuffer();
 	strcpy(toFrame, entry->name);
@@ -61,7 +62,7 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 	strcat(toFrame, " [");
 	strcat(toFrame, tid);
 	strcat(toFrame, "]");
-	textToFrame(1, 3, toFrame);
+	textToFrame(0, ALIGNED_CENTER, toFrame);
 	
 	char *bs;
 	float fsize;
@@ -87,14 +88,14 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 	}
 	
 	sprintf(toFrame, "%.02f %s", fsize, bs);
-	textToFrame(2, 0, "Size:");
-	textToFrame(3, 3, toFrame);
+	textToFrame(1, 0, "Size:");
+	textToFrame(2, 3, toFrame);
 	
-	textToFrame(4, 0, "Provided title version [Only numbers]:");
-	textToFrame(5, 3, titleVer[0] == '\0' ? "<LATEST>" : titleVer);
+	textToFrame(3, 0, "Provided title version [Only numbers]:");
+	textToFrame(4, 3, titleVer[0] == '\0' ? "<LATEST>" : titleVer);
 	
-	textToFrame(6, 0, "Custom folder name [ASCII only]:");
-	textToFrame(7, 3, folderName);
+	textToFrame(5, 0, "Custom folder name [ASCII only]:");
+	textToFrame(6, 3, folderName);
 	
 	int line = MAX_LINES - 1;
 	strcpy(toFrame, "Press " BUTTON_MINUS " to download to ");
@@ -148,18 +149,13 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 
 static void drawPDDemoFrame(const TitleEntry *entry, bool inst)
 {
-	startNewFrame();
 	char *toFrame = getToFrameBuffer();
 	strcpy(toFrame, entry->name);
 	strcat(toFrame, " is a demo.");
-	textToFrame(0, 0, toFrame);
-	
-	int line = MAX_LINES - 1;
-	textToFrame(line--, 0, "Press \uE001 to continue");
-    sprintf(toFrame, "Press \uE000 to %s the main game instead", inst ? "install" : "download");
-	textToFrame(line--, 0, toFrame);
-	lineToFrame(line, SCREEN_COLOR_WHITE);
-	
+	strcat(toFrame, "\n"
+		BUTTON_A " Download main game || " BUTTON_B " Continue");
+	ovl = addErrorOverlay(toFrame);
+
 	drawFrame();
 }
 
@@ -339,9 +335,13 @@ naNedNa:
 				showFrame();
 
 				if(vpad.trigger & VPAD_BUTTON_B)
+				{
+					removeErrorOverlay(ovl);
 					break;
+				}
 				if(vpad.trigger & VPAD_BUTTON_A)
 				{
+					removeErrorOverlay(ovl);
 					clearRamBuf();
 					entry = te;
 					goto downloadTMD;
