@@ -168,35 +168,39 @@ int textToFrameMultiline(int x, int y, const char *text, size_t len) {
 	char *t;
 	char o;
 
-    while (fl > len) {
-        l = strlen(p);
-        for (char *i = p + l; i > p; --i, --l) {
-            o = *i;
-            *i = '\0';
-            if (FC_GetWidth(font, p) / spaceWidth <= len) {
+	while(fl > len)
+	{
+		l = strlen(p);
+		for(char *i = p + l; i > p; --i, --l)
+		{
+			o = *i;
+			*i = '\0';
+			if(FC_GetWidth(font, p) / spaceWidth <= len)
+			{
 				t = strrchr(p, ' ');
-                if (t != NULL)
+				if(t != NULL)
 				{
 					*t = '\0';
 					*i = o;
 				}
-                else
-                    t = i;
+				else
+					t = i;
 
 				textToFrame(x, y, p);
 				++lines;
 				++x;
 				p = ++t;
-                break;
-            }
+				break;
+			}
 
-            *i = o;
-        }
+			*i = o;
 
-        fl = FC_GetWidth(font, p) / spaceWidth;
-    }
+		}
 
-    textToFrame(x, y, p);
+		fl = FC_GetWidth(font, p) / spaceWidth;
+	}
+
+	textToFrame(x, y, p);
 	return ++lines;
 }
 
