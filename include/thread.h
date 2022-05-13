@@ -1,6 +1,6 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
- * Copyright (c) 2020-2021 V10lator <v10lator@myway.de>                    *
+ * Copyright (c) 2020-2022 V10lator <v10lator@myway.de>                    *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
@@ -59,18 +59,11 @@ typedef enum
 	debugPrintf("Spinlock 0x%08X created!", &lock);		\
 	lock = locked;							\
 }
-static inline bool spinTryLock(spinlock lock)
-{
-	bool ret = OSCompareAndSwapAtomic(&lock, SPINLOCK_FREE, SPINLOCK_LOCKED);
-	if(!ret)
-		debugPrintfUnlocked("spinTryLock: LOCKED: 0x%08X", &lock);
-	return ret;
-}
 #else
 #define spinCreateLock(lock, locked)	lock = locked
-#define spinTryLock(lock)				OSCompareAndSwapAtomic(&lock, SPINLOCK_FREE, SPINLOCK_LOCKED)
 #endif
 #define spinIsLocked(lock)				(lock)
+#define spinTryLock(lock)				OSCompareAndSwapAtomic(&lock, SPINLOCK_FREE, SPINLOCK_LOCKED)
 #define spinLock(lock)					while(!spinTryLock(lock)) {}
 #define spinLockAsMutex(lock)			while(!spinTryLock(lock)) { OSSleepTicks(256); }
 #define spinReleaseLock(lock)			lock = SPINLOCK_FREE
