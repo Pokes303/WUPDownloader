@@ -72,7 +72,7 @@ extern int mcpHandle;
 #define isNumber(x) (x >= '0' && x <= '9')
 #define isLowercase(x) (x >= 'a' && x <= 'z')
 #define isUppercase(x) (x >= 'A' && x <= 'Z')
-#define isAlphanumerical(x) (isLowercase(x) || isLowercase(x) || isNumber(x))
+#define isAlphanumerical(x) (isLowercase(x) || isUppercase(x) || isNumber(x))
 // Keep it to ASCII for FTPiiU compat.
 #define isAllowedInFilename(x) (x >= ' ' && x <= '~' && x != '/' && x != '\\' && x != '"' && x != '*' && x != ':' && x != '<' && x != '>' && x != '?' && x != '|')
 #define isLowercaseHexa(x) (isNumber(x) || (x >= 'a' && x <= 'f'))
