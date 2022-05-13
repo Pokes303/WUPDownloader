@@ -70,17 +70,16 @@ typedef struct
 extern int mcpHandle;
 
 #define isNumber(x) (x >= '0' && x <= '9')
-
 #define isLowercase(x) (x >= 'a' && x <= 'z')
 #define isUppercase(x) (x >= 'A' && x <= 'Z')
-#define isAlphanumerical(x) ((x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z') || isNumber(x))
+#define isAlphanumerical(x) (isLowercase(x) || isLowercase(x) || isNumber(x))
 // Keep it to ASCII for FTPiiU compat.
 #define isAllowedInFilename(x) (x >= ' ' && x <= '~' && x != '/' && x != '\\' && x != '"' && x != '*' && x != ':' && x != '<' && x != '>' && x != '?' && x != '|')
 #define isLowercaseHexa(x) (isNumber(x) || (x >= 'a' && x <= 'f'))
 #define isUppercaseHexa(x) (isNumber(x) || (x >= 'A' && x <= 'F'))
 #define isHexa(x) (isLowercaseHexa(x) || isUppercaseHexa(x))
 
-#define toLowercase(x) for(int y = 0; y < strlen(x); y++) if(isUppercase(x[y])) x[y] += 32;
+#define toLowercase(x) for(int y = strlen(x) - 1; y >= 0; --y) if(isUppercase(x[y])) x[y] += 32;
 
 char* b_tostring(bool b);
 void hex(uint64_t i, int digits, char *out); //ex: 000050D1
