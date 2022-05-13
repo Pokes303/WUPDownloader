@@ -480,8 +480,8 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		if(resume && fileExists(file))
 		{
 			NUSFILE *nf = openFile(file, "rb+");
-			fseek(nf->fd, 0, SEEK_END);
-			fileSize = ftello(nf->fd);
+			fseek((FILE *)nf->fd, 0, SEEK_END);
+			fileSize = ftello((FILE *)nf->fd);
 			if(fileSize)
 			{
 				// TODO: Check .h3 files size

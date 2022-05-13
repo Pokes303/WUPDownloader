@@ -42,16 +42,16 @@
 
 typedef struct WUT_PACKED
 {
-	NUSFILE *file;
-	size_t size;
-	uint8_t buf[IO_BUFSIZE];
+	volatile NUSFILE *file;
+	volatile size_t size;
+	volatile uint8_t buf[IO_BUFSIZE];
 } WriteQueueEntry;
 
 static OSThread *ioThread;
 static volatile bool ioRunning = false;
 static spinlock ioWriteLock;
 
-static volatile WriteQueueEntry *queueEntries;
+static WriteQueueEntry *queueEntries;
 static volatile uint32_t activeReadBuffer;
 static volatile uint32_t activeWriteBuffer;
 
@@ -64,7 +64,7 @@ static int ioThreadMain(int argc, const char **argv)
 	debugPrintf("I/O queue running!");
 
 	uint32_t asl;
-	volatile WriteQueueEntry *entry;
+	WriteQueueEntry *entry;
 	while(ioRunning && !fwriteErrno)
 	{
 		asl = activeWriteBuffer;
@@ -77,7 +77,7 @@ static int ioThreadMain(int argc, const char **argv)
 
 		if(entry->size != 0) // WRITE command
 		{
-			if(fwrite((void *)entry->buf, entry->size, 1, entry->file->fd) != 1)
+			if(fwrite((void *)entry->buf, entry->size, 1, (FILE *)entry->file->fd) != 1)
 			{
 				fwriteErrno = errno;
 				debugPrintf("fwrite() error: %d / 0x%08X / %u", fwriteErrno, entry->file->fd, entry->size);
@@ -87,12 +87,12 @@ static int ioThreadMain(int argc, const char **argv)
 		{
 			debugPrintf("File close: 0x%08X", entry->file->fd);
 			OSTime t = OSGetTime();
-			if(fclose(entry->file->fd))
+			if(fclose((FILE *)entry->file->fd))
 			{
 				fwriteErrno = errno;
 				debugPrintf("fclose() error: %d / 0x%08X", fwriteErrno, entry->file->fd);
 			}
-			MEMFreeToDefaultHeap(entry->file->buffer);
+			MEMFreeToDefaultHeap((void *)entry->file->buffer);
 			MEMFreeToDefaultHeap((void *)entry->file);
 			t = OSGetTime() - t;
 			addEntropy(&t, sizeof(OSTime));
@@ -124,7 +124,7 @@ bool initIOThread()
 		if(ioThread != NULL)
 			return true;
 
-		MEMFreeToDefaultHeap((void *)queueEntries);
+		MEMFreeToDefaultHeap(queueEntries);
 	}
 	return false;
 }
@@ -166,7 +166,7 @@ void shutdownIOThread()
 #else
 	stopThread(ioThread, NULL);
 #endif
-	MEMFreeToDefaultHeap((void *)queueEntries);
+	MEMFreeToDefaultHeap(queueEntries);
 }
 
 #ifdef NUSSPLI_DEBUG
@@ -177,7 +177,7 @@ size_t addToIOQueue(const void *buf, size_t size, size_t n, NUSFILE *file)
 	if(checkForQueueErrors())
 		return 0;
 
-    volatile WriteQueueEntry *entry;
+    WriteQueueEntry *entry;
 		
 retryAddingToQueue:
 	
@@ -283,13 +283,13 @@ NUSFILE *openFile(const char *path, const char *mode)
 		ret->buffer = MEMAllocFromDefaultHeapEx(IO_MAX_FILE_BUFFER, 0x40);
 		if(ret->buffer != NULL)
 		{
-			if(setvbuf(ret->fd, ret->buffer, _IOFBF, IO_MAX_FILE_BUFFER) != 0)
+			if(setvbuf((FILE *)ret->fd, (char *)ret->buffer, _IOFBF, IO_MAX_FILE_BUFFER) != 0)
 				debugPrintf("Error setting buffer!");
 
 			debugPrintf("File open: 0x%08X", ret->fd);
 			return ret;
 		}
-		fclose(ret->fd);
+		fclose((FILE *)ret->fd);
 	}
 	MEMFreeToDefaultHeap(ret);
 	return NULL;

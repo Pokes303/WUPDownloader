@@ -30,8 +30,8 @@
 
 typedef struct
 {
-	FILE *fd;
-	void *buffer;
+	volatile FILE *fd;
+	volatile void *buffer;
 } NUSFILE;
 
 bool initIOThread();
