@@ -153,7 +153,10 @@ static int drawPDDemoFrame(const TitleEntry *entry, bool inst)
 	char *toFrame = getToFrameBuffer();
 	strcpy(toFrame, entry->name);
 	strcat(toFrame, " is a demo.\n"
-		BUTTON_A " Download main game || " BUTTON_B " Continue");
+		BUTTON_A " ");
+
+	strcat(inst ? "Install" : "Download");
+	strcat(" main game || " BUTTON_B " Continue");
 
 	return addErrorOverlay(toFrame);
 }
