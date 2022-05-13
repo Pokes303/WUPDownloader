@@ -155,8 +155,8 @@ static int drawPDDemoFrame(const TitleEntry *entry, bool inst)
 	strcat(toFrame, " is a demo.\n"
 		BUTTON_A " ");
 
-	strcat(inst ? "Install" : "Download");
-	strcat(" main game || " BUTTON_B " Continue");
+	strcat(toFrame, inst ? "Install" : "Download");
+	strcat(toFrame, " main game || " BUTTON_B " Continue");
 
 	return addErrorOverlay(toFrame);
 }
