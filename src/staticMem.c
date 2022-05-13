@@ -29,24 +29,44 @@
 #include <renderer.h>
 #include <titles.h>
 
-static char staticMemToFrameBuffer[TO_FRAME_BUFFER_SIZE];
-static char staticMemLineBuffer[TO_FRAME_BUFFER_SIZE];
-static char staticMemPathBuffer[3][PATH_MAX];
-static ACPMetaXml *staticMeta = NULL;
+static char *staticMemToFrameBuffer;
+static char *staticMemLineBuffer;
+static char *staticMemPathBuffer;
+static ACPMetaXml *staticMeta;
 
 bool initStaticMem()
 {
-	staticMeta = MEMAllocFromDefaultHeapEx(sizeof(ACPMetaXml), 0x40);
-	return staticMeta != NULL;
+	staticMemToFrameBuffer = MEMAllocFromDefaultHeap(TO_FRAME_BUFFER_SIZE);
+	if(staticMemToFrameBuffer != NULL)
+	{
+		staticMemLineBuffer = MEMAllocFromDefaultHeap(TO_FRAME_BUFFER_SIZE);
+		if(staticMemLineBuffer != NULL)
+		{
+			staticMemPathBuffer = MEMAllocFromDefaultHeap(PATH_MAX * 3);
+			if(staticMemPathBuffer != NULL)
+			{
+				staticMeta = MEMAllocFromDefaultHeapEx(sizeof(ACPMetaXml), 0x40);
+				if(staticMeta != NULL)
+					return true;
+
+				MEMFreeToDefaultHeap(staticMemPathBuffer);
+			}
+
+			MEMFreeToDefaultHeap(staticMemLineBuffer);
+		}
+
+		MEMFreeToDefaultHeap(staticMemToFrameBuffer);
+	}
+
+	return false;
 }
 
 void shutdownStaticMem()
 {
-	if(staticMeta != NULL)
-	{
-		MEMFreeToDefaultHeap(staticMeta);
-		staticMeta = NULL;
-	}
+	MEMFreeToDefaultHeap(staticMemToFrameBuffer);
+	MEMFreeToDefaultHeap(staticMemLineBuffer);
+	MEMFreeToDefaultHeap(staticMemPathBuffer);
+	MEMFreeToDefaultHeap(staticMeta);
 }
 
 char *getStaticScreenBuffer()
@@ -61,7 +81,7 @@ char *getStaticLineBuffer()
 
 char *getStaticPathBuffer(uint32_t i)
 {
-	return staticMemPathBuffer[i];
+	return staticMemPathBuffer + i;
 }
 
 ACPMetaXml *getStaticMetaXmlBuffer()
