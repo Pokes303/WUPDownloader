@@ -39,8 +39,6 @@
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
 
-static int ovl = -1;
-
 static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
 {
 	if(out == NULL)
@@ -62,7 +60,7 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 	strcat(toFrame, " [");
 	strcat(toFrame, tid);
 	strcat(toFrame, "]");
-	int lines = textToFrameMultiline(0, ALIGNED_CENTER, ' ', toFrame);
+	int line = textToFrameMultiline(0, ALIGNED_CENTER, ' ', toFrame);
 	
 	char *bs;
 	float fsize;
@@ -88,16 +86,16 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 	}
 	
 	sprintf(toFrame, "%.02f %s", fsize, bs);
-	textToFrame(lines + 1, 0, "Size:");
-	textToFrame(lines + 2, 3, toFrame);
+	textToFrame(++line, 0, "Size:");
+	textToFrame(++line, 3, toFrame);
+
+	textToFrame(++line, 0, "Provided title version [Only numbers]:");
+	textToFrame(++line, 3, titleVer[0] == '\0' ? "<LATEST>" : titleVer);
 	
-	textToFrame(lines + 3, 0, "Provided title version [Only numbers]:");
-	textToFrame(lines + 4, 3, titleVer[0] == '\0' ? "<LATEST>" : titleVer);
+	textToFrame(++line, 0, "Custom folder name [ASCII only]:");
+	textToFrame(++line, 3, folderName);
 	
-	textToFrame(lines + 5, 0, "Custom folder name [ASCII only]:");
-	textToFrame(lines + 6, 3, folderName);
-	
-	int line = MAX_LINES - 1;
+	line = MAX_LINES - 1;
 	strcpy(toFrame, "Press " BUTTON_MINUS " to download to ");
 	switch(dlDev)
 	{
@@ -147,16 +145,14 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 	drawFrame();
 }
 
-static void drawPDDemoFrame(const TitleEntry *entry, bool inst)
+static int drawPDDemoFrame(const TitleEntry *entry, bool inst)
 {
 	char *toFrame = getToFrameBuffer();
 	strcpy(toFrame, entry->name);
-	strcat(toFrame, " is a demo.");
-	strcat(toFrame, "\n"
+	strcat(toFrame, " is a demo.\n"
 		BUTTON_A " Download main game || " BUTTON_B " Continue");
-	ovl = addErrorOverlay(toFrame);
 
-	drawFrame();
+	return addErrorOverlay(toFrame);
 }
 
 #include <inttypes.h>
@@ -323,7 +319,7 @@ naNedNa:
 		const TitleEntry *te = getTitleEntryByTid(t);
 		if(te != NULL)
 		{
-			drawPDDemoFrame(entry, inst);
+			int ovl = drawPDDemoFrame(entry, inst);
 
 			while(AppRunning())
 			{
@@ -335,10 +331,6 @@ naNedNa:
 				showFrame();
 
 				if(vpad.trigger & VPAD_BUTTON_B)
-				{
-					removeErrorOverlay(ovl);
-					break;
-				}
 				if(vpad.trigger & VPAD_BUTTON_A)
 				{
 					removeErrorOverlay(ovl);
@@ -347,6 +339,8 @@ naNedNa:
 					goto downloadTMD;
 				}
 			}
+
+			removeErrorOverlay(ovl);
 		}
 	}
 
