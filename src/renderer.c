@@ -17,8 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
-#define _GNU_SOURCE
-
 #include <wut-fixups.h>
 
 #include <gx2/enum.h>
@@ -149,49 +147,56 @@ void textToFrameCut(int line, int column, const char *str, int maxWidth)
 	FC_DrawBox(font, renderer, text, str);
 }
 
-int textToFrameMultiline(int x, int y, char cdiv, const char *format, ...) {
-    char *tmp = NULL;
-	int lines = 0;
-    uint32_t len = (66 - x);
+int textToFrameMultiline(int x, int y, const char *text, size_t len) {
+	if(len < 1)
+		return 0;
 
-    va_list va;
-    va_start(va, format);
-    if ((vasprintf(&tmp, format, va) >= 0) && (tmp != NULL)) {
-        if ((uint32_t) (FC_GetWidth(font, tmp) / 12) > len) {
-            char *p = tmp;
-            if (strrchr(p, '\n') != NULL)
-                p = strrchr(p, '\n') + 1;
-            while ((uint32_t) (FC_GetWidth(font, p) / 12) > len) {
-                char *q = p;
-                int l1 = strlen(q);
-                for (int i = l1; i > 0; i--) {
-                    char o = q[l1];
-                    q[l1] = '\0';
-                    if ((uint32_t) (FC_GetWidth(font, p) / 12) <= len) {
-                        if (strrchr(p, cdiv) != NULL)
-                            p = strrchr(p, cdiv) + 1;
-                        else
-                            p = q + l1;
-                        q[l1] = o;
-                        break;
-                    }
-                    q[l1] = o;
-                    l1--;
-                }
-                char buf[256];
-				memset(buf, 0, sizeof(buf));
-				strcpy(buf, p);
+	uint16_t fl = FC_GetWidth(font, text) / spaceWidth;
+	if(fl <= len)
+	{
+		textToFrame(x, y, text);
+		return 1;
+	}
+
+	size_t l = strlen(text);
+	char tmp[++l];
+	OSBlockMove(tmp, text, l, false);
+
+	int lines = 0;
+	char *p = tmp;
+	char *t;
+	char o;
+
+    while (fl > len) {
+        l = strlen(p);
+        for (char *i = p + l; i > p; --i, --l) {
+            o = *i;
+            *i = '\0';
+            if (FC_GetWidth(font, p) / spaceWidth <= len) {
+				t = strrchr(p, ' ');
+                if (t != NULL)
+				{
+					*t = '\0';
+					*i = o;
+				}
+                else
+                    t = i;
+
+				textToFrame(x, y, p);
 				++lines;
-				sprintf(p, "\n%s", buf);
-				p++;
-				len = 69;
+				++x;
+				p = ++t;
+                break;
             }
+
+            *i = o;
         }
-        textToFrame(x, y, tmp);
+
+        fl = FC_GetWidth(font, p) / spaceWidth;
     }
-    va_end(va);
-    if (tmp != NULL) free(tmp);
-	return lines;
+
+    textToFrame(x, y, p);
+	return ++lines;
 }
 
 void lineToFrame(int column, uint32_t color)

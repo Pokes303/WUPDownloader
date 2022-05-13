@@ -53,6 +53,8 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 {
 	startNewFrame();
 	
+	textToFrame(0, 0, "Name:");
+
 	char *toFrame = getToFrameBuffer();
 	strcpy(toFrame, entry->name);
     char tid[17];
@@ -60,7 +62,7 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 	strcat(toFrame, " [");
 	strcat(toFrame, tid);
 	strcat(toFrame, "]");
-	int line = textToFrameMultiline(0, ALIGNED_CENTER, ' ', toFrame);
+	int line = textToFrameMultiline(0, ALIGNED_CENTER, toFrame, MAX_CHARS - 33); // TODO
 	
 	char *bs;
 	float fsize;

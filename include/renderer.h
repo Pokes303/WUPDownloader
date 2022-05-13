@@ -85,7 +85,7 @@ void showFrame();
 void drawFrame();
 void drawKeyboard(bool tv);
 void textToFrameCut(int line, int column, const char *str, int maxWidth);
-int textToFrameMultiline(int x, int y, char cdiv, const char *format, ...);
+int textToFrameMultiline(int x, int y, const char *text, size_t len);
 void lineToFrame(int column, uint32_t color);
 void boxToFrame(int lineStart, int lineEnd);
 void barToFrame(int line, int column, uint32_t width, double progress);
