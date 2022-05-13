@@ -286,28 +286,30 @@ void barToFrame(int line, int column, uint32_t width, double progress)
 	SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_GRAY);
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
 	SDL_RenderFillRect(renderer, curRect);
-	int x = curRect->x * 2;
-	int y = curRect->y * 2;
+	int x = curRect->x + 2;
+	int y = curRect->y + 2;
 	int w = curRect->w - 4;
 	++curRect;
 
 	curRect->x = x;
 	curRect->y = y;
-	curRect->h =  FONT_SIZE - 4;
+	curRect->h = FONT_SIZE - 4;
 
 	char text[5];
 	sprintf(text, "%d%%%%", (int)progress);
 
 	progress /= 100.0D;
 	progress *= w;
-	x = progress;
-	curRect->w = x;
+	int z = progress;
+	curRect->w = z;
 	
 	SDL_RenderCopy(renderer, barTex, NULL, curRect);
 	++curRect;
 	
-	curRect->x += x;
-	curRect->w = w - x;
+	curRect->x = x + z;
+	curRect->y = y;
+	curRect->w = w - z;
+	curRect->h = FONT_SIZE - 4;
 	
 	co = screenColorToSDLcolor(SCREEN_COLOR_BLACK);
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, 64);
