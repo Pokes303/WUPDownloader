@@ -17,6 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
  ***************************************************************************/
 
+#define _GNU_SOURCE
+
 #include <wut-fixups.h>
 
 #include <gx2/enum.h>
@@ -35,6 +37,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 #include <wchar.h>
 
@@ -48,6 +51,8 @@
 #include <swkbd_wrapper.h>
 #include <utils.h>
 #include <menu/utils.h>
+
+#include <stdio.h>
 
 #define SSAA            8
 #define MAX_OVERLAYS    8
@@ -142,6 +147,51 @@ void textToFrameCut(int line, int column, const char *str, int maxWidth)
 	}
 
 	FC_DrawBox(font, renderer, text, str);
+}
+
+int textToFrameMultiline(int x, int y, char cdiv, const char *format, ...) {
+    char *tmp = NULL;
+	int lines = 0;
+    uint32_t len = (66 - x);
+
+    va_list va;
+    va_start(va, format);
+    if ((vasprintf(&tmp, format, va) >= 0) && (tmp != NULL)) {
+        if ((uint32_t) (FC_GetWidth(font, tmp) / 12) > len) {
+            char *p = tmp;
+            if (strrchr(p, '\n') != NULL)
+                p = strrchr(p, '\n') + 1;
+            while ((uint32_t) (FC_GetWidth(font, p) / 12) > len) {
+                char *q = p;
+                int l1 = strlen(q);
+                for (int i = l1; i > 0; i--) {
+                    char o = q[l1];
+                    q[l1] = '\0';
+                    if ((uint32_t) (FC_GetWidth(font, p) / 12) <= len) {
+                        if (strrchr(p, cdiv) != NULL)
+                            p = strrchr(p, cdiv) + 1;
+                        else
+                            p = q + l1;
+                        q[l1] = o;
+                        break;
+                    }
+                    q[l1] = o;
+                    l1--;
+                }
+                char buf[256];
+				memset(buf, 0, sizeof(buf));
+				strcpy(buf, p);
+				++lines;
+				sprintf(p, "\n%s", buf);
+				p++;
+				len = 69;
+            }
+        }
+        textToFrame(x, y, tmp);
+    }
+    va_end(va);
+    if (tmp != NULL) free(tmp);
+	return lines;
 }
 
 void lineToFrame(int column, uint32_t color)

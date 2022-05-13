@@ -62,7 +62,7 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 	strcat(toFrame, " [");
 	strcat(toFrame, tid);
 	strcat(toFrame, "]");
-	textToFrame(0, ALIGNED_CENTER, toFrame);
+	int lines = textToFrameMultiline(0, ALIGNED_CENTER, ' ', toFrame);
 	
 	char *bs;
 	float fsize;
@@ -88,14 +88,14 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 	}
 	
 	sprintf(toFrame, "%.02f %s", fsize, bs);
-	textToFrame(1, 0, "Size:");
-	textToFrame(2, 3, toFrame);
+	textToFrame(lines + 1, 0, "Size:");
+	textToFrame(lines + 2, 3, toFrame);
 	
-	textToFrame(3, 0, "Provided title version [Only numbers]:");
-	textToFrame(4, 3, titleVer[0] == '\0' ? "<LATEST>" : titleVer);
+	textToFrame(lines + 3, 0, "Provided title version [Only numbers]:");
+	textToFrame(lines + 4, 3, titleVer[0] == '\0' ? "<LATEST>" : titleVer);
 	
-	textToFrame(5, 0, "Custom folder name [ASCII only]:");
-	textToFrame(6, 3, folderName);
+	textToFrame(lines + 5, 0, "Custom folder name [ASCII only]:");
+	textToFrame(lines + 6, 3, folderName);
 	
 	int line = MAX_LINES - 1;
 	strcpy(toFrame, "Press " BUTTON_MINUS " to download to ");
