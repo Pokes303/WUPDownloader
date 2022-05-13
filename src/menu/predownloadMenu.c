@@ -39,7 +39,7 @@
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
 
-static int ovl = -1;
+static int demoOvl = -1;
 
 static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
 {
@@ -151,10 +151,9 @@ static void drawPDDemoFrame(const TitleEntry *entry, bool inst)
 {
 	char *toFrame = getToFrameBuffer();
 	strcpy(toFrame, entry->name);
-	strcat(toFrame, " is a demo.");
-	strcat(toFrame, "\n"
+	strcat(toFrame, " is a demo.\n"
 		BUTTON_A " Download main game || " BUTTON_B " Continue");
-	ovl = addErrorOverlay(toFrame);
+	demoOvl = addErrorOverlay(toFrame);
 
 	drawFrame();
 }
@@ -336,17 +335,18 @@ naNedNa:
 
 				if(vpad.trigger & VPAD_BUTTON_B)
 				{
-					removeErrorOverlay(ovl);
+					removeErrorOverlay(demoOvl);
 					break;
 				}
 				if(vpad.trigger & VPAD_BUTTON_A)
 				{
-					removeErrorOverlay(ovl);
+					removeErrorOverlay(demoOvl);
 					clearRamBuf();
 					entry = te;
 					goto downloadTMD;
 				}
 			}
+			removeErrorOverlay(demoOvl);
 		}
 	}
 
