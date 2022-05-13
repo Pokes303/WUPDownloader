@@ -36,7 +36,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 #include <wchar.h>
 
@@ -50,8 +49,6 @@
 #include <swkbd_wrapper.h>
 #include <utils.h>
 #include <menu/utils.h>
-
-#include <stdio.h>
 
 #define SSAA            8
 #define MAX_OVERLAYS    8
