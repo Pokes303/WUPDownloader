@@ -2,7 +2,7 @@
 FROM devkitpro/devkitppc:20220216 AS final
 
 ENV openssl_ver=1.1.1o \
- curl_ver=7.83.0 \
+ curl_ver=7.83.1 \
  DEBIAN_FRONTEND=noninteractive \
  PATH=$DEVKITPPC/bin:$PATH \
  WUT_ROOT=$DEVKITPRO/wut
