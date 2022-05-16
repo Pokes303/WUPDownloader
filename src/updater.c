@@ -462,7 +462,14 @@ aromaInstallation:
 		}
 		
 		removeDirectory(UPDATE_HBL_FOLDER);
+#ifdef NUSSPLI_DEBUG
+		NUSFS_ERR err =
+#endif
 		moveDirectory(UPDATE_TEMP_FOLDER "NUSspli", UPDATE_HBL_FOLDER);
+#ifdef NUSSPLI_DEBUG
+		if(err != NUSFS_ERR_NOERR)
+			debugPrintf("Error moving directory: %s", translateNusfsErr(err));
+#endif
 		// endif
 finishUpdate:
 		removeDirectory(UPDATE_TEMP_FOLDER);
