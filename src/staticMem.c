@@ -81,7 +81,7 @@ char *getStaticLineBuffer()
 
 char *getStaticPathBuffer(uint32_t i)
 {
-	return staticMemPathBuffer + i;
+	return staticMemPathBuffer + (PATH_MAX * i);
 }
 
 ACPMetaXml *getStaticMetaXmlBuffer()
