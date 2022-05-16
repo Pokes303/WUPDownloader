@@ -195,8 +195,9 @@ NUSFS_ERR moveDirectory(const char *src, const char *dest)
 
 	for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
 	{
-		strcpy(inSrc, entry->d_name);
-		strcpy(inDest, entry->d_name);
+		len = strlen(entry->d_name);
+		OSBlockMove(inSrc, entry->d_name, ++len, false);
+		OSBlockMove(inDest, entry->d_name, len, false);
 
 		if(entry->d_type & DT_DIR)
 		{
