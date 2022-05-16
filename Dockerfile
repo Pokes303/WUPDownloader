@@ -14,9 +14,9 @@ RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
  apt-get -y install --no-install-recommends autoconf automake libtool openjdk-11-jre-headless && \
  apt-get clean && \
  rm -rf /var/lib/apt/lists/* /usr/share/man && \
- git clone -b customheap_spinlock --single-branch https://github.com/GaryOderNichts/wut && \
+ git clone -b fix --single-branch https://github.com/V10lator/wut && \
  cd wut && \
- git checkout ec0d038f447c4d35db359d6ed8baeb4247f6caf1 && \
+ git checkout 832dd54dbd9a6bf3e0bf6fa390df10403f7b4ffa && \
  make -j$(nproc) && \
  make install && \
  cd .. && \
