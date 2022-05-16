@@ -42,6 +42,7 @@
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
 
+#include <ioapi.h>
 #include <unzip.h>
 
 #include <errno.h>
@@ -179,6 +180,54 @@ bool updateCheck()
 	return updateMenu(versionString);
 }
 
+static voidpf ZCALLBACK nus_zopen(voidpf opaque, const char* filename, int mode)
+{
+	// STUB
+	return (voidpf)filename;
+}
+
+static uLong ZCALLBACK nus_zread(voidpf opaque, voidpf stream, void* buf, uLong size)
+{
+	OSBlockMove(buf, getRamBuf() + *((long *)(stream)), size, false);
+	*((long *)(stream)) += size;
+	return size;
+}
+
+static uLong ZCALLBACK nus_zwrite(voidpf opaque, voidpf stream, const void* buf, uLong size)
+{
+	// STUB
+	return size;
+}
+
+static long ZCALLBACK nus_ztell(voidpf opaque, voidpf stream)
+{
+	return *((long *)(stream));
+}
+
+static long ZCALLBACK nus_zseek(voidpf opaque, voidpf stream, uLong offset, int origin)
+{
+	switch(origin)
+	{
+		case ZLIB_FILEFUNC_SEEK_CUR:
+			*((long *)(stream)) += offset;
+			break;
+		case ZLIB_FILEFUNC_SEEK_END:
+			*((long *)(stream)) = getRamBufSize() + offset;
+			break;
+		case ZLIB_FILEFUNC_SEEK_SET :
+			*((long *)(stream)) = offset;
+			break;
+	}
+
+	return 0;
+}
+
+static int ZCALLBACK nus_zstub(voidpf opaque, voidpf stream)
+{
+	// STUB
+	return 0;
+}
+
 void update(char *newVersion)
 {
 	OSDynLoad_Module mod;
@@ -239,8 +288,19 @@ void update(char *newVersion)
 	writeScreenLog(1);
 	drawFrame();
 	showFrame();
-	
-	unzFile zip = unzOpenBuffer(getRamBuf(), getRamBufSize());
+
+	long zPos = 0;
+	zlib_filefunc_def rbfd = {
+		.zopen_file = nus_zopen,
+		.zread_file = nus_zread,
+		.zwrite_file = nus_zwrite,
+		.ztell_file = nus_ztell,
+		.zseek_file = nus_zseek,
+		.zclose_file = nus_zstub,
+		.zerror_file = nus_zstub,
+		.opaque = NULL
+	};
+	unzFile zip = unzOpen2((const char *)&zPos, &rbfd);
 	unz_global_info zipInfo;
 	if(unzGetGlobalInfo(zip, &zipInfo) != UNZ_OK)
 	{
