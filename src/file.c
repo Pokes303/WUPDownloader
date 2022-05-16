@@ -168,12 +168,13 @@ NUSFS_ERR moveDirectory(const char *src, const char *dest)
 {
 	size_t len = strlen(src);
 	char *newSrc = getStaticPathBuffer(0);
-	strcpy(newSrc, src);
-	
-	if(newSrc[len - 1] != '/')
-		newSrc[len++] = '/';
-	
-	char *inSrc = newSrc + len;
+	OSBlockMove(newSrc, src, ++len, false);
+
+	char *inSrc = newSrc + --len;
+	if(*--inSrc != '/')
+		*++inSrc = '/';
+	++inSrc;
+
 	OSTime t = OSGetTime();
 	DIR *dir = opendir(src);
 	if(dir == NULL)
@@ -185,22 +186,30 @@ NUSFS_ERR moveDirectory(const char *src, const char *dest)
 
 	len = strlen(dest);
 	char *newDest = getStaticPathBuffer(1);
-	strcpy(newDest, dest);
+	OSBlockMove(newDest, dest, ++len, false);
 
-	if(newDest[len - 1] != '/')
-		newDest[len++] = '/';
-
-	char *inDest = newDest + len;
+	char *inDest = newDest + --len;
+	if(*--inDest != '/')
+		*++inDest = '/';
+	++inDest;
 
 	for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
 	{
 		strcpy(inSrc, entry->d_name);
 		strcpy(inDest, entry->d_name);
+
 		if(entry->d_type & DT_DIR)
+		{
+			debugPrintf("\tmoveDirectory('%s', '%s')", newSrc, newDest);
 			moveDirectory(newSrc, newDest);
+		}
 		else
+		{
+			debugPrintf("\trename('%s', '%s')", newSrc, newDest);
 			rename(newSrc, newDest);
+		}
 	}
+
 	closedir(dir);
 	remove(src);
     t = OSGetTime() - t;
