@@ -281,7 +281,7 @@ bool initDownloader()
 	inf = sk_X509_INFO_new_null();
 	if(inf != NULL)
 	{
-		char fn[1024];
+		char *fn = getStaticPathBuffer(0);
 		strcpy(fn, ROMFS_PATH "ca-certificates/");
 		FILE *f;
 		DIR *dir = opendir(fn);
