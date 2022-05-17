@@ -58,6 +58,7 @@ static ControllerType lastUsedController;
 static int io = -1;
 
 static Swkbd_CreateArg createArg;
+static Swkbd_AppearArg appearArg;
 static FSClient swkbd_fsc;
 
 static OSMessageQueue swkbd_queue;
@@ -198,10 +199,6 @@ static bool SWKBD_Show(SWKBD_Args *args, KeyboardLayout layout, KeyboardType typ
 	}
 	
 	// Show the keyboard
-	Swkbd_AppearArg appearArg;
-	
-	OSBlockSet(&appearArg, 0, sizeof(Swkbd_AppearArg));
-	
 	appearArg.keyboardArg.configArg.languageType = getKeyboardLanguage();
 	switch(appearArg.keyboardArg.configArg.languageType)
 	{
@@ -235,26 +232,11 @@ static bool SWKBD_Show(SWKBD_Args *args, KeyboardLayout layout, KeyboardType typ
 
 	appearArg.keyboardArg.configArg.unk_0x04 = lastUsedController;
 	appearArg.keyboardArg.configArg.unk_0x08 = layout;
-	appearArg.keyboardArg.configArg.unk_0x0C = 0xFFFFFFFF;
-	appearArg.keyboardArg.configArg.unk_0x14 = -1;
 	appearArg.keyboardArg.configArg.str = okStrL;
-	appearArg.keyboardArg.configArg.framerate = FRAMERATE_60FPS;
-	appearArg.keyboardArg.configArg.showCursor = true;
-	appearArg.keyboardArg.configArg.unk_0xA4 = -1;
-	
-	appearArg.keyboardArg.receiverArg.unk_0x14 = 2;
-	
+
 	appearArg.inputFormArg.unk_0x00 = type;
-	appearArg.inputFormArg.unk_0x04 = -1;
-	appearArg.inputFormArg.unk_0x08 = 0;
-	appearArg.inputFormArg.unk_0x0C = 0;
-	appearArg.inputFormArg.unk_0x14 = 0;
-	appearArg.inputFormArg.unk_0x18 = 0x00008000; // Monospace seperator after 16 chars (for 32 char keys)
-	appearArg.inputFormArg.unk_0x1C = true;
-	appearArg.inputFormArg.unk_0x1D = true;
-	appearArg.inputFormArg.unk_0x1E = true;
 	args->globalMaxlength = appearArg.inputFormArg.maxTextLength = maxlength;
-	
+
 	bool kbdVisible = Swkbd_AppearInputForm(&appearArg);
 	debugPrintf("Swkbd_AppearInputForm(): %s", kbdVisible ? "true" : "false");
 	
@@ -339,7 +321,25 @@ bool SWKBD_Init()
 	OSDynLoad_GetAllocator(&oAlloc, &oFree);
 	bool ret = Swkbd_Create(&createArg);
 	OSDynLoad_SetAllocator(oAlloc, oFree);
-	
+
+	OSBlockSet(&appearArg, 0, sizeof(Swkbd_AppearArg));
+	appearArg.keyboardArg.configArg.unk_0x0C = 0xFFFFFFFF;
+	appearArg.keyboardArg.configArg.unk_0x14 = -1;
+	appearArg.keyboardArg.configArg.framerate = FRAMERATE_60FPS;
+	appearArg.keyboardArg.configArg.showCursor = true;
+	appearArg.keyboardArg.configArg.unk_0xA4 = -1;
+
+	appearArg.keyboardArg.receiverArg.unk_0x14 = 2;
+
+	appearArg.inputFormArg.unk_0x04 = -1;
+	appearArg.inputFormArg.unk_0x08 = 0;
+	appearArg.inputFormArg.unk_0x0C = 0;
+	appearArg.inputFormArg.unk_0x14 = 0;
+	appearArg.inputFormArg.unk_0x18 = 0x00008000; // Monospace seperator after 16 chars (for 32 char keys)
+	appearArg.inputFormArg.unk_0x1C = true;
+	appearArg.inputFormArg.unk_0x1D = true;
+	appearArg.inputFormArg.unk_0x1E = true;
+
 	return ret;
 }
 
