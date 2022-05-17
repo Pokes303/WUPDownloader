@@ -53,6 +53,7 @@
 
 VPADStatus vpad;
 static KPADStatus kpad[4];
+static const Swkbd_ControllerInfo controllerInfo = { .vpad = &vpad, .kpad[0] = kpad };
 static ControllerType lastUsedController;
 
 static int io = -1;
@@ -151,15 +152,7 @@ static void SWKBD_Render(SWKBD_Args *args, KeyboardChecks check)
 		
 		Swkbd_SetEnableOkButton(args->okButtonEnabled);
 	}
-	
-	Swkbd_ControllerInfo controllerInfo = { .vpad = &vpad };
-	KPADStatus *ksp = kpad;
-	--ksp;
-	KPADStatus **ciksp = controllerInfo.kpad;
-	--ciksp;
-	for(int i = 4; i; --i)
-		*++ciksp = ++ksp;
-	
+
 	Swkbd_Calc(&controllerInfo);
 
 	if(Swkbd_IsNeedCalcSubThreadFont())
