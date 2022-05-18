@@ -22,6 +22,8 @@ jobs:
       - name: Get version number
         if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') }}
         run: |
+          apt-fast -y update
+          apt-fast -y upgrade
           apt-fast -y install libxml2-utils
           echo "::set-output name=version::$(xmllint --xpath 'app/version/text()' meta/hbl/meta.xml)"
         id: version
