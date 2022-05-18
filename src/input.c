@@ -369,6 +369,7 @@ void readInput()
 	uint32_t oldV, oldH;
 	uint32_t tv;
 	KPADStatus *kps = kpad + 4;
+	KPADError kerr;
 	int i = 4;
 	bool cont;
 	while(i)
@@ -378,16 +379,12 @@ void readInput()
 		if(controllerProbe == 0)
 		{
 			altCon = true;
-			KPADRead(i, kps, 1);
+			KPADReadEx(i, kps, 1, &kerr);
+			if(kerr != KPAD_ERROR_OK)
+				goto kpadReadError;
 		}
 		else
-		{
-			if(controllerProbe != -1)
-				altCon = true;
-
-			OSBlockSet(kps, 0, sizeof(KPADStatus));
-			continue;
-		}
+			goto kpadReadError;
 		
 		oldV = vpad.trigger;
 		oldH = vpad.hold;
@@ -505,6 +502,14 @@ void readInput()
 
 		if(kbdHidden && vpad.hold != oldH)
 			lastUsedController = i;
+
+		continue;
+
+kpadReadError:
+		if(controllerProbe != -1)
+			altCon = true;
+
+		OSBlockSet(kps, 0, sizeof(KPADStatus));
 	}
 
 	if(vpad.trigger != 0)
