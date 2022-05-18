@@ -32,6 +32,7 @@ typedef struct
 {
 	volatile FILE *fd;
 	volatile void *buffer;
+	volatile bool iosuhaxWorkaround;
 } NUSFILE;
 
 bool initIOThread();
