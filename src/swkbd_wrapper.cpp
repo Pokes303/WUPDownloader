@@ -29,7 +29,8 @@
 #include <utils.h>
 #include <swkbd_wrapper.h>
 
-bool kbd_initialized = false;
+static bool kbd_initialized = false;
+static char ifs[FILENAME_MAX]; // TODO
 
 uint32_t Swkbd_GetWorkMemorySize(uint32_t unk)
 {
@@ -52,11 +53,6 @@ void Swkbd_SetEnableOkButton(bool enable)
 	nn::swkbd::SetEnableOkButton(enable);
 }
 
-void Swkbd_DeleteCppChar(const char *str)
-{
-	delete str;
-}
-
 char *Swkbd_GetInputFormString()
 {
 	const char16_t *cppRet = nn::swkbd::GetInputFormString();
@@ -64,20 +60,11 @@ char *Swkbd_GetInputFormString()
 		return NULL;
 	
 	size_t i = 0;
-	while(cppRet[i] != u'\0')
-		i++;
-	
-	char *outputStr = (char*)MEMAllocFromDefaultHeap(sizeof(char) * ++i);
-	if(outputStr == NULL)
-		return NULL;
-	
-	i = 0;
 	do
-		outputStr[i] = cppRet[i] > 0x7F ? '?' : (char)cppRet[i];
-	while(outputStr[i++] != '\0');
+		ifs[i] = cppRet[i] > 0x7F ? '?' : (char)cppRet[i];
+	while(ifs[i++] != '\0');
 
-	outputStr[i] = '\0';
-	return outputStr;
+	return ifs;
 }
 
 const char16_t *Swkbd_GetInputFormString16()

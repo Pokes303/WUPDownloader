@@ -131,7 +131,6 @@ static void SWKBD_Render(SWKBD_Args *args, KeyboardChecks check)
 					default:
 						// DEAD CODE
 						debugPrintf("0xDEADC0DE: %d", check);
-						MEMFreeToDefaultHeap(inputFormString);
 						return;
 				}
 				
@@ -144,7 +143,6 @@ static void SWKBD_Render(SWKBD_Args *args, KeyboardChecks check)
 					}
 			}
 			
-			MEMFreeToDefaultHeap(inputFormString);
 			args->okButtonEnabled = args->globalLimit ? len == args->globalMaxlength : len <= args->globalMaxlength;
 		}
 		else
@@ -567,7 +565,6 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 			debugPrintf("SWKBD Ok button pressed");
 			char *outputStr = Swkbd_GetInputFormString();
 			strcpy(output, outputStr);
-			MEMFreeToDefaultHeap(outputStr);
 			SWKBD_Hide(&args);
             t = OSGetSystemTime() - t;
 			addEntropy(&t, sizeof(OSTime));
@@ -579,10 +576,7 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 		{
 			char *inputFormString = Swkbd_GetInputFormString();
 			if(inputFormString != NULL)
-			{
 				close = strlen(inputFormString) == 0;
-				MEMFreeToDefaultHeap(inputFormString);
-			}
 		}
 		
 		if(close || Swkbd_IsDecideCancelButton(&dummy)) {

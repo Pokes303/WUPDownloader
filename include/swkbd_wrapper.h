@@ -185,7 +185,6 @@ uint32_t Swkbd_GetWorkMemorySize(uint32_t unk);
 bool Swkbd_AppearInputForm(const Swkbd_AppearArg *args);
 bool Swkbd_Create(const Swkbd_CreateArg *args);
 void Swkbd_SetEnableOkButton(bool enable);
-void Swkbd_DeleteCppChar(const char *str);
 char *Swkbd_GetInputFormString();
 const char16_t *Swkbd_GetInputFormString16();
 void Swkbd_SetInputFormString(const char *str);
