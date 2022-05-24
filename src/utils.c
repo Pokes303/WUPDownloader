@@ -255,7 +255,7 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 		removeErrorOverlay(ovl);
 }
 
-size_t strlen16(char16_t *str)
+size_t strlen16(const char16_t *str)
 {
 	size_t ret = 0;
 	while(str[ret])

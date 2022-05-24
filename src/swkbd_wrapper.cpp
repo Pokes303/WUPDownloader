@@ -19,9 +19,9 @@
 
 #include <wut-fixups.h>
 
-#include <wchar.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cwchar>
+#include <cstdio>
+#include <cstdlib>
 #include <string>
 
 #include <coreinit/memdefaultheap.h>
@@ -56,8 +56,8 @@ void Swkbd_SetEnableOkButton(bool enable)
 char *Swkbd_GetInputFormString()
 {
 	const char16_t *cppRet = nn::swkbd::GetInputFormString();
-	if(cppRet == NULL)
-		return NULL;
+	if(cppRet == nullptr)
+		return nullptr;
 	
 	size_t i = 0;
 	do
@@ -75,14 +75,14 @@ const char16_t *Swkbd_GetInputFormString16()
 void Swkbd_SetInputFormString(const char *str)
 {
 	size_t len = strlen(str);
-	if(str == NULL || len == 0)
+	if(str == nullptr || len == 0)
 	{
 		nn::swkbd::SetInputFormString(u"");
 		return;
 	}
 	
-	char16_t *cppStr = (char16_t *)MEMAllocFromDefaultHeap(sizeof(char16_t) * ++len);
-	if(cppStr == NULL)
+	auto *cppStr = (char16_t *)MEMAllocFromDefaultHeap(sizeof(char16_t) * ++len);
+	if(cppStr == nullptr)
 		return;
 
 	for(size_t i = 0; i < len; i++)

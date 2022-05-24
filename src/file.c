@@ -257,6 +257,9 @@ NUSFS_ERR createDirectory(const char *path, mode_t mode)
         case FS_ERROR_MAX_FILES:
 		case FS_ERROR_MAX_DIRS:
 			return NUSFS_ERR_LIMITS;
+		default:
+			// STUB
+			break;
 	}
 
 	if(ie >= 0)

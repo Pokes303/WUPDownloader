@@ -117,7 +117,6 @@ static void getInstalledMeta(MCPTitleListType *entry, INST_META *out)
 	hex(entry->titleId, 16, tid);
 	strcpy(out->name, tid);
 	out->region = MCP_REGION_UNKNOWN;
-	return;
 }
 
 static void drawITBMenuFrame(const size_t pos, const size_t cursor)

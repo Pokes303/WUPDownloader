@@ -215,16 +215,13 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region)
 		"\n"
 		BUTTON_A " Yes || " BUTTON_B " No");
 
-	bool ret;
+	bool ret = true;
 	while(AppRunning())
 	{
 		showFrame();
 
 		if(vpad.trigger & VPAD_BUTTON_A)
-		{
-			ret = true;
 			break;
-		}
 		if(vpad.trigger & VPAD_BUTTON_B)
 		{
 			ret = false;

@@ -401,11 +401,13 @@ static int dlThreadMain(int argc, const char **argv)
 }
 
 #define setDefaultDataValues(x) 			\
+{											\
 	x.running = true;						\
 	x.error = CURLE_OK;						\
 	spinCreateLock((x.lock), false);		\
 	x.dlnow = 								\
 	x.dltotal = 0.0D;						\
+}
 
 static char *translateCurlError(CURLcode err, char *curlError)
 {
@@ -461,7 +463,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		name = file;
 	else
 	{
-		int haystack;
+		size_t haystack;
 		for(haystack = strlen(file); file[haystack] != '/'; haystack--)
 			;
 		name = file + haystack + 1;
@@ -936,11 +938,13 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 }
 
 #define showPrepScreen(x)										\
+{																\
 	startNewFrame();											\
 	textToFrame(0, 0, "Preparing the download of");				\
-	textToFrame(1, 3, x == NULL ? "NULL" : x);	\
+	textToFrame(1, 3, x == NULL ? "NULL" : x);					\
 	writeScreenLog(2);											\
-	drawFrame();
+	drawFrame();												\
+}
 
 bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, NUSDEV dlDev, bool toUSB, bool keepFiles)
 {

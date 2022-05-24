@@ -343,6 +343,4 @@ void generateFakeTicket()
 			drawTicketFrame(titleID);
 		}
 	}
-
-	return;
 }
