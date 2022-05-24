@@ -45,7 +45,7 @@ static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
 	if(out == NULL)
 	{
 		MCPTitleListType titleList;
-		out = &titleList;
+		return MCP_GetTitleInfo(mcpHandle, entry->tid, &titleList) == 0;
 	}
 	return MCP_GetTitleInfo(mcpHandle, entry->tid, out) == 0;
 }
