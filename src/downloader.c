@@ -50,7 +50,6 @@
 #include <tmd.h>
 #include <utils.h>
 
-#include <coreinit/cache.h>
 #include <coreinit/filesystem.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/thread.h>
@@ -507,12 +506,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		{
 			fp = (void *)openFile(file, "wb");
 			fileSize = 0;
-		}
-
-		if(((NUSFILE *)fp)->iosuhaxWorkaround)
-		{
-			debugPrintf("Flushing CPU cache...");
-			DCFlushRange((void *)((NUSFILE *)fp)->fd, sizeof(FILE));
 		}
 	}
 

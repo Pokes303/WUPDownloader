@@ -23,7 +23,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include <coreinit/cache.h>
 #include <coreinit/core.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
@@ -75,10 +74,6 @@ static int ioThreadMain(int argc, const char **argv)
 			OSSleepTicks(256);
 			continue;
 		}
-
-		// TODO: Libiosuhax workaround
-		if(entry->file->iosuhaxWorkaround)
-			DCInvalidateRange((void *)entry->file->fd, sizeof(FILE));
 
 		if(entry->size != 0) // WRITE command
 		{
@@ -290,14 +285,6 @@ NUSFILE *openFile(const char *path, const char *mode)
 		{
 			if(setvbuf((FILE *)ret->fd, (char *)ret->buffer, _IOFBF, IO_MAX_FILE_BUFFER) != 0)
 				debugPrintf("Error setting buffer!");
-
-			// TODO: Libiosuhax workaround
-			ret->iosuhaxWorkaround = path[3] == ':';
-			if(ret->iosuhaxWorkaround)
-			{
-				debugPrintf("Flushing CPU cache...");
-				DCFlushRange((void *)ret->fd, sizeof(FILE));
-			}
 
 			debugPrintf("File open: 0x%08X", ret->fd);
 			return ret;
