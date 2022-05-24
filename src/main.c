@@ -285,7 +285,7 @@ static bool cfwValid()
 			if(ret)
 			{
 				*(int *)in = 0xF9; // IPC_CUSTOM_COPY_ENVIRONMENT_PATH
-				ret = IOS_Ioctl(handle, 10, in, 0x40, dummy, 0x100) == IOS_ERROR_OK;
+				ret = IOS_Ioctl(handle, 100, in, 0x40, dummy, 0x100) == IOS_ERROR_OK;
 				if(ret)
 				{
 					ret = openIOSUhax();
