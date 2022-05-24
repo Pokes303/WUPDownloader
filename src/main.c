@@ -276,17 +276,30 @@ static bool cfwValid()
 	bool ret = handle >= 0;
 	if(ret)
 	{
-		char dummy[0x100];
-		int in = 0xF9; // IPC_CUSTOM_COPY_ENVIRONMENT_PATH
-		ret = IOS_Ioctl(handle, 100, &in, sizeof(in), dummy, sizeof(dummy)) == IOS_ERROR_OK;
+		char *dummy = MEMAllocFromDefaultHeapEx(0x120, 0x40);
+		ret = dummy != NULL;
 		if(ret)
 		{
-			ret = openIOSUhax();
+			void *in = MEMAllocFromDefaultHeapEx(0x40, 0x40);
+			ret = in != NULL;
 			if(ret)
 			{
-				ret = IOSUHAX_read_otp((uint8_t *)dummy, 1) >= 0;
-				closeIOSUhax();
+				*(int *)in = 0xF9; // IPC_CUSTOM_COPY_ENVIRONMENT_PATH
+				ret = IOS_Ioctl(handle, 10, in, 0x40, dummy, 0x120) == IOS_ERROR_OK;
+				if(ret)
+				{
+					ret = openIOSUhax();
+					if(ret)
+					{
+						ret = IOSUHAX_read_otp((uint8_t *)dummy, 1) >= 0;
+						closeIOSUhax();
+					}
+				}
+
+				MEMFreeToDefaultHeap(in);
 			}
+
+			MEMFreeToDefaultHeap(dummy);
 		}
 
 		IOS_Close(handle);

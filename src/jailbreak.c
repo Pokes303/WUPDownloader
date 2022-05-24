@@ -32,7 +32,8 @@
 
 #include <wut_structsize.h>
 
-typedef struct WUT_PACKED
+// According to https://stackoverflow.com/questions/11130109/c-struct-size-alignment the aligned attribute alignes both, start addy and size
+typedef struct WUT_PACKED __attribute__ ((aligned(0x40)))
 {
 	uint32_t cmd;
 	uint32_t tgt;
@@ -45,7 +46,7 @@ WUT_CHECK_OFFSET(LOAD_REQUEST, 0x04, tgt);
 WUT_CHECK_OFFSET(LOAD_REQUEST, 0x08, fs);
 WUT_CHECK_OFFSET(LOAD_REQUEST, 0x0C, fo);
 WUT_CHECK_OFFSET(LOAD_REQUEST, 0x10, path);
-WUT_CHECK_SIZE(LOAD_REQUEST, 0x110);
+WUT_CHECK_SIZE(LOAD_REQUEST, 0x120); // Would be 0x110 without the alignment
 
 bool jailbreak()
 {
