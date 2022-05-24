@@ -39,14 +39,15 @@ typedef struct WUT_PACKED __attribute__ ((aligned(0x40)))
 	uint32_t tgt;
 	uint32_t fs;
 	uint32_t fo;
-	char path[256];
+	char path[0x100];
 } LOAD_REQUEST;
 WUT_CHECK_OFFSET(LOAD_REQUEST, 0x00, cmd);
 WUT_CHECK_OFFSET(LOAD_REQUEST, 0x04, tgt);
 WUT_CHECK_OFFSET(LOAD_REQUEST, 0x08, fs);
 WUT_CHECK_OFFSET(LOAD_REQUEST, 0x0C, fo);
 WUT_CHECK_OFFSET(LOAD_REQUEST, 0x10, path);
-WUT_CHECK_SIZE(LOAD_REQUEST, 0x120); // Would be 0x110 without the alignment
+char (*__kaboom)[sizeof(LOAD_REQUEST)] = 1;
+WUT_CHECK_SIZE(LOAD_REQUEST, 0x140); // Would be 0x110 without the alignment
 
 bool jailbreak()
 {

@@ -276,7 +276,7 @@ static bool cfwValid()
 	bool ret = handle >= 0;
 	if(ret)
 	{
-		char *dummy = MEMAllocFromDefaultHeapEx(0x120, 0x40);
+		char *dummy = MEMAllocFromDefaultHeapEx(0x100, 0x40);
 		ret = dummy != NULL;
 		if(ret)
 		{
@@ -285,7 +285,7 @@ static bool cfwValid()
 			if(ret)
 			{
 				*(int *)in = 0xF9; // IPC_CUSTOM_COPY_ENVIRONMENT_PATH
-				ret = IOS_Ioctl(handle, 10, in, 0x40, dummy, 0x120) == IOS_ERROR_OK;
+				ret = IOS_Ioctl(handle, 10, in, 0x40, dummy, 0x100) == IOS_ERROR_OK;
 				if(ret)
 				{
 					ret = openIOSUhax();
