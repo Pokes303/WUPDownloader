@@ -106,8 +106,9 @@ PKG_CONFIG=$DEVKITPRO/portlibs/wiiu/bin/powerpc-eabi-pkg-config && \
  make -j$(nproc) install && \
  cd ../.. && \
  rm -rf curl && \
- git clone --recursive https://github.com/Crementif/libiosuhax && \
+ git clone --recursive https://github.com/V10lator/libiosuhax && \
  cd libiosuhax && \
+ git checkout newlib && \
  make -j$(nproc) && \
  make install && \
  cd .. && \
