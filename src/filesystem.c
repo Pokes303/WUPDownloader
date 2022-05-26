@@ -39,7 +39,7 @@ static bool usbMounted = false;
 static bool mlcMounted = false;
 static bool usb01;
 
-FSClient *__wut_devoptab_fs_client;
+extern FSClient *__wut_devoptab_fs_client;
 
 bool isUSB01()
 {
