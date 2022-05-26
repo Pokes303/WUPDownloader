@@ -88,7 +88,7 @@ bool sanityCheck()
 			return false;
 		}
 
-		char newPath[64];
+		char newPath[128];
 		FILE *f;
 		size_t s;
 		void *buf;
@@ -99,15 +99,15 @@ bool sanityCheck()
 		if(isUsb)
 		{
 			mountUSB();
-			strcpy(newPath, "usb:");
+			strcpy(newPath, "fs:/vol/usb");
 		}
 		else
 		{
 			mountMLC();
-			strcpy(newPath, "mlc:");
+			strcpy(newPath, "fs:/vol/mlc");
 		}
 
-		strcpy(newPath + 4, title.path + 18);
+		strcpy(newPath + 11, title.path + 18);
 		strcat(newPath, "/meta/");
 
 		for(int i = 0; !br && i < MD5_FILES; ++i)
