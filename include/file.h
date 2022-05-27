@@ -32,6 +32,8 @@
 #define INSTALL_DIR_MLC	"fs:/vol/mlc/install/"
 #define IO_BUFSIZE	(128 * 1024) // 128 KB
 
+#define FS_ALIGN(x)  (x + 0x3F) & ~(0x3F)
+
 #ifdef __cplusplus
 	extern "C" {
 #endif

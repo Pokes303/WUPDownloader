@@ -121,7 +121,7 @@ bool sanityCheck()
 			}
 
 			s = getFilesize(f);
-			buf = MEMAllocFromDefaultHeap(s);
+			buf = MEMAllocFromDefaultHeapEx(FS_ALIGN(s), 0x40);
 			if(buf == NULL)
 			{
 				ret = false;

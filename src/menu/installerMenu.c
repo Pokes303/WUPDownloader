@@ -73,7 +73,7 @@ static bool brickCheck(const char* dir)
 	}
 
 	size_t s = getFilesize(f);
-	TMD *tmd = MEMAllocFromDefaultHeap(s);
+	TMD *tmd = MEMAllocFromDefaultHeapEx(FS_ALIGN(s), 0x40);
 	if(tmd == NULL)
 	{
 		debugPrintf("OUT OF MEMORY!", tmdPath);

@@ -230,7 +230,7 @@ void generateFakeTicket()
 	}
 
 	size_t fs = getFilesize(f);
-	void *buf = MEMAllocFromDefaultHeap(fs);
+	void *buf = MEMAllocFromDefaultHeapEx(FS_ALIGN(fs), 0x40);
 	if(buf == NULL)
 	{
 		fclose(f);

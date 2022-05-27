@@ -706,7 +706,7 @@ bool initRenderer()
 						if(f != NULL)
 						{
 							size_t fs = getFilesize(f);
-							bgmBuffer = MEMAllocFromDefaultHeap(fs);
+							bgmBuffer = MEMAllocFromDefaultHeapEx(FS_ALIGN(fs), 0x40);
 							if(bgmBuffer != NULL)
 							{
 								if(fread(bgmBuffer, fs, 1, f) == 1)
