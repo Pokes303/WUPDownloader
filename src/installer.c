@@ -68,7 +68,7 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUs
 		removeDirectory(path);
 
 	char *importPath = getStaticPathBuffer(2);
-	strcpy(importPath, toUsb ? "fs:/vol/usb/usr/import/" : "fs:/vol/mlc/usr/import/");
+	strcpy(importPath, toUsb ? "usb:/usr/import/" : "mlc:/usr/import/");
 	DIR *dir = opendir(importPath);
 
 	if(dir != NULL)
@@ -117,7 +117,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	{
 		case NUSDEV_USB:
 			strcpy(newPath, isUSB01() ? "/vol/storage_usb01" : "/vol/storage_usb02");
-			strcpy(newPath + 18, path + 11);
+			strcpy(newPath + 18, path + 4);
 			break;
 		case NUSDEV_SD:
 			strcpy(newPath, "/vol/app_sd");
@@ -125,7 +125,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 			break;
 		case NUSDEV_MLC:
 			strcpy(newPath, "/vol/storage_mlc01");
-			strcpy(newPath + 18, path + 11);
+			strcpy(newPath + 18, path + 4);
 	}
 	
 	McpData data;
