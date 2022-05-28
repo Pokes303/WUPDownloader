@@ -1,3 +1,7 @@
+# End of development
+
+Stopping Wii U development cause of way to many memory issues and no available memory debugger. It's just way to frustating when you code for more than 2+ years and then get bitten by such stuff. Codebase of NUSspli + all involved libraries is way to big to debug without tools like Valgrind but it seem we'll never have them availabe on the Wii U.
+
 # NUSspli
 Install content directly from the Nintendo Update Servers to your Wii U.
 
