@@ -28,16 +28,18 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include <coreinit/filesystem.h>
 #include <coreinit/ios.h>
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
 #include <iosuhax.h>
 #include <iosuhax_devoptab.h>
 
-static int fsaHandle = -1;
 static bool usbMounted = false;
 static bool mlcMounted = false;
 static bool usb01;
+
+extern FSClient *__wut_devoptab_fs_client;
 
 bool isUSB01()
 {
@@ -46,19 +48,10 @@ bool isUSB01()
 
 static bool initFsa()
 {
-	if(fsaHandle >= 0)
-		return true;
-
 	if(!openIOSUhax())
         return false;
 
-	fsaHandle = IOSUHAX_FSA_Open();
-	if(fsaHandle < 0)
-	{
-		debugPrintf("IOSUHAX: Error opening FSA!");
-		return false;
-	}
-	return true;
+	return IOSUHAX_UnlockFSClient(__wut_devoptab_fs_client) >= 0;
 }
 
 bool mountUSB()
@@ -69,12 +62,13 @@ bool mountUSB()
 	if(!initFsa())
 		return false;
 
-	int ret = mount_fs("usb", fsaHandle, NULL, "/vol/storage_usb01");
-	if(ret != 0 || !dirExists("usb:/"))
+	int ret = IOSUHAX_FSMount(__wut_devoptab_fs_client, "/dev/usb01", "/vol/usb");
+
+	if(ret < 0 || !dirExists("fs:/vol/usb"))
 	{
 		debugPrintf("IOSUHAX: error mounting USB drive 1: %#010x", ret);
-		ret = mount_fs("usb", fsaHandle, NULL, "/vol/storage_usb02");
-		if(ret != 0 || !dirExists("usb:/"))
+		ret = IOSUHAX_FSMount(__wut_devoptab_fs_client, "/dev/usb02", "/vol/usb");
+		if(ret < 0 || !dirExists("fs:/vol/usb"))
 		{
 			debugPrintf("IOSUHAX: error mounting USB drive 2: %#010x", ret);
 			return false;
@@ -97,8 +91,8 @@ bool mountMLC()
 	if(!initFsa())
 		return false;
 
-	int ret = mount_fs("mlc", fsaHandle, NULL, "/vol/storage_mlc01");
-	if(ret || !dirExists("mlc:/"))
+	int ret = IOSUHAX_FSMount(__wut_devoptab_fs_client, "/dev/mlc01", "/vol/mlc");
+	if(ret < 0 || !dirExists("fs:/vol/mlc"))
 	{
 		debugPrintf("IOSUHAX: error mounting MLC: %#010x", ret);
 		return false;
@@ -109,23 +103,15 @@ bool mountMLC()
 	return true;
 }
 
-static void closeFsa()
-{
-	IOSUHAX_FSA_Close(fsaHandle);
-	fsaHandle = -1;
-}
-
 void unmountUSB()
 {
 	if(!usbMounted)
 		return;
 
-	unmount_fs("usb");
-	usbMounted = false;
-	if(!mlcMounted)
-		closeFsa();
+	// TODO
+//	usbMounted = false;
 
-	debugPrintf("IOSUHAX: USB drive unmounted!");
+//	debugPrintf("IOSUHAX: USB drive unmounted!");
 }
 
 void unmountMLC()
@@ -133,10 +119,8 @@ void unmountMLC()
 	if(!mlcMounted)
 		return;
 
-	unmount_fs("mlc");
-	mlcMounted = false;
-	if(!usbMounted)
-		closeFsa();
+	// TODO
+//	mlcMounted = false;
 
-	debugPrintf("IOSUHAX: MLC unmounted!");
+//	debugPrintf("IOSUHAX: MLC unmounted!");
 }
