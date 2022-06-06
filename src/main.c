@@ -66,6 +66,7 @@
 #include <padscore/kpad.h>
 #include <padscore/wpad.h>
 #include <proc_ui/procui.h>
+#include <sndcore2/core.h>
 #include <sysapp/launch.h>
 #include <whb/crash.h>
 
@@ -86,6 +87,7 @@ static void innerMain(bool validCfw)
 	}
 
 	FSInit();
+	AXInit();
 #ifdef NUSSPLI_HBL
 	romfsInit();
 #endif
@@ -268,6 +270,7 @@ static void innerMain(bool validCfw)
 	romfsExit();
 #endif
 	FSShutdown();
+	AXQuit();
 }
 
 static bool cfwValid()
