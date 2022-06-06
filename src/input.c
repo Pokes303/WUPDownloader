@@ -72,6 +72,7 @@ typedef struct
 	int globalMaxlength;
 	bool globalLimit;
 	bool okButtonEnabled;
+	char16_t *okButtonText;
 	OSThread *calcThread;
 } SWKBD_Args;
 
@@ -177,16 +178,14 @@ static bool SWKBD_Show(SWKBD_Args *args, KeyboardLayout layout, KeyboardType typ
 		return false;
     }
 	
-	char16_t *okStrL;
-	if(okStr == NULL)
-		okStrL = NULL;
-	else
+	appearArg.keyboardArg.configArg.str = NULL;
+	if(okStr)
 	{
 		size_t strLen = strlen(okStr);
-		okStrL = MEMAllocFromDefaultHeap(++strLen);
-		if(okStrL)
+		appearArg.keyboardArg.configArg.str = MEMAllocFromDefaultHeap(++strLen);
+		if(appearArg.keyboardArg.configArg.str)
 			for(size_t i = 0; i < strLen; ++i)
-				okStrL[i] = okStr[i];
+				appearArg.keyboardArg.configArg.str[i] = okStr[i];
 	}
 	
 	// Show the keyboard
@@ -223,16 +222,12 @@ static bool SWKBD_Show(SWKBD_Args *args, KeyboardLayout layout, KeyboardType typ
 
 	appearArg.keyboardArg.configArg.unk_0x04 = lastUsedController;
 	appearArg.keyboardArg.configArg.unk_0x08 = layout;
-	appearArg.keyboardArg.configArg.str = okStrL;
 
 	appearArg.inputFormArg.unk_0x00 = type;
 	args->globalMaxlength = appearArg.inputFormArg.maxTextLength = maxlength;
 
 	bool kbdVisible = Swkbd_AppearInputForm(&appearArg);
 	debugPrintf("Swkbd_AppearInputForm(): %s", kbdVisible ? "true" : "false");
-	
-	if(okStrL != NULL)
-		MEMFreeToDefaultHeap(okStrL);
 	
 	if(!kbdVisible)
 		return false;
@@ -266,6 +261,9 @@ static void SWKBD_Hide(SWKBD_Args *args)
     OSMessage msg = { .message = NUSSPLI_MESSAGE_EXIT };
 	OSSendMessage(&swkbd_queue, &msg, OS_MESSAGE_FLAGS_BLOCKING);
 	stopThread(args->calcThread, NULL);
+
+	if(appearArg.keyboardArg.configArg.str)
+		MEMFreeToDefaultHeap(appearArg.keyboardArg.configArg.str);
 }
 
 bool SWKBD_Init()
