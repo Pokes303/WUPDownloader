@@ -72,7 +72,6 @@ typedef struct
 	int globalMaxlength;
 	bool globalLimit;
 	bool okButtonEnabled;
-	char16_t *okButtonText;
 	OSThread *calcThread;
 } SWKBD_Args;
 
