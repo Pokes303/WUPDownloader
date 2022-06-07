@@ -29,6 +29,8 @@
 #include <coreinit/filesystem.h>
 #include <iosuhax.h>
 
+#define IOSUHAX_FSA_DEFFLAGS	0x0 // TODO: What do they do?
+
 static bool dotUnlocked = false;
 static bool usbMounted = false;
 static bool mlcMounted = false;
@@ -61,12 +63,12 @@ bool mountUSB()
 	if(!initFsa())
 		return false;
 
-	FSError ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/usb01", "/vol/usb", 0xFFFFFFFF, NULL, 0);
+	FSError ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/usb01", "/vol/usb", IOSUHAX_FSA_DEFFLAGS, NULL, 0);
 
 	if(ret != FS_ERROR_NOERROR)
 	{
 		debugPrintf("IOSUHAX: error mounting USB drive 1: %#010x", ret);
-		ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/usb02", "/vol/usb", 0xFFFFFFFF, NULL, 0);
+		ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/usb02", "/vol/usb", IOSUHAX_FSA_DEFFLAGS, NULL, 0);
 		if(ret != FS_ERROR_NOERROR)
 		{
 			debugPrintf("IOSUHAX: error mounting USB drive 2: %#010x", ret);
@@ -90,7 +92,7 @@ bool mountMLC()
 	if(!initFsa())
 		return false;
 
-	FSError ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/mlc01", "/vol/mlc", 0xFFFFFFFF, NULL, 0);
+	FSError ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/mlc01", "/vol/mlc", IOSUHAX_FSA_DEFFLAGS, NULL, 0);
 	if(ret != FS_ERROR_NOERROR)
 	{
 		debugPrintf("IOSUHAX: error mounting MLC: %#010x", ret);
