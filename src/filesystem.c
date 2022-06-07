@@ -33,7 +33,6 @@
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
 #include <iosuhax.h>
-#include <iosuhax_devoptab.h>
 
 static bool dotUnlocked = false;
 static bool usbMounted = false;
