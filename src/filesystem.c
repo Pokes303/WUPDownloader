@@ -19,19 +19,14 @@
 
 #include <wut-fixups.h>
 
-#include <file.h>
 #include <filesystem.h>
 #include <iosuhaxx.h>
 #include <state.h>
 #include <utils.h>
 
 #include <stdbool.h>
-#include <stdio.h>
 
 #include <coreinit/filesystem.h>
-#include <coreinit/ios.h>
-#include <coreinit/thread.h>
-#include <coreinit/time.h>
 #include <iosuhax.h>
 
 static bool dotUnlocked = false;
