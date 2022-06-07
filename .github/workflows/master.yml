@@ -6,9 +6,17 @@ on:
       - master
 
 jobs:
+  clang-format:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: clang-format
+      run: |
+        docker run --rm -v ${PWD}:/project wiiuenv/clang-format:13.0.0-2 -r ./src ./include
   build-binary:
     name: Build binary
     runs-on: ubuntu-20.04
+    needs: clang-format
     steps:
       - name: checkout
         uses: actions/checkout@v2
