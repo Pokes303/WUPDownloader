@@ -35,6 +35,7 @@
 #include <iosuhax.h>
 #include <iosuhax_devoptab.h>
 
+static bool dotUnlocked = false;
 static bool usbMounted = false;
 static bool mlcMounted = false;
 static bool usb01;
@@ -51,7 +52,11 @@ static bool initFsa()
 	if(!openIOSUhax())
         return false;
 
-	return IOSUHAX_UnlockFSClient(__wut_devoptab_fs_client) >= 0;
+	if(dotUnlocked)
+		return true;
+
+	dotUnlocked = IOSUHAX_UnlockFSClient(__wut_devoptab_fs_client) == FS_STATUS_OK;
+	return dotUnlocked;
 }
 
 bool mountUSB()
@@ -62,13 +67,13 @@ bool mountUSB()
 	if(!initFsa())
 		return false;
 
-	int ret = IOSUHAX_FSMount(__wut_devoptab_fs_client, "/dev/usb01", "/vol/usb");
+	FSError ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/usb01", "/vol/usb");
 
-	if(ret < 0 || !dirExists("fs:/vol/usb"))
+	if(ret != FS_STATUS_OK)
 	{
 		debugPrintf("IOSUHAX: error mounting USB drive 1: %#010x", ret);
-		ret = IOSUHAX_FSMount(__wut_devoptab_fs_client, "/dev/usb02", "/vol/usb");
-		if(ret < 0 || !dirExists("fs:/vol/usb"))
+		ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/usb02", "/vol/usb");
+		if(ret != FS_STATUS_OK)
 		{
 			debugPrintf("IOSUHAX: error mounting USB drive 2: %#010x", ret);
 			return false;
@@ -91,8 +96,8 @@ bool mountMLC()
 	if(!initFsa())
 		return false;
 
-	int ret = IOSUHAX_FSMount(__wut_devoptab_fs_client, "/dev/mlc01", "/vol/mlc");
-	if(ret < 0 || !dirExists("fs:/vol/mlc"))
+	FSError ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/mlc01", "/vol/mlc");
+	if(ret != FS_STATUS_OK)
 	{
 		debugPrintf("IOSUHAX: error mounting MLC: %#010x", ret);
 		return false;
@@ -108,10 +113,14 @@ void unmountUSB()
 	if(!usbMounted)
 		return;
 
-	// TODO
-//	usbMounted = false;
-
-//	debugPrintf("IOSUHAX: USB drive unmounted!");
+	FSError ret = IOSUHAX_FSAUnmount(__wut_devoptab_fs_client, "/vol/usb");
+	if(ret == FS_STATUS_OK)
+	{
+		usbMounted = false;
+		debugPrintf("IOSUHAX: USB drive unmounted!");
+	}
+	else
+		debugPrintf("IOSUHAX: error unmounting USB drive: %#010x", ret);
 }
 
 void unmountMLC()
@@ -119,8 +128,12 @@ void unmountMLC()
 	if(!mlcMounted)
 		return;
 
-	// TODO
-//	mlcMounted = false;
-
-//	debugPrintf("IOSUHAX: MLC unmounted!");
+	FSError ret = IOSUHAX_FSAUnmount(__wut_devoptab_fs_client, "/vol/mlc");
+	if(ret == FS_STATUS_OK)
+	{
+		mlcMounted = false;
+		debugPrintf("IOSUHAX: MLC drive unmounted!");
+	}
+	else
+		debugPrintf("IOSUHAX: error unmounting MLC drive: %#010x", ret);
 }

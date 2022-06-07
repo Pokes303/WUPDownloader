@@ -106,14 +106,13 @@ PKG_CONFIG=$DEVKITPRO/portlibs/wiiu/bin/powerpc-eabi-pkg-config && \
  make -j$(nproc) install && \
  cd ../.. && \
  rm -rf curl && \
- git clone --recursive https://github.com/V10lator/libiosuhax -b newlib && \
+ git clone --recursive https://github.com/V10lator/libiosuhax -b lto --single-branch  && \
  cd libiosuhax && \
- git checkout 223162be384b296922365be41eadfd68416975f8 && \
  make -j$(nproc) && \
  make install && \
  cd .. && \
  rm -rf libiosuhax && \
- git clone --recursive https://github.com/yawut/libromfs-wiiu && \
+ git clone --recursive https://github.com/yawut/libromfs-wiiu --single-branch && \
  cd libromfs-wiiu && \
  make -j$(nproc) && \
  make install && \
