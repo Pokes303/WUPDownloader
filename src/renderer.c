@@ -423,26 +423,23 @@ void tabToFrame(int line, int column, const char *label, bool active)
 	curRect->x = x;
 	curRect->y = line;
 
-	int w;
-	SDL_QueryTexture(tabTex, NULL, NULL, &w, &(curRect->h));
-	curRect->w = w;
+	SDL_QueryTexture(tabTex, NULL, NULL, &(curRect->w), &(curRect->h));
 	SDL_RenderCopy(renderer, tabTex, NULL, curRect);
-	++curRect;
 
-	curRect->x = x + (w >> 1);
-	curRect->x -= FC_GetWidth(font, label) >> 1;
-	curRect->y = line + 20;
-	curRect->y -= FONT_SIZE >> 1;
+	SDL_Rect rect = { .x = x + (curRect->w >> 1), .y = line + 20, .w = curRect->w, .h = curRect->h };
+	rect.x -= FC_GetWidth(font, label) >> 1;
+	rect.y -= FONT_SIZE >> 1;
+	++curRect;
 
 	if(active)
 	{
-		FC_DrawBox(font, renderer, *curRect, label);
+		FC_DrawBox(font, renderer, rect, label);
 		return;
 	}
 
 	SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_WHITE);
 	co.a = 159;
-	FC_DrawBoxColor(font, renderer, *curRect, co, label);
+	FC_DrawBoxColor(font, renderer, rect, co, label);
 }
 
 int addErrorOverlay(const char *err)
@@ -460,9 +457,9 @@ int addErrorOverlay(const char *err)
 	if(i == MAX_OVERLAYS)
 		return -2;
 
-	int w = FC_GetWidth(font, err);
-	int h = FC_GetColumnHeight(font, w, err);
-	if(w == 0 || h == 0)
+	SDL_Rect rec = { .w = FC_GetWidth(font, err) };
+	rec.h = FC_GetColumnHeight(font, rec.w, err);
+	if(rec.w == 0 || rec.h == 0)
 		return -4;
 
 	errorOverlay[i].tex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_X, SCREEN_Y);
@@ -476,30 +473,29 @@ int addErrorOverlay(const char *err)
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, 0xC0);
 	SDL_RenderClear(renderer);
 
-	int x = (SCREEN_X >> 1) - (w >> 1);
-	int y = (SCREEN_Y >> 1) - (h >> 1);
+	rec.x = (SCREEN_X >> 1) - (rec.w >> 1);
+	rec.y = (SCREEN_Y >> 1) - (rec.h >> 1);
 
-	errorOverlay[i].rect[0].x = x - (FONT_SIZE >> 1);
-	errorOverlay[i].rect[0].y = y - (FONT_SIZE >> 1);
-	errorOverlay[i].rect[0].w = w + FONT_SIZE;
-	errorOverlay[i].rect[0].h = h + FONT_SIZE;
+	SDL_Rect *rect = errorOverlay[i].rect;
+
+	rect->x = rec.x - (FONT_SIZE >> 1);
+	rect->y = rec.y - (FONT_SIZE >> 1);
+	rect->w = rec.w + FONT_SIZE;
+	rect->h = rec.h + FONT_SIZE;
 	co = screenColorToSDLcolor(SCREEN_COLOR_RED);
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
-	SDL_RenderFillRect(renderer, errorOverlay[i].rect);
+	SDL_RenderFillRect(renderer, rect);
 
-	errorOverlay[i].rect[1].x = x - (FONT_SIZE >> 1) + 2;
-	errorOverlay[i].rect[1].y = y - (FONT_SIZE >> 1) + 2;
-	errorOverlay[i].rect[1].w = w + (FONT_SIZE - 4);
-	errorOverlay[i].rect[1].h = h + (FONT_SIZE - 4);
+	++rect;
+	rect->x = rec.x - ((FONT_SIZE >> 1) + 2);
+	rect->y = rec.y - ((FONT_SIZE >> 1) + 2);
+	rect->w = rec.w + (FONT_SIZE - 4);
+	rect->h = rec.h + (FONT_SIZE - 4);
 	co = screenColorToSDLcolor(SCREEN_COLOR_D_RED);
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
-	SDL_RenderFillRect(renderer, errorOverlay[i].rect + 1);
+	SDL_RenderFillRect(renderer, rect);
 
-	curRect->x = x;
-	curRect->y = y;
-	curRect->w = w;
-	curRect->h = h;
-	FC_DrawBox(font, renderer, *curRect, err);
+	FC_DrawBox(font, renderer, rec, err);
 
 	SDL_SetRenderTarget(renderer, frameBuffer);
 	drawFrame();
