@@ -66,12 +66,12 @@ bool mountUSB()
 	if(!initFsa())
 		return false;
 
-	FSError ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/usb01", "/vol/usb");
+	FSError ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/usb01", "/vol/usb", 0xFFFFFFFF, NULL, 0);
 
 	if(ret != FS_STATUS_OK)
 	{
 		debugPrintf("IOSUHAX: error mounting USB drive 1: %#010x", ret);
-		ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/usb02", "/vol/usb");
+		ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/usb02", "/vol/usb", 0xFFFFFFFF, NULL, 0);
 		if(ret != FS_STATUS_OK)
 		{
 			debugPrintf("IOSUHAX: error mounting USB drive 2: %#010x", ret);
@@ -95,7 +95,7 @@ bool mountMLC()
 	if(!initFsa())
 		return false;
 
-	FSError ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/mlc01", "/vol/mlc");
+	FSError ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/mlc01", "/vol/mlc", 0xFFFFFFFF, NULL, 0);
 	if(ret != FS_STATUS_OK)
 	{
 		debugPrintf("IOSUHAX: error mounting MLC: %#010x", ret);
