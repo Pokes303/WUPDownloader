@@ -486,9 +486,10 @@ int addErrorOverlay(const char *err)
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
 	SDL_RenderFillRect(renderer, rect);
 
+	SDL_Rect *or = rect;
 	++rect;
-	rect->x = rec.x - ((FONT_SIZE >> 1) + 2);
-	rect->y = rec.y - ((FONT_SIZE >> 1) + 2);
+	rect->x = or->x + 2;
+	rect->y = or->y + 2;
 	rect->w = rec.w + (FONT_SIZE - 4);
 	rect->h = rec.h + (FONT_SIZE - 4);
 	co = screenColorToSDLcolor(SCREEN_COLOR_D_RED);
