@@ -87,7 +87,6 @@ static void innerMain(bool validCfw)
 	}
 
 	FSInit();
-	AXInit();
 #ifdef NUSSPLI_HBL
 	romfsInit();
 #endif
@@ -270,7 +269,6 @@ static void innerMain(bool validCfw)
 	romfsExit();
 #endif
 	FSShutdown();
-	AXQuit();
 }
 
 static bool cfwValid()
@@ -314,6 +312,11 @@ static bool cfwValid()
 int main()
 {
 	initState();
+
+	// TODO: Remove me
+	AXInit();
+	AXQuit();
+
 #ifdef NUSSPLI_HBL
 	bool jailbreaking;
 	uint64_t tid = OSGetTitleID();
