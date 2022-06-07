@@ -772,6 +772,18 @@ void colorStartNewFrame(uint32_t color)
 		return;
 
 	clearFrame();
+
+#ifdef NUSSPLI_DEBUG
+	size_t i = 0;
+	SDL_Rect *b = rect;
+	while(b != curRect)
+	{
+		b++;
+		i++;
+	}
+	debugPrintf("%u/%u rects have been used in this frame", i, SDL_RECTS);
+#endif
+
 	curRect = rect;
 
 	if(color == SCREEN_COLOR_BLUE)
