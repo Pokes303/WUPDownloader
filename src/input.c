@@ -219,10 +219,10 @@ static bool SWKBD_Show(SWKBD_Args *args, KeyboardLayout layout, KeyboardType typ
 			appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__English;
 	}
 
-	appearArg.keyboardArg.configArg.unk_0x04 = lastUsedController;
-	appearArg.keyboardArg.configArg.unk_0x08 = layout;
+	appearArg.keyboardArg.configArg.controllerType = lastUsedController;
+	appearArg.keyboardArg.configArg.keyboardMode = layout;
 
-	appearArg.inputFormArg.unk_0x00 = type;
+	appearArg.inputFormArg.type = type;
 	args->globalMaxlength = appearArg.inputFormArg.maxTextLength = maxlength;
 
 	bool kbdVisible = Swkbd_AppearInputForm(&appearArg);
@@ -278,7 +278,7 @@ bool SWKBD_Init()
 
 	OSBlockSet(swkbd_msg, 0, sizeof(OSMessage) * SWKBD_QUEUE_SIZE);
 	OSInitMessageQueueEx(&swkbd_queue, swkbd_msg, SWKBD_QUEUE_SIZE, "NUSspli SWKBD calc queue");
-	
+
 	switch(getKeyboardLanguage())
 	{
 		case Swkbd_LanguageType__Japanese:
@@ -311,22 +311,23 @@ bool SWKBD_Init()
 	OSDynLoad_SetAllocator(oAlloc, oFree);
 
 	OSBlockSet(&appearArg, 0, sizeof(Swkbd_AppearArg));
-	appearArg.keyboardArg.configArg.unk_0x0C = 0xFFFFFFFF;
+	appearArg.keyboardArg.configArg.accessFlags = 0xFFFFFFFF;
 	appearArg.keyboardArg.configArg.unk_0x14 = -1;
 	appearArg.keyboardArg.configArg.framerate = FRAMERATE_60FPS;
 	appearArg.keyboardArg.configArg.showCursor = true;
 	appearArg.keyboardArg.configArg.unk_0xA4 = -1;
+	appearArg.keyboardArg.configArg.disableNewLine = true;
 
 	appearArg.keyboardArg.receiverArg.unk_0x14 = 2;
 
 	appearArg.inputFormArg.unk_0x04 = -1;
-	appearArg.inputFormArg.unk_0x08 = 0;
-	appearArg.inputFormArg.unk_0x0C = 0;
-	appearArg.inputFormArg.unk_0x14 = 0;
+	appearArg.inputFormArg.initialText = NULL;
+	appearArg.inputFormArg.hintText = NULL;
+	appearArg.inputFormArg.pwMode = Swkbd_PW_mode__None;
 	appearArg.inputFormArg.unk_0x18 = 0x00008000; // Monospace seperator after 16 chars (for 32 char keys)
-	appearArg.inputFormArg.unk_0x1C = true;
-	appearArg.inputFormArg.unk_0x1D = true;
-	appearArg.inputFormArg.unk_0x1E = true;
+	appearArg.inputFormArg.drawInput0Cursor = true;
+	appearArg.inputFormArg.higlightInitialText = true;
+	appearArg.inputFormArg.showCopyPasteButtons = true;
 
 	return ret;
 }

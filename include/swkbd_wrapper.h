@@ -26,6 +26,8 @@
 
 #include <nn/swkbd.h>
 
+#include <input.h>
+
 #ifdef __cplusplus
 	extern "C" {
 #endif
@@ -71,30 +73,52 @@ typedef enum
    Swkbd_LanguageType2__Russian   = 12,
 } Swkbd_LanguageType2;
 
+typedef enum
+{
+   Swkbd_PW_mode__None  = 0,
+   Swkbd_PW_mode__Hide = 1,
+   Swkbd_PW_mode__Fade = 2,
+} Swkbd_PW_mode;
+
 //Structs also from the link above
 typedef struct
 {
    Swkbd_LanguageType languageType;
-   uint32_t unk_0x04;
-   uint32_t unk_0x08;
-   uint32_t unk_0x0C;
+   ControllerType controllerType;
+   KeyboardLayout keyboardMode;
+   uint32_t accessFlags;
    Swkbd_LanguageType2 languageType2;
    int32_t unk_0x14;
    bool unk_0x18;
    char16_t *str;
-   WUT_UNKNOWN_BYTES(0x9C - 0x20);
+   char16_t numpadCharLeft;
+   char16_t numpadCharRight;
+   bool showWordSuggestions;
+   WUT_PADDING_BYTES(3);
+   uint8_t unk_0x28;
+   uint8_t unk_0x29;
+   uint8_t unk_0x2A;
+   bool disableNewLine;
+   WUT_UNKNOWN_BYTES(0x9C - 0x2C);
    uint32_t framerate;
    bool showCursor;
    int32_t unk_0xA4;
 } Swkbd_ConfigArg;
 WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x00, languageType);
-WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x04, unk_0x04);
-WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x08, unk_0x08);
-WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x0C, unk_0x0C);
+WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x04, controllerType);
+WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x08, keyboardMode);
+WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x0C, accessFlags);
 WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x10, languageType2);
 WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x14, unk_0x14);
 WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x18, unk_0x18);
 WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x1C, str);
+WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x20, numpadCharLeft);
+WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x22, numpadCharRight);
+WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x24, showWordSuggestions);
+WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x28, unk_0x28);
+WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x29, unk_0x29);
+WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x2A, unk_0x2A);
+WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x2B, disableNewLine);
 WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0x9C, framerate);
 WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0xA0, showCursor);
 WUT_CHECK_OFFSET(Swkbd_ConfigArg, 0xA4, unk_0xA4);
@@ -126,28 +150,28 @@ WUT_CHECK_SIZE(Swkbd_KeyboardArg, 0xC0);
 
 typedef struct
 {
-   uint32_t unk_0x00;
+   KeyboardType type;
    int32_t unk_0x04;
-   uint32_t unk_0x08;
-   uint32_t unk_0x0C;
+   const char16_t *initialText;
+   const char16_t *hintText;
    int32_t maxTextLength;
-   uint32_t unk_0x14;
+   Swkbd_PW_mode pwMode;
    uint32_t unk_0x18;
-   bool unk_0x1C;
-   bool unk_0x1D;
-   bool unk_0x1E;
+   bool drawInput0Cursor;
+   bool higlightInitialText;
+   bool showCopyPasteButtons;
    WUT_PADDING_BYTES(1);
 } Swkbd_InputFormArg;
-WUT_CHECK_OFFSET(Swkbd_InputFormArg, 0x00, unk_0x00);
+WUT_CHECK_OFFSET(Swkbd_InputFormArg, 0x00, type);
 WUT_CHECK_OFFSET(Swkbd_InputFormArg, 0x04, unk_0x04);
-WUT_CHECK_OFFSET(Swkbd_InputFormArg, 0x08, unk_0x08);
-WUT_CHECK_OFFSET(Swkbd_InputFormArg, 0x0C, unk_0x0C);
+WUT_CHECK_OFFSET(Swkbd_InputFormArg, 0x08, initialText);
+WUT_CHECK_OFFSET(Swkbd_InputFormArg, 0x0C, hintText);
 WUT_CHECK_OFFSET(Swkbd_InputFormArg, 0x10, maxTextLength);
-WUT_CHECK_OFFSET(Swkbd_InputFormArg, 0x14, unk_0x14);
+WUT_CHECK_OFFSET(Swkbd_InputFormArg, 0x14, pwMode);
 WUT_CHECK_OFFSET(Swkbd_InputFormArg, 0x18, unk_0x18);
-WUT_CHECK_OFFSET(Swkbd_InputFormArg, 0x1C, unk_0x1C);
-WUT_CHECK_OFFSET(Swkbd_InputFormArg, 0x1D, unk_0x1D);
-WUT_CHECK_OFFSET(Swkbd_InputFormArg, 0x1E, unk_0x1E);
+WUT_CHECK_OFFSET(Swkbd_InputFormArg, 0x1C, drawInput0Cursor);
+WUT_CHECK_OFFSET(Swkbd_InputFormArg, 0x1D, higlightInitialText);
+WUT_CHECK_OFFSET(Swkbd_InputFormArg, 0x1E, showCopyPasteButtons);
 WUT_CHECK_SIZE(Swkbd_InputFormArg, 0x20);
 
 typedef struct
