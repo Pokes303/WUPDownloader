@@ -54,7 +54,7 @@ static bool initFsa()
 	if(dotUnlocked)
 		return true;
 
-	dotUnlocked = IOSUHAX_UnlockFSClient(__wut_devoptab_fs_client) == FS_STATUS_OK;
+	dotUnlocked = IOSUHAX_UnlockFSClient(__wut_devoptab_fs_client) == FS_ERROR_NOERROR;
 	return dotUnlocked;
 }
 
@@ -68,11 +68,11 @@ bool mountUSB()
 
 	FSError ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/usb01", "/vol/usb", 0xFFFFFFFF, NULL, 0);
 
-	if(ret != FS_STATUS_OK)
+	if(ret != FS_ERROR_NOERROR)
 	{
 		debugPrintf("IOSUHAX: error mounting USB drive 1: %#010x", ret);
 		ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/usb02", "/vol/usb", 0xFFFFFFFF, NULL, 0);
-		if(ret != FS_STATUS_OK)
+		if(ret != FS_ERROR_NOERROR)
 		{
 			debugPrintf("IOSUHAX: error mounting USB drive 2: %#010x", ret);
 			return false;
@@ -96,7 +96,7 @@ bool mountMLC()
 		return false;
 
 	FSError ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/mlc01", "/vol/mlc", 0xFFFFFFFF, NULL, 0);
-	if(ret != FS_STATUS_OK)
+	if(ret != FS_ERROR_NOERROR)
 	{
 		debugPrintf("IOSUHAX: error mounting MLC: %#010x", ret);
 		return false;
@@ -113,7 +113,7 @@ void unmountUSB()
 		return;
 
 	FSError ret = IOSUHAX_FSAUnmount(__wut_devoptab_fs_client, "/vol/usb");
-	if(ret == FS_STATUS_OK)
+	if(ret == FS_ERROR_NOERROR)
 	{
 		usbMounted = false;
 		debugPrintf("IOSUHAX: USB drive unmounted!");
@@ -128,7 +128,7 @@ void unmountMLC()
 		return;
 
 	FSError ret = IOSUHAX_FSAUnmount(__wut_devoptab_fs_client, "/vol/mlc");
-	if(ret == FS_STATUS_OK)
+	if(ret == FS_ERROR_NOERROR)
 	{
 		mlcMounted = false;
 		debugPrintf("IOSUHAX: MLC drive unmounted!");
