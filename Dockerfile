@@ -1,5 +1,5 @@
 # build wut
-FROM wiiuenv/devkitppc:20220523 AS final
+FROM wiiuenv/devkitppc:20220605 AS final
 
 ENV openssl_ver=1.1.1o \
  curl_ver=7.83.1 \
