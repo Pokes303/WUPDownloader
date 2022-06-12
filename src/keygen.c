@@ -19,7 +19,6 @@
 
 #include <wut-fixups.h>
 
-#include <openssl/aes.h>
 #include <openssl/evp.h>
 #include <openssl/md5.h>
 
@@ -33,6 +32,34 @@
 #include <coreinit/memory.h>
 
 static const uint8_t KEYGEN_SECRET[10] = { 0xfd, 0x04, 0x01, 0x05, 0x06, 0x0b, 0x11, 0x1c, 0x2d, 0x49 };
+
+static int encryptAES(unsigned char *plaintext, int plaintext_len, unsigned char *key,
+            unsigned char *iv, unsigned char *ciphertext)
+{
+    EVP_CIPHER_CTX *ctx;
+
+    int len;
+
+    int ciphertext_len;
+
+    if(!(ctx = EVP_CIPHER_CTX_new()))
+        return 0;
+
+    if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, key, iv))
+        return 0;
+
+    if(1 != EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintext_len))
+        return 0;
+    ciphertext_len = len;
+
+    if(1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len))
+        return 0;
+    ciphertext_len += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+
+    return ciphertext_len;
+}
 
 static inline const char *transformPassword(TITLE_KEY in)
 {
@@ -93,10 +120,8 @@ bool generateKey(const TitleEntry *te, char *out)
 	OSBlockMove(ct, &(te->tid), 8, false);
 	OSBlockSet(ct + 8, 0, 8);
 
-	AES_KEY aesk;
 	unsigned char tmp[17];
-	AES_set_encrypt_key(getCommonKey(), 128, &aesk);
-	AES_cbc_encrypt(bh, tmp, 16, &aesk, ct, AES_ENCRYPT);
+	encryptAES(bh, 16, getCommonKey(), ct, tmp);
 
 	unsigned char *tmpc = tmp;
 	--tmpc;
