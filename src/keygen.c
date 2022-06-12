@@ -33,6 +33,15 @@
 
 static const uint8_t KEYGEN_SECRET[10] = { 0xfd, 0x04, 0x01, 0x05, 0x06, 0x0b, 0x11, 0x1c, 0x2d, 0x49 };
 
+static void getMD5(const uint8_t *data, size_t data_len, uint8_t *hash)
+{
+	EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+	EVP_DigestInit(ctx, EVP_md5());
+	EVP_DigestUpdate(ctx, data, data_len);
+	EVP_DigestFinal(ctx, hash, NULL);
+	EVP_MD_CTX_free(ctx);
+}
+
 static int encryptAES(unsigned char *plaintext, int plaintext_len, unsigned char *key,
             unsigned char *iv, unsigned char *ciphertext)
 {
@@ -109,7 +118,7 @@ bool generateKey(const TitleEntry *te, char *out)
 	uint8_t bh[j];
 	OSBlockMove(bh, KEYGEN_SECRET, 10, false);
 	OSBlockMove(bh + 10, ++ti, i, false);
-	MD5(bh, j, bh);
+	getMD5(bh, j, bh);
 
 	const char *pw = transformPassword(te->key);
 	debugPrintf("Using password \"%s\"", pw);
