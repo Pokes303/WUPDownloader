@@ -20,7 +20,6 @@
 #include <wut-fixups.h>
 
 #include <openssl/evp.h>
-#include <openssl/md5.h>
 
 #include <otp.h>
 #include <titles.h>
