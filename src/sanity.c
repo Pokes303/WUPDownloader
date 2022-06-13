@@ -21,8 +21,6 @@
 
 #include <wut-fixups.h>
 
-#include <openssl/md5.h>
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -136,7 +134,7 @@ bool sanityCheck()
 				break;
 			}
 
-			MD5(buf, s, m);
+			getMD5(buf, s, m);
 			for(int j = 0; j < 16; ++j)
 			{
 				if(m[j] != md5[i][j])
