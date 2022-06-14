@@ -139,10 +139,16 @@ bool initCrypto()
 void getMD5(const uint8_t *data, size_t data_len, uint8_t *hash)
 {
 	EVP_MD_CTX *ctx = EVP_MD_CTX_new();
-	EVP_DigestInit(ctx, EVP_md5());
-	EVP_DigestUpdate(ctx, data, data_len);
-	EVP_DigestFinal(ctx, hash, NULL);
-	EVP_MD_CTX_free(ctx);
+	if(ctx)
+	{
+		if(EVP_DigestInit(ctx, EVP_md5()) == 1)
+		{
+			if(EVP_DigestUpdate(ctx, data, data_len) == 1)
+				EVP_DigestFinal(ctx, hash, NULL);
+		}
+
+		EVP_MD_CTX_free(ctx);
+	}
 }
 
 int encryptAES(const unsigned char *plaintext, int plaintext_len, const unsigned char *key, const unsigned char *iv, unsigned char *ciphertext)
