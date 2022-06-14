@@ -145,30 +145,26 @@ void getMD5(const uint8_t *data, size_t data_len, uint8_t *hash)
 	EVP_MD_CTX_free(ctx);
 }
 
-int encryptAES(unsigned char *plaintext, int plaintext_len, unsigned char *key,
-            unsigned char *iv, unsigned char *ciphertext)
+int encryptAES(const unsigned char *plaintext, int plaintext_len, const unsigned char *key, const unsigned char *iv, unsigned char *ciphertext)
 {
-    EVP_CIPHER_CTX *ctx;
+	EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+	int ret = 0;
 
-    int len;
+	if(ctx)
+	{
+		if(EVP_EncryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, key, iv) == 1)
+		{
+			int len;
+			if(EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintext_len) == 1)
+			{
+				int len2;
+				if(EVP_EncryptFinal_ex(ctx, ciphertext + len, &len2) == 1)
+					ret = len + len2;
+			}
+		}
 
-    int ciphertext_len;
+		EVP_CIPHER_CTX_free(ctx);
+	}
 
-    if(!(ctx = EVP_CIPHER_CTX_new()))
-        return 0;
-
-    if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, key, iv))
-        return 0;
-
-    if(1 != EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintext_len))
-        return 0;
-    ciphertext_len = len;
-
-    if(1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len))
-        return 0;
-    ciphertext_len += len;
-
-    EVP_CIPHER_CTX_free(ctx);
-
-    return ciphertext_len;
+	return ret;
 }
