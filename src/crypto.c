@@ -27,6 +27,7 @@
 #include <crypto.h>
 #include <thread.h>
 
+#include <openssl/evp.h>
 #include <openssl/rand.h>
 #include <openssl/rand_drbg.h>
 #include <openssl/ssl.h>
@@ -133,4 +134,43 @@ bool initCrypto()
 	return OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS, NULL) == 1 &&
 		RAND_set_rand_method(&srm) == 1 &&
 		RAND_DRBG_set_reseed_defaults(0, 0, 0, 0) == 1;
+}
+
+bool getMD5(const uint8_t *data, size_t data_len, uint8_t *hash)
+{
+	EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+	bool ret = false;
+
+	if(ctx)
+	{
+		if(EVP_DigestInit(ctx, EVP_md5()) == 1)
+		{
+			if(EVP_DigestUpdate(ctx, data, data_len) == 1)
+				ret = EVP_DigestFinal(ctx, hash, NULL) == 1;
+		}
+
+		EVP_MD_CTX_free(ctx);
+	}
+
+	return ret;
+}
+
+bool encryptAES(const unsigned char *plaintext, int plaintext_len, const unsigned char *key, const unsigned char *iv, unsigned char *ciphertext)
+{
+	EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+	bool ret = false;
+
+	if(ctx)
+	{
+		if(EVP_EncryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, key, iv) == 1)
+		{
+			int len;
+			if(EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintext_len) == 1)
+				ret = EVP_EncryptFinal_ex(ctx, ciphertext + len, &len) == 1;
+		}
+
+		EVP_CIPHER_CTX_free(ctx);
+	}
+
+	return ret;
 }

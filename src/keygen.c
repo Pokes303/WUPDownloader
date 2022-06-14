@@ -19,10 +19,9 @@
 
 #include <wut-fixups.h>
 
-#include <openssl/aes.h>
 #include <openssl/evp.h>
-#include <openssl/md5.h>
 
+#include <crypto.h>
 #include <otp.h>
 #include <titles.h>
 #include <utils.h>
@@ -82,7 +81,8 @@ bool generateKey(const TitleEntry *te, char *out)
 	uint8_t bh[j];
 	OSBlockMove(bh, KEYGEN_SECRET, 10, false);
 	OSBlockMove(bh + 10, ++ti, i, false);
-	MD5(bh, j, bh);
+	if(!getMD5(bh, j, bh))
+		return false;
 
 	const char *pw = transformPassword(te->key);
 	debugPrintf("Using password \"%s\"", pw);
@@ -93,10 +93,9 @@ bool generateKey(const TitleEntry *te, char *out)
 	OSBlockMove(ct, &(te->tid), 8, false);
 	OSBlockSet(ct + 8, 0, 8);
 
-	AES_KEY aesk;
 	unsigned char tmp[17];
-	AES_set_encrypt_key(getCommonKey(), 128, &aesk);
-	AES_cbc_encrypt(bh, tmp, 16, &aesk, ct, AES_ENCRYPT);
+	if(!encryptAES(bh, 16, getCommonKey(), ct, tmp))
+		return false;
 
 	unsigned char *tmpc = tmp;
 	--tmpc;
