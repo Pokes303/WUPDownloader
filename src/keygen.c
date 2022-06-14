@@ -19,6 +19,8 @@
 
 #include <wut-fixups.h>
 
+#include <openssl/evp.h>
+
 #include <crypto.h>
 #include <otp.h>
 #include <titles.h>
