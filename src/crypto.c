@@ -29,7 +29,6 @@
 
 #include <openssl/evp.h>
 #include <openssl/rand.h>
-#include <openssl/rand_drbg.h>
 #include <openssl/ssl.h>
 
 #include <coreinit/time.h>
@@ -132,8 +131,7 @@ bool initCrypto()
 	reseed();
 	spinCreateLock(rngLock, false);
 	return OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS, NULL) == 1 &&
-		RAND_set_rand_method(&srm) == 1 &&
-		RAND_DRBG_set_reseed_defaults(0, 0, 0, 0) == 1;
+		RAND_set_rand_method(&srm) == 1;
 }
 
 bool getMD5(const uint8_t *data, size_t data_len, uint8_t *hash)
