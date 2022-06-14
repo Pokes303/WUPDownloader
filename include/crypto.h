@@ -34,8 +34,8 @@
 bool initCrypto();
 void addEntropy(void *e, size_t len);
 int osslBytes(unsigned char *buf, int num);
-void getMD5(const uint8_t *data, size_t data_len, uint8_t *hash);
-int encryptAES(const unsigned char *plaintext, int plaintext_len, const unsigned char *key, const unsigned char *iv, unsigned char *ciphertext);
+bool getMD5(const uint8_t *data, size_t data_len, uint8_t *hash);
+bool encryptAES(const unsigned char *plaintext, int plaintext_len, const unsigned char *key, const unsigned char *iv, unsigned char *ciphertext);
 
 #ifdef __cplusplus
 	}

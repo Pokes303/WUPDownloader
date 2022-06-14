@@ -81,7 +81,8 @@ bool generateKey(const TitleEntry *te, char *out)
 	uint8_t bh[j];
 	OSBlockMove(bh, KEYGEN_SECRET, 10, false);
 	OSBlockMove(bh + 10, ++ti, i, false);
-	getMD5(bh, j, bh);
+	if(!getMD5(bh, j, bh))
+		return false;
 
 	const char *pw = transformPassword(te->key);
 	debugPrintf("Using password \"%s\"", pw);
@@ -93,7 +94,8 @@ bool generateKey(const TitleEntry *te, char *out)
 	OSBlockSet(ct + 8, 0, 8);
 
 	unsigned char tmp[17];
-	encryptAES(bh, 16, getCommonKey(), ct, tmp);
+	if(!encryptAES(bh, 16, getCommonKey(), ct, tmp))
+		return false;
 
 	unsigned char *tmpc = tmp;
 	--tmpc;
