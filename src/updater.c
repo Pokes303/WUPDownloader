@@ -23,7 +23,6 @@
 #include <deinstaller.h>
 #include <downloader.h>
 #include <file.h>
-#include <filesystem.h>
 #include <input.h>
 #include <installer.h>
 #include <ioQueue.h>

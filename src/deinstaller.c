@@ -34,9 +34,7 @@
 #include <crypto.h>
 #include <deinstaller.h>
 #include <file.h>
-#include <filesystem.h>
 #include <input.h>
-#include <ioQueue.h>
 #include <notifications.h>
 #include <osdefs.h>
 #include <renderer.h>

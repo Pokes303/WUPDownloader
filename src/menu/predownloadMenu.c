@@ -24,7 +24,6 @@
 #include <config.h>
 #include <deinstaller.h>
 #include <downloader.h>
-#include <filesystem.h>
 #include <input.h>
 #include <renderer.h>
 #include <state.h>
@@ -167,8 +166,7 @@ void predownloadMenu(const TitleEntry *entry)
 {
 	MCPTitleListType titleList;
 	bool installed = isInstalled(entry, &titleList);
-	bool usbMounted = mountUSB();
-    mountMLC();
+	bool usbMounted = getUSB();
     NUSDEV dlDev = usbMounted && dlToUSBenabled() ? NUSDEV_USB : NUSDEV_SD;
 	bool keepFiles = true;
 	char folderName[FILENAME_MAX - 11];

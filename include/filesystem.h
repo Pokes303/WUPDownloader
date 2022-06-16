@@ -1,6 +1,6 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
- * Copyright (c) 2020-2021 V10lator <v10lator@myway.de>                    *
+ * Copyright (c) 2020-2022 V10lator <v10lator@myway.de>                    *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
@@ -34,17 +34,7 @@ typedef enum
 	NUSDEV_MLC,
 } NUSDEV;
 
-bool mountMLC();
-void unmountMLC();
-bool mountUSB();
-void unmountUSB();
-bool isUSB01();
-
-#define unmountAll()	\
-{						\
-	unmountUSB();		\
-	unmountMLC();		\
-}
+int getUSB();
 
 #ifdef __cplusplus
 	}

@@ -44,6 +44,8 @@
 #include <utils.h>
 #include <menu/utils.h>
 
+#define SD_PATH "/vol/app_sd"
+
 static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUsb, bool keepFiles)
 {
 	debugPrintf("Cleaning up...");
@@ -68,7 +70,7 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUs
 		removeDirectory(path);
 
 	char *importPath = getStaticPathBuffer(2);
-	strcpy(importPath, toUsb ? "fs:/vol/usb/usr/import/" : "fs:/vol/mlc/usr/import/");
+	strcpy(importPath, toUsb ? "fs:/vol/storage_usb01/usr/import/" : "fs:/vol/storage_mlc01/usr/import/");
 	DIR *dir = opendir(importPath);
 
 	if(dir != NULL)
@@ -116,16 +118,12 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	switch(dev)
 	{
 		case NUSDEV_USB:
-			strcpy(newPath, isUSB01() ? "/vol/storage_usb01" : "/vol/storage_usb02");
-			strcpy(newPath + 18, path + 11);
+		case NUSDEV_MLC:
+			strcpy(newPath, path + 3);
 			break;
 		case NUSDEV_SD:
-			strcpy(newPath, "/vol/app_sd");
-			strcpy(newPath + 11, path + 18);
-			break;
-		case NUSDEV_MLC:
-			strcpy(newPath, "/vol/storage_mlc01");
-			strcpy(newPath + 18, path + 11);
+			OSBlockMove(newPath, SD_PATH, strlen(SD_PATH), false);
+			strcpy(newPath + strlen(SD_PATH), path + 18);
 	}
 	
 	McpData data;
@@ -181,10 +179,8 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	data.err = MCP_InstallSetTargetDevice(mcpHandle, target);
 	if(data.err == 0)
 	{
-		if(toUsb && !isUSB01())
-			++target;
-
-		data.err = MCP_InstallSetTargetUsb(mcpHandle, target);
+		if(toUsb && getUSB() == 2)
+			data.err = MCP_InstallSetTargetUsb(mcpHandle, ++target);
 	}
 
 	if(data.err != 0)

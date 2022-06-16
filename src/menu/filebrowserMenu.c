@@ -78,9 +78,8 @@ char *fileBrowserMenu()
 	
 	size_t foldersSize = 1;
 	size_t cursor, pos;
-	bool usbMounted = mountUSB();
+	int usbMounted = getUSB();
 	NUSDEV activeDevice = usbMounted ? NUSDEV_USB : NUSDEV_SD;
-	mountMLC();
 	bool mov;
 	DIR *dir;
 	char *ret = NULL;
@@ -98,7 +97,7 @@ refreshDirList:
 		ret = NULL;
 	}
 
-	dir = opendir(activeDevice == NUSDEV_USB ? INSTALL_DIR_USB : activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC);
+	dir = opendir(activeDevice == NUSDEV_USB ? (usbMounted == 1 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC));
 	if(dir != NULL)
 	{
 		size_t len;
@@ -138,11 +137,11 @@ refreshDirList:
 		{
 			if(dir != NULL)
 			{
-				size_t len = strlen(activeDevice == NUSDEV_USB ? INSTALL_DIR_USB : activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC) + strlen(folders[cursor + pos]) + 1;
+				size_t len = strlen(activeDevice == NUSDEV_USB ? (usbMounted == 1 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC)) + strlen(folders[cursor + pos]) + 1;
 				ret = MEMAllocFromDefaultHeap(len);
 				if(ret != NULL)
 				{
-					strcpy(ret, activeDevice == NUSDEV_USB ? INSTALL_DIR_USB : activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC);
+					strcpy(ret, activeDevice == NUSDEV_USB ? (usbMounted == 1 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC));
 					strcat(ret, folders[cursor + pos]);
 				}
 				goto exitFileBrowserMenu;

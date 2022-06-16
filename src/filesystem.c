@@ -19,117 +19,22 @@
 
 #include <wut-fixups.h>
 
+#include <file.h>
 #include <filesystem.h>
-#include <iosuhaxx.h>
-#include <state.h>
-#include <utils.h>
 
-#include <stdbool.h>
+static int usb = -1;
 
-#include <coreinit/filesystem.h>
-#include <iosuhax.h>
-
-#define IOSUHAX_FSA_DEFFLAGS	0x0 // TODO: What do they do?
-
-static bool dotUnlocked = false;
-static bool usbMounted = false;
-static bool mlcMounted = false;
-static bool usb01;
-
-extern FSClient *__wut_devoptab_fs_client;
-
-bool isUSB01()
+int getUSB()
 {
-	return usb01;
-}
-
-static bool initFsa()
-{
-	if(!openIOSUhax())
-        return false;
-
-	if(dotUnlocked)
-		return true;
-
-	dotUnlocked = IOSUHAX_UnlockFSClient(__wut_devoptab_fs_client) == FS_ERROR_NOERROR;
-	return dotUnlocked;
-}
-
-bool mountUSB()
-{
-	if(usbMounted)
-		return true;
-
-	if(!initFsa())
-		return false;
-
-	FSError ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/usb01", "/vol/usb", IOSUHAX_FSA_DEFFLAGS, NULL, 0);
-
-	if(ret != FS_ERROR_NOERROR)
+	if(usb == -1)
 	{
-		debugPrintf("IOSUHAX: error mounting USB drive 1: %#010x", ret);
-		ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/usb02", "/vol/usb", IOSUHAX_FSA_DEFFLAGS, NULL, 0);
-		if(ret != FS_ERROR_NOERROR)
-		{
-			debugPrintf("IOSUHAX: error mounting USB drive 2: %#010x", ret);
-			return false;
-		}
-		usb01 = false;
-	}
-	else
-		usb01 = true;
-
-	debugPrintf("IOSUHAX: USB drive %s mounted!", usb01 ? "1" : "2");
-	usbMounted = true;
-	return true;
-}
-
-bool mountMLC()
-{
-	if(mlcMounted)
-		return true;
-
-	if(!initFsa())
-		return false;
-
-	FSError ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/dev/mlc01", "/vol/mlc", IOSUHAX_FSA_DEFFLAGS, NULL, 0);
-	if(ret != FS_ERROR_NOERROR)
-	{
-		debugPrintf("IOSUHAX: error mounting MLC: %#010x", ret);
-		return false;
+		if(dirExists("fs:/vol/storage_usb01/usr"))
+			usb = 1;
+		else if(dirExists("fs:/vol/storage_usb02/usr"))
+			usb = 2;
+		else
+			usb = 0;
 	}
 
-	debugPrintf("IOSUHAX: MLC mounted!");
-	mlcMounted = true;
-	return true;
-}
-
-void unmountUSB()
-{
-	if(!usbMounted)
-		return;
-
-	FSError ret = IOSUHAX_FSAUnmount(__wut_devoptab_fs_client, "/vol/usb");
-	if(ret == FS_ERROR_NOERROR)
-	{
-		usbMounted = false;
-		debugPrintf("IOSUHAX: USB drive unmounted!");
-	}
-	else
-		debugPrintf("IOSUHAX: error unmounting USB drive: %#010x", ret);
-}
-
-void unmountMLC()
-{
-	if(!mlcMounted)
-		return;
-
-	FSError ret = IOSUHAX_FSAUnmount(__wut_devoptab_fs_client, "/vol/mlc");
-	if(ret == FS_ERROR_NOERROR)
-	{
-		mlcMounted = false;
-		debugPrintf("IOSUHAX: MLC drive unmounted!");
-	}
-	else
-		debugPrintf("IOSUHAX: error unmounting MLC drive: %#010x", ret);
+	return usb;
 }
