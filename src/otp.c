@@ -26,7 +26,6 @@
 #include <iosuhax.h>
 
 #include <crypto.h>
-#include <iosuhaxx.h>
 #include <otp.h>
 #include <utils.h>
 
@@ -37,29 +36,24 @@ uint8_t *getCommonKey()
 	if(otp_common_key[0] == 0x00)
 	{
 		OSTime t = OSGetSystemTime();
-		if(openIOSUhax())
+		uint8_t buf[(0x38 * 4) + 16];
+		if(IOSUHAX_read_otp(buf, (0x38 * 4) + 16) >= 0)
 		{
-			uint8_t buf[(0x38 * 4) + 16];
-			if(IOSUHAX_read_otp(buf, (0x38 * 4) + 16) >= 0)
-			{
-				OSBlockMove(otp_common_key, buf + (0x38 * 4), 16, false);
+			OSBlockMove(otp_common_key, buf + (0x38 * 4), 16, false);
 
-				t = OSGetSystemTime() - t;
-				addEntropy(&t, sizeof(OSTime));
+			t = OSGetSystemTime() - t;
+			addEntropy(&t, sizeof(OSTime));
 
 #ifdef NUSSPLI_DEBUG
-				char ret[33];
-				char *tmp = &ret[0];
-				for(int i = 0; i < 16; i++, tmp += 2)
-					sprintf(tmp, "%02x", otp_common_key[i]);
-				debugPrintf("Common key: %s", ret);
+			char ret[33];
+			char *tmp = &ret[0];
+			for(int i = 0; i < 16; i++, tmp += 2)
+				sprintf(tmp, "%02x", otp_common_key[i]);
+			debugPrintf("Common key: %s", ret);
 #endif
-			}
-			else
-				debugPrintf("Common key: IOSUHAX_read_otp() failed!");
 		}
 		else
-			debugPrintf("Common key: openIOSUhax() failed!");
+			debugPrintf("Common key: IOSUHAX_read_otp() failed!");
 	}
 
 	return otp_common_key;

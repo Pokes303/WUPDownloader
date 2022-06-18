@@ -26,7 +26,6 @@
 #include <file.h>
 #include <input.h>
 #include <installer.h>
-#include <iosuhaxx.h>
 #include <ioQueue.h>
 #include <jailbreak.h>
 #include <notifications.h>
@@ -113,7 +112,7 @@ static void innerMain(bool validCfw)
 				writeScreenLog(1);
 				drawFrame();
 
-				if(openIOSUhax())
+				if(IOSUHAX_Open(NULL) >= 0)
 				{
 					addToScreenLog("iosuhax initialized!");
 
@@ -258,7 +257,7 @@ static void innerMain(bool validCfw)
 					else
 						lerr = "Couldn't unlock filesystem!";
 
-					closeIOSUhax();
+					IOSUHAX_Close();
 					debugPrintf("IOSUhax closed");
 				}
 				else
@@ -314,11 +313,11 @@ static bool cfwValid()
 				ret = IOS_Ioctl(handle, 100, in, 0x40, dummy, 0x100) == IOS_ERROR_OK;
 				if(ret)
 				{
-					ret = openIOSUhax();
+					ret = IOSUHAX_Open(NULL) >= 0;
 					if(ret)
 					{
 						ret = IOSUHAX_read_otp((uint8_t *)dummy, 1) >= 0;
-						closeIOSUhax();
+						IOSUHAX_Close();
 					}
 				}
 

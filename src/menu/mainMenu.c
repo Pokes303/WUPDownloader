@@ -23,7 +23,6 @@
 
 #include <input.h>
 #include <installer.h>
-#include <iosuhaxx.h>
 #include <renderer.h>
 #include <state.h>
 #include <ticket.h>
@@ -85,7 +84,7 @@ void mainMenu()
 	drawMainMenuFrame();
 
 	int ovl;
-	if(cfwWarningShown || openIOSUhax())
+	if(cfwWarningShown)
 		ovl = -1;
 	else
 	{
@@ -101,7 +100,7 @@ void mainMenu()
 		if(ovl >= 0)
 			cfwWarningShown = true;
 	}
-	
+
 	while(AppRunning())
 	{
 		if(app == APP_STATE_BACKGROUND)
