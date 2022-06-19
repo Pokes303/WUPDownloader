@@ -21,7 +21,7 @@
 #include <wut-fixups.h>
 
 #include <config.h>
-#include <filesystem.h>
+#include <file.h>
 #include <input.h>
 #include <renderer.h>
 #include <state.h>

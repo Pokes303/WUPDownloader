@@ -21,20 +21,13 @@
 
 #include <wut-fixups.h>
 
-#include <stdbool.h>
+#include <file.h>
 
 #ifdef __cplusplus
 	extern "C" {
 #endif
 
-typedef enum
-{
-	NUSDEV_USB,
-	NUSDEV_SD,
-	NUSDEV_MLC,
-} NUSDEV;
-
-int getUSB();
+NUSDEV getUSB();
 
 #ifdef __cplusplus
 	}

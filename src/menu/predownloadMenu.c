@@ -29,6 +29,7 @@
 #include <state.h>
 #include <titles.h>
 #include <tmd.h>
+#include <usb.h>
 #include <utils.h>
 #include <menu/predownload.h>
 #include <menu/utils.h>
@@ -99,9 +100,11 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 	
 	line = MAX_LINES - 1;
 	strcpy(toFrame, "Press " BUTTON_MINUS " to download to ");
-	switch(dlDev)
+	switch((int)dlDev)
 	{
 		case NUSDEV_USB:
+		case NUSDEV_USB01:
+		case NUSDEV_USB02:
 			strcat(toFrame, "SD");
 			break;
 		case NUSDEV_SD:
@@ -261,7 +264,7 @@ naNedNa:
 		
 		if(vpad.trigger & VPAD_BUTTON_MINUS)
 		{
-			switch(dlDev)
+			switch((int)dlDev)
 			{
 				case NUSDEV_USB:
 					dlDev = NUSDEV_SD;

@@ -33,7 +33,6 @@
 
 #include <crypto.h>
 #include <file.h>
-#include <filesystem.h>
 #include <input.h>
 #include <installer.h>
 #include <ioQueue.h>
@@ -41,6 +40,7 @@
 #include <renderer.h>
 #include <state.h>
 #include <staticMem.h>
+#include <usb.h>
 #include <utils.h>
 #include <menu/utils.h>
 
@@ -115,9 +115,11 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 		return false;
 	}
 
-	switch(dev)
+	switch((int)dev)
 	{
 		case NUSDEV_USB:
+		case NUSDEV_USB01:
+		case NUSDEV_USB02:
 		case NUSDEV_MLC:
 			strcpy(newPath, path + 3);
 			break;
@@ -179,7 +181,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	data.err = MCP_InstallSetTargetDevice(mcpHandle, target);
 	if(data.err == 0)
 	{
-		if(toUsb && getUSB() == 2)
+		if(toUsb && getUSB() == NUSDEV_USB02)
 			data.err = MCP_InstallSetTargetUsb(mcpHandle, ++target);
 	}
 

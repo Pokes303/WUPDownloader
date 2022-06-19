@@ -20,20 +20,20 @@
 #include <wut-fixups.h>
 
 #include <file.h>
-#include <filesystem.h>
+#include <usb.h>
 
-static int usb = -1;
+static NUSDEV usb = NUSDEV_SD;
 
-int getUSB()
+NUSDEV getUSB()
 {
-	if(usb == -1)
+	if(usb == NUSDEV_SD)
 	{
 		if(dirExists("fs:/vol/storage_usb01/usr"))
-			usb = 1;
+			usb = NUSDEV_USB01;
 		else if(dirExists("fs:/vol/storage_usb02/usr"))
-			usb = 2;
+			usb = NUSDEV_USB02;
 		else
-			usb = 0;
+			usb = NUSDEV_NONE;
 	}
 
 	return usb;

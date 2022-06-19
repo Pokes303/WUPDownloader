@@ -62,6 +62,16 @@ typedef enum
 	NUSFS_ERR_DONTEXIST
 } NUSFS_ERR;
 
+typedef enum
+{
+	NUSDEV_NONE		= 0x00,
+	NUSDEV_USB01	= 0x01,
+	NUSDEV_USB02	= 0x02,
+	NUSDEV_USB		= NUSDEV_USB01 | NUSDEV_USB02,
+	NUSDEV_SD		= 0x04,
+	NUSDEV_MLC		= 0x08,
+} NUSDEV;
+
 void writeVoidBytes(NUSFILE *fp, uint32_t length);
 void writeCustomBytes(NUSFILE *fp, const char *str);
 void writeRandomBytes(NUSFILE *fp, uint32_t length);

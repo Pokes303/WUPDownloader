@@ -25,7 +25,6 @@
 #include <stdbool.h>
 
 #include <file.h>
-#include <filesystem.h>
 #include <titles.h>
 #include <tmd.h>
 #include <menu/download.h>

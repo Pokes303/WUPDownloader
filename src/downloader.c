@@ -22,7 +22,6 @@
 
 #include <dirent.h>
 #include <errno.h>
-#include <file.h>
 #include <math.h>
 #include <netinet/tcp.h>
 #include <stdlib.h>
@@ -34,7 +33,6 @@
 #include <crypto.h>
 #include <downloader.h>
 #include <file.h>
-#include <filesystem.h>
 #include <input.h>
 #include <installer.h>
 #include <ioQueue.h>
@@ -49,6 +47,7 @@
 #include <ticket.h>
 #include <titles.h>
 #include <tmd.h>
+#include <usb.h>
 #include <utils.h>
 
 #include <coreinit/filesystem.h>
@@ -976,7 +975,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	}
 	
 	char *installDir = getStaticPathBuffer(2);
-	strcpy(installDir, dlDev == NUSDEV_USB ? (getUSB() == 1 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (dlDev == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC));
+	strcpy(installDir, (dlDev & NUSDEV_USB) ? (getUSB() == NUSDEV_USB01 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (dlDev == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC));
 	if(!dirExists(installDir))
 	{
 		debugPrintf("Creating directory \"%s\"", installDir);
