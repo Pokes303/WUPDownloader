@@ -97,7 +97,7 @@ static bool brickCheck(const char* dir)
 
 void installerMenu(const char *dir)
 {
-	NUSDEV dev = dir[3] == ':' ? dir[0] == 'u' ? NUSDEV_USB : NUSDEV_MLC : NUSDEV_SD;
+	NUSDEV dev = dir[16] == 'u' ? (dir[20] == '1' ? NUSDEV_USB01 : NUSDEV_USB02) : (dir[16] == 'm' ? NUSDEV_MLC : NUSDEV_SD);
 	bool keepFiles;
 	char name[strlen(dir) + 1];
 	if(dev == NUSDEV_SD)

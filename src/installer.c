@@ -59,7 +59,8 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUs
 
 	switch(dev)
 	{
-		case NUSDEV_USB:
+		case NUSDEV_USB01:
+		case NUSDEV_USB02:
 		case NUSDEV_MLC:
 			keepFiles = false;
 		default:
@@ -117,7 +118,6 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 
 	switch((int)dev)
 	{
-		case NUSDEV_USB:
 		case NUSDEV_USB01:
 		case NUSDEV_USB02:
 		case NUSDEV_MLC:
@@ -289,7 +289,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 			default:
 				if ((data.err & 0xFFFF0000) == 0xFFFB0000)
 				{
-					if(dev == NUSDEV_USB)
+					if(dev & NUSDEV_USB)
 						strcat(toScreen, "Possible USB failure. Check your drives power source.\nAlso f");
 					else
 						strcat(toScreen, "F");

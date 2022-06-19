@@ -102,7 +102,6 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 	strcpy(toFrame, "Press " BUTTON_MINUS " to download to ");
 	switch((int)dlDev)
 	{
-		case NUSDEV_USB:
 		case NUSDEV_USB01:
 		case NUSDEV_USB02:
 			strcat(toFrame, "SD");
@@ -134,7 +133,7 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 	textToFrame(line--, 0, "Press " BUTTON_B " to return");
 	
 	strcpy(toFrame, "Press " BUTTON_Y " to download to ");
-	strcat(toFrame, dlDev == NUSDEV_USB ? "USB" : dlDev == NUSDEV_SD ? "SD" : "NAND");
+	strcat(toFrame, (dlDev & NUSDEV_USB) ? "USB" : dlDev == NUSDEV_SD ? "SD" : "NAND");
 	strcat(toFrame, " only");
 	textToFrame(line--, 0, toFrame);
 	
@@ -169,8 +168,8 @@ void predownloadMenu(const TitleEntry *entry)
 {
 	MCPTitleListType titleList;
 	bool installed = isInstalled(entry, &titleList);
-	bool usbMounted = getUSB();
-    NUSDEV dlDev = usbMounted && dlToUSBenabled() ? NUSDEV_USB : NUSDEV_SD;
+	NUSDEV usbMounted = getUSB();
+    NUSDEV dlDev = usbMounted && dlToUSBenabled() ? usbMounted : NUSDEV_SD;
 	bool keepFiles = true;
 	char folderName[FILENAME_MAX - 11];
 	char titleVer[33];
@@ -266,7 +265,8 @@ naNedNa:
 		{
 			switch((int)dlDev)
 			{
-				case NUSDEV_USB:
+				case NUSDEV_USB01:
+				case NUSDEV_USB02:
 					dlDev = NUSDEV_SD;
 					keepFiles = true;
 					setDlToUSB(false);
@@ -278,7 +278,7 @@ naNedNa:
 				case NUSDEV_MLC:
 					if(usbMounted)
 					{
-						dlDev = NUSDEV_USB;
+						dlDev = usbMounted;
 						keepFiles = false;
 						setDlToUSB(true);
 					}

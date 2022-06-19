@@ -975,7 +975,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	}
 	
 	char *installDir = getStaticPathBuffer(2);
-	strcpy(installDir, (dlDev & NUSDEV_USB) ? (getUSB() == NUSDEV_USB01 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (dlDev == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC));
+	strcpy(installDir, dlDev == NUSDEV_USB01 ? INSTALL_DIR_USB1 : (dlDev == NUSDEV_USB02 ? INSTALL_DIR_USB2 : (dlDev == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC)));
 	if(!dirExists(installDir))
 	{
 		debugPrintf("Creating directory \"%s\"", installDir);
@@ -1013,7 +1013,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	strcat(installDir, "/");
 	
 	addToScreenLog("Started the download of \"%s\"", titleEntry->name);
-	addToScreenLog("The content will be saved on \"%s:/install/%s\"", dlDev == NUSDEV_USB ? "usb" : dlDev == NUSDEV_SD ? "sd" : "mlc", folderName);
+	addToScreenLog("The content will be saved on \"%s:/install/%s\"", (dlDev & NUSDEV_USB) ? "usb" : dlDev == NUSDEV_SD ? "sd" : "mlc", folderName);
 	
 	if(!dirExists(installDir))
 	{
