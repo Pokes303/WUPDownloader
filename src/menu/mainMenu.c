@@ -39,8 +39,6 @@
 
 #include <string.h>
 
-static bool cfwWarningShown = false;
-
 static void drawMainMenuFrame()
 {
 	startNewFrame();
