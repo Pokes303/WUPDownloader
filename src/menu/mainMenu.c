@@ -83,24 +83,6 @@ void mainMenu()
 {
 	drawMainMenuFrame();
 
-	int ovl;
-	if(cfwWarningShown)
-		ovl = -1;
-	else
-	{
-		ovl = addErrorOverlay(
-			"No CFW detected!\n"
-			"\n"
-			"NUSspli won't work correctly without a CFW.\n"
-			"Have a look at https://wiiu.hacks.guide\n"
-			"\n"
-			"Press any button to close this warning."
-		);
-
-		if(ovl >= 0)
-			cfwWarningShown = true;
-	}
-
 	while(AppRunning())
 	{
 		if(app == APP_STATE_BACKGROUND)
@@ -110,45 +92,37 @@ void mainMenu()
 		
 		showFrame();
 		
-		if(ovl < 0)
+		if(vpad.trigger & VPAD_BUTTON_A)
 		{
-			if(vpad.trigger & VPAD_BUTTON_A)
-			{
-				titleBrowserMenu();
-				drawMainMenuFrame();
-			}
-			else if(vpad.trigger & VPAD_BUTTON_X)
-			{
-				char *dir = fileBrowserMenu();
-				if(dir != NULL)
-				{
-					installerMenu(dir);
-					MEMFreeToDefaultHeap(dir);
-				}
-				drawMainMenuFrame();
-			}
-			else if(vpad.trigger & VPAD_BUTTON_LEFT)
-			{
-				configMenu();
-				drawMainMenuFrame();
-			}
-			else if(vpad.trigger & VPAD_BUTTON_Y)
-			{
-				generateFakeTicket();
-				drawMainMenuFrame();
-			}
-			else if(vpad.trigger & VPAD_BUTTON_RIGHT)
-			{
-				ititleBrowserMenu();
-				drawMainMenuFrame();
-			}
-			else if(vpad.trigger & VPAD_BUTTON_B)
-				return;
+			titleBrowserMenu();
+			drawMainMenuFrame();
 		}
-		else if(vpad.trigger)
+		else if(vpad.trigger & VPAD_BUTTON_X)
 		{
-			removeErrorOverlay(ovl);
-			ovl = -1;
+			char *dir = fileBrowserMenu();
+			if(dir != NULL)
+			{
+				installerMenu(dir);
+				MEMFreeToDefaultHeap(dir);
+			}
+			drawMainMenuFrame();
 		}
+		else if(vpad.trigger & VPAD_BUTTON_LEFT)
+		{
+			configMenu();
+			drawMainMenuFrame();
+		}
+		else if(vpad.trigger & VPAD_BUTTON_Y)
+		{
+			generateFakeTicket();
+			drawMainMenuFrame();
+		}
+		else if(vpad.trigger & VPAD_BUTTON_RIGHT)
+		{
+			ititleBrowserMenu();
+			drawMainMenuFrame();
+		}
+		else if(vpad.trigger & VPAD_BUTTON_B)
+			return;
 	}
 }
