@@ -28,9 +28,9 @@ NUSDEV getUSB()
 {
 	if(usb == NUSDEV_SD)
 	{
-		if(dirExists("fs:/vol/storage_usb01/usr"))
+		if(dirExists(NUSDIR_USB1 "/usr"))
 			usb = NUSDEV_USB01;
-		else if(dirExists("fs:/vol/storage_usb02/usr"))
+		else if(dirExists(NUSDIR_USB2 "/usr"))
 			usb = NUSDEV_USB02;
 		else
 			usb = NUSDEV_NONE;

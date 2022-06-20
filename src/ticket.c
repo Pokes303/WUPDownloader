@@ -299,25 +299,11 @@ void generateFakeTicket()
 				
 				colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 				textToFrame(0, 0, "Fake ticket generated on:");
-				char oldChar = tikPath[3];
-				tikPath[3] = '\0';
-				if(strcmp(tikPath, "fs:") == 0)
-				{
-					char *adjPath = tikPath + 15;
-					adjPath[0] = 's';
-					adjPath[1] = 'd';
-					adjPath[2] = ':';
-					textToFrame(1, 0, adjPath);
-				}
-				else
-				{
-					tikPath[3] = oldChar;
-					textToFrame(1, 0, tikPath);
-				}
-				
+				textToFrame(1, 0, tikPath);
+
 				textToFrame(3, 0, "Press any key to return");
 				drawFrame();
-				
+
 				while(AppRunning())
 				{
 					showFrame();

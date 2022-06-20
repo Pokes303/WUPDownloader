@@ -82,13 +82,13 @@ bool sanityCheck()
 		bool ret = true;
 		bool br = false;
 
-		strcpy(newPath, "fs:");
-		strcpy(newPath + 3, title.path);
+		strcpy(newPath, title.path);
 		strcat(newPath, "/meta/");
+		char *pr = newPath + strlen(newPath);
 
 		for(int i = 0; !br && i < MD5_FILES; ++i)
 		{
-			strcpy(newPath + 55, md5File[i]);
+			strcpy(pr, md5File[i]);
 			f = fopen(newPath, "rb+");
 			if(f == NULL)
 			{

@@ -275,10 +275,10 @@ bool createDirRecursive(const char *dir)
 	OSBlockMove(d, dir, len, false);
 
 	char *needle = d;
-	if(strncmp("fs:/vol/external01/", d, 19) == 0)
-		needle += 19;
+	if(strncmp(NUSDIR_SD, d, strlen(NUSDIR_SD)) == 0)
+		needle += strlen(NUSDIR_SD);
 	else
-		needle += 5;
+		needle += strlen(NUSDIR_MLC);
 
 	do
 	{

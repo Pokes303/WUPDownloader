@@ -44,7 +44,7 @@
 #include <utils.h>
 #include <menu/utils.h>
 
-#define SD_PATH "/vol/app_sd"
+#define SD_PATH "/vol/app_sd/"
 
 static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUsb, bool keepFiles)
 {
@@ -71,7 +71,7 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUs
 		removeDirectory(path);
 
 	char *importPath = getStaticPathBuffer(2);
-	strcpy(importPath, toUsb ? "fs:/vol/storage_usb01/usr/import/" : "fs:/vol/storage_mlc01/usr/import/");
+	strcpy(importPath, toUsb ? "/vol/storage_usb01/usr/import/" : "/vol/storage_mlc01/usr/import/");
 	DIR *dir = opendir(importPath);
 
 	if(dir != NULL)
@@ -121,11 +121,11 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 		case NUSDEV_USB01:
 		case NUSDEV_USB02:
 		case NUSDEV_MLC:
-			strcpy(newPath, path + 3);
+			strcpy(newPath, path);
 			break;
 		case NUSDEV_SD:
 			OSBlockMove(newPath, SD_PATH, strlen(SD_PATH), false);
-			strcpy(newPath + strlen(SD_PATH), path + 18);
+			strcpy(newPath + strlen(SD_PATH), path + strlen(NUSDIR_SD));
 	}
 	
 	McpData data;

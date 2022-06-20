@@ -27,10 +27,15 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#define INSTALL_DIR_SD		"fs:/vol/external01/install/"
-#define INSTALL_DIR_USB1	"fs:/vol/storage_usb01/install/"
-#define INSTALL_DIR_USB2	"fs:/vol/storage_usb02/install/"
-#define INSTALL_DIR_MLC		"fs:/vol/storage_mlc01/install/"
+#define NUSDIR_SD		"/vol/external01/"
+#define NUSDIR_USB1		"/vol/storage_usb01/"
+#define NUSDIR_USB2		"/vol/storage_usb02/"
+#define NUSDIR_MLC		"/vol/storage_mlc01/"
+
+#define INSTALL_DIR_SD		NUSDIR_SD "install/"
+#define INSTALL_DIR_USB1	NUSDIR_USB1 "install/"
+#define INSTALL_DIR_USB2	NUSDIR_USB2 "install/"
+#define INSTALL_DIR_MLC		NUSDIR_MLC "install/"
 #define IO_BUFSIZE	(128 * 1024) // 128 KB
 
 #define FS_ALIGN(x)  (x + 0x3F) & ~(0x3F)

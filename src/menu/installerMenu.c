@@ -29,6 +29,7 @@
 #include <menu/utils.h>
 
 #include <coreinit/memdefaultheap.h>
+#include <coreinit/memory.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -95,9 +96,44 @@ static bool brickCheck(const char* dir)
 	return ret;
 }
 
+static NUSDEV getDevFromPath(const char *path)
+{
+	NUSDEV ret = NUSDEV_NONE;
+	size_t s = strlen(path);
+	char *ptr = MEMAllocFromDefaultHeap(++s);
+	if(ptr)
+	{
+		OSBlockMove(ptr, path, s, false);
+		--s;
+
+		if(s >= strlen(NUSDIR_SD))
+		{
+			char oc = ptr[strlen(NUSDIR_SD)];
+			ptr[strlen(NUSDIR_SD)] = '\0';
+			if(strcmp(ptr, NUSDIR_SD) == 0)
+				ret = NUSDEV_SD;
+			else if(s >= strlen(NUSDIR_MLC))
+			{
+				ptr[strlen(NUSDIR_SD)] = oc;
+				oc = ptr[strlen(NUSDIR_MLC)];
+				ptr[strlen(NUSDIR_MLC)] = '\0';
+
+				if(strcmp(ptr, NUSDIR_USB1) == 0)
+					ret = NUSDEV_USB01;
+				else if(strcmp(ptr, NUSDIR_USB2) == 0)
+					ret = NUSDEV_USB02;
+				else if(strcmp(ptr, NUSDIR_MLC) == 0)
+					ret = NUSDEV_MLC;
+			}
+		}
+	}
+
+	return ret;
+}
+
 void installerMenu(const char *dir)
 {
-	NUSDEV dev = dir[16] == 'u' ? (dir[20] == '1' ? NUSDEV_USB01 : NUSDEV_USB02) : (dir[16] == 'm' ? NUSDEV_MLC : NUSDEV_SD);
+	NUSDEV dev = getDevFromPath(dir);
 	bool keepFiles;
 	char name[strlen(dir) + 1];
 	if(dev == NUSDEV_SD)

@@ -24,5 +24,5 @@
 #ifdef NUSSPLI_HBL
 #define ROMFS_PATH "romfs:/"
 #else
-#define ROMFS_PATH "fs:/vol/content/"
+#define ROMFS_PATH "/vol/content/"
 #endif

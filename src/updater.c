@@ -55,10 +55,10 @@
 
 #define UPDATE_CHECK_URL NAPI_URL "s?t="
 #define UPDATE_DL_URL NAPI_URL "d?t="
-#define UPDATE_TEMP_FOLDER "fs:/vol/external01/NUSspli_temp/"
-#define UPDATE_AROMA_FOLDER "fs:/vol/external01/wiiu/apps/"
+#define UPDATE_TEMP_FOLDER NUSDIR_SD "/NUSspli_temp/"
+#define UPDATE_AROMA_FOLDER NUSDIR_SD "/wiiu/apps/"
 #define UPDATE_AROMA_FILE "NUSspli.wuhb"
-#define UPDATE_HBL_FOLDER "fs:/vol/external01/wiiu/apps/NUSspli"
+#define UPDATE_HBL_FOLDER NUSDIR_SD "/wiiu/apps/NUSspli"
 
 #ifdef NUSSPLI_DEBUG
 	#define NUSSPLI_DLVER "-DEBUG"
