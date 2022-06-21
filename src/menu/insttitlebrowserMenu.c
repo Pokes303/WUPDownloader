@@ -27,6 +27,7 @@
 #include <renderer.h>
 #include <state.h>
 #include <staticMem.h>
+#include <thread.h>
 #include <titles.h>
 #include <utils.h>
 #include <menu/insttitlebrowser.h>
@@ -38,14 +39,12 @@
 
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
+#include <coreinit/memory.h>
 #include <nn/acp/title.h>
 
 #define MAX_ITITLEBROWSER_LINES			(MAX_LINES - 3)
 #define MAX_ITITLEBROWSER_TITLE_LENGTH	(MAX_TITLENAME_LENGTH >> 1)
 #define DPAD_COOLDOWN_FRAMES			30 // half a second at 60 FPS
-
-static MCPTitleListType *ititleEntries;
-static size_t ititleEntrySize;
 
 typedef struct
 {
@@ -54,68 +53,59 @@ typedef struct
 	bool isDlc;
 	bool isUpdate;
 	DEVICE_TYPE dt;
+	spinlock lock;
+	bool ready;
 } INST_META;
 
-static void getInstalledMeta(MCPTitleListType *entry, INST_META *out)
+static volatile INST_META *installedTitles;
+static MCPTitleListType *ititleEntries;
+static size_t ititleEntrySize;
+static volatile bool asyncRunning;
+
+static void finishTitle(volatile INST_META *title, MCPTitleListType *list)
 {
-	switch(entry->indexedDevice[0])
+	if(!title->ready)
 	{
-		case 'u':
-			out->dt = DEVICE_TYPE_USB;
-			break;
-		case 'm':
-			out->dt = DEVICE_TYPE_NAND;
-			break;
-		default: // TODO: bt. drh, slc
-			out->dt = DEVICE_TYPE_UNKNOWN;
-	}
-
-	const TitleEntry *e = getTitleEntryByTid(entry->titleId);
-	if(e)
-	{
-		strncpy(out->name, e->name, MAX_ITITLEBROWSER_TITLE_LENGTH - 1);
-		out->name[MAX_ITITLEBROWSER_TITLE_LENGTH - 1] = '\0';
-
-		out->region = e->region;
-		out->isDlc = isDLC(e);
-		out->isUpdate = isUpdate(e);
-		return;
-	}
-
-	switch(getTidHighFromTid(entry->titleId))
-	{
-		case TID_HIGH_UPDATE:
-			out->isDlc = false;
-			out->isUpdate = true;
-			break;
-		case TID_HIGH_DLC:
-			out->isDlc = true;
-			out->isUpdate = false;
-			break;
-		default:
-			out->isDlc = out->isUpdate = false;
-	}
-
-	ACPMetaXml *meta = getStaticMetaXmlBuffer();
-	if(ACPGetTitleMetaXmlByTitleListType(entry, meta) == ACP_RESULT_SUCCESS)
-	{
-		strncpy(out->name, meta->longname_en, MAX_ITITLEBROWSER_TITLE_LENGTH - 1);
-		out->name[MAX_ITITLEBROWSER_TITLE_LENGTH - 1] = '\0';
-
-		if(strcmp(out->name, "Long Title Name (EN)"))
+		ACPMetaXml *meta = MEMAllocFromDefaultHeapEx(sizeof(ACPMetaXml), 0x40);
+		if(meta)
 		{
-			for(char *buf = out->name; *buf != '\0'; ++buf)
-				if(*buf == '\n')
-					*buf = ' ';
+			if(ACPGetTitleMetaXmlByTitleListType(list, meta) == ACP_RESULT_SUCCESS)
+			{
+				size_t len = strlen(meta->longname_en);
+				if(++len < MAX_ITITLEBROWSER_TITLE_LENGTH)
+				{
+					if(strcmp(meta->longname_en, "Long Title Name (EN)"))
+					{
+						OSBlockMove((void *)title->name, meta->longname_en, len, false);
+						for(char *buf = (char *)title->name; *buf != '\0'; ++buf)
+							if(*buf == '\n')
+								*buf = ' ';
 
-			out->region = meta->region;
-			return;
+						title->region = meta->region;
+					}
+				}
+			}
+
+			MEMFreeToDefaultHeap(meta);
+		}
+
+		title->ready = true;
+	}
+}
+
+static int asyntTitleLoader(int argc, const char **argv)
+{
+	volatile INST_META *im = installedTitles;
+	for(size_t i = 0; i < ititleEntrySize && asyncRunning && AppRunning(); ++i, ++im)
+	{
+		if(spinTryLock(im->lock))
+		{
+			finishTitle(im, ititleEntries + i);
+			spinReleaseLock(im->lock);
 		}
 	}
-	char tid[17];
-	hex(entry->titleId, 16, tid);
-	strcpy(out->name, tid);
-	out->region = MCP_REGION_UNKNOWN;
+
+	return 0;
 }
 
 static void drawITBMenuFrame(const size_t pos, const size_t cursor)
@@ -128,14 +118,18 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 	if(max > MAX_ITITLEBROWSER_LINES)
 		max = MAX_ITITLEBROWSER_LINES;
 
-	INST_META im;
+	volatile INST_META *im;
 	char *toFrame = getToFrameBuffer();
 	for(size_t i = 0, l = 1; i < max; ++i, ++l)
 	{
-		getInstalledMeta(ititleEntries + pos + i, &im);
-		if(im.isDlc)
+		im = installedTitles + pos + i;
+		spinLock(im->lock);
+		finishTitle(im, ititleEntries + pos + i);
+		spinReleaseLock(im->lock);
+
+		if(im->isDlc)
 			strcpy(toFrame, "[DLC] ");
-		else if(im.isUpdate)
+		else if(im->isUpdate)
 			strcpy(toFrame, "[UPD] ");
 		else
 			toFrame[0] = '\0';
@@ -143,9 +137,9 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 		if(cursor == i)
 			arrowToFrame(l, 1);
 
-		deviceToFrame(l, 4, im.dt);
-		flagToFrame(l, 7, im.region);
-		strcat(toFrame, im.name);
+		deviceToFrame(l, 4, im->dt);
+		flagToFrame(l, 7, im->region);
+		strcat(toFrame, (const char *)im->name);
 		textToFrameCut(l, 10, toFrame, (1280 - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
 	}
 
@@ -178,6 +172,65 @@ void ititleBrowserMenu()
 	}
 
 	ititleEntrySize = s;
+	installedTitles = (INST_META *)MEMAllocFromDefaultHeap(s * sizeof(INST_META));
+	if(installedTitles == NULL)
+	{
+		debugPrintf("Insttitlebrowser: OUT OF MEMORY!");
+		MEMFreeToDefaultHeap(ititleEntries);
+		return;
+	}
+
+	const TitleEntry *e;
+	for(size_t i = 0; i < s; ++i)
+	{
+		switch(ititleEntries[i].indexedDevice[0])
+		{
+			case 'u':
+				installedTitles[i].dt = DEVICE_TYPE_USB;
+				break;
+			case 'm':
+				installedTitles[i].dt = DEVICE_TYPE_NAND;
+				break;
+			default: // TODO: bt. drh, slc
+				installedTitles[i].dt = DEVICE_TYPE_UNKNOWN;
+		}
+
+		spinCreateLock(installedTitles[i].lock, SPINLOCK_FREE);
+		e = getTitleEntryByTid(ititleEntries[i].titleId);
+		if(e)
+		{
+			strncpy((char *)installedTitles[i].name, e->name, MAX_ITITLEBROWSER_TITLE_LENGTH - 1);
+			installedTitles[i].name[MAX_ITITLEBROWSER_TITLE_LENGTH - 1] = '\0';
+
+			installedTitles[i].region = e->region;
+			installedTitles[i].isDlc = isDLC(e);
+			installedTitles[i].isUpdate = isUpdate(e);
+			installedTitles[i].ready = true;
+			continue;
+		}
+
+		hex(ititleEntries[i].titleId, 16, (char *)installedTitles[i].name);
+		installedTitles[i].region = MCP_REGION_UNKNOWN;
+		installedTitles[i].ready = false;
+
+		switch(getTidHighFromTid(ititleEntries[i].titleId))
+		{
+			case TID_HIGH_UPDATE:
+				installedTitles[i].isDlc = false;
+				installedTitles[i].isUpdate = true;
+				break;
+			case TID_HIGH_DLC:
+				installedTitles[i].isDlc = true;
+				installedTitles[i].isUpdate = false;
+				break;
+			default:
+				installedTitles[i].isDlc = installedTitles[i].isUpdate = false;
+		}
+	}
+
+	asyncRunning = true;
+	OSThread *bgt = startThread("Async title loader", THREAD_PRIORITY_MEDIUM, 0x8000, asyntTitleLoader, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_CPU2);
+
 	size_t cursor = 0;
 	size_t pos = 0;
 	
@@ -206,10 +259,7 @@ loopEntry:
 		}
 		
 		if(vpad.trigger & VPAD_BUTTON_B)
-		{
-			MEMFreeToDefaultHeap(ititleEntries);
-			return;
-		}
+			goto instExit;
 
 		if(vpad.hold & VPAD_BUTTON_UP)
 		{
@@ -336,7 +386,7 @@ loopEntry:
 
 		if(oldHold && !(vpad.hold & (VPAD_BUTTON_UP | VPAD_BUTTON_DOWN | VPAD_BUTTON_LEFT | VPAD_BUTTON_RIGHT)))
 			oldHold = 0;
-		
+
 		if(redraw)
 		{
 			drawITBMenuFrame(pos, cursor);
@@ -347,13 +397,12 @@ loopEntry:
 
 	if(AppRunning())
 	{
-		INST_META im;
-		getInstalledMeta(entry, &im);
+		volatile INST_META *im = installedTitles + cursor + pos;
 		char *toFrame = getToFrameBuffer();
 		strcpy(toFrame, "Do you really want to uninstall\n");
-		strcat(toFrame, im.name);
+		strcat(toFrame, (char *)im->name);
 		strcat(toFrame, "\nfrom your ");
-		strcat(toFrame, im.dt == DEVICE_TYPE_USB ? "USB" : im.dt == DEVICE_TYPE_NAND ? "NAND" : "unknown");
+		strcat(toFrame, im->dt == DEVICE_TYPE_USB ? "USB" : im->dt == DEVICE_TYPE_NAND ? "NAND" : "unknown");
 		strcat(toFrame, " drive?\n\n" BUTTON_A " Yes || " BUTTON_B " No");
 		r = addErrorOverlay(toFrame);
 
@@ -372,11 +421,15 @@ loopEntry:
 
 		removeErrorOverlay(r);
 
-		if(checkSystemTitle(entry->titleId, im.region) && AppRunning())
-			deinstall(entry, im.name, false);
+		if(checkSystemTitle(entry->titleId, im->region) && AppRunning())
+			deinstall(entry, (const char *)im->name, false);
 		else
 			goto loopEntry;
 	}
 
+instExit:
+	asyncRunning = false;
+	stopThread(bgt, NULL);
 	MEMFreeToDefaultHeap(ititleEntries);
+	MEMFreeToDefaultHeap((void *)installedTitles);
 }
