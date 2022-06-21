@@ -24,12 +24,12 @@
 #include <config.h>
 #include <deinstaller.h>
 #include <downloader.h>
+#include <filesystem.h>
 #include <input.h>
 #include <renderer.h>
 #include <state.h>
 #include <titles.h>
 #include <tmd.h>
-#include <usb.h>
 #include <utils.h>
 #include <menu/predownload.h>
 #include <menu/utils.h>

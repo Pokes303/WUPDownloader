@@ -429,9 +429,9 @@ void update(char *newVersion)
 		if(isAroma())
 			goto aromaInstallation;
 		
-		char installPath[strlen(UPDATE_TEMP_FOLDER) + 8];
+		char *installPath = getStaticMCPPathBuffer();
 		strcpy(installPath, UPDATE_TEMP_FOLDER);
-		strcat(installPath, "NUSspli");
+		strcpy(installPath + strlen(UPDATE_TEMP_FOLDER), "NUSspli");
 		
 		install("Update", false, NUSDEV_SD, installPath, ownInfo.indexedDevice[0] == 'u', true);
 		removeDirectory(UPDATE_TEMP_FOLDER);

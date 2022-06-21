@@ -33,6 +33,7 @@
 
 #include <crypto.h>
 #include <file.h>
+#include <filesystem.h>
 #include <input.h>
 #include <installer.h>
 #include <ioQueue.h>
@@ -40,11 +41,8 @@
 #include <renderer.h>
 #include <state.h>
 #include <staticMem.h>
-#include <usb.h>
 #include <utils.h>
 #include <menu/utils.h>
-
-#define SD_PATH "/vol/app_sd/"
 
 static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUsb, bool keepFiles)
 {
@@ -104,30 +102,13 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	writeScreenLog(2);
 	drawFrame();
 	showFrame();
-	
-	char *newPath = MEMAllocFromDefaultHeapEx(0x27F, 0x40); // MCP mounts the card at another point, so we have to adjust the path -  Size and alignmnt is important!
-	if(newPath == NULL)
-		return false;
 
 	MCPInstallTitleInfo *info = MEMAllocFromDefaultHeapEx(sizeof(MCPInstallTitleInfo), 0x40);
 	if(info == NULL)
-	{
-		MEMFreeToDefaultHeap(newPath);
 		return false;
-	}
 
-	switch((int)dev)
-	{
-		case NUSDEV_USB01:
-		case NUSDEV_USB02:
-		case NUSDEV_MLC:
-			strcpy(newPath, path);
-			break;
-		case NUSDEV_SD:
-			OSBlockMove(newPath, SD_PATH, strlen(SD_PATH), false);
-			strcpy(newPath + strlen(SD_PATH), path + strlen(NUSDIR_SD));
-	}
-	
+	char *newPath = (char *)path;
+
 	McpData data;
 	flushIOQueue(); // Make sure all game files are on disc
 
@@ -247,7 +228,6 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	addEntropy(&t, sizeof(OSTime));
 	// Quarkys ASAN catched this / seems like MCP already frees it for us
 //	MEMFreeToDefaultHeap(progress);
-	MEMFreeToDefaultHeap(newPath);
 	MEMFreeToDefaultHeap(info);
 	
 	// MCP thread finished. Let's see if we got any error - TODO: This is a 1:1 copy&paste from WUP Installer GX2 which itself stole it from WUP Installer Y mod which got it from WUP Installer minor edit by Nexocube who got it from WUP installer JHBL Version by Dimrok who portet it from the ASM of WUP Installer. So I think it's time for something new... ^^
@@ -359,7 +339,6 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	return true;
 
 installError:
-	MEMFreeToDefaultHeap(newPath);
 	MEMFreeToDefaultHeap(info);
 	return false;
 }

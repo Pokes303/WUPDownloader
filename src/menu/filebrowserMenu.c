@@ -22,10 +22,10 @@
 
 #include <crypto.h>
 #include <file.h>
+#include <filesystem.h>
 #include <input.h>
 #include <renderer.h>
 #include <state.h>
-#include <usb.h>
 #include <menu/filebrowser.h>
 
 #include <coreinit/memdefaultheap.h>
@@ -82,7 +82,7 @@ char *fileBrowserMenu()
 	NUSDEV activeDevice = usbMounted ? NUSDEV_USB : NUSDEV_SD;
 	bool mov;
 	DIR *dir;
-	char *ret = NULL;
+	char *ret;
 	
 refreshDirList:
     OSTime t = OSGetTime();
@@ -90,12 +90,7 @@ refreshDirList:
 		MEMFreeToDefaultHeap(folders[i]);
 	foldersSize = 0;
 	cursor = pos = 0;
-
-	if(ret != NULL)
-	{
-		MEMFreeToDefaultHeap(ret);
-		ret = NULL;
-	}
+	ret = NULL;
 
 	dir = opendir((activeDevice & NUSDEV_USB) ? (usbMounted == NUSDEV_USB01 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC));
 	if(dir != NULL)
@@ -137,13 +132,9 @@ refreshDirList:
 		{
 			if(dir != NULL)
 			{
-				size_t len = strlen((activeDevice & NUSDEV_USB) ? (usbMounted == NUSDEV_USB01 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC)) + strlen(folders[cursor + pos]) + 1;
-				ret = MEMAllocFromDefaultHeap(len);
-				if(ret != NULL)
-				{
-					strcpy(ret, (activeDevice & NUSDEV_USB) ? (usbMounted == NUSDEV_USB01 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC));
-					strcat(ret, folders[cursor + pos]);
-				}
+				ret = getStaticMCPPathBuffer();
+				strcpy(ret, (activeDevice & NUSDEV_USB) ? (usbMounted == NUSDEV_USB01 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC));
+				strcat(ret, folders[cursor + pos]);
 				goto exitFileBrowserMenu;
 			}
 		}

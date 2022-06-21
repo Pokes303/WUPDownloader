@@ -99,10 +99,8 @@ void mainMenu()
 		{
 			char *dir = fileBrowserMenu();
 			if(dir != NULL)
-			{
 				installerMenu(dir);
-				MEMFreeToDefaultHeap(dir);
-			}
+
 			drawMainMenuFrame();
 		}
 		else if(vpad.trigger & VPAD_BUTTON_LEFT)

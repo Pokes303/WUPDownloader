@@ -134,35 +134,23 @@ static NUSDEV getDevFromPath(const char *path)
 void installerMenu(const char *dir)
 {
 	NUSDEV dev = getDevFromPath(dir);
-	bool keepFiles;
-	char name[strlen(dir) + 1];
-	if(dev == NUSDEV_SD)
-	{
-		keepFiles = true;
-		strcpy(name, "SD:");
-		strcat(name, dir + 18);
-	}
-	else
-	{
-		keepFiles = false;
-		strcpy(name, dir);
-	}
+	bool keepFiles = dev == NUSDEV_SD;
 	
-	drawInstallerMenuFrame(name, dev, keepFiles);
+	drawInstallerMenuFrame(dir, dev, keepFiles);
 	
 	while(AppRunning())
 	{
 		if(app == APP_STATE_BACKGROUND)
 			continue;
 		if(app == APP_STATE_RETURNING)
-			drawInstallerMenuFrame(name, dev, keepFiles);
+			drawInstallerMenuFrame(dir, dev, keepFiles);
 		
 		showFrame();
 		
 		if(vpad.trigger & VPAD_BUTTON_A)
 		{
 			if(brickCheck(dir))
-				install(name, false, dev, dir, true, keepFiles);
+				install(dir, false, dev, dir, true, keepFiles);
 			return;
 		}
 		if(vpad.trigger & VPAD_BUTTON_B)
@@ -170,14 +158,14 @@ void installerMenu(const char *dir)
 		if(vpad.trigger & VPAD_BUTTON_X)
 		{
 			if(brickCheck(dir))
-				install(name, false, dev, dir, false, keepFiles);
+				install(dir, false, dev, dir, false, keepFiles);
 			return;
 		}
 		
 		if(vpad.trigger & VPAD_BUTTON_LEFT)
 		{
 			keepFiles = !keepFiles;
-			drawInstallerMenuFrame(name, dev, keepFiles);
+			drawInstallerMenuFrame(dir, dev, keepFiles);
 		}
 	}
 }

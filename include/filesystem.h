@@ -23,10 +23,14 @@
 
 #include <file.h>
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 	extern "C" {
 #endif
 
+bool initFS();
+void deinitFS();
 NUSDEV getUSB();
 
 #ifdef __cplusplus

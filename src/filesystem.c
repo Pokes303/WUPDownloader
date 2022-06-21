@@ -20,9 +20,48 @@
 #include <wut-fixups.h>
 
 #include <file.h>
-#include <usb.h>
+#include <filesystem.h>
+#include <utils.h>
+
+#include <coreinit/filesystem.h>
+#include <iosuhax.h>
+
+#include <stdbool.h>
+
+extern FSClient *__wut_devoptab_fs_client;
 
 static NUSDEV usb = NUSDEV_SD;
+
+bool initFS()
+{
+	if(IOSUHAX_Open(NULL) >= 0)
+	{
+		if(IOSUHAX_UnlockFSClient(__wut_devoptab_fs_client) == FS_ERROR_NOERROR)
+		{
+			bool ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/vol/external01", "/vol/app_sd", 0x01, NULL, 0) == FS_ERROR_NOERROR;
+			if(ret)
+				return true;
+		}
+
+		IOSUHAX_Close();
+	}
+
+	return false;
+}
+
+void deinitFS()
+{
+#ifdef NUSSPLI_DEBUG
+	FSError err =
+#endif
+	IOSUHAX_FSAUnmount(__wut_devoptab_fs_client, "/vol/app_sd");
+	IOSUHAX_Close();
+	usb = NUSDEV_SD;
+#ifdef NUSSPLI_DEBUG
+	if(err != FS_ERROR_NOERROR)
+		debugPrintf("Error unmounting SD: 0x%08X", err);
+#endif
+}
 
 NUSDEV getUSB()
 {

@@ -27,7 +27,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#define NUSDIR_SD		"/vol/external01/"
+#define NUSDIR_SD		"/vol/app_sd/"
 #define NUSDIR_USB1		"/vol/storage_usb01/"
 #define NUSDIR_USB2		"/vol/storage_usb02/"
 #define NUSDIR_MLC		"/vol/storage_mlc01/"

@@ -37,6 +37,7 @@ void shutdownStaticMem();
 char *getStaticScreenBuffer();
 char *getStaticLineBuffer();
 char *getStaticPathBuffer(uint32_t i);
+char *getStaticMCPPathBuffer();
 ACPMetaXml *getStaticMetaXmlBuffer();
 
 #ifdef __cplusplus

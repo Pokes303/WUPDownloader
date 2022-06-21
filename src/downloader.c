@@ -33,6 +33,7 @@
 #include <crypto.h>
 #include <downloader.h>
 #include <file.h>
+#include <filesystem.h>
 #include <input.h>
 #include <installer.h>
 #include <ioQueue.h>
@@ -47,7 +48,6 @@
 #include <ticket.h>
 #include <titles.h>
 #include <tmd.h>
-#include <usb.h>
 #include <utils.h>
 
 #include <coreinit/filesystem.h>
@@ -974,7 +974,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		strcat(folderName, titleVer);
 	}
 	
-	char *installDir = getStaticPathBuffer(2);
+	char *installDir = getStaticMCPPathBuffer();
 	strcpy(installDir, dlDev == NUSDEV_USB01 ? INSTALL_DIR_USB1 : (dlDev == NUSDEV_USB02 ? INSTALL_DIR_USB2 : (dlDev == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC)));
 	if(!dirExists(installDir))
 	{

@@ -32,6 +32,7 @@
 static char *staticMemToFrameBuffer;
 static char *staticMemLineBuffer;
 static char *staticMemPathBuffer;
+static char *staticMCPPathBuffer;
 static ACPMetaXml *staticMeta;
 
 bool initStaticMem()
@@ -45,9 +46,15 @@ bool initStaticMem()
 			staticMemPathBuffer = MEMAllocFromDefaultHeap(PATH_MAX * 3);
 			if(staticMemPathBuffer != NULL)
 			{
-				staticMeta = MEMAllocFromDefaultHeapEx(sizeof(ACPMetaXml), 0x40);
-				if(staticMeta != NULL)
-					return true;
+				staticMCPPathBuffer = MEMAllocFromDefaultHeapEx(0x27F, 0x40); // Size and alignmnt is important!
+				if(staticMCPPathBuffer != NULL)
+				{
+					staticMeta = MEMAllocFromDefaultHeapEx(sizeof(ACPMetaXml), 0x40);
+					if(staticMeta != NULL)
+						return true;
+
+					MEMFreeToDefaultHeap(staticMCPPathBuffer);
+				}
 
 				MEMFreeToDefaultHeap(staticMemPathBuffer);
 			}
@@ -66,6 +73,7 @@ void shutdownStaticMem()
 	MEMFreeToDefaultHeap(staticMemToFrameBuffer);
 	MEMFreeToDefaultHeap(staticMemLineBuffer);
 	MEMFreeToDefaultHeap(staticMemPathBuffer);
+	MEMFreeToDefaultHeap(staticMCPPathBuffer);
 	MEMFreeToDefaultHeap(staticMeta);
 }
 
@@ -82,6 +90,11 @@ char *getStaticLineBuffer()
 char *getStaticPathBuffer(uint32_t i)
 {
 	return staticMemPathBuffer + (PATH_MAX * i);
+}
+
+char *getStaticMCPPathBuffer()
+{
+	return staticMCPPathBuffer;
 }
 
 ACPMetaXml *getStaticMetaXmlBuffer()
