@@ -189,8 +189,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	}
 	
 	// Just some debugging stuff
-	debugPrintf("NUSspli path:  %s (%d)", path, strlen(path));
-	debugPrintf("MCP Path:      %s (%d)", newPath, strlen(newPath));
+	debugPrintf("Path: %s (%d)", path, strlen(path));
 	
 	// Last preparing step...
 	disableShutdown();
