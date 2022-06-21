@@ -974,7 +974,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		strcat(folderName, titleVer);
 	}
 	
-	char *installDir = getStaticMCPPathBuffer();
+	char *installDir = getStaticPathBuffer(2);
 	strcpy(installDir, dlDev == NUSDEV_USB01 ? INSTALL_DIR_USB1 : (dlDev == NUSDEV_USB02 ? INSTALL_DIR_USB2 : (dlDev == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC)));
 	if(!dirExists(installDir))
 	{

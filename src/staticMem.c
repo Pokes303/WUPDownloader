@@ -31,8 +31,7 @@
 
 static char *staticMemToFrameBuffer;
 static char *staticMemLineBuffer;
-static char *staticMemPathBuffer;
-static char *staticMCPPathBuffer;
+static char *staticMemPathBuffer[3];
 static ACPMetaXml *staticMeta;
 
 bool initStaticMem()
@@ -43,20 +42,25 @@ bool initStaticMem()
 		staticMemLineBuffer = MEMAllocFromDefaultHeap(TO_FRAME_BUFFER_SIZE);
 		if(staticMemLineBuffer != NULL)
 		{
-			staticMemPathBuffer = MEMAllocFromDefaultHeap(PATH_MAX * 3);
-			if(staticMemPathBuffer != NULL)
+			staticMeta = MEMAllocFromDefaultHeapEx(sizeof(ACPMetaXml), 0x40);
+			if(staticMeta != NULL)
 			{
-				staticMCPPathBuffer = MEMAllocFromDefaultHeapEx(0x27F, 0x40); // Size and alignmnt is important!
-				if(staticMCPPathBuffer != NULL)
+				for(int i = 0; i < 3; ++i)
 				{
-					staticMeta = MEMAllocFromDefaultHeapEx(sizeof(ACPMetaXml), 0x40);
-					if(staticMeta != NULL)
-						return true;
+					staticMemPathBuffer[i] = MEMAllocFromDefaultHeapEx(PATH_MAX, 0x40); // Alignmnt is important for MCP!
+					if(staticMemPathBuffer[i] == NULL)
+					{
+						for(--i ; i >= 0; --i)
+							MEMFreeToDefaultHeap(staticMemPathBuffer[i]);
 
-					MEMFreeToDefaultHeap(staticMCPPathBuffer);
+						goto staticFailure;
+					}
 				}
 
-				MEMFreeToDefaultHeap(staticMemPathBuffer);
+				return true;
+
+staticFailure:
+				MEMFreeToDefaultHeap(staticMeta);
 			}
 
 			MEMFreeToDefaultHeap(staticMemLineBuffer);
@@ -72,9 +76,9 @@ void shutdownStaticMem()
 {
 	MEMFreeToDefaultHeap(staticMemToFrameBuffer);
 	MEMFreeToDefaultHeap(staticMemLineBuffer);
-	MEMFreeToDefaultHeap(staticMemPathBuffer);
-	MEMFreeToDefaultHeap(staticMCPPathBuffer);
 	MEMFreeToDefaultHeap(staticMeta);
+	for(int i = 0; i < 3; ++i)
+		MEMFreeToDefaultHeap(staticMemPathBuffer);
 }
 
 char *getStaticScreenBuffer()
@@ -89,12 +93,7 @@ char *getStaticLineBuffer()
 
 char *getStaticPathBuffer(uint32_t i)
 {
-	return staticMemPathBuffer + (PATH_MAX * i);
-}
-
-char *getStaticMCPPathBuffer()
-{
-	return staticMCPPathBuffer;
+	return staticMemPathBuffer[i];
 }
 
 ACPMetaXml *getStaticMetaXmlBuffer()

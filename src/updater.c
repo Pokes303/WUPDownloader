@@ -429,7 +429,7 @@ void update(char *newVersion)
 		if(isAroma())
 			goto aromaInstallation;
 		
-		char *installPath = getStaticMCPPathBuffer();
+		char *installPath = getStaticPathBuffer(2);
 		strcpy(installPath, UPDATE_TEMP_FOLDER);
 		strcpy(installPath + strlen(UPDATE_TEMP_FOLDER), "NUSspli");
 		
