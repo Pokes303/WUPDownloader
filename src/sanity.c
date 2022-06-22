@@ -68,7 +68,7 @@ bool sanityCheck()
 			return false;
 		}
 
-		if(title.path == NULL || strlen(title.path) != 46)
+		if(strlen(title.path) != 46)
 		{
 			debugPrintf("Sanity error: Incorrect length of path");
 			return false;
