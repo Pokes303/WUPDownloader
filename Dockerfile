@@ -14,7 +14,7 @@ RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
  apt-get -y install --no-install-recommends autoconf automake libtool openjdk-11-jre-headless && \
  apt-get clean && \
  rm -rf /var/lib/apt/lists/* /usr/share/man && \
- git clone -b 4NUSspli --single-branch https://github.com/V10lator/wut && \
+ git clone -b mcp --single-branch https://github.com/V10lator/wut && \
  cd wut && \
  make -j$(nproc) && \
  make install && \

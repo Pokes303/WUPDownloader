@@ -107,14 +107,12 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	if(info == NULL)
 		return false;
 
-	char *newPath = (char *)path;
-
 	McpData data;
 	flushIOQueue(); // Make sure all game files are on disc
 
 	// Let's see if MCP is able to parse the TMD...
 	OSTime t = OSGetSystemTime();
-	data.err = MCP_InstallGetInfo(mcpHandle, newPath, (MCPInstallInfo *)info);
+	data.err = MCP_InstallGetInfo(mcpHandle, path, (MCPInstallInfo *)info);
     t = OSGetSystemTime() - t;
 	addEntropy(&t, sizeof(OSTime));
 	if(data.err != 0)
@@ -122,7 +120,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 		switch(data.err)
 		{
 			case 0xfffbf3e2:
-				sprintf(toScreen, "No title.tmd found at \"%s\"", newPath);
+				sprintf(toScreen, "No title.tmd found at \"%s\"", path);
 				break;
 			case 0xfffbfc17:
 				sprintf(toScreen,
@@ -130,11 +128,11 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 #ifdef NUSSPLI_HBL
 						"We're supporting HBL on Tiramisu and HBLC v2.1 fix by Gary only!"
 #endif
-						, newPath
+						, path
 				);
 				break;
 			default:
-				sprintf(toScreen, "Error getting info for \"%s\" from MCP: %#010x", newPath, data.err);
+				sprintf(toScreen, "Error getting info for \"%s\" from MCP: %#010x", path, data.err);
 		}
 		
 		debugPrintf(toScreen);
@@ -197,11 +195,11 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	
 	// Start the installation process
 	t = OSGetSystemTime();
-	MCPError err = MCP_InstallTitleAsync(mcpHandle, newPath, info);
+	MCPError err = MCP_InstallTitleAsync(mcpHandle, path, info);
 	
 	if(err != 0)
 	{
-		sprintf(toScreen, "Error starting async installation of \"%s\": %#010x", newPath, data.err);
+		sprintf(toScreen, "Error starting async installation of \"%s\": %#010x", path, data.err);
 		debugPrintf(toScreen);
 		addToScreenLog("Installation failed!");
 		drawErrorFrame(toScreen, ANY_RETURN);
