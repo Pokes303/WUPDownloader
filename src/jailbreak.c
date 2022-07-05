@@ -26,7 +26,6 @@
 #include <jailbreak.h>
 #include <utils.h>
 
-#include <coreinit/cache.h>
 #include <coreinit/ios.h>
 #include <coreinit/mcp.h>
 
@@ -68,7 +67,6 @@ bool jailbreak()
 		.path = "wiiu/apps/NUSspli/NUSspli.rpx",
 	};
 
-	DCFlushRange(&request, sizeof(LOAD_REQUEST));
 	int ret = IOS_Ioctl(mcpHandle, 100, &request, sizeof(LOAD_REQUEST), NULL, 0);
 	MCP_Close(mcpHandle);
 
