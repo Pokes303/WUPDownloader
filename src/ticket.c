@@ -201,14 +201,11 @@ void generateFakeTicket()
 	char *dir = fileBrowserMenu();
 	if(dir == NULL)
 		return;
-	
-	char tikPath[1024];
-	strcpy(tikPath, dir);
-	strcat(tikPath, "title");
-	char *ptr = tikPath + strlen(tikPath);
+
+	strcat(dir, "title");
+	char *ptr = dir + strlen(dir);
 	strcpy(ptr, ".tmd");
-	MEMFreeToDefaultHeap(dir);
-	FILE *f = fopen(tikPath, "rb");
+	FILE *f = fopen(dir, "rb");
 	if(f == NULL)
 	{
 		drawErrorFrame("Couldn't open title.tmd", ANY_RETURN);
@@ -291,15 +288,15 @@ void generateFakeTicket()
 				if(entry == NULL)
 					entry = &te;
 
-				generateTik(tikPath, entry);
+				generateTik(dir, entry);
 
 				strcpy(ptr, ".cert");
-				generateCert(tikPath);
+				generateCert(dir);
 				strcpy(ptr, ".tik");
 				
 				colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 				textToFrame(0, 0, "Fake ticket generated on:");
-				textToFrame(1, 0, tikPath);
+				textToFrame(1, 0, dir);
 
 				textToFrame(3, 0, "Press any key to return");
 				drawFrame();

@@ -70,11 +70,8 @@ static void drawFBMenuFrame(char **folders, size_t foldersSize, const size_t pos
 char *fileBrowserMenu()
 {
 	char *folders[1024];
-	folders[0] = MEMAllocFromDefaultHeap(3);
-	if(folders[0] == NULL)
-		return NULL;
-	
-	strcpy(folders[0], "./");
+	const char sf[3] = "./";
+	folders[0] =  (char *)sf;
 	
 	size_t foldersSize = 1;
 	size_t cursor, pos;
@@ -82,15 +79,14 @@ char *fileBrowserMenu()
 	NUSDEV activeDevice = usbMounted ? NUSDEV_USB : NUSDEV_SD;
 	bool mov;
 	DIR *dir;
-	char *ret;
+	char *ret = NULL;
 	
 refreshDirList:
     OSTime t = OSGetTime();
 	for(int i = 1; i < foldersSize; ++i)
 		MEMFreeToDefaultHeap(folders[i]);
-	foldersSize = 0;
+	foldersSize = 1;
 	cursor = pos = 0;
-	ret = NULL;
 
 	dir = opendir((activeDevice & NUSDEV_USB) ? (usbMounted == NUSDEV_USB01 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC));
 	if(dir != NULL)
@@ -101,7 +97,12 @@ refreshDirList:
 			{
 				len = strlen(entry->d_name);
 				folders[++foldersSize] = MEMAllocFromDefaultHeap(len + 2);
-				
+				if(folders[foldersSize] == NULL)
+				{
+					--foldersSize;
+					goto exitFileBrowserMenu;
+				}
+
 				strcpy(folders[foldersSize], entry->d_name);
 				folders[foldersSize][len] = '/';
 				folders[foldersSize][++len] = '\0';
@@ -291,7 +292,7 @@ refreshDirList:
 	}
 	
 exitFileBrowserMenu:
-	for(int i = 0; i < foldersSize; ++i)
+	for(int i = 1; i < foldersSize; ++i)
 		MEMFreeToDefaultHeap(folders[i]);
 	return ret;
 }
