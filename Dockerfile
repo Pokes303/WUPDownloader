@@ -1,7 +1,7 @@
 # build wut
 FROM wiiuenv/devkitppc:20220605 AS final
 
-ENV openssl_ver=3.0.4 \
+ENV openssl_ver=3.0.5 \
  curl_ver=7.84.0 \
  DEBIAN_FRONTEND=noninteractive \
  PATH=$DEVKITPPC/bin:$PATH \
