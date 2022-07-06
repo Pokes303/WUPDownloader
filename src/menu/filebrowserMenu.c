@@ -29,6 +29,7 @@
 #include <menu/filebrowser.h>
 
 #include <coreinit/memdefaultheap.h>
+#include <coreinit/memory.h>
 
 #include <dirent.h>
 #include <stdbool.h>
@@ -100,7 +101,7 @@ refreshDirList:
 				if(folders[foldersSize] == NULL)
 					goto exitFileBrowserMenu;
 
-				strcpy(folders[foldersSize], entry->d_name);
+				OSBlockMove(folders[foldersSize], entry->d_name, len, false);
 				folders[foldersSize][len] = '/';
 				folders[foldersSize][++len] = '\0';
 				++foldersSize;
