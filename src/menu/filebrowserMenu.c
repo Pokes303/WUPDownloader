@@ -96,23 +96,21 @@ refreshDirList:
 			if(entry->d_type & DT_DIR) //Check if it's a directory
 			{
 				len = strlen(entry->d_name);
-				folders[++foldersSize] = MEMAllocFromDefaultHeap(len + 2);
+				folders[foldersSize] = MEMAllocFromDefaultHeap(len + 2);
 				if(folders[foldersSize] == NULL)
-				{
-					--foldersSize;
 					goto exitFileBrowserMenu;
-				}
 
 				strcpy(folders[foldersSize], entry->d_name);
 				folders[foldersSize][len] = '/';
 				folders[foldersSize][++len] = '\0';
+				++foldersSize;
 			}
 		closedir(dir);
 	}
 	t = OSGetTime() - t;
 	addEntropy(&t, sizeof(OSTime));
 	
-	drawFBMenuFrame(folders, ++foldersSize, pos, cursor, activeDevice, usbMounted);
+	drawFBMenuFrame(folders, foldersSize, pos, cursor, activeDevice, usbMounted);
 	
 	mov = foldersSize >= MAX_FILEBROWSER_LINES;
 	bool redraw = false;
