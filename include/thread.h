@@ -52,16 +52,7 @@ typedef enum
 #define SPINLOCK_FREE	false
 #define SPINLOCK_LOCKED	true
 
-#ifdef NUSSPLI_DEBUG
-#include <utils.h>
-#define spinCreateLock(lock, locked)					\
-{														\
-	debugPrintf("Spinlock 0x%08X created!", &lock);		\
-	lock = locked;							\
-}
-#else
 #define spinCreateLock(lock, locked)	lock = locked
-#endif
 #define spinIsLocked(lock)				(lock)
 #define spinTryLock(lock)				OSCompareAndSwapAtomic(&lock, SPINLOCK_FREE, SPINLOCK_LOCKED)
 #define spinLock(lock)					while(!spinTryLock(lock)) {}
