@@ -32,7 +32,6 @@
 static char *staticMemToFrameBuffer;
 static char *staticMemLineBuffer;
 static char *staticMemPathBuffer[3];
-static ACPMetaXml *staticMeta;
 
 bool initStaticMem()
 {
@@ -42,27 +41,21 @@ bool initStaticMem()
 		staticMemLineBuffer = MEMAllocFromDefaultHeap(TO_FRAME_BUFFER_SIZE);
 		if(staticMemLineBuffer != NULL)
 		{
-			staticMeta = MEMAllocFromDefaultHeapEx(sizeof(ACPMetaXml), 0x40);
-			if(staticMeta != NULL)
+			for(int i = 0; i < 3; ++i)
 			{
-				for(int i = 0; i < 3; ++i)
+				staticMemPathBuffer[i] = MEMAllocFromDefaultHeapEx(PATH_MAX, 0x40); // Alignmnt is important for MCP!
+				if(staticMemPathBuffer[i] == NULL)
 				{
-					staticMemPathBuffer[i] = MEMAllocFromDefaultHeapEx(PATH_MAX, 0x40); // Alignmnt is important for MCP!
-					if(staticMemPathBuffer[i] == NULL)
-					{
-						for(--i ; i >= 0; --i)
-							MEMFreeToDefaultHeap(staticMemPathBuffer[i]);
+					for(--i ; i >= 0; --i)
+						MEMFreeToDefaultHeap(staticMemPathBuffer[i]);
 
-						goto staticFailure;
-					}
+					goto staticFailure;
 				}
-
-				return true;
-
-staticFailure:
-				MEMFreeToDefaultHeap(staticMeta);
 			}
 
+			return true;
+
+staticFailure:
 			MEMFreeToDefaultHeap(staticMemLineBuffer);
 		}
 
@@ -76,7 +69,6 @@ void shutdownStaticMem()
 {
 	MEMFreeToDefaultHeap(staticMemToFrameBuffer);
 	MEMFreeToDefaultHeap(staticMemLineBuffer);
-	MEMFreeToDefaultHeap(staticMeta);
 	for(int i = 0; i < 3; ++i)
 		MEMFreeToDefaultHeap(staticMemPathBuffer);
 }
@@ -94,9 +86,4 @@ char *getStaticLineBuffer()
 char *getStaticPathBuffer(uint32_t i)
 {
 	return staticMemPathBuffer[i];
-}
-
-ACPMetaXml *getStaticMetaXmlBuffer()
-{
-	return staticMeta;
 }
