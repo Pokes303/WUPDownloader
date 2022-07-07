@@ -42,6 +42,8 @@
 #include <coreinit/memory.h>
 #include <nn/acp/title.h>
 
+#define ASYNC_STACKSIZE					0x400
+
 #define MAX_ITITLEBROWSER_LINES			(MAX_LINES - 3)
 #define MAX_ITITLEBROWSER_TITLE_LENGTH	(MAX_TITLENAME_LENGTH >> 1)
 #define DPAD_COOLDOWN_FRAMES			30 // half a second at 60 FPS
@@ -229,7 +231,7 @@ void ititleBrowserMenu()
 	}
 
 	asyncRunning = true;
-	OSThread *bgt = startThread("Async title loader", THREAD_PRIORITY_MEDIUM, 0x8000, asyntTitleLoader, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_CPU2);
+	OSThread *bgt = startThread("Async title loader", THREAD_PRIORITY_MEDIUM, ASYNC_STACKSIZE, asyntTitleLoader, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_CPU2);
 
 	size_t cursor = 0;
 	size_t pos = 0;
