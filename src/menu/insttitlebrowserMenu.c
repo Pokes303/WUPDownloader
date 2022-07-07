@@ -83,6 +83,30 @@ static void finishTitle(volatile INST_META *title, MCPTitleListType *list, ACPMe
 				title->isDlc = title->isUpdate = false;
 		}
 
+		switch(list->indexedDevice[0])
+		{
+			case 'u':
+				title->dt = DEVICE_TYPE_USB;
+				break;
+			case 'm':
+				title->dt = DEVICE_TYPE_NAND;
+				break;
+			default: // TODO: bt. drh, slc
+				title->dt = DEVICE_TYPE_UNKNOWN;
+		}
+
+		const TitleEntry *e = getTitleEntryByTid(list->titleId);
+		if(e)
+		{
+			strncpy((char *)title->name, e->name, MAX_ITITLEBROWSER_TITLE_LENGTH - 1);
+			title->name[MAX_ITITLEBROWSER_TITLE_LENGTH - 1] = '\0';
+
+			title->region = e->region;
+			title->isDlc = isDLC(e);
+			title->isUpdate = isUpdate(e);
+			return;
+		}
+
 		if(ACPGetTitleMetaXmlByTitleListType(list, meta) == ACP_RESULT_SUCCESS)
 		{
 			size_t len = strlen(meta->longname_en);
@@ -190,35 +214,9 @@ static OSThread *initITBMenu()
 				installedTitles = (INST_META *)MEMAllocFromDefaultHeap(s * sizeof(INST_META));
 				if(installedTitles)
 				{
-					const TitleEntry *e;
 					for(size_t i = 0; i < s; ++i)
 					{
-						switch(ititleEntries[i].indexedDevice[0])
-						{
-							case 'u':
-								installedTitles[i].dt = DEVICE_TYPE_USB;
-								break;
-							case 'm':
-								installedTitles[i].dt = DEVICE_TYPE_NAND;
-								break;
-							default: // TODO: bt. drh, slc
-								installedTitles[i].dt = DEVICE_TYPE_UNKNOWN;
-						}
-
 						spinCreateLock(installedTitles[i].lock, SPINLOCK_FREE);
-						e = getTitleEntryByTid(ititleEntries[i].titleId);
-						if(e)
-						{
-							strncpy((char *)installedTitles[i].name, e->name, MAX_ITITLEBROWSER_TITLE_LENGTH - 1);
-							installedTitles[i].name[MAX_ITITLEBROWSER_TITLE_LENGTH - 1] = '\0';
-
-							installedTitles[i].region = e->region;
-							installedTitles[i].isDlc = isDLC(e);
-							installedTitles[i].isUpdate = isUpdate(e);
-							installedTitles[i].ready = true;
-							continue;
-						}
-
 						installedTitles[i].ready = false;
 					}
 
