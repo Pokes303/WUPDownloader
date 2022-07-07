@@ -185,7 +185,7 @@ static OSThread *initITBMenu()
 		if(ititleEntries)
 		{
 			r = MCP_TitleList(mcpHandle, &s, ititleEntries, s);
-			if(r > 0)
+			if(r >= 0)
 			{
 				installedTitles = (INST_META *)MEMAllocFromDefaultHeap(s * sizeof(INST_META));
 				if(installedTitles)
@@ -242,7 +242,7 @@ static OSThread *initITBMenu()
 			debugPrintf("Insttitlebrowser: OUT OF MEMORY!");
 	}
 	else
-		debugPrintf("Insttitlebrowser: MCP_TitleCound() returned %d", r);
+		debugPrintf("Insttitlebrowser: MCP_TitleCount() returned %d", r);
 
 	return NULL;
 }
