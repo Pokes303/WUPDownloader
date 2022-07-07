@@ -69,20 +69,6 @@ static void finishTitle(volatile INST_META *title, MCPTitleListType *list, ACPMe
 	if(!title->ready)
 	{
 		title->ready = true;
-		switch(getTidHighFromTid(list->titleId))
-		{
-			case TID_HIGH_UPDATE:
-				title->isDlc = false;
-				title->isUpdate = true;
-				break;
-			case TID_HIGH_DLC:
-				title->isDlc = true;
-				title->isUpdate = false;
-				break;
-			default:
-				title->isDlc = title->isUpdate = false;
-		}
-
 		switch(list->indexedDevice[0])
 		{
 			case 'u':
@@ -105,6 +91,20 @@ static void finishTitle(volatile INST_META *title, MCPTitleListType *list, ACPMe
 			title->isDlc = isDLC(e);
 			title->isUpdate = isUpdate(e);
 			return;
+		}
+
+		switch(getTidHighFromTid(list->titleId))
+		{
+			case TID_HIGH_UPDATE:
+				title->isDlc = false;
+				title->isUpdate = true;
+				break;
+			case TID_HIGH_DLC:
+				title->isDlc = true;
+				title->isUpdate = false;
+				break;
+			default:
+				title->isDlc = title->isUpdate = false;
 		}
 
 		if(ACPGetTitleMetaXmlByTitleListType(list, meta) == ACP_RESULT_SUCCESS)
