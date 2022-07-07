@@ -29,7 +29,6 @@
 #include <file.h>
 #include <input.h>
 #include <ioQueue.h>
-#include <osdefs.h>
 #include <renderer.h>
 #include <swkbd_wrapper.h>
 #include <utils.h>
@@ -38,6 +37,7 @@
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/time.h>
+#include <coreinit/userconfig.h>
 
 #include <jansson.h>
 
@@ -190,15 +190,15 @@ bool initConfig()
 	json_decref(json);
 	t = OSGetTime() - t;
 	addEntropy(&t, sizeof(OSTime));
-	
-	IOSHandle handle = UCOpen();
+
+	UCHandle handle = UCOpen();
 	if(handle < 1)
 	{
 		debugPrintf("Error opening UC: %d", handle);
 		sysLang = Swkbd_LanguageType__English;
 		return true;
 	}
-	
+
 	UCSysConfig *settings = MEMAllocFromDefaultHeapEx(sizeof(UCSysConfig), 0x40);
 	if(settings == NULL)
 	{
@@ -207,28 +207,25 @@ bool initConfig()
 		sysLang = Swkbd_LanguageType__English;
 		return true;
 	}
-	
+
 	strcpy(settings->name, "cafe.language");
 	settings->access = 0;
-	settings->dataType = UCDataType_UnsignedInt;
-	settings->error = IOS_ERROR_OK;
+	settings->dataType = UC_DATATYPE_UNSIGNED_INT;
+	settings->error = UC_ERROR_OK;
 	settings->dataSize = sizeof(Swkbd_LanguageType);
 	settings->data = &sysLang;
-	
-	IOSError err = UCReadSysConfig(handle, 1, settings);
-	if(err != IOS_ERROR_OK)
-	{
-		UCClose(handle);
-		MEMFreeToDefaultHeap(settings);
-		debugPrintf("Error reading UC: %d!", err);
-		sysLang = Swkbd_LanguageType__English;
-		return true;
-	}
-	
+
+	UCError err = UCReadSysConfig(handle, 1, settings);
 	UCClose(handle);
 	MEMFreeToDefaultHeap(settings);
-	debugPrintf("System language found: %s", getLanguageString(sysLang));
-	
+	if(err != UC_ERROR_OK)
+	{
+		debugPrintf("Error reading UC: %d!", err);
+		sysLang = Swkbd_LanguageType__English;
+	}
+	else
+		debugPrintf("System language found: %s", getLanguageString(sysLang));
+
 	addToScreenLog("Config file loaded!");
 	return true;
 }
