@@ -64,11 +64,22 @@ static MCPTitleListType *ititleEntries;
 static size_t ititleEntrySize;
 static volatile bool asyncRunning;
 
-static void finishTitle(volatile INST_META *title, MCPTitleListType *list, ACPMetaXml *meta)
+static volatile INST_META *finishTitle(size_t index, ACPMetaXml *meta, bool block)
 {
+	volatile INST_META *title = installedTitles + index;
+	if(title->ready)
+		return title;
+
+	if(block)
+	{
+		spinLock(title->lock);
+	}
+	else if(!spinTryLock(title->lock))
+		return NULL;
+
 	if(!title->ready)
 	{
-		title->ready = true;
+		MCPTitleListType *list = ititleEntries + index;
 		switch(list->indexedDevice[0])
 		{
 			case 'u':
@@ -90,7 +101,7 @@ static void finishTitle(volatile INST_META *title, MCPTitleListType *list, ACPMe
 			title->region = e->region;
 			title->isDlc = isDLC(e);
 			title->isUpdate = isUpdate(e);
-			return;
+			goto finishExit;
 		}
 
 		switch(getTidHighFromTid(list->titleId))
@@ -120,19 +131,24 @@ static void finishTitle(volatile INST_META *title, MCPTitleListType *list, ACPMe
 							*buf = ' ';
 
 					title->region = meta->region;
-					return;
+					goto finishExit;
 				}
 			}
 		}
 
 		hex(list->titleId, 16, (char *)title->name);
 		title->region = MCP_REGION_UNKNOWN;
+
+finishExit:
+		title->ready = true;
 	}
+
+	spinReleaseLock(title->lock);
+	return title;
 }
 
 static int asyncTitleLoader(int argc, const char **argv)
 {
-	volatile INST_META *im = installedTitles;
 	ACPMetaXml *meta = NULL;
 	do
 	{
@@ -140,14 +156,8 @@ static int asyncTitleLoader(int argc, const char **argv)
 	}
 	while(meta == NULL && asyncRunning && AppRunning());
 
-	for(size_t i = 0; i < ititleEntrySize && asyncRunning && AppRunning(); ++i, ++im)
-	{
-		if(spinTryLock(im->lock))
-		{
-			finishTitle(im, ititleEntries + i, meta);
-			spinReleaseLock(im->lock);
-		}
-	}
+	for(size_t i = 0; i < ititleEntrySize && asyncRunning && AppRunning(); ++i)
+		finishTitle(i, meta, false);
 
 	if(meta != NULL)
 		MEMFreeToDefaultHeap(meta);
@@ -172,11 +182,7 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 	{
 		for(size_t i = 0, l = 1; i < max; ++i, ++l)
 		{
-			im = installedTitles + pos + i;
-			spinLock(im->lock);
-			finishTitle(im, ititleEntries + pos + i, meta);
-			spinReleaseLock(im->lock);
-
+			im = finishTitle(pos + i,  meta, true);
 			if(im->isDlc)
 				strcpy(toFrame, "[DLC] ");
 			else if(im->isUpdate)
