@@ -377,7 +377,7 @@ static spinlock debugLock;
 
 void debugInit()
 {
-	spinCreateLock(debugLock, false);
+	spinCreateLock(debugLock, SPINLOCK_FREE);
 	WHBLogUdpInit();
 }
 

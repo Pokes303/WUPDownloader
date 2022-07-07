@@ -116,7 +116,7 @@ bool initIOThread()
 		for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; ++i)
 			queueEntries[i].file = NULL;
 
-		spinCreateLock(ioWriteLock, true);
+		spinCreateLock(ioWriteLock, SPINLOCK_LOCKED);
 		activeReadBuffer = activeWriteBuffer = 0;
 		ioRunning = true;
 

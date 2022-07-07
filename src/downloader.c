@@ -400,13 +400,13 @@ static int dlThreadMain(int argc, const char **argv)
 	return ret;
 }
 
-#define setDefaultDataValues(x) 			\
-{											\
-	x.running = true;						\
-	x.error = CURLE_OK;						\
-	spinCreateLock((x.lock), false);		\
-	x.dlnow = 								\
-	x.dltotal = 0.0D;						\
+#define setDefaultDataValues(x) 				\
+{												\
+	x.running = true;							\
+	x.error = CURLE_OK;							\
+	spinCreateLock((x.lock), SPINLOCK_FREE);	\
+	x.dlnow = 									\
+	x.dltotal = 0.0D;							\
 }
 
 static char *translateCurlError(CURLcode err, char *curlError)
