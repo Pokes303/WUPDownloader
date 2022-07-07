@@ -68,28 +68,7 @@ static void finishTitle(volatile INST_META *title, MCPTitleListType *list, ACPMe
 {
 	if(!title->ready)
 	{
-		if(ACPGetTitleMetaXmlByTitleListType(list, meta) == ACP_RESULT_SUCCESS)
-		{
-			size_t len = strlen(meta->longname_en);
-			if(++len < MAX_ITITLEBROWSER_TITLE_LENGTH)
-			{
-				if(strcmp(meta->longname_en, "Long Title Name (EN)"))
-				{
-					OSBlockMove((void *)title->name, meta->longname_en, len, false);
-					for(char *buf = (char *)title->name; *buf != '\0'; ++buf)
-						if(*buf == '\n')
-							*buf = ' ';
-
-					title->region = meta->region;
-					goto metaExit;
-				}
-			}
-		}
-
-		hex(list->titleId, 16, (char *)title->name);
-		title->region = MCP_REGION_UNKNOWN;
-
-metaExit:
+		title->ready = true;
 		switch(getTidHighFromTid(list->titleId))
 		{
 			case TID_HIGH_UPDATE:
@@ -104,7 +83,26 @@ metaExit:
 				title->isDlc = title->isUpdate = false;
 		}
 
-		title->ready = true;
+		if(ACPGetTitleMetaXmlByTitleListType(list, meta) == ACP_RESULT_SUCCESS)
+		{
+			size_t len = strlen(meta->longname_en);
+			if(++len < MAX_ITITLEBROWSER_TITLE_LENGTH)
+			{
+				if(strcmp(meta->longname_en, "Long Title Name (EN)"))
+				{
+					OSBlockMove((void *)title->name, meta->longname_en, len, false);
+					for(char *buf = (char *)title->name; *buf != '\0'; ++buf)
+						if(*buf == '\n')
+							*buf = ' ';
+
+					title->region = meta->region;
+					return;
+				}
+			}
+		}
+
+		hex(list->titleId, 16, (char *)title->name);
+		title->region = MCP_REGION_UNKNOWN;
 	}
 }
 
