@@ -64,48 +64,71 @@ static MCPTitleListType *ititleEntries;
 static size_t ititleEntrySize;
 static volatile bool asyncRunning;
 
-static void finishTitle(volatile INST_META *title, MCPTitleListType *list)
+static void finishTitle(volatile INST_META *title, MCPTitleListType *list, ACPMetaXml *meta)
 {
 	if(!title->ready)
 	{
-		ACPMetaXml *meta = MEMAllocFromDefaultHeapEx(sizeof(ACPMetaXml), 0x40);
-		if(meta)
+		if(ACPGetTitleMetaXmlByTitleListType(list, meta) == ACP_RESULT_SUCCESS)
 		{
-			if(ACPGetTitleMetaXmlByTitleListType(list, meta) == ACP_RESULT_SUCCESS)
+			size_t len = strlen(meta->longname_en);
+			if(++len < MAX_ITITLEBROWSER_TITLE_LENGTH)
 			{
-				size_t len = strlen(meta->longname_en);
-				if(++len < MAX_ITITLEBROWSER_TITLE_LENGTH)
+				if(strcmp(meta->longname_en, "Long Title Name (EN)"))
 				{
-					if(strcmp(meta->longname_en, "Long Title Name (EN)"))
-					{
-						OSBlockMove((void *)title->name, meta->longname_en, len, false);
-						for(char *buf = (char *)title->name; *buf != '\0'; ++buf)
-							if(*buf == '\n')
-								*buf = ' ';
+					OSBlockMove((void *)title->name, meta->longname_en, len, false);
+					for(char *buf = (char *)title->name; *buf != '\0'; ++buf)
+						if(*buf == '\n')
+							*buf = ' ';
 
-						title->region = meta->region;
-					}
+					title->region = meta->region;
+					goto metaExit;
 				}
 			}
+		}
 
-			MEMFreeToDefaultHeap(meta);
+		hex(list->titleId, 16, (char *)title->name);
+		title->region = MCP_REGION_UNKNOWN;
+
+metaExit:
+		switch(getTidHighFromTid(list->titleId))
+		{
+			case TID_HIGH_UPDATE:
+				title->isDlc = false;
+				title->isUpdate = true;
+				break;
+			case TID_HIGH_DLC:
+				title->isDlc = true;
+				title->isUpdate = false;
+				break;
+			default:
+				title->isDlc = title->isUpdate = false;
 		}
 
 		title->ready = true;
 	}
 }
 
-static int asyntTitleLoader(int argc, const char **argv)
+static int asyncTitleLoader(int argc, const char **argv)
 {
 	volatile INST_META *im = installedTitles;
+	ACPMetaXml *meta = NULL;
+	do
+	{
+		meta = MEMAllocFromDefaultHeapEx(sizeof(ACPMetaXml), 0x40);
+	}
+	while(meta == NULL && asyncRunning && AppRunning());
+
 	for(size_t i = 0; i < ititleEntrySize && asyncRunning && AppRunning(); ++i, ++im)
 	{
 		if(spinTryLock(im->lock))
 		{
-			finishTitle(im, ititleEntries + i);
+			finishTitle(im, ititleEntries + i, meta);
 			spinReleaseLock(im->lock);
 		}
 	}
+
+	if(meta != NULL)
+		MEMFreeToDefaultHeap(meta);
 
 	return 0;
 }
@@ -122,116 +145,115 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 
 	volatile INST_META *im;
 	char *toFrame = getToFrameBuffer();
-	for(size_t i = 0, l = 1; i < max; ++i, ++l)
+	ACPMetaXml *meta = MEMAllocFromDefaultHeapEx(sizeof(ACPMetaXml), 0x40);
+	if(meta)
 	{
-		im = installedTitles + pos + i;
-		spinLock(im->lock);
-		finishTitle(im, ititleEntries + pos + i);
-		spinReleaseLock(im->lock);
+		for(size_t i = 0, l = 1; i < max; ++i, ++l)
+		{
+			im = installedTitles + pos + i;
+			spinLock(im->lock);
+			finishTitle(im, ititleEntries + pos + i, meta);
+			spinReleaseLock(im->lock);
 
-		if(im->isDlc)
-			strcpy(toFrame, "[DLC] ");
-		else if(im->isUpdate)
-			strcpy(toFrame, "[UPD] ");
-		else
-			toFrame[0] = '\0';
+			if(im->isDlc)
+				strcpy(toFrame, "[DLC] ");
+			else if(im->isUpdate)
+				strcpy(toFrame, "[UPD] ");
+			else
+				toFrame[0] = '\0';
 
-		if(cursor == i)
-			arrowToFrame(l, 1);
+			if(cursor == i)
+				arrowToFrame(l, 1);
 
-		deviceToFrame(l, 4, im->dt);
-		flagToFrame(l, 7, im->region);
-		strcat(toFrame, (const char *)im->name);
-		textToFrameCut(l, 10, toFrame, (1280 - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
+			deviceToFrame(l, 4, im->dt);
+			flagToFrame(l, 7, im->region);
+			strcat(toFrame, (const char *)im->name);
+			textToFrameCut(l, 10, toFrame, (1280 - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
+		}
+
+		MEMFreeToDefaultHeap(meta);
 	}
 
 	drawFrame();
 }
 
-void ititleBrowserMenu()
+static OSThread *initITBMenu()
 {
 	int32_t r = MCP_TitleCount(mcpHandle);
-	if(r < 0)
+	if(r > 0)
 	{
-		// TODO
-		return;
-	}
-
-	uint32_t s = sizeof(MCPTitleListType) * (uint32_t)r;
-	ititleEntries = (MCPTitleListType *)MEMAllocFromDefaultHeap(s);
-	if(ititleEntries == NULL)
-	{
-		debugPrintf("Insttitlebrowser: OUT OF MEMORY!");
-		return;
-	}
-
-	r = MCP_TitleList(mcpHandle, &s, ititleEntries, s);
-	if(r < 0)
-	{
-		// TODO
-		MEMFreeToDefaultHeap(ititleEntries);
-		return;
-	}
-
-	ititleEntrySize = s;
-	installedTitles = (INST_META *)MEMAllocFromDefaultHeap(s * sizeof(INST_META));
-	if(installedTitles == NULL)
-	{
-		debugPrintf("Insttitlebrowser: OUT OF MEMORY!");
-		MEMFreeToDefaultHeap(ititleEntries);
-		return;
-	}
-
-	const TitleEntry *e;
-	for(size_t i = 0; i < s; ++i)
-	{
-		switch(ititleEntries[i].indexedDevice[0])
+		uint32_t s = sizeof(MCPTitleListType) * (uint32_t)r;
+		ititleEntries = (MCPTitleListType *)MEMAllocFromDefaultHeap(s);
+		if(ititleEntries)
 		{
-			case 'u':
-				installedTitles[i].dt = DEVICE_TYPE_USB;
-				break;
-			case 'm':
-				installedTitles[i].dt = DEVICE_TYPE_NAND;
-				break;
-			default: // TODO: bt. drh, slc
-				installedTitles[i].dt = DEVICE_TYPE_UNKNOWN;
+			r = MCP_TitleList(mcpHandle, &s, ititleEntries, s);
+			if(r > 0)
+			{
+				installedTitles = (INST_META *)MEMAllocFromDefaultHeap(s * sizeof(INST_META));
+				if(installedTitles)
+				{
+					const TitleEntry *e;
+					for(size_t i = 0; i < s; ++i)
+					{
+						switch(ititleEntries[i].indexedDevice[0])
+						{
+							case 'u':
+								installedTitles[i].dt = DEVICE_TYPE_USB;
+								break;
+							case 'm':
+								installedTitles[i].dt = DEVICE_TYPE_NAND;
+								break;
+							default: // TODO: bt. drh, slc
+								installedTitles[i].dt = DEVICE_TYPE_UNKNOWN;
+						}
+
+						spinCreateLock(installedTitles[i].lock, SPINLOCK_FREE);
+						e = getTitleEntryByTid(ititleEntries[i].titleId);
+						if(e)
+						{
+							strncpy((char *)installedTitles[i].name, e->name, MAX_ITITLEBROWSER_TITLE_LENGTH - 1);
+							installedTitles[i].name[MAX_ITITLEBROWSER_TITLE_LENGTH - 1] = '\0';
+
+							installedTitles[i].region = e->region;
+							installedTitles[i].isDlc = isDLC(e);
+							installedTitles[i].isUpdate = isUpdate(e);
+							installedTitles[i].ready = true;
+							continue;
+						}
+
+						installedTitles[i].ready = false;
+					}
+
+					ititleEntrySize = s;
+					asyncRunning = true;
+					OSThread *ret = startThread("Async title loader", THREAD_PRIORITY_MEDIUM, ASYNC_STACKSIZE, asyncTitleLoader, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_CPU2);
+					if(ret)
+						return ret;
+
+					MEMFreeToDefaultHeap((void *)installedTitles);
+				}
+				else
+					debugPrintf("Insttitlebrowser: OUT OF MEMORY!");
+			}
+			else
+				debugPrintf("Insttitlebrowser: MCP_TitleList() returned %d", r);
+
+			MEMFreeToDefaultHeap(ititleEntries);
 		}
-
-		spinCreateLock(installedTitles[i].lock, SPINLOCK_FREE);
-		e = getTitleEntryByTid(ititleEntries[i].titleId);
-		if(e)
-		{
-			strncpy((char *)installedTitles[i].name, e->name, MAX_ITITLEBROWSER_TITLE_LENGTH - 1);
-			installedTitles[i].name[MAX_ITITLEBROWSER_TITLE_LENGTH - 1] = '\0';
-
-			installedTitles[i].region = e->region;
-			installedTitles[i].isDlc = isDLC(e);
-			installedTitles[i].isUpdate = isUpdate(e);
-			installedTitles[i].ready = true;
-			continue;
-		}
-
-		hex(ititleEntries[i].titleId, 16, (char *)installedTitles[i].name);
-		installedTitles[i].region = MCP_REGION_UNKNOWN;
-		installedTitles[i].ready = false;
-
-		switch(getTidHighFromTid(ititleEntries[i].titleId))
-		{
-			case TID_HIGH_UPDATE:
-				installedTitles[i].isDlc = false;
-				installedTitles[i].isUpdate = true;
-				break;
-			case TID_HIGH_DLC:
-				installedTitles[i].isDlc = true;
-				installedTitles[i].isUpdate = false;
-				break;
-			default:
-				installedTitles[i].isDlc = installedTitles[i].isUpdate = false;
-		}
+		else
+			debugPrintf("Insttitlebrowser: OUT OF MEMORY!");
 	}
+	else
+		debugPrintf("Insttitlebrowser: MCP_TitleCound() returned %d", r);
 
-	asyncRunning = true;
-	OSThread *bgt = startThread("Async title loader", THREAD_PRIORITY_MEDIUM, ASYNC_STACKSIZE, asyntTitleLoader, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_CPU2);
+	return NULL;
+}
+
+void ititleBrowserMenu()
+{
+	OSThread *bgt = initITBMenu();
+	if(!bgt)
+		return;
 
 	size_t cursor = 0;
 	size_t pos = 0;
@@ -406,7 +428,7 @@ loopEntry:
 		strcat(toFrame, "\nfrom your ");
 		strcat(toFrame, im->dt == DEVICE_TYPE_USB ? "USB" : im->dt == DEVICE_TYPE_NAND ? "NAND" : "unknown");
 		strcat(toFrame, " drive?\n\n" BUTTON_A " Yes || " BUTTON_B " No");
-		r = addErrorOverlay(toFrame);
+		int r = addErrorOverlay(toFrame);
 
 		while(AppRunning())
 		{
