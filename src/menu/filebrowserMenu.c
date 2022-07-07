@@ -70,7 +70,11 @@ static void drawFBMenuFrame(char **folders, size_t foldersSize, const size_t pos
 
 char *fileBrowserMenu()
 {
-	char *folders[1024];
+	size_t max_folders = 64;
+	char **folders = MEMAllocFromDefaultHeap(sizeof(char *) * max_folders);
+	if(folders == NULL)
+		return false;
+
 	const char sf[3] = "./";
 	folders[0] =  (char *)sf;
 	
@@ -93,9 +97,24 @@ refreshDirList:
 	if(dir != NULL)
 	{
 		size_t len;
-		for(struct dirent *entry = readdir(dir); entry != NULL && foldersSize < 1024; entry = readdir(dir))
+		for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
 			if(entry->d_type & DT_DIR) //Check if it's a directory
 			{
+				if(foldersSize == max_folders)
+				{
+					max_folders += 64;
+					if(max_folders < foldersSize) // buffer overrun, shouldn't happen
+						goto exitFileBrowserMenu;
+
+					char **tf = MEMAllocFromDefaultHeap(sizeof(char *) * max_folders);
+					if(tf == NULL)
+						goto exitFileBrowserMenu;
+
+					OSBlockMove(tf, folders, sizeof(char *) * foldersSize, false);
+					MEMFreeToDefaultHeap(folders);
+					folders = tf;
+				}
+
 				len = strlen(entry->d_name);
 				folders[foldersSize] = MEMAllocFromDefaultHeap(len + 2);
 				if(folders[foldersSize] == NULL)
@@ -289,9 +308,11 @@ refreshDirList:
 			redraw = false;
 		}
 	}
-	
+
 exitFileBrowserMenu:
 	for(int i = 1; i < foldersSize; ++i)
 		MEMFreeToDefaultHeap(folders[i]);
+
+	MEMFreeToDefaultHeap(folders);
 	return ret;
 }
