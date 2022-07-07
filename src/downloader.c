@@ -766,7 +766,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	
 	if(ret != CURLE_OK)
 	{
-		debugPrintf("curl_easy_perform returned an error: %s (%d/%d)\nFile: %s\n\n", curlError, ret, cdata.error, toRam ? "<RAM>" : file);
+		debugPrintf("curl_easy_perform returned an error: %s (%d/%d)\nFile: %s", curlError, ret, cdata.error, toRam ? "<RAM>" : file);
 		
 		if(ret == CURLE_ABORTED_BY_CALLBACK)
 		{
