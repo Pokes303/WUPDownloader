@@ -65,7 +65,6 @@
 #include <padscore/kpad.h>
 #include <padscore/wpad.h>
 #include <proc_ui/procui.h>
-#include <sndcore2/core.h>
 #include <sysapp/launch.h>
 #include <whb/crash.h>
 
@@ -323,10 +322,6 @@ static bool cfwValid()
 int main()
 {
 	initState();
-
-	// TODO: Remove me
-	AXInit();
-	AXQuit();
 
 #ifdef NUSSPLI_HBL
 	bool jailbreaking;
