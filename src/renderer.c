@@ -765,26 +765,25 @@ bool initRenderer()
 										{
 											Mix_VolumeChunk(backgroundMusic, 15);
 											if(Mix_PlayChannel(0, backgroundMusic, -1) == 0)
-											{
-												fclose(f);
 												goto audioRunning;
-											}
 
 											Mix_FreeChunk(backgroundMusic);
 											backgroundMusic = NULL;
 										}
+
 										SDL_RWclose(rw);
 										Mix_CloseAudio();
 									}
 								}
+
 								MEMFreeToDefaultHeap(bgmBuffer);
 								bgmBuffer = NULL;
 							}
+audioRunning:
 							fclose(f);
 						}
 					}
 
-audioRunning:
 					SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 					SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
