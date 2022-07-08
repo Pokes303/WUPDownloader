@@ -50,7 +50,7 @@ typedef enum
 	TID_HIGH_UPDATE =		0x0005000E,
 } TID_HIGH;
 
-#define getTidHighFromTid(tid) (*(uint32_t *)&tid)
+#define getTidHighFromTid(tid) ((uint32_t)(tid >> 32))
 
 const TitleEntry *getTitleEntries(TITLE_CATEGORY cat);
 const TitleEntry *getTitleEntryByTid(uint64_t tid);
