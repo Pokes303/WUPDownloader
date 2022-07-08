@@ -73,6 +73,8 @@ struct SDL_Rect_Entry
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static FC_Font *font = NULL;
+static void *bgmBuffer = NULL;
+static Mix_Chunk *backgroundMusic = NULL;
 
 static int32_t spaceWidth;
 
@@ -699,9 +701,24 @@ void resumeRenderer()
 
 static inline void quitSDL()
 {
+	if(backgroundMusic != NULL)
+	{
+		debugPrintf("Stopping background music");
+		Mix_HaltChannel(0);
+		Mix_FreeChunk(backgroundMusic);
+		Mix_CloseAudio();
+		backgroundMusic = NULL;
+	}
+	if(bgmBuffer != NULL)
+	{
+		MEMFreeToDefaultHeap(bgmBuffer);
+		bgmBuffer = NULL;
+	}
+
 // TODO:
 	if(TTF_WasInit())
 		TTF_Quit();
+	SDL_QuitSubSystem(SDL_INIT_AUDIO);
 //	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 //	SDL_Quit();
 }
@@ -714,7 +731,7 @@ bool initRenderer()
 	for(int i = 0; i < MAX_OVERLAYS; ++i)
 		errorOverlay[i].tex = NULL;
 	
-	if(SDL_Init(SDL_INIT_VIDEO) == 0)
+	if(SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO) == 0)
 	{
 
 		window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_X, SCREEN_Y, 0);
@@ -727,6 +744,47 @@ bool initRenderer()
 				if(frameBuffer != NULL)
 				{
 					SDL_SetRenderTarget(renderer, frameBuffer);
+
+					OSTime t = OSGetSystemTime();
+					if(Mix_Init(MIX_INIT_MP3))
+					{
+						FILE *f = fopen(ROMFS_PATH "audio/bg.mp3", "rb");
+						if(f != NULL)
+						{
+							size_t fs = getFilesize(f);
+							bgmBuffer = MEMAllocFromDefaultHeapEx(FS_ALIGN(fs), 0x40);
+							if(bgmBuffer != NULL)
+							{
+								if(fread(bgmBuffer, fs, 1, f) == 1)
+								{
+									if(Mix_OpenAudio(22050, AUDIO_S16MSB, 2, 4096) == 0)
+									{
+										SDL_RWops *rw = SDL_RWFromMem(bgmBuffer, fs);
+										backgroundMusic = Mix_LoadWAV_RW(rw, true);
+										if(backgroundMusic != NULL)
+										{
+											Mix_VolumeChunk(backgroundMusic, 15);
+											if(Mix_PlayChannel(0, backgroundMusic, -1) == 0)
+											{
+												fclose(f);
+												goto audioRunning;
+											}
+
+											Mix_FreeChunk(backgroundMusic);
+											backgroundMusic = NULL;
+										}
+										SDL_RWclose(rw);
+										Mix_CloseAudio();
+									}
+								}
+								MEMFreeToDefaultHeap(bgmBuffer);
+								bgmBuffer = NULL;
+							}
+							fclose(f);
+						}
+					}
+
+audioRunning:
 					SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 					SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
@@ -734,6 +792,9 @@ bool initRenderer()
 					GX2SetDRCGamma(1.0f);
 
 					loadTexture(ROMFS_PATH "textures/goodbye.png", &byeTex);
+
+					t = OSGetSystemTime() - t;
+					addEntropy(&t, sizeof(OSTime));
 
 					TTF_Init();
 					resumeRenderer();
