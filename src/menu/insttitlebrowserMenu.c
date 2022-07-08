@@ -71,7 +71,7 @@ static MCPTitleListType *ititleEntries;
 static size_t ititleEntrySize;
 static volatile ASYNC_STATE asyncState;
 
-static volatile INST_META *finishTitle(size_t index, ACPMetaXml *meta, bool block)
+static volatile INST_META *getInstalledTitle(size_t index, ACPMetaXml *meta, bool block)
 {
 	volatile INST_META *title = installedTitles + index;
 	if(title->ready)
@@ -181,7 +181,7 @@ static int asyncTitleLoader(int argc, const char **argv)
 				goto asyncExit;
 		}
 
-		finishTitle(cur, meta, false);
+		getInstalledTitle(cur, meta, false);
 	}
 
 asyncExit:
@@ -208,7 +208,7 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 	{
 		for(size_t i = 0, l = 1; i < max; ++i, ++l)
 		{
-			im = finishTitle(pos + i,  meta, true);
+			im = getInstalledTitle(pos + i,  meta, true);
 			if(im->isDlc)
 				strcpy(toFrame, "[DLC] ");
 			else if(im->isUpdate)
