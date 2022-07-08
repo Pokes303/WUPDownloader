@@ -59,10 +59,17 @@ typedef struct
 	bool ready;
 } INST_META;
 
+typedef enum
+{
+	ASYNC_STATE_EXIT = 0,
+	ASYNC_STATE_FWD,
+	ASYNC_STATE_BKWD
+} ASYNC_STATE;
+
 static volatile INST_META *installedTitles;
 static MCPTitleListType *ititleEntries;
 static size_t ititleEntrySize;
-static volatile bool asyncRunning;
+static volatile ASYNC_STATE asyncState;
 
 static volatile INST_META *finishTitle(size_t index, ACPMetaXml *meta, bool block)
 {
@@ -154,11 +161,30 @@ static int asyncTitleLoader(int argc, const char **argv)
 	{
 		meta = MEMAllocFromDefaultHeapEx(sizeof(ACPMetaXml), 0x40);
 	}
-	while(meta == NULL && asyncRunning && AppRunning());
+	while(meta == NULL && asyncState && AppRunning());
 
-	for(size_t i = 0; i < ititleEntrySize && asyncRunning && AppRunning(); ++i)
-		finishTitle(i, meta, false);
+	size_t min = MAX_ITITLEBROWSER_LINES >> 1;
+	size_t max = ititleEntrySize - 1;
+	size_t cur;
 
+	while(min <= max && AppRunning())
+	{
+		switch(asyncState)
+		{
+			case ASYNC_STATE_FWD:
+				cur = min++;
+				break;
+			case ASYNC_STATE_BKWD:
+				cur = max--;
+				break;
+			case ASYNC_STATE_EXIT:
+				goto asyncExit;
+		}
+
+		finishTitle(cur, meta, false);
+	}
+
+asyncExit:
 	if(meta != NULL)
 		MEMFreeToDefaultHeap(meta);
 
@@ -227,7 +253,7 @@ static OSThread *initITBMenu()
 					}
 
 					ititleEntrySize = s;
-					asyncRunning = true;
+					asyncState = ASYNC_STATE_FWD;
 					OSThread *ret = startThread("NUSspli title loader", THREAD_PRIORITY_MEDIUM, ASYNC_STACKSIZE, asyncTitleLoader, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_CPU2);
 					if(ret)
 						return ret;
@@ -291,6 +317,7 @@ loopEntry:
 		{
 			if(oldHold != VPAD_BUTTON_UP)
 			{
+				asyncState = ASYNC_STATE_BKWD;
 				oldHold = VPAD_BUTTON_UP;
 				frameCount = DPAD_COOLDOWN_FRAMES;
 				dpadAction = true;
@@ -312,7 +339,9 @@ loopEntry:
 					if(mov)
 					{
 						if(pos)
+						{
 							pos--;
+						}
 						else
 						{
 							cursor = MAX_ITITLEBROWSER_LINES - 1;
@@ -330,6 +359,7 @@ loopEntry:
 		{
 			if(oldHold != VPAD_BUTTON_DOWN)
 			{
+				asyncState = ASYNC_STATE_FWD;
 				oldHold = VPAD_BUTTON_DOWN;
 				frameCount = DPAD_COOLDOWN_FRAMES;
 				dpadAction = true;
@@ -361,6 +391,7 @@ loopEntry:
 			{
 				if(oldHold != VPAD_BUTTON_RIGHT)
 				{
+					asyncState = ASYNC_STATE_FWD;
 					oldHold = VPAD_BUTTON_RIGHT;
 					frameCount = DPAD_COOLDOWN_FRAMES;
 					dpadAction = true;
@@ -386,6 +417,7 @@ loopEntry:
 			{
 				if(oldHold != VPAD_BUTTON_LEFT)
 				{
+					asyncState = ASYNC_STATE_BKWD;
 					oldHold = VPAD_BUTTON_LEFT;
 					frameCount = DPAD_COOLDOWN_FRAMES;
 					dpadAction = true;
@@ -454,7 +486,7 @@ loopEntry:
 	}
 
 instExit:
-	asyncRunning = false;
+	asyncState = ASYNC_STATE_EXIT;
 	stopThread(bgt, NULL);
 	MEMFreeToDefaultHeap(ititleEntries);
 	MEMFreeToDefaultHeap((void *)installedTitles);
