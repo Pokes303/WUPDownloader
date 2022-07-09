@@ -60,9 +60,6 @@ static volatile int fwriteOverlay = -1;
 
 static int ioThreadMain(int argc, const char **argv)
 {
-	spinReleaseLock(ioWriteLock);
-	debugPrintf("I/O queue running!");
-
 	uint32_t asl;
 	WriteQueueEntry *entry;
 	while(ioRunning && !fwriteErrno)
@@ -75,23 +72,17 @@ static int ioThreadMain(int argc, const char **argv)
 			continue;
 		}
 
-		if(entry->size != 0) // WRITE command
+		if(entry->size) // WRITE command
 		{
 			if(fwrite((void *)entry->buf, entry->size, 1, (FILE *)entry->file->fd) != 1)
-			{
 				fwriteErrno = errno;
-				debugPrintf("fwrite() error: %d / 0x%08X / %u", fwriteErrno, entry->file->fd, entry->size);
-			}
 		}
 		else // Close command
 		{
-			debugPrintf("File close: 0x%08X", entry->file->fd);
 			OSTime t = OSGetTime();
 			if(fclose((FILE *)entry->file->fd))
-			{
 				fwriteErrno = errno;
-				debugPrintf("fclose() error: %d / 0x%08X", fwriteErrno, entry->file->fd);
-			}
+
 			MEMFreeToDefaultHeap((void *)entry->file->buffer);
 			MEMFreeToDefaultHeap((void *)entry->file);
 			t = OSGetTime() - t;
@@ -116,7 +107,7 @@ bool initIOThread()
 		for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; ++i)
 			queueEntries[i].file = NULL;
 
-		spinCreateLock(ioWriteLock, SPINLOCK_LOCKED);
+		spinCreateLock(ioWriteLock, SPINLOCK_FREE);
 		activeReadBuffer = activeWriteBuffer = 0;
 		ioRunning = true;
 
