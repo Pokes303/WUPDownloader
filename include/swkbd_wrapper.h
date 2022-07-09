@@ -28,7 +28,7 @@
 #include <input.h>
 
 #ifndef __cplusplus
-	typedef int16_t char16_t;
+	typedef __uint_least16_t char16_t;
 #else
 #include <string>
 	extern "C" {
