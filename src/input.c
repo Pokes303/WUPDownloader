@@ -33,7 +33,6 @@
 #include <menu/utils.h>
 
 #include <stdio.h>
-#include <uchar.h>
 
 #include <vpad/input.h>
 #include <coreinit/dynload.h>

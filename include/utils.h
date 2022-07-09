@@ -26,7 +26,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <uchar.h>
 
 #include <coreinit/mcp.h>
 #include <coreinit/thread.h>

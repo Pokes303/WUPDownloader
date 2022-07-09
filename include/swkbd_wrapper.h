@@ -22,13 +22,15 @@
 #include <wut-fixups.h>
 
 #include <stdint.h>
-#include <uchar.h>
 
 #include <nn/swkbd.h>
 
 #include <input.h>
 
-#ifdef __cplusplus
+#ifndef __cplusplus
+	typedef int16_t char16_t;
+#else
+#include <string>
 	extern "C" {
 #endif
 

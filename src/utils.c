@@ -32,7 +32,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <uchar.h>
 
 #include <coreinit/atomic.h>
 #include <coreinit/ios.h>
