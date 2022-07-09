@@ -105,13 +105,14 @@ bool updateCheck()
 	writeScreenLog(1);
 	drawFrame();
 	showFrame();
-	
+
+	const char *updateChkUrl =
 #ifdef NUSSPLI_HBL
-	char *updateChkUrl = UPDATE_CHECK_URL "h";
+	UPDATE_CHECK_URL "h";
 #else
-	char *updateChkUrl = isAroma() ? UPDATE_CHECK_URL "a" : UPDATE_CHECK_URL "c";
+	isAroma() ? UPDATE_CHECK_URL "a" : UPDATE_CHECK_URL "c";
 #endif
-	
+
 	if(downloadFile(updateChkUrl, "JSON", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
 	{
 		clearRamBuf();
