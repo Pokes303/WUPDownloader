@@ -68,6 +68,15 @@
 #include <sysapp/launch.h>
 #include <whb/crash.h>
 
+static void drawLoadingScreen(const char *toScreenLog, const char *loadingMsg)
+{
+	addToScreenLog(toScreenLog);
+	startNewFrame();
+	textToFrame(0, 0, loadingMsg);
+	writeScreenLog(1);
+	drawFrame();
+}
+
 static void innerMain(bool validCfw)
 {
 	OSThread *mainThread = OSGetCurrentThread();
@@ -112,86 +121,33 @@ static void innerMain(bool validCfw)
 
 				if(initFS())
 				{
-					addToScreenLog("Filesystem initialized!");
-
-					startNewFrame();
-					textToFrame(0, 0, "Loading OpenSSL..");
-					writeScreenLog(1);
-					drawFrame();
-
+					drawLoadingScreen("Filesystem initialized!", "Loading OpenSSL..");
 					if(initCrypto())
 					{
-						addToScreenLog("OpenSSL initialized!");
-
-						startNewFrame();
-						textToFrame(0, 0, "Loading MCP...");
-						writeScreenLog(1);
-						drawFrame();
-
+						drawLoadingScreen("OpenSSL initialized!", "Loading MCP...");
 						mcpHandle = MCP_Open();
 						if(mcpHandle != 0)
 						{
-							addToScreenLog("MCP initialized!");
-
-							startNewFrame();
-							textToFrame(0, 0, "Checking sanity...");
-							writeScreenLog(1);
-							drawFrame();
-
+							drawLoadingScreen("MCP initialized!", "Checking sanity...");
 							if(sanityCheck())
 							{
-								addToScreenLog("Sanity checked!");
-
-								startNewFrame();
-								textToFrame(0, 0, "Initializing notification system...");
-								writeScreenLog(1);
-								drawFrame();
-
+								drawLoadingScreen("Sanity checked!", "Loading notification system...");
 								if(initNotifications())
 								{
-									addToScreenLog("Notification system initialized!");
-
-									startNewFrame();
-									textToFrame(0, 0, "Loading downloader...");
-									writeScreenLog(1);
-									drawFrame();
-
+									drawLoadingScreen("Notification system initialized!", "Loading downloader...");
 									if(initDownloader())
 									{
-										addToScreenLog("Downloader initialized!");
-
-										startNewFrame();
-										textToFrame(0, 0, "Loading I/O thread...");
-										writeScreenLog(1);
-										drawFrame();
-
+										drawLoadingScreen("Downloader initialized!", "Loading I/O thread...");
 										if(initIOThread())
 										{
-											addToScreenLog("I/O thread initialized!");
-
-											startNewFrame();
-											textToFrame(0, 0, "Loading config...");
-											writeScreenLog(1);
-											drawFrame();
-
+											drawLoadingScreen("I/O thread initialized!", "Loading config...");
 											if(initConfig())
 											{
-												addToScreenLog("Config loaded!");
-												startNewFrame();
-												textToFrame(0, 0, "Loading SWKBD...");
-												writeScreenLog(1);
-												drawFrame();
-
+												drawLoadingScreen("Config loaded!", "Loading SWKBD...");
 												if(SWKBD_Init())
 												{
-													addToScreenLog("SWKBD initialized!");
-													startNewFrame();
-													textToFrame(0, 0, "Loading menu...");
-													writeScreenLog(1);
-													drawFrame();
-
+													drawLoadingScreen("SWKBD initialized!", "Loading menu...");
 													checkStacks("main()");
-
 													if(!updateCheck())
 													{
 														checkStacks("main");
