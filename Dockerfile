@@ -1,5 +1,5 @@
 # build wut
-FROM wiiuenv/devkitppc:20220605 AS final
+FROM wiiuenv/devkitppc:20220710 AS final
 
 ENV openssl_ver=3.0.5 \
  curl_ver=7.84.0 \
@@ -14,13 +14,6 @@ RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
  apt-get -y install --no-install-recommends autoconf automake libtool openjdk-11-jre-headless && \
  apt-get clean && \
  rm -rf /var/lib/apt/lists/* /usr/share/man && \
- git clone --single-branch https://github.com/devkitPro/wut && \
- cd wut && \
- git checkout f1b5da996f4c4a58beb3d3ab93aa8e8b9f66e775 && \
- make -j$(nproc) && \
- make install && \
- cd .. && \
- rm -rf wut && \
  wget https://www.openssl.org/source/openssl-$openssl_ver.tar.gz && \
  mkdir /openssl && \
  tar xf openssl-$openssl_ver.tar.gz -C /openssl --strip-components=1 && \
