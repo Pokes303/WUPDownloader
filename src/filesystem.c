@@ -23,27 +23,28 @@
 #include <filesystem.h>
 #include <utils.h>
 
-#include <coreinit/filesystem.h>
-#include <iosuhax.h>
+#include <coreinit/filesystem_fsa.h>
 
 #include <stdbool.h>
 
-extern FSClient *__wut_devoptab_fs_client;
-
+static FSAClientHandle handle;
 static NUSDEV usb = NUSDEV_SD;
 
 bool initFS()
 {
-	if(IOSUHAX_Open(NULL) >= 0)
+	if(FSAInit() == FS_ERROR_NOERROR)
 	{
-		if(IOSUHAX_UnlockFSClient(__wut_devoptab_fs_client) == FS_ERROR_NOERROR)
+		handle = FSAAddClient(NULL);
+		if(handle)
 		{
-			bool ret = IOSUHAX_FSAMount(__wut_devoptab_fs_client, "/vol/external01", "/vol/app_sd", 0x01, NULL, 0) == FS_ERROR_NOERROR;
-			if(ret)
+			FSError err = FSAMount(handle, "/vol/external01", "/vol/app_sd", FSA_MOUNT_FLAG_BIND_MOUNT, NULL, 0);
+			if(err == FS_ERROR_NOERROR)
 				return true;
+
+			FSADelClient(handle);
 		}
 
-		IOSUHAX_Close();
+		FSAShutdown();
 	}
 
 	return false;
@@ -51,16 +52,9 @@ bool initFS()
 
 void deinitFS()
 {
-#ifdef NUSSPLI_DEBUG
-	FSError err =
-#endif
-	IOSUHAX_FSAUnmount(__wut_devoptab_fs_client, "/vol/app_sd");
-	IOSUHAX_Close();
-	usb = NUSDEV_SD;
-#ifdef NUSSPLI_DEBUG
-	if(err != FS_ERROR_NOERROR)
-		debugPrintf("Error unmounting SD: 0x%08X", err);
-#endif
+	FSAUnmount(handle, "/vol/app_sd", FSA_UNMOUNT_FLAG_BIND_MOUNT);
+	FSADelClient(handle);
+	FSAShutdown();
 }
 
 NUSDEV getUSB()

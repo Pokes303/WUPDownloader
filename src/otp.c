@@ -23,7 +23,7 @@
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
-#include <iosuhax.h>
+#include <mocha/mocha.h>
 
 #include <crypto.h>
 #include <otp.h>
@@ -36,10 +36,10 @@ uint8_t *getCommonKey()
 	if(otp_common_key[0] == 0x00)
 	{
 		OSTime t = OSGetSystemTime();
-		uint8_t buf[(0x38 * 4) + 16];
-		if(IOSUHAX_read_otp(buf, (0x38 * 4) + 16) >= 0)
+		WiiUConsoleOTP otp;
+		if(Mocha_ReadOTP(&otp) == MOCHA_RESULT_SUCCESS)
 		{
-			OSBlockMove(otp_common_key, buf + (0x38 * 4), 16, false);
+			OSBlockMove(otp_common_key, otp.wiiUBank.wiiUCommonKey, 16, false);
 
 			t = OSGetSystemTime() - t;
 			addEntropy(&t, sizeof(OSTime));

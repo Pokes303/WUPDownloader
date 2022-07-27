@@ -61,12 +61,15 @@
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
 #include <coreinit/title.h>
-#include <iosuhax.h>
+#include <mocha/mocha.h>
 #include <padscore/kpad.h>
 #include <padscore/wpad.h>
 #include <proc_ui/procui.h>
 #include <sysapp/launch.h>
 #include <whb/crash.h>
+
+static bool mochaReady = false;
+extern FSClient *__wut_devoptab_fs_client;
 
 static void drawLoadingScreen(const char *toScreenLog, const char *loadingMsg)
 {
@@ -239,37 +242,28 @@ static void innerMain(bool validCfw)
 
 static bool cfwValid()
 {
-	int handle = IOS_Open("/dev/mcp", IOS_OPEN_READ);
-	bool ret = handle >= 0;
+	mochaReady = Mocha_InitLibrary() == MOCHA_RESULT_SUCCESS;
+	bool ret = mochaReady;
 	if(ret)
 	{
-		char *dummy = MEMAllocFromDefaultHeapEx(0x100, 0x40);
-		ret = dummy != NULL;
+		ret = Mocha_UnlockFSClient(__wut_devoptab_fs_client) == MOCHA_RESULT_SUCCESS;
 		if(ret)
 		{
-			void *in = MEMAllocFromDefaultHeapEx(0x40, 0x40);
-			ret = in != NULL;
+			WiiUConsoleOTP otp;
+			ret = Mocha_ReadOTP(&otp) == MOCHA_RESULT_SUCCESS;
 			if(ret)
 			{
-				*(int *)in = 0xF9; // IPC_CUSTOM_COPY_ENVIRONMENT_PATH
-				ret = IOS_Ioctl(handle, 100, in, 0x40, dummy, 0x100) == IOS_ERROR_OK;
-				if(ret)
-				{
-					ret = IOSUHAX_Open(NULL) >= 0;
-					if(ret)
-					{
-						ret = IOSUHAX_read_otp((uint8_t *)dummy, 1) >= 0;
-						IOSUHAX_Close();
-					}
-				}
+				MochaRPXLoadInfo info = {
+					.target = 0xDEADBEEF,
+					.filesize = 0,
+					.fileoffset = 0,
+					.path = "dummy"
+				};
 
-				MEMFreeToDefaultHeap(in);
+				MochaUtilsStatus s = Mocha_LaunchRPX(&info);
+				ret = s != MOCHA_RESULT_UNSUPPORTED_API_VERSION && s != MOCHA_RESULT_UNSUPPORTED_COMMAND;
 			}
-
-			MEMFreeToDefaultHeap(dummy);
 		}
-
-		IOS_Close(handle);
 	}
 
 	return ret;
@@ -301,6 +295,9 @@ int main()
 		jailbreaking = false;
 #endif
 	}
+
+	if(mochaReady)
+		Mocha_DeinitLibrary();
 
 #ifdef NUSSPLI_DEBUG
 	checkStacks("main");

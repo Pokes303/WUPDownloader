@@ -34,7 +34,6 @@
 #include <coreinit/systeminfo.h>
 #include <coreinit/time.h>
 #include <coreinit/title.h>
-#include <iosuhax.h>
 #include <proc_ui/procui.h>
 
 #include <stdbool.h>
