@@ -209,7 +209,7 @@ static void innerMain(bool validCfw)
 					lerr = "Couldn't initialize filesystem!";
 			}
 			else
-				lerr = "Unsupported environment.\nPlease update to Tiramisu.\nSee https://wiiu.hacks.guide";
+				lerr = "Unsupported environment.\nEither you're not using Tiramisu or your Tiramisu version is out of date.";
 
 			if(lerr != NULL)
 			{
