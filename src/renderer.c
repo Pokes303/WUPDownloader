@@ -78,6 +78,8 @@ static Mix_Chunk *backgroundMusic = NULL;
 
 static int32_t spaceWidth;
 
+static const SDL_Rect barRect = { .x = 1, .y = 0, .w = 1, .h = 1, };
+
 static SDL_Texture *frameBuffer;
 static ErrorOverlay errorOverlay[MAX_OVERLAYS];
 static SDL_Texture *arrowTex;
@@ -646,8 +648,7 @@ void resumeRenderer()
 			SDL_RenderClear(renderer);
 			co = screenColorToSDLcolor(SCREEN_COLOR_D_GREEN);
 			SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
-			SDL_Rect r = { .x = 1, .y = 0, .w = 1, .h = 1, };
-			SDL_RenderFillRect(renderer, &r);
+			SDL_RenderFillRect(renderer, &barRect);
 // TODO: This doesn't work for some SDL bug reason
 //			SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
 //			SDL_RenderDrawPoint(renderer, 1, 0);
@@ -659,15 +660,16 @@ void resumeRenderer()
 			SDL_RenderClear(renderer);
 			// Top right
 			SDL_SetRenderDrawColor(renderer, 0x52, 0x05, 0xFF, 0xFF);
-			SDL_RenderFillRect(renderer, &r);
+			const SDL_Rect r1 = { .x = 1, .y = 0, .w = 1, .h = 1, };
+			SDL_RenderFillRect(renderer, &r1);
 			// Bottom right
 			SDL_SetRenderDrawColor(renderer, 0x61, 0x0a, 0xFF, 0xFF);
-			r.y = 1;
-			SDL_RenderFillRect(renderer, &r);
+			const SDL_Rect r2 = { .x = 1, .y = 1, .w = 1, .h = 1, };
+			SDL_RenderFillRect(renderer, &r2);
 			// Bottom left
 			SDL_SetRenderDrawColor(renderer, 0x83, 0x18, 0xFF, 0xFF);
-			r.x = 0;
-			SDL_RenderFillRect(renderer, &r);
+			const SDL_Rect r3 = { .x = 0, .y = 1, .w = 1, .h = 1, };
+			SDL_RenderFillRect(renderer, &r3);
 
 			bgTex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_X, SCREEN_Y);
 			SDL_SetRenderTarget(renderer, bgTex);
@@ -833,8 +835,10 @@ audioRunning:
 					GX2SetTVGamma(2.0f);
 					GX2SetDRCGamma(1.0f);
 
+					debugPrintf("Before loadTexture()");
 					if(loadTexture(ROMFS_PATH "textures/goodbye.png", &byeTex))
 					{
+						debugPrintf("After loadTexture()");
 						t = OSGetSystemTime() - t;
 						addEntropy(&t, sizeof(OSTime));
 
