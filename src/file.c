@@ -222,18 +222,15 @@ NUSFS_ERR moveDirectory(const char *src, const char *dest)
 size_t getFilesize(FILE *fp)
 {
 	OSTime t = OSGetTime();
-	off_t i = ftello(fp);
-	if(fseek(fp, 0, SEEK_END) != 0)
+
+	struct stat info;
+	if(fstat(fileno(fp), &info) == -1)
 		return -1;
-	
-	size_t fileSize = ftello(fp);
-	if(fileSize == -1)
-		debugPrintf("ftello() failed: %s", errnoToString(errno));
-	
-	fseeko(fp, i, SEEK_SET);
-    t = OSGetTime() - t;
+
+	t = OSGetTime() - t;
 	addEntropy(&t, sizeof(OSTime));
-	return fileSize;
+
+	return (size_t)(info.st_size);
 }
 
 NUSFS_ERR createDirectory(const char *path, mode_t mode)
