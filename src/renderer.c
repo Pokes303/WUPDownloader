@@ -569,6 +569,9 @@ void removeErrorOverlay(int id)
 static bool loadTexture(const char *path, SDL_Texture **out)
 {
 	SDL_Surface *surface = IMG_Load_RW(SDL_RWFromFile(path, "rb"), SDL_TRUE);
+	if(surface == NULL)
+		return false;
+
 	*out = SDL_CreateTextureFromSurface(renderer, surface);
 	SDL_FreeSurface(surface);
 	return *out != NULL;
@@ -733,7 +736,6 @@ bool initRenderer()
 	
 	if(SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO) == 0)
 	{
-
 		window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_X, SCREEN_Y, 0);
 		if(window)
 		{
@@ -782,6 +784,8 @@ bool initRenderer()
 audioRunning:
 							fclose(f);
 						}
+						else
+							debugPrintf("Can't find mp3 file!");
 					}
 
 					SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
@@ -790,24 +794,28 @@ audioRunning:
 					GX2SetTVGamma(2.0f);
 					GX2SetDRCGamma(1.0f);
 
-					loadTexture(ROMFS_PATH "textures/goodbye.png", &byeTex);
-
-					t = OSGetSystemTime() - t;
-					addEntropy(&t, sizeof(OSTime));
-
-					TTF_Init();
-					resumeRenderer();
-					if(font != NULL)
+					if(loadTexture(ROMFS_PATH "textures/goodbye.png", &byeTex))
 					{
-						addToScreenLog("SDL initialized!");
-						startNewFrame();
-						textToFrame(0, 0, "Loading...");
-						writeScreenLog(1);
-						drawFrame();
-						return true;
-					}
+						t = OSGetSystemTime() - t;
+						addEntropy(&t, sizeof(OSTime));
 
-					pauseRenderer();
+						TTF_Init();
+						resumeRenderer();
+						if(font != NULL)
+						{
+							addToScreenLog("SDL initialized!");
+							startNewFrame();
+							textToFrame(0, 0, "Loading...");
+							writeScreenLog(1);
+							drawFrame();
+							return true;
+						}
+
+						pauseRenderer();
+					}
+					else
+						debugPrintf("Can't find goodbye texture!");
+
 					SDL_DestroyTexture(frameBuffer);
 				}
 
