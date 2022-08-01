@@ -835,10 +835,8 @@ audioRunning:
 					GX2SetTVGamma(2.0f);
 					GX2SetDRCGamma(1.0f);
 
-					debugPrintf("Before loadTexture()");
 					if(loadTexture(ROMFS_PATH "textures/goodbye.png", &byeTex))
 					{
-						debugPrintf("After loadTexture()");
 						t = OSGetSystemTime() - t;
 						addEntropy(&t, sizeof(OSTime));
 
