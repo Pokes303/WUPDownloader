@@ -568,13 +568,52 @@ void removeErrorOverlay(int id)
 
 static bool loadTexture(const char *path, SDL_Texture **out)
 {
-	SDL_Surface *surface = IMG_Load_RW(SDL_RWFromFile(path, "rb"), SDL_TRUE);
-	if(surface == NULL)
-		return false;
+	bool ret = false;
+	FILE *f = fopen(path, "rb");
+	if(f != NULL)
+	{
+		size_t fs = getFilesize(f);
+		void *buffer = MEMAllocFromDefaultHeapEx(FS_ALIGN(fs), 0x40);
+		if(buffer != NULL)
+		{
+			if(fread(buffer, fs, 1, f) == 1)
+			{
+				SDL_RWops *rw = SDL_RWFromMem(buffer, fs);
+				if(rw != NULL)
+				{
+					SDL_Surface *surface = IMG_Load_RW(rw, SDL_TRUE);
+					if(surface != NULL)
+					{
+						*out = SDL_CreateTextureFromSurface(renderer, surface);
+						SDL_FreeSurface(surface);
+						if(*out != NULL)
+							ret = true;
+						else
+							debugPrintf("Error creating texture!");
+					}
+					else
+					{
+						debugPrintf("Error creating surface!");
+						SDL_RWclose(rw);
+					}
+				}
+				else
+					debugPrintf("Error creating SDL_WRops!");
+			}
+			else
+				debugPrintf("Error reading %s!", path);
 
-	*out = SDL_CreateTextureFromSurface(renderer, surface);
-	SDL_FreeSurface(surface);
-	return *out != NULL;
+			MEMFreeToDefaultHeap(buffer);
+		}
+		else
+			debugPrintf("Error allocating buffer!");
+
+		fclose(f);
+	}
+	else
+		debugPrintf("Can't open %s!", path);
+
+	return ret;
 }
 
 void resumeRenderer()
@@ -733,7 +772,7 @@ bool initRenderer()
 
 	for(int i = 0; i < MAX_OVERLAYS; ++i)
 		errorOverlay[i].tex = NULL;
-	
+
 	if(SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO) == 0)
 	{
 		window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_X, SCREEN_Y, 0);
