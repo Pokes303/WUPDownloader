@@ -48,12 +48,12 @@ static void drawMainMenuFrame()
 
 	textToFrame(4, ALIGNED_CENTER, NUSSPLI_COPYRIGHT);
 
-	textToFrame(10, 0, "Press " BUTTON_A " to download content");
-	textToFrame(11, 0, "Press " BUTTON_X " to install content");
-	textToFrame(12, 0, "Press " BUTTON_Y " to generate a fake <title.tik> file");
-	textToFrame(13, 0, "Press " BUTTON_RIGHT " to uninstall a title");
-	textToFrame(14, 0, "Press " BUTTON_LEFT " for options");
-	textToFrame(15, 0, "Press " BUTTON_HOME " or " BUTTON_B " to exit");
+	textToFrame(12, 0, "Press " BUTTON_A " to download content");
+	textToFrame(13, 0, "Press " BUTTON_X " to install content");
+	textToFrame(14, 0, "Press " BUTTON_Y " to generate a fake <title.tik> file");
+	textToFrame(15, 0, "Press " BUTTON_RIGHT " to uninstall a title");
+	textToFrame(16, 0, "Press " BUTTON_LEFT " for options");
+	textToFrame(17, 0, "Press " BUTTON_HOME " or " BUTTON_B " to exit");
 
 	textToFrame(7, MAX_CHARS - 27, "Developers:");
 	textToFrame(8, MAX_CHARS - 26, "• DaThinkingChair");
@@ -70,10 +70,6 @@ static void drawMainMenuFrame()
 	textToFrame(19, MAX_CHARS - 26, "• jacobsson");
 	textToFrame(20, MAX_CHARS - 26, "• LuckyDingo");
 	textToFrame(21, MAX_CHARS - 26, "• Vague Rant");
-
-	textToFrame(MAX_LINES - 3, 0, "WARNING:");
-	textToFrame(MAX_LINES - 2, 1, "• Don't eject the SD Card / USB drive or the application will crash!");
-	textToFrame(MAX_LINES - 1, 1, "• You are unable to exit while installing a game");
 	drawFrame();
 }
 
