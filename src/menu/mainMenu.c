@@ -64,11 +64,9 @@ static void drawMainMenuFrame()
 	textToFrame(14, MAX_CHARS - 27, "Beta testers:");
 	textToFrame(15, MAX_CHARS - 26, "• carcaschoi");
 	textToFrame(16, MAX_CHARS - 26, "• DaThinkingChair");
-	textToFrame(17, MAX_CHARS - 26, "• huma_dawii");
-	textToFrame(18, MAX_CHARS - 26, "• jacobsson");
-	textToFrame(19, MAX_CHARS - 26, "• LuckyDingo");
-	textToFrame(20, MAX_CHARS - 26, "• pirate");
-	textToFrame(21, MAX_CHARS - 26, "• Vague Rant");
+	textToFrame(17, MAX_CHARS - 26, "• jacobsson");
+	textToFrame(18, MAX_CHARS - 26, "• LuckyDingo");
+	textToFrame(19, MAX_CHARS - 26, "• Vague Rant");
 	
 	textToFrame(MAX_LINES - 3, 0, "WARNING:");
 	textToFrame(MAX_LINES - 2, 1, "• Don't eject the SD Card / USB drive or the application will crash!");
