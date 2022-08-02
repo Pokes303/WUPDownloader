@@ -35,6 +35,7 @@
 #include <sys/stat.h>
 
 #include <coreinit/filesystem.h>
+#include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 #include <coreinit/time.h>
 
@@ -231,6 +232,37 @@ size_t getFilesize(FILE *fp)
 	addEntropy(&t, sizeof(OSTime));
 
 	return (size_t)(info.st_size);
+}
+
+size_t readFile(const char *path, void **buffer)
+{
+	FILE *file = fopen(path, "rb");
+	if(file != NULL)
+	{
+		size_t filesize = getFilesize(file);
+		if(filesize != -1)
+		{
+			*buffer = MEMAllocFromDefaultHeapEx(FS_ALIGN(filesize), 0x40);
+			if(*buffer != NULL)
+			{
+				if(fread(*buffer, filesize, 1, file) == 1)
+					return filesize;
+
+				MEMFreeToDefaultHeap(*buffer);
+			}
+			else
+				debugPrintf("Error creating buffer!");
+		}
+		else
+			debugPrintf("Error getting filesize for %s!", path);
+
+		fclose(file);
+	}
+	else
+		debugPrintf("Error opening %s!", path);
+
+	*buffer = NULL;
+	return 0;
 }
 
 NUSFS_ERR createDirectory(const char *path, mode_t mode)

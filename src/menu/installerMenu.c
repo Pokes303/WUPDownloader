@@ -31,7 +31,6 @@
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 
-#include <stdio.h>
 #include <string.h>
 
 static void drawInstallerMenuFrame(const char *name, NUSDEV dev, bool keepFiles)
@@ -66,32 +65,12 @@ static bool brickCheck(const char* dir)
 	strcpy(tmdPath, dir);
 	strcat(tmdPath, "/title.tmd");
 
-	FILE *f = fopen(tmdPath, "rb");
-	if(f == NULL)
-	{
-		debugPrintf("Error opening %s", tmdPath);
-		return false;
-	}
-
-	size_t s = getFilesize(f);
-	TMD *tmd = MEMAllocFromDefaultHeapEx(FS_ALIGN(s), 0x40);
+	void *tmd;
+	readFile(tmdPath, &tmd);
 	if(tmd == NULL)
-	{
-		debugPrintf("OUT OF MEMORY!", tmdPath);
-		fclose(f);
 		return false;
-	}
 
-	if(fread(tmd, s, 1, f) != 1)
-	{
-		debugPrintf("Error reading %s", tmdPath);
-		fclose(f);
-		MEMFreeToDefaultHeap(tmd);
-		return false;
-	}
-
-	fclose(f);
-	bool ret = checkSystemTitleFromTid(tmd->tid);
+	bool ret = checkSystemTitleFromTid(((TMD *)tmd)->tid);
 	MEMFreeToDefaultHeap(tmd);
 	return ret;
 }

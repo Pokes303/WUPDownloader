@@ -90,6 +90,7 @@ NUSFS_ERR createDirectory(const char *path, mode_t mode);
 bool createDirRecursive(const char *dir);
 const char *translateNusfsErr(NUSFS_ERR err);
 size_t getFilesize(FILE *fp);
+size_t readFile(const char *path, void **bufer);
 
 #ifdef __cplusplus
 	}

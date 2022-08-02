@@ -571,49 +571,31 @@ void removeErrorOverlay(int id)
 static bool loadTexture(const char *path, SDL_Texture **out)
 {
 	bool ret = false;
-	FILE *f = fopen(path, "rb");
-	if(f != NULL)
+	void *buffer;
+	size_t fs = readFile(path, &buffer);
+	if(buffer != NULL)
 	{
-		size_t fs = getFilesize(f);
-		void *buffer = MEMAllocFromDefaultHeapEx(FS_ALIGN(fs), 0x40);
-		if(buffer != NULL)
+		SDL_RWops *rw = SDL_RWFromMem(buffer, fs);
+		if(rw != NULL)
 		{
-			if(fread(buffer, fs, 1, f) == 1)
+			SDL_Surface *surface = IMG_Load_RW(rw, SDL_TRUE);
+			if(surface != NULL)
 			{
-				SDL_RWops *rw = SDL_RWFromMem(buffer, fs);
-				if(rw != NULL)
-				{
-					SDL_Surface *surface = IMG_Load_RW(rw, SDL_TRUE);
-					if(surface != NULL)
-					{
-						*out = SDL_CreateTextureFromSurface(renderer, surface);
-						SDL_FreeSurface(surface);
-						if(*out != NULL)
-							ret = true;
-						else
-							debugPrintf("Error creating texture!");
-					}
-					else
-					{
-						debugPrintf("Error creating surface!");
-						SDL_RWclose(rw);
-					}
-				}
+				*out = SDL_CreateTextureFromSurface(renderer, surface);
+				SDL_FreeSurface(surface);
+				if(*out != NULL)
+					ret = true;
 				else
-					debugPrintf("Error creating SDL_WRops!");
+					debugPrintf("Error creating texture!");
 			}
 			else
-				debugPrintf("Error reading %s!", path);
-
-			MEMFreeToDefaultHeap(buffer);
+				debugPrintf("Error creating surface!");
 		}
 		else
-			debugPrintf("Error allocating buffer!");
+			debugPrintf("Error creating SDL_WRops!");
 
-		fclose(f);
+		MEMFreeToDefaultHeap(buffer);
 	}
-	else
-		debugPrintf("Can't open %s!", path);
 
 	return ret;
 }
@@ -791,44 +773,31 @@ bool initRenderer()
 					OSTime t = OSGetSystemTime();
 					if(Mix_Init(MIX_INIT_MP3))
 					{
-						FILE *f = fopen(ROMFS_PATH "audio/bg.mp3", "rb");
-						if(f != NULL)
+						size_t fs = readFile(ROMFS_PATH "audio/bg.mp3", &bgmBuffer);
+						if(bgmBuffer != NULL)
 						{
-							size_t fs = getFilesize(f);
-							bgmBuffer = MEMAllocFromDefaultHeapEx(FS_ALIGN(fs), 0x40);
-							if(bgmBuffer != NULL)
+							if(Mix_OpenAudio(22050, AUDIO_S16MSB, 2, 4096) == 0)
 							{
-								if(fread(bgmBuffer, fs, 1, f) == 1)
+								SDL_RWops *rw = SDL_RWFromMem(bgmBuffer, fs);
+								backgroundMusic = Mix_LoadWAV_RW(rw, true);
+								if(backgroundMusic != NULL)
 								{
-									if(Mix_OpenAudio(22050, AUDIO_S16MSB, 2, 4096) == 0)
-									{
-										SDL_RWops *rw = SDL_RWFromMem(bgmBuffer, fs);
-										backgroundMusic = Mix_LoadWAV_RW(rw, true);
-										if(backgroundMusic != NULL)
-										{
-											Mix_VolumeChunk(backgroundMusic, 15);
-											if(Mix_PlayChannel(0, backgroundMusic, -1) == 0)
-												goto audioRunning;
+									Mix_VolumeChunk(backgroundMusic, 15);
+									if(Mix_PlayChannel(0, backgroundMusic, -1) == 0)
+										goto audioRunning;
 
-											Mix_FreeChunk(backgroundMusic);
-											backgroundMusic = NULL;
-										}
-
-										SDL_RWclose(rw);
-										Mix_CloseAudio();
-									}
+									Mix_FreeChunk(backgroundMusic);
+									backgroundMusic = NULL;
 								}
 
-								MEMFreeToDefaultHeap(bgmBuffer);
-								bgmBuffer = NULL;
+								Mix_CloseAudio();
 							}
-audioRunning:
-							fclose(f);
-						}
-						else
-							debugPrintf("Can't find mp3 file!");
-					}
 
+							MEMFreeToDefaultHeap(bgmBuffer);
+							bgmBuffer = NULL;
+						}
+					}
+audioRunning:
 					SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 					SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 

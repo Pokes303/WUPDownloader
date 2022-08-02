@@ -23,7 +23,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #include <crypto.h>
 #include <file.h>
@@ -75,42 +74,21 @@ bool sanityCheck()
 		}
 
 		char *newPath = getStaticPathBuffer(0);
-		FILE *f;
 		size_t s;
 		void *buf;
 		uint8_t m[16];
-		bool ret = true;
-		bool br = false;
 
 		strcpy(newPath, title.path);
 		strcat(newPath, "/meta/");
 		char *pr = newPath + strlen(newPath);
 
-		for(int i = 0; !br && i < MD5_FILES; ++i)
+		for(int i = 0; i < MD5_FILES; ++i)
 		{
 			strcpy(pr, md5File[i]);
-			f = fopen(newPath, "rb+");
-			if(f == NULL)
-			{
-				ret = false;
-				break;
-			}
 
-			s = getFilesize(f);
-			buf = MEMAllocFromDefaultHeapEx(FS_ALIGN(s), 0x40);
+			s = readFile(newPath, &buf);
 			if(buf == NULL)
-			{
-				ret = false;
-				break;
-			}
-
-			if(fread(buf, s, 1, f) != 1)
-			{
-				MEMFreeToDefaultHeap(buf);
-				fclose(f);
-				ret = false;
-				break;
-			}
+				return false;
 
 			getMD5(buf, s, m);
 			for(int j = 0; j < 16; ++j)
@@ -118,19 +96,17 @@ bool sanityCheck()
 				if(m[j] != md5[i][j])
 				{
 					debugPrintf("Sanity error: Data integrity error");
-					ret = false;
-					br = true;
-					break;
+					MEMFreeToDefaultHeap(buf);
+					return false;
 				}
 			}
 
 			MEMFreeToDefaultHeap(buf);
-			fclose(f);
 		}
 
         t = OSGetTime() - t;
 		addEntropy(&t, sizeof(OSTime));
-		return ret;
+		return true;
 	}
 
 	// else / isAroma()

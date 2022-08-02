@@ -36,7 +36,6 @@
 #include <menu/utils.h>
 
 #include <stdbool.h>
-#include <stdio.h>
 #include <string.h>
 
 #include <coreinit/memdefaultheap.h>
@@ -205,8 +204,9 @@ void generateFakeTicket()
 	strcat(dir, "title");
 	char *ptr = dir + strlen(dir);
 	strcpy(ptr, ".tmd");
-	FILE *f = fopen(dir, "rb");
-	if(f == NULL)
+	void *buf;
+	readFile(dir, &buf);
+	if(buf == NULL)
 	{
 		drawErrorFrame("Couldn't open title.tmd", ANY_RETURN);
 
@@ -225,36 +225,6 @@ void generateFakeTicket()
 		return;
 	}
 
-	size_t fs = getFilesize(f);
-	void *buf = MEMAllocFromDefaultHeapEx(FS_ALIGN(fs), 0x40);
-	if(buf == NULL)
-	{
-		fclose(f);
-		return;
-	}
-
-	if(fread(buf, fs, 1, f) != 1)
-	{
-		fclose(f);
-		MEMFreeToDefaultHeap(buf);
-		drawErrorFrame("Couldn't read title.tmd", ANY_RETURN);
-
-		while(AppRunning())
-		{
-			showFrame();
-
-			if(app == APP_STATE_BACKGROUND)
-				continue;
-			if(app == APP_STATE_RETURNING)
-				drawErrorFrame("Couldn't read title.tmd", ANY_RETURN);
-
-			if(vpad.trigger)
-				break;
-		}
-		return;
-	}
-
-	fclose(f);
 	uint64_t tid = ((TMD *)buf)->tid;
 	MEMFreeToDefaultHeap(buf);
 
