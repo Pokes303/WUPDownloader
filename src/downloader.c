@@ -283,7 +283,9 @@ bool initDownloader()
 	{
 		char *fn = getStaticPathBuffer(0);
 		strcpy(fn, ROMFS_PATH "ca-certificates/");
-		FILE *f;
+		void *buf;
+		size_t bufsize;
+		BIO *bio;
 		DIR *dir = opendir(fn);
 		if(dir != NULL)
 		{
@@ -295,21 +297,26 @@ bool initDownloader()
 					continue;
 
 				strcpy(ptr, entry->d_name);
-				f = fopen(fn, "rb");
-				if(f == NULL)
-				{
-					debugPrintf("Failed opening certificate file (%s)!", fn);
+				bufsize = readFile(fn, &buf);
+				if(buf == NULL)
 					continue;
-				}
 
-				inft = PEM_X509_INFO_read(f, inf, NULL, NULL);
-				fclose(f);
+				bio = BIO_new_mem_buf(buf, bufsize);
+				if(bio != NULL)
+				{
+					debugPrintf("Error creating BIO for %s!", fn);
+					inft = PEM_X509_INFO_read_bio(bio, inf, NULL, NULL);
 #ifdef NUSSPLI_DEBUG
-				if(inft == NULL)
-					debugPrintf("Error reading %s: %s!", fn, ERR_reason_error_string(ERR_get_error()));
-				else
-					debugPrintf("Cert %s loaded!", fn);
+					if(inft == NULL)
+						debugPrintf("Error reading %s: %s!", fn, ERR_reason_error_string(ERR_get_error()));
+					else
+						debugPrintf("Cert %s loaded!", fn);
 #endif
+				}
+				else
+					debugPrintf("Error creating BIO for %s!", fn);
+
+				BIO_free(bio); // (BIO_get_close(bio) == BIO_CLOSE, so it frees the underlying buffer for us.
 			}
 
 			closedir(dir);
