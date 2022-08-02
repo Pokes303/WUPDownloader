@@ -316,7 +316,7 @@ bool initDownloader()
 				else
 					debugPrintf("Error creating BIO for %s!", fn);
 
-				BIO_free(bio); // (BIO_get_close(bio) == BIO_CLOSE, so it frees the underlying buffer for us.
+				BIO_free(bio); // BIO_get_close(bio) == BIO_CLOSE, so it frees the underlying buffer for us.
 			}
 
 			closedir(dir);
