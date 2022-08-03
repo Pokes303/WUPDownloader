@@ -304,7 +304,6 @@ bool initDownloader()
 				bio = BIO_new_mem_buf(buf, bufsize);
 				if(bio != NULL)
 				{
-					debugPrintf("Error creating BIO for %s!", fn);
 					inft = PEM_X509_INFO_read_bio(bio, inf, NULL, NULL);
 #ifdef NUSSPLI_DEBUG
 					if(inft == NULL)
