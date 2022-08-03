@@ -248,6 +248,7 @@ size_t readFile(const char *path, void **buffer)
 				if(fread(*buffer, filesize, 1, file) == 1)
 					return filesize;
 
+				debugPrintf("Error reading %s!", path);
 				MEMFreeToDefaultHeap(*buffer);
 			}
 			else
