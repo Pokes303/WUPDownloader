@@ -55,18 +55,17 @@ static void drawMainMenuFrame()
 	textToFrame(16, 0, "Press " BUTTON_LEFT " for options");
 	textToFrame(17, 0, "Press " BUTTON_HOME " or " BUTTON_B " to exit");
 
-	textToFrame(7, MAX_CHARS - 27, "Developers:");
-	textToFrame(8, MAX_CHARS - 26, "• DaThinkingChair");
-	textToFrame(9, MAX_CHARS - 26, "• Pokes303");
-	textToFrame(10, MAX_CHARS - 26, "• V10lator");
+	textToFrame(8, MAX_CHARS - 27, "Developers:");
+	textToFrame(9, MAX_CHARS - 26, "• DaThinkingChair");
+	textToFrame(10, MAX_CHARS - 26, "• Pokes303");
+	textToFrame(11, MAX_CHARS - 26, "• V10lator");
 
-	textToFrame(12, MAX_CHARS - 27, "Thanks to:");
-	textToFrame(13, MAX_CHARS - 26, "• E1ite007");
-	textToFrame(14, MAX_CHARS - 26, "• SDL");
-	textToFrame(15, MAX_CHARS - 26, "• WUP installer");
+	textToFrame(13, MAX_CHARS - 27, "Thanks to:");
+	textToFrame(14, MAX_CHARS - 26, "• E1ite007");
+	textToFrame(15, MAX_CHARS - 26, "• SDL");
+	textToFrame(16, MAX_CHARS - 26, "• WUP installer");
 
-	textToFrame(17, MAX_CHARS - 27, "Beta testers:");
-	textToFrame(18, MAX_CHARS - 26, "• carcaschoi");
+	textToFrame(18, MAX_CHARS - 27, "Beta testers:");
 	textToFrame(19, MAX_CHARS - 26, "• jacobsson");
 	textToFrame(20, MAX_CHARS - 26, "• LuckyDingo");
 	textToFrame(21, MAX_CHARS - 26, "• Vague Rant");
