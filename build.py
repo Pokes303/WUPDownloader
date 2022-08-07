@@ -50,6 +50,11 @@ os.makedirs("zips", exist_ok=True)
 os.system(f"make clean && make -j$(nproc) debug && {wuhbtool} NUSspli.rpx out/Aroma-DEBUG/NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga --tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga --content=data")
 shutil.make_archive(f"zips/NUSspli-{version}-Aroma-DEBUG", "zip", "out/Aroma-DEBUG", ".")
 shutil.copytree("meta/menu", "NUStmp/meta")
+for root, dirs, files in os.walk("NUStmp/meta"):
+    for file in files:
+        if file.endswith(".xcf"):
+            os.remove(os.path.join(root, file))
+
 tmpArray = ["NUSspli.rpx", "NUStmp/meta/app.xml",  "NUStmp/meta/cos.xml"]
 for file in tmpArray:
     shutil.move(file, "NUStmp/code")
