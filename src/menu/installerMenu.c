@@ -113,12 +113,12 @@ static NUSDEV getDevFromPath(const char *path)
 static uint64_t getTid(const char *dir)
 {
 	size_t s = strlen(dir);
-	char *path = MEMAllocFromDefaultHeap(s + 11);
+	char *path = MEMAllocFromDefaultHeap(s + 10);
 	uint64_t ret = 0;
 	if(path != NULL)
 	{
 		strcpy(path, dir);
-		strcpy(path + s, "/title.tmd");
+		strcpy(path + s, "title.tmd");
 		void* buf;
 		readFile(path, &buf);
 		if(buf != NULL)
