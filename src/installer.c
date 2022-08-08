@@ -96,7 +96,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	if(tid != 0)
 	{
 		MCPTitleListType titleEntry;
-		if(MCP_GetTitleInfo(mcpHandle, tid, &titleEntry) != 0)
+		if(MCP_GetTitleInfo(mcpHandle, tid, &titleEntry) == 0)
 			deinstall(&titleEntry, game, false, true);
 	}
 
