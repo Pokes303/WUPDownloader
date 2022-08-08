@@ -482,12 +482,17 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	{
 		fileSize = 0;
 		fp = (void *)open_memstream((char **)&ramBuf, (size_t *)&ramBufSize);
+		if(fp == NULL)
+			return 1;
 	}
 	else
 	{
 		if(resume && fileExists(file))
 		{
 			NUSFILE *nf = openFile(file, "rb+");
+			if(nf == NULL)
+				return 1;
+
 			fseek((FILE *)nf->fd, 0, SEEK_END);
 			fileSize = ftello((FILE *)nf->fd);
 			if(fileSize)
@@ -513,6 +518,9 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		else
 		{
 			fp = (void *)openFile(file, "wb");
+			if(fp == NULL)
+				return 1;
+
 			fileSize = 0;
 		}
 	}
