@@ -26,8 +26,6 @@
 #define FD_SETSIZE 32
 //#endif
 
-#define FS_ERROR_NOERROR	0
-
 #ifdef __cplusplus
 	extern "C" {
 #endif

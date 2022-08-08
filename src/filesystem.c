@@ -32,13 +32,14 @@ static NUSDEV usb = NUSDEV_SD;
 
 bool initFS()
 {
-	if(FSAInit() == FS_ERROR_NOERROR)
+
+	if(FSAInit() == FS_ERROR_OK)
 	{
 		handle = FSAAddClient(NULL);
 		if(handle)
 		{
 			FSError err = FSAMount(handle, "/vol/external01", "/vol/app_sd", FSA_MOUNT_FLAG_BIND_MOUNT, NULL, 0);
-			if(err == FS_ERROR_NOERROR)
+			if(err == FS_ERROR_OK)
 				return true;
 
 			FSADelClient(handle);
