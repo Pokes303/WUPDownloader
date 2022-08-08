@@ -480,7 +480,7 @@ loopEntry:
 		removeErrorOverlay(r);
 
 		if(checkSystemTitle(entry->titleId, im->region) && AppRunning())
-			deinstall(entry, (const char *)im->name, false);
+			deinstall(entry, (const char *)im->name, false, false);
 		else
 			goto loopEntry;
 	}

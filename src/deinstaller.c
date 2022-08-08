@@ -42,7 +42,7 @@
 #include <utils.h>
 #include <menu/utils.h>
 
-bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx)
+bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool skipEnd)
 {
 	startNewFrame();
 	textToFrame(0, 0, "Uninstalling");
@@ -86,33 +86,37 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx)
 		return true;
 
 	enableShutdown();
-	startNotification();
 
-	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-	textToFrame(0, 0, name);
-	textToFrame(1, 0, "Uninstalled successfully!");
-	writeScreenLog(2);
-	drawFrame();
-	
-	while(AppRunning())
+	if(!skipEnd)
 	{
-		if(app == APP_STATE_BACKGROUND)
-			continue;
-		if(app == APP_STATE_RETURNING)
-		{
-			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-			textToFrame(0, 0, name);
-			textToFrame(1, 0, "Uninstalled successfully!");
-			writeScreenLog(2);
-			drawFrame();
-		}
-		
-		showFrame();
-		
-		if(vpad.trigger)
-			break;
-	}
+		startNotification();
 
-	stopNotification();
+		colorStartNewFrame(SCREEN_COLOR_D_GREEN);
+		textToFrame(0, 0, name);
+		textToFrame(1, 0, "Uninstalled successfully!");
+		writeScreenLog(2);
+		drawFrame();
+
+		while(AppRunning())
+		{
+			if(app == APP_STATE_BACKGROUND)
+				continue;
+			if(app == APP_STATE_RETURNING)
+			{
+				colorStartNewFrame(SCREEN_COLOR_D_GREEN);
+				textToFrame(0, 0, name);
+				textToFrame(1, 0, "Uninstalled successfully!");
+				writeScreenLog(2);
+				drawFrame();
+			}
+
+			showFrame();
+
+			if(vpad.trigger)
+				break;
+		}
+
+		stopNotification();
+	}
 	return true;
 }

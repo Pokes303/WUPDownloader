@@ -424,7 +424,7 @@ void update(char *newVersion)
 			goto updateError;
 		}
 
-		deinstall(&ownInfo, "NUSspli v" NUSSPLI_VERSION, true);
+		deinstall(&ownInfo, "NUSspli v" NUSSPLI_VERSION, true, false);
         OSSleepTicks(OSSecondsToTicks(10)); // channelHaxx...
 		
 		if(isAroma())
@@ -434,7 +434,7 @@ void update(char *newVersion)
 		strcpy(installPath, UPDATE_TEMP_FOLDER);
 		strcpy(installPath + strlen(UPDATE_TEMP_FOLDER), "NUSspli");
 		
-		install("Update", false, NUSDEV_SD, installPath, ownInfo.indexedDevice[0] == 'u', true);
+		install("Update", false, NUSDEV_SD, installPath, ownInfo.indexedDevice[0] == 'u', true, 0);
 		removeDirectory(UPDATE_TEMP_FOLDER);
 		enableShutdown();
 	}

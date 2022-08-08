@@ -32,6 +32,7 @@
 #include <coreinit/time.h>
 
 #include <crypto.h>
+#include <deinstaller.h>
 #include <file.h>
 #include <filesystem.h>
 #include <input.h>
@@ -90,8 +91,15 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUs
 	}
 }
 
-bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool toUsb, bool keepFiles)
+bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool toUsb, bool keepFiles, uint64_t tid)
 {
+	if(tid != 0)
+	{
+		MCPTitleListType titleEntry;
+		if(MCP_GetTitleInfo(mcpHandle, tid, &titleEntry) != 0)
+			deinstall(&titleEntry, game, false, true);
+	}
+
 	startNewFrame();
 	char *toScreen = getToFrameBuffer();
 	strcpy(toScreen, "Installing ");

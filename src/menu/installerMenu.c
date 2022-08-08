@@ -110,6 +110,29 @@ static NUSDEV getDevFromPath(const char *path)
 	return ret;
 }
 
+static uint64_t getTid(const char *dir)
+{
+	size_t s = strlen(dir);
+	char *path = MEMAllocFromDefaultHeap(s + 11);
+	uint64_t ret = 0;
+	if(path != NULL)
+	{
+		strcpy(path, dir);
+		strcpy(path + s, "/title.tmd");
+		void* buf;
+		readFile(path, &buf);
+		if(buf != NULL)
+		{
+			ret = ((TMD *)buf)->tid;
+			MEMFreeToDefaultHeap(buf);
+		}
+
+		MEMFreeToDefaultHeap(path);
+	}
+
+	return ret;
+}
+
 void installerMenu(const char *dir)
 {
 	NUSDEV dev = getDevFromPath(dir);
@@ -129,7 +152,7 @@ void installerMenu(const char *dir)
 		if(vpad.trigger & VPAD_BUTTON_A)
 		{
 			if(brickCheck(dir))
-				install(dir, false, dev, dir, true, keepFiles);
+				install(dir, false, dev, dir, true, keepFiles, getTid(dir));
 			return;
 		}
 		if(vpad.trigger & VPAD_BUTTON_B)
@@ -137,7 +160,7 @@ void installerMenu(const char *dir)
 		if(vpad.trigger & VPAD_BUTTON_X)
 		{
 			if(brickCheck(dir))
-				install(dir, false, dev, dir, false, keepFiles);
+				install(dir, false, dev, dir, false, keepFiles, getTid(dir));
 			return;
 		}
 		
