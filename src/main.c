@@ -308,18 +308,13 @@ int main()
 	if(app != APP_STATE_STOPPED)
 	{
 #ifdef NUSSPLI_HBL
-		if(jailbreaking)
-		{
-			tid &= 0xFFFFFFFFFFFF0FFF;
-			tid |= 0x000000000000E000;
-		}
-		else if(!isAroma() && (tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004E000) // Health & Safety
+		if(!jailbreaking && !isAroma() && (tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004E000) // Health & Safety
 		{
 			tid &= 0xFFFFFFFFFFFF0FFF;
 			tid |= 0x000000000000A000;
+			_SYSLaunchTitleWithStdArgsInNoSplash(tid, NULL);
 		}
 
-		_SYSLaunchTitleWithStdArgsInNoSplash(tid, NULL);
 #else
 		SYSLaunchMenu();
 #endif
