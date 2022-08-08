@@ -61,17 +61,26 @@ static void drawInstallerMenuFrame(const char *name, NUSDEV dev, bool keepFiles)
 
 static bool brickCheck(const char* dir)
 {
-	char tmdPath[strlen(dir) + 11];
+	size_t s = strlen(dir);
+	char *tmdPath = MEMAllocFromDefaultHeap(s + 10);
+	if(tmdPath == NULL)
+		return false;
+
 	strcpy(tmdPath, dir);
-	strcat(tmdPath, "/title.tmd");
+	strcpy(tmdPath + s, "title.tmd");
 
 	void *tmd;
 	readFile(tmdPath, &tmd);
-	if(tmd == NULL)
-		return false;
+	bool ret;
+	if(tmd != NULL)
+	{
+		ret = checkSystemTitleFromTid(((TMD *)tmd)->tid);
+		MEMFreeToDefaultHeap(tmd);
+	}
+	else
+		ret = false;
 
-	bool ret = checkSystemTitleFromTid(((TMD *)tmd)->tid);
-	MEMFreeToDefaultHeap(tmd);
+	MEMFreeToDefaultHeap(tmdPath);
 	return ret;
 }
 
