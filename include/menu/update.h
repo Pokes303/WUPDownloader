@@ -25,7 +25,7 @@
 	extern "C" {
 #endif
 
-bool updateMenu(char *newVersion);
+bool updateMenu(const char *newVersion);
 
 #ifdef __cplusplus
 	}

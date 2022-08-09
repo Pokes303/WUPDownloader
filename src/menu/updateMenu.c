@@ -20,6 +20,7 @@
 #include <wut-fixups.h>
 
 #include <input.h>
+#include <staticMem.h>
 #include <renderer.h>
 #include <state.h>
 #include <utils.h>
@@ -28,12 +29,12 @@
 
 #include <string.h>
 
-static void drawUpdateMenuFrame(char *newVersion)
+static void drawUpdateMenuFrame(const char *newVersion)
 {
 	startNewFrame();
 	boxToFrame(0, 5);
 	textToFrame(1, ALIGNED_CENTER, "NUSspli");
-	char toScreen[256];
+	char *toScreen = getToFrameBuffer();
 	strcpy(toScreen, "NUS simple packet loader/installer [");
 	strcat(toScreen, NUSSPLI_VERSION);
 	strcat(toScreen, "]");
@@ -50,10 +51,10 @@ static void drawUpdateMenuFrame(char *newVersion)
 	drawFrame();
 }
 
-bool updateMenu(char *newVersion)
+bool updateMenu(const char *newVersion)
 {
 	drawUpdateMenuFrame(newVersion);
-	
+
 	while(AppRunning())
 	{
 		if(app == APP_STATE_BACKGROUND)
@@ -71,6 +72,6 @@ bool updateMenu(char *newVersion)
 		if(vpad.trigger & VPAD_BUTTON_B)
 			break;
 	}
-	
+
 	return false;
 }

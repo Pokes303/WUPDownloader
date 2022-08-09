@@ -26,7 +26,7 @@
 #endif
 
 bool updateCheck();
-void update(char *newVersion);
+void update(const char *newVersion);
 
 #ifdef __cplusplus
 	}

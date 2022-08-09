@@ -143,7 +143,6 @@ bool updateCheck()
 		return false;
 	}
 	
-	const char *newVer;
 	switch(json_integer_value(jsonObj))
 	{
 		case 0:
@@ -152,8 +151,13 @@ bool updateCheck()
 			clearRamBuf();
 			return false;
 		case 1:
-			newVer = json_string_value(json_object_get(json, "v"));
-			break;
+			const char *newVer = json_string_value(json_object_get(json, "v"));
+			bool ret = newVer != NULL;
+			if(ret)
+				ret = updateMenu(newVer);
+			json_decref(json);
+			clearRamBuf();
+			return ret;
 		case 2: //TODO
 			showUpdateErrorf("The %s version of NUSspli is deprecated!", isAroma() ? "Aroma" : isChannel() ? "Channel" : "HBL");
 			json_decref(json);
@@ -171,13 +175,6 @@ bool updateCheck()
 			clearRamBuf();
 			return false;
 	}
-	
-	char versionString[strlen(newVer) + 1];
-	strcpy(versionString, newVer);
-	json_decref(json);
-	clearRamBuf();
-	
-	return updateMenu(versionString);
 }
 
 static voidpf ZCALLBACK nus_zopen(voidpf opaque, const char* filename, int mode)
@@ -228,7 +225,7 @@ static int ZCALLBACK nus_zstub(voidpf opaque, voidpf stream)
 	return 0;
 }
 
-void update(char *newVersion)
+void update(const char *newVersion)
 {
 	OSDynLoad_Module mod;
 	int(*RL_UnmountCurrentRunningBundle)();
