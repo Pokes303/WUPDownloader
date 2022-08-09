@@ -198,8 +198,8 @@ WUT_CHECK_SIZE(Swkbd_CreateArg, 0x10);
 
 typedef struct
 {
-   VPADStatus *vpad;
-   KPADStatus *kpad[4];
+   const VPADStatus *vpad;
+   const KPADStatus *kpad[4];
 } Swkbd_ControllerInfo;
 WUT_CHECK_OFFSET(Swkbd_ControllerInfo, 0x00, vpad);
 WUT_CHECK_OFFSET(Swkbd_ControllerInfo, 0x04, kpad);

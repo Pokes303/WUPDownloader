@@ -51,15 +51,23 @@
 //WIP. This need a better implementation
 
 VPADStatus vpad;
-static KPADStatus kpad[4];
-static const Swkbd_ControllerInfo controllerInfo = { .vpad = &vpad, .kpad[0] = kpad };
+static const KPADStatus kpad[4];
+static const Swkbd_ControllerInfo controllerInfo =
+{
+	.vpad = &vpad,
+	.kpad[0] = kpad,
+	.kpad[1] = kpad + 1,
+	.kpad[2] = kpad + 2,
+	.kpad[3] = kpad + 3
+};
+
 static ControllerType lastUsedController;
 
 static int io = -1;
 
 static Swkbd_CreateArg createArg;
 static Swkbd_AppearArg appearArg;
-static FSClient swkbd_fsc;
+extern FSClient *__wut_devoptab_fs_client;
 
 static OSMessageQueue swkbd_queue;
 static OSMessage swkbd_msg[SWKBD_QUEUE_SIZE];
@@ -301,8 +309,7 @@ bool SWKBD_Init()
 	}
 	
 	createArg.unk_0x08 = 0;
-	createArg.fsClient = &swkbd_fsc;
-	FSAddClient(createArg.fsClient, 0);
+	createArg.fsClient = __wut_devoptab_fs_client;
 	OSDynLoadAllocFn oAlloc;
 	OSDynLoadFreeFn oFree;
 	OSDynLoad_GetAllocator(&oAlloc, &oFree);
@@ -338,7 +345,6 @@ void SWKBD_Shutdown()
 		Swkbd_Destroy();
 		MEMFreeToDefaultHeap(createArg.workMemory);
 		createArg.workMemory = NULL;
-		FSDelClient(createArg.fsClient, 0);
 	}
 }
 
@@ -363,7 +369,7 @@ void readInput()
 	int32_t controllerProbe;
 	uint32_t oldV, oldH;
 	uint32_t tv;
-	KPADStatus *kps = kpad + 4;
+	KPADStatus *kps = ((KPADStatus *)kpad) + 4;
 	KPADError kerr;
 	int i = 4;
 	bool cont;
