@@ -70,7 +70,7 @@ void shutdownStaticMem()
 	MEMFreeToDefaultHeap(staticMemToFrameBuffer);
 	MEMFreeToDefaultHeap(staticMemLineBuffer);
 	for(int i = 0; i < 3; ++i)
-		MEMFreeToDefaultHeap(staticMemPathBuffer);
+		MEMFreeToDefaultHeap(staticMemPathBuffer[i]);
 }
 
 char *getStaticScreenBuffer()
