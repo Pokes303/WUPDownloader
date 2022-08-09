@@ -54,7 +54,6 @@
 #include <jansson.h>
 
 #define UPDATE_CHECK_URL NAPI_URL "s?t="
-#define UPDATE_DL_URL NAPI_URL "d?t="
 #define UPDATE_TEMP_FOLDER NUSDIR_SD "/NUSspli_temp/"
 #define UPDATE_AROMA_FOLDER NUSDIR_SD "/wiiu/apps/"
 #define UPDATE_AROMA_FILE "NUSspli.wuhb"
@@ -113,68 +112,57 @@ bool updateCheck()
 	isAroma() ? UPDATE_CHECK_URL "a" : UPDATE_CHECK_URL "c";
 #endif
 
-	if(downloadFile(updateChkUrl, "JSON", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
+	bool ret = false;
+	if(downloadFile(updateChkUrl, "JSON", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) == 0)
 	{
-		clearRamBuf();
+		startNewFrame();
+		textToFrame(0, 0, "Parsing JSON");
+		writeScreenLog(1);
+		drawFrame();
+		showFrame();
+
+		json_t *json = json_loadb(getRamBuf(), getRamBufSize(), 0, NULL);
+		if(json != NULL)
+		{
+			json_t *jsonObj = json_object_get(json, "s");
+			if(jsonObj != NULL && json_is_integer(jsonObj))
+			{
+				switch(json_integer_value(jsonObj))
+				{
+					case 0:
+						debugPrintf("Newest version!");
+						break;
+					case 1:
+						const char *newVer = json_string_value(json_object_get(json, "v"));
+						ret = newVer != NULL;
+						if(ret)
+							ret = updateMenu(newVer);
+						break;
+					case 2: //TODO
+						showUpdateErrorf("The %s version of NUSspli is deprecated!", isAroma() ? "Aroma" : isChannel() ? "Channel" : "HBL");
+						break;
+					case 3: // TODO
+					case 4:
+						showUpdateError("Internal server error!");
+						break;
+					default: // TODO
+						showUpdateErrorf("Invalid state value: %d", json_integer_value(jsonObj));
+						break;
+				}
+			}
+			else
+				debugPrintf("Invalid JSON data");
+
+			json_decref(json);
+		}
+		else
+			debugPrintf("Invalid JSON data");
+	}
+	else
 		debugPrintf("Error downloading %s", updateChkUrl);
-		return false;
-	}
-	
-	startNewFrame();
-	textToFrame(0, 0, "Parsing JSON");
-	writeScreenLog(1);
-	drawFrame();
-	showFrame();
-	
-	json_t *json = json_loadb(getRamBuf(), getRamBufSize(), 0, NULL);
-	if(json == NULL)
-	{
-		clearRamBuf();
-		debugPrintf("Invalid JSON data");
-		return false;
-	}
-	
-	json_t *jsonObj = json_object_get(json, "s");
-	if(jsonObj == NULL || !json_is_integer(jsonObj))
-	{
-		json_decref(json);
-		clearRamBuf();
-		debugPrintf("Invalid JSON data");
-		return false;
-	}
-	
-	switch(json_integer_value(jsonObj))
-	{
-		case 0:
-			debugPrintf("Newest version!");
-			json_decref(json);
-			clearRamBuf();
-			return false;
-		case 1:
-			const char *newVer = json_string_value(json_object_get(json, "v"));
-			bool ret = newVer != NULL;
-			if(ret)
-				ret = updateMenu(newVer);
-			json_decref(json);
-			clearRamBuf();
-			return ret;
-		case 2: //TODO
-			showUpdateErrorf("The %s version of NUSspli is deprecated!", isAroma() ? "Aroma" : isChannel() ? "Channel" : "HBL");
-			json_decref(json);
-			clearRamBuf();
-			return false;
-		case 3: // TODO
-		case 4:
-			showUpdateError("Internal server error!");
-			json_decref(json);
-			clearRamBuf();
-			return false;
-		default: // TODO
-			showUpdateErrorf("Invalid state value: %d", json_integer_value(jsonObj));
-			json_decref(json);
-			clearRamBuf();
-			return false;
-	}
+
+	clearRamBuf();
+	return ret;
 }
 
 static voidpf ZCALLBACK nus_zopen(voidpf opaque, const char* filename, int mode)
