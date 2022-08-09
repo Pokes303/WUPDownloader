@@ -52,13 +52,13 @@
 
 VPADStatus vpad;
 static const KPADStatus kpad[4];
-static Swkbd_ControllerInfo controllerInfo =
+static const Swkbd_ControllerInfo controllerInfo =
 {
 	.vpad = &vpad,
-	.kpad[0] = NULL,
-	.kpad[1] = NULL,
-	.kpad[2] = NULL,
-	.kpad[3] = NULL
+	.kpad[0] = kpad,
+	.kpad[1] = kpad + 1,
+	.kpad[2] = kpad + 2,
+	.kpad[3] = kpad + 3
 };
 
 static ControllerType lastUsedController;
@@ -504,14 +504,13 @@ void readInput()
 		if(kbdHidden && vpad.hold != oldH)
 			lastUsedController = i;
 
-		controllerInfo.kpad[i] = kps;
 		continue;
 
 kpadReadError:
 		if(controllerProbe != -1)
 			altCon = true;
 
-		controllerInfo.kpad[i] = NULL;
+		OSBlockSet(kps, 0, sizeof(KPADStatus));
 	}
 
 	if(vpad.trigger != 0)
