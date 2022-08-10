@@ -138,7 +138,7 @@ bool updateCheck()
 						const char *newVer = json_string_value(json_object_get(json, "v"));
 						ret = newVer != NULL;
 						if(ret)
-#ifdef HBL
+#ifdef NUSSPLI_HBL
 							ret = updateMenu(newVer, NUSSPLI_TYPE_HBL);
 #else
 							ret = updateMenu(newVer, isAroma() ? NUSSPLI_TYPE_AROMA : NUSSPLI_TYPE_CHANNEL);
