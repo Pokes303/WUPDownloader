@@ -55,6 +55,7 @@
 #include <jansson.h>
 
 #define UPDATE_CHECK_URL NAPI_URL "s?t="
+#define UPDATE_DOWNLOAD_URL "https://github.com/V10lator/NUSspli/releases/download/v"
 #define UPDATE_TEMP_FOLDER NUSDIR_SD "/NUSspli_temp/"
 #define UPDATE_AROMA_FOLDER NUSDIR_SD "/wiiu/apps/"
 #define UPDATE_AROMA_FILE "NUSspli.wuhb"
@@ -110,7 +111,7 @@ bool updateCheck()
 #ifdef NUSSPLI_HBL
 	UPDATE_CHECK_URL "h";
 #else
-	isAroma() ? UPDATE_CHECK_URL "a" : UPDATE_CHECK_URL "c";
+	!isChannel() && isAroma() ? UPDATE_CHECK_URL "a" : UPDATE_CHECK_URL "c";
 #endif
 
 	bool ret = false;
@@ -229,9 +230,10 @@ static int ZCALLBACK nus_zstub(voidpf opaque, voidpf stream)
 
 void update(const char *newVersion, NUSSPLI_TYPE type)
 {
+#ifndef NUSSPLI_HBL
 	OSDynLoad_Module mod;
 	int(*RL_UnmountCurrentRunningBundle)();
-	if(isAroma())
+	if(!isChannel() && isAroma())
 	{
 		OSDynLoad_Error err = OSDynLoad_Acquire("homebrew_rpx_loader", &mod);
 		if(err == OS_DYNLOAD_OK)
@@ -246,6 +248,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 			return;
 		}
 	}
+#endif
 
 	disableShutdown();
 	removeDirectory(UPDATE_TEMP_FOLDER);
@@ -261,12 +264,12 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 			strcat(toScreen, errStr);
 
 		showUpdateError(toScreen);
-		goto preUpdateError;
+		goto updateError;
 	}
 
-	char url[55 + (15 * 2) + 9 + 11 + 1];
-	strcpy(url, "https://github.com/V10lator/NUSspli/releases/download/v");
-	strcat(url, newVersion);
+	char url[(strlen(UPDATE_DOWNLOAD_URL) + strlen("/NUSspli-") + strlen("-Channel") + strlen(NUSSPLI_DLVER ".zip") + 1) + (strlen(newVersion) << 1)];
+	strcpy(url, UPDATE_DOWNLOAD_URL);
+	strcpy(url + strlen(UPDATE_DOWNLOAD_URL), newVersion);
 	strcat(url, "/NUSspli-");
 	strcat(url, newVersion);
 
@@ -283,7 +286,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 			break;
 		default:
 			showUpdateError("Internal error!");
-			goto preUpdateError;
+			goto updateError;
 	}
 
 	strcat(url, NUSSPLI_DLVER ".zip");
@@ -292,7 +295,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 	{
 		clearRamBuf();
 		showUpdateErrorf("Error downloading %s", url);
-		goto preUpdateError;
+		goto updateError;
 	}
 
 	startNewFrame();
@@ -454,15 +457,14 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 	}
 	else if(isAroma())
 	{
-		RL_UnmountCurrentRunningBundle();
-			OSDynLoad_Release(mod);
-
 		if(!fileExists(UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE))
 		{
 			showUpdateError("Couldn't find NUSspli file on the SD card");
 			goto updateError;
 		}
 
+		RL_UnmountCurrentRunningBundle();
+		OSDynLoad_Release(mod);
 		remove(UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
 	}
 #endif
@@ -534,8 +536,9 @@ zipError1:
 	unzClose(zip);
 	clearRamBuf();
 updateError:
-	removeDirectory(UPDATE_TEMP_FOLDER);
-preUpdateError:
-	if(isAroma())
+#ifndef NUSSPLI_HBL
+	if(!isChannel() && isAroma())
 		OSDynLoad_Release(mod);
+#endif
+	removeDirectory(UPDATE_TEMP_FOLDER);
 }
