@@ -267,7 +267,13 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 		goto updateError;
 	}
 
-	char url[(strlen(UPDATE_DOWNLOAD_URL) + strlen("/NUSspli-") + strlen("-Channel") + strlen(NUSSPLI_DLVER ".zip") + 1) + (strlen(newVersion) << 1)];
+	char *url = MEMAllocFromDefaultHeap((strlen(UPDATE_DOWNLOAD_URL) + strlen("/NUSspli-") + strlen("-Channel") + strlen(NUSSPLI_DLVER ".zip") + 1) + (strlen(newVersion) << 1));
+	if(url == NULL)
+	{
+		debugPrintf("Out of memory!");
+		goto updateError;
+	}
+
 	strcpy(url, UPDATE_DOWNLOAD_URL);
 	strcpy(url + strlen(UPDATE_DOWNLOAD_URL), newVersion);
 	strcat(url, "/NUSspli-");
@@ -285,6 +291,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 			strcat(url, "-HBL");
 			break;
 		default:
+			MEMFreeToDefaultHeap(url);
 			showUpdateError("Internal error!");
 			goto updateError;
 	}
@@ -294,10 +301,12 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 	if(downloadFile(url, "NUSspli.zip", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
 	{
 		clearRamBuf();
+		MEMFreeToDefaultHeap(url);
 		showUpdateErrorf("Error downloading %s", url);
 		goto updateError;
 	}
 
+	MEMFreeToDefaultHeap(url);
 	startNewFrame();
 	textToFrame(0, 0, "Updating, please wait...");
 	writeScreenLog(1);
