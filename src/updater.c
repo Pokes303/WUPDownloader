@@ -228,6 +228,152 @@ static int ZCALLBACK nus_zstub(voidpf opaque, voidpf stream)
 	return 0;
 }
 
+static bool unzipUpdate()
+{
+	long zPos = 0;
+	zlib_filefunc_def rbfd = {
+		.zopen_file = nus_zopen,
+		.zread_file = nus_zread,
+		.zwrite_file = nus_zwrite,
+		.ztell_file = nus_ztell,
+		.zseek_file = nus_zseek,
+		.zclose_file = nus_zstub,
+		.zerror_file = nus_zstub,
+		.opaque = NULL
+	};
+	bool ret = false;
+	unzFile zip = unzOpen2((const char *)&zPos, &rbfd);
+	if(zip != NULL)
+	{
+		unz_global_info zipInfo;
+		if(unzGetGlobalInfo(zip, &zipInfo) == UNZ_OK)
+		{
+			uint8_t *buf = MEMAllocFromDefaultHeap(IO_BUFSIZE);
+			if(buf != NULL)
+			{
+				char *zipFileName = getStaticPathBuffer(1);
+				unz_file_info zipFileInfo;
+				char *needle;
+				char *fileName = getStaticPathBuffer(2);
+				strcpy(fileName, UPDATE_TEMP_FOLDER);
+				char *fnp = fileName + strlen(UPDATE_TEMP_FOLDER);
+				NUSFILE *file;
+				size_t extracted;
+				char *lastSlash;
+				char *lspp;
+
+				char *path =  getStaticPathBuffer(0);
+				ret = true;
+				do
+				{
+					if(unzGetCurrentFileInfo(zip, &zipFileInfo, zipFileName, 256, NULL, 0, NULL, 0) == UNZ_OK)
+					{
+						if(unzOpenCurrentFile(zip) == UNZ_OK)
+						{
+							needle = strchr(zipFileName, '/');
+							if(needle != NULL)
+							{
+								lastSlash = needle;
+								lspp = needle + 1;
+								needle = strchr(lspp, '/');
+								while(needle != NULL)
+								{
+									lastSlash = needle;
+									lspp = needle + 1;
+									needle = strchr(lspp, '/');
+								}
+
+								if(lastSlash[1] == '\0')
+								{
+									unzCloseCurrentFile(zip);
+									continue;
+								}
+
+								lastSlash[0] = '\0';
+								strcpy(path, zipFileName);
+								strcat(path, "/");
+								strcpy(fnp, path);
+								strcpy(zipFileName, lastSlash + 1);
+
+								if(!createDirRecursive(fileName))
+								{
+									showUpdateErrorf("Error creating directory: %s", prettyDir(fileName));
+									ret = false;
+								}
+							}
+							else
+								path[0] = '\0';
+
+							if(ret)
+							{
+								sprintf(fnp, "%s%s", path, zipFileName);
+								file = openFile(fileName, "wb");
+								if(file != NULL)
+								{
+									while(ret)
+									{
+										extracted = unzReadCurrentFile(zip, buf, IO_BUFSIZE);
+										if(extracted < 0)
+										{
+											showUpdateErrorf("Error extracting file: %s", prettyDir(fileName));
+											ret = false;
+											break;
+										}
+
+										if(extracted != 0)
+										{
+											if(addToIOQueue(buf, 1, extracted, file) != extracted)
+											{
+												showUpdateErrorf("Error writing file: %s", prettyDir(fileName));
+												ret = false;
+												break;
+											}
+										}
+										else
+											break;
+									}
+
+									addToIOQueue(NULL, 0, 0, file);
+								}
+								else
+								{
+									showUpdateErrorf("Error opening file: %s", prettyDir(fileName));
+									ret = false;
+								}
+							}
+
+							unzCloseCurrentFile(zip);
+						}
+						else
+						{
+							showUpdateError("Error opening zip file");
+							ret = false;
+						}
+					}
+					else
+					{
+						showUpdateError("Error extracting zip");
+						ret = false;
+					}
+				}
+				while(ret && unzGoToNextFile(zip) == UNZ_OK);
+
+				MEMFreeToDefaultHeap(buf);
+			}
+			else
+				showUpdateError("Error allocating memory");
+		}
+		else
+			showUpdateError("Error getting zip info");
+
+		unzClose(zip);
+	}
+	else
+		showUpdateError("Error opening zip!");
+
+	return ret;
+}
+
 void update(const char *newVersion, NUSSPLI_TYPE type)
 {
 #ifndef NUSSPLI_HBL
@@ -304,127 +450,12 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 	drawFrame();
 	showFrame();
 
-	long zPos = 0;
-	zlib_filefunc_def rbfd = {
-		.zopen_file = nus_zopen,
-		.zread_file = nus_zread,
-		.zwrite_file = nus_zwrite,
-		.ztell_file = nus_ztell,
-		.zseek_file = nus_zseek,
-		.zclose_file = nus_zstub,
-		.zerror_file = nus_zstub,
-		.opaque = NULL
-	};
-	unzFile zip = unzOpen2((const char *)&zPos, &rbfd);
-	unz_global_info zipInfo;
-	if(unzGetGlobalInfo(zip, &zipInfo) != UNZ_OK)
+	if(!unzipUpdate())
 	{
-		showUpdateError("Error getting zip info");
-		goto zipError1;
+		clearRamBuf();
+		goto updateError;
 	}
-	
-	uint8_t *buf = MEMAllocFromDefaultHeap(IO_BUFSIZE);
-	if(buf == NULL)
-	{
-		showUpdateError("Error allocating memory");
-		goto zipError1;
-	}
-	
-	char *zipFileName = getStaticPathBuffer(1);
-	unz_file_info zipFileInfo;
-	char *needle;
-	char *fileName = getStaticPathBuffer(2);
-	strcpy(fileName, UPDATE_TEMP_FOLDER);
-	char *fnp = fileName + strlen(UPDATE_TEMP_FOLDER);
-	NUSFILE *file;
-	size_t extracted;
-	char *lastSlash;
-	char *lspp;
-	
-	do
-	{
-		if(unzGetCurrentFileInfo(zip, &zipFileInfo, zipFileName, 256, NULL, 0, NULL, 0) != UNZ_OK)
-		{
-			showUpdateError("Error extracting zip");
-			goto zipError2;
-		}
-		
-		if(unzOpenCurrentFile(zip) != UNZ_OK)
-		{
-			showUpdateError("Error opening zip file");
-			goto zipError2;
-		}
-		
-		needle = strchr(zipFileName, '/');
-		if(needle != NULL)
-		{
-			lastSlash = needle;
-			lspp = needle + 1;
-			needle = strchr(lspp, '/');
-			while(needle != NULL)
-			{
-				lastSlash = needle;
-				lspp = needle + 1;
-				needle = strchr(lspp, '/');
-			}
-			
-			if(lastSlash[1] == '\0')
-			{
-				unzCloseCurrentFile(zip);
-				continue;
-			}
-			
-			lastSlash[0] = '\0';
-			strcpy(path, zipFileName);
-			strcat(path, "/");
-			strcpy(fnp, path);
-			strcpy(zipFileName, lastSlash + 1);
-			
-			if(!createDirRecursive(fileName))
-			{
-				showUpdateErrorf("Error creating directory: %s", fileName);
-				goto zipError3;
-			}
-		}
-		else
-			path[0] = '\0';
-		
-		sprintf(fnp, "%s%s", path, zipFileName);
-		file = openFile(fileName, "wb");
-		if(file == NULL)
-		{
-			showUpdateErrorf("Error opening file: %s", fileName);
-			goto zipError3;
-		}
-		
-		while(true)
-		{
-			extracted = unzReadCurrentFile(zip, buf, IO_BUFSIZE);
-			if(extracted < 0)
-			{
-				showUpdateErrorf("Error extracting file: %s", fileName);
-				goto zipError4;
-			}
-			
-			if(extracted != 0)
-			{
-				if(addToIOQueue(buf, 1, extracted, file) != extracted)
-				{
-					showUpdateErrorf("Error writing file: %s", fileName);
-					goto zipError4;
-				}
-			}
-			else
-				break;
-		}
-		
-		unzCloseCurrentFile(zip);
-		addToIOQueue(NULL, 0, 0, file);
-	}
-	while(unzGoToNextFile(zip) == UNZ_OK);
 
-	unzClose(zip);
-	MEMFreeToDefaultHeap(buf);
 	clearRamBuf();
 	bool toUSB = getUSB() != NUSDEV_NONE;
 
@@ -524,15 +555,6 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 	stopNotification();
 	return;
 
-zipError4:
-	addToIOQueue(NULL, 0, 0, file);
-zipError3:
-	unzCloseCurrentFile(zip);
-zipError2:
-    MEMFreeToDefaultHeap(buf);
-zipError1:
-	unzClose(zip);
-	clearRamBuf();
 updateError:
 #ifndef NUSSPLI_HBL
 	if(!isChannel() && isAroma())
