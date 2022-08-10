@@ -23,6 +23,7 @@
 #include <deinstaller.h>
 #include <downloader.h>
 #include <file.h>
+#include <filesystem.h>
 #include <input.h>
 #include <installer.h>
 #include <ioQueue.h>
@@ -423,6 +424,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 	unzClose(zip);
 	MEMFreeToDefaultHeap(buf);
 	clearRamBuf();
+	bool toUSB = getUSB() != NUSDEV_NONE;
 
 	// Uninstall currently running type/version
 #ifdef NUSSPLI_HBL
@@ -444,16 +446,24 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 			goto updateError;
 		}
 
+		if(toUSB)
+			toUSB = ownInfo.indexedDevice[0] == 'u';
+
 		deinstall(&ownInfo, "NUSspli v" NUSSPLI_VERSION, true, false);
-        OSSleepTicks(OSSecondsToTicks(10)); // channelHaxx...
+		OSSleepTicks(OSSecondsToTicks(10)); // channelHaxx...
 	}
 	else if(isAroma())
 	{
 		RL_UnmountCurrentRunningBundle();
 			OSDynLoad_Release(mod);
 
-		if(fileExists(UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE))
-			remove(UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
+		if(!fileExists(UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE))
+		{
+			showUpdateError("Couldn't find NUSspli file on the SD card");
+			goto updateError;
+		}
+
+		remove(UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
 	}
 #endif
 
@@ -465,19 +475,11 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 			rename(UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
 			break;
 		case NUSSPLI_TYPE_CHANNEL:
-			MCPTitleListType ownInfo;
-			MCPError e = MCP_GetOwnTitleInfo(mcpHandle, &ownInfo);
-			if(e != 0)
-			{
-				showUpdateErrorf("Error getting own title info: %#010x", e);
-				goto updateError;
-			}
-
 			char *installPath = getStaticPathBuffer(2);
 			strcpy(installPath, UPDATE_TEMP_FOLDER);
 			strcpy(installPath + strlen(UPDATE_TEMP_FOLDER), "NUSspli");
 
-			install("Update", false, NUSDEV_SD, installPath, ownInfo.indexedDevice[0] == 'u', true, 0);
+			install("Update", false, NUSDEV_SD, installPath, toUSB, true, 0);
 			break;
 		case NUSSPLI_TYPE_HBL:
 #ifdef NUSSPLI_DEBUG
