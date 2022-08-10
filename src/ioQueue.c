@@ -277,7 +277,6 @@ NUSFILE *openFile(const char *path, const char *mode)
 			if(setvbuf((FILE *)ret->fd, (char *)ret->buffer, _IOFBF, IO_MAX_FILE_BUFFER) != 0)
 				debugPrintf("Error setting buffer!");
 
-			debugPrintf("File open: 0x%08X", ret->fd);
 			return ret;
 		}
 		fclose((FILE *)ret->fd);
