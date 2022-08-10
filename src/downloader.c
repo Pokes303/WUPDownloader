@@ -915,7 +915,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		}
 		else
 		{
-			sprintf(toScreen, "The download returned a result different to 200 (OK): %ld\nFile: %s\n\n", resp, file);
+			sprintf(toScreen, "The download returned a result different to 200 (OK): %ld\nFile: %s\n\n", resp, prettyDir(file));
 			if(resp == 400)
 				strcat(toScreen, "Request failed. Try again\n\n");
 			drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
@@ -995,13 +995,13 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		debugPrintf("Creating directory \"%s\"", installDir);
 		NUSFS_ERR err = createDirectory(installDir, 777);
 		if(err == NUSFS_ERR_NOERR)
-			addToScreenLog("Download directory successfully created");
+			addToScreenLog("Install directory successfully created");
 		else
 		{
 			char *toScreen = getToFrameBuffer();
 			const char *errStr = translateNusfsErr(err);
 			if(errStr == NULL)
-				sprintf(toScreen, "Error creating directory: %d", err);
+				sprintf(toScreen, "Error creating install directory: %d", err);
 			else
 				strcpy(toScreen, errStr);
 
@@ -1027,7 +1027,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	strcat(installDir, "/");
 	
 	addToScreenLog("Started the download of \"%s\"", titleEntry->name);
-	addToScreenLog("The content will be saved on \"%s:/install/%s\"", (dlDev & NUSDEV_USB) ? "usb" : dlDev == NUSDEV_SD ? "sd" : "mlc", folderName);
+	addToScreenLog("The content will be saved on \"%sinstall/%s\"", prettyDir((dlDev & NUSDEV_USB) ? NUSDIR_USB1 : dlDev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC), folderName);
 	
 	if(!dirExists(installDir))
 	{
@@ -1038,10 +1038,9 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		else
 		{
 			char *toScreen = getToFrameBuffer();
-			strcpy(toScreen, "Error creating temporary directory!\n\n");
 			const char *errStr = translateNusfsErr(err);
 			if(errStr == NULL)
-				sprintf(toScreen, "Error creating directory: %d", err);
+				sprintf(toScreen, "Error creating download directory: %d", err);
 			else
 				strcpy(toScreen, errStr);
 			
