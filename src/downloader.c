@@ -915,7 +915,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		}
 		else
 		{
-			sprintf(toScreen, "The download returned a result different to 200 (OK): %ld\nFile: %s\n\n", resp, prettyDir(file));
+			sprintf(toScreen, "The download returned a result different to 200 (OK): %ld\nFile: %s\n\n", resp, toRam ? file : prettyDir(file));
 			if(resp == 400)
 				strcat(toScreen, "Request failed. Try again\n\n");
 			drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
