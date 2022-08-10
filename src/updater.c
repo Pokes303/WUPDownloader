@@ -267,46 +267,37 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 		goto updateError;
 	}
 
-	char *url = MEMAllocFromDefaultHeap((strlen(UPDATE_DOWNLOAD_URL) + strlen("/NUSspli-") + strlen("-Channel") + strlen(NUSSPLI_DLVER ".zip") + 1) + (strlen(newVersion) << 1));
-	if(url == NULL)
-	{
-		debugPrintf("Out of memory!");
-		goto updateError;
-	}
-
-	strcpy(url, UPDATE_DOWNLOAD_URL);
-	strcpy(url + strlen(UPDATE_DOWNLOAD_URL), newVersion);
-	strcat(url, "/NUSspli-");
-	strcat(url, newVersion);
+	char *path =  getStaticPathBuffer(0);
+	strcpy(path, UPDATE_DOWNLOAD_URL);
+	strcpy(path + strlen(UPDATE_DOWNLOAD_URL), newVersion);
+	strcat(path, "/NUSspli-");
+	strcat(path, newVersion);
 
 	switch(type)
 	{
 		case NUSSPLI_TYPE_AROMA:
-			strcat(url, "-Aroma");
+			strcat(path, "-Aroma");
 			break;
 		case NUSSPLI_TYPE_CHANNEL:
-			strcat(url, "-Channel");
+			strcat(path, "-Channel");
 			break;
 		case NUSSPLI_TYPE_HBL:
-			strcat(url, "-HBL");
+			strcat(path, "-HBL");
 			break;
 		default:
-			MEMFreeToDefaultHeap(url);
 			showUpdateError("Internal error!");
 			goto updateError;
 	}
 
-	strcat(url, NUSSPLI_DLVER ".zip");
+	strcat(path, NUSSPLI_DLVER ".zip");
 
-	if(downloadFile(url, "NUSspli.zip", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
+	if(downloadFile(path, "NUSspli.zip", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
 	{
 		clearRamBuf();
-		MEMFreeToDefaultHeap(url);
-		showUpdateErrorf("Error downloading %s", url);
+		showUpdateErrorf("Error downloading %s", path);
 		goto updateError;
 	}
 
-	MEMFreeToDefaultHeap(url);
 	startNewFrame();
 	textToFrame(0, 0, "Updating, please wait...");
 	writeScreenLog(1);
@@ -339,11 +330,10 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 		goto zipError1;
 	}
 	
-	char zipFileName[256];
+	char *zipFileName = getStaticPathBuffer(1);
 	unz_file_info zipFileInfo;
 	char *needle;
-	char path[256];
-	char fileName[1024];
+	char *fileName = getStaticPathBuffer(2);
 	strcpy(fileName, UPDATE_TEMP_FOLDER);
 	char *fnp = fileName + strlen(UPDATE_TEMP_FOLDER);
 	NUSFILE *file;
@@ -486,11 +476,10 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 			rename(UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
 			break;
 		case NUSSPLI_TYPE_CHANNEL:
-			char *installPath = getStaticPathBuffer(2);
-			strcpy(installPath, UPDATE_TEMP_FOLDER);
-			strcpy(installPath + strlen(UPDATE_TEMP_FOLDER), "NUSspli");
+			strcpy(path, UPDATE_TEMP_FOLDER);
+			strcpy(path + strlen(UPDATE_TEMP_FOLDER), "NUSspli");
 
-			install("Update", false, NUSDEV_SD, installPath, toUSB, true, 0);
+			install("Update", false, NUSDEV_SD, path, toUSB, true, 0);
 			break;
 		case NUSSPLI_TYPE_HBL:
 #ifdef NUSSPLI_DEBUG
