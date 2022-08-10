@@ -132,14 +132,27 @@ bool updateCheck()
 					case 0:
 						debugPrintf("Newest version!");
 						break;
-					case 1:
+					case 1: // Update
 						const char *newVer = json_string_value(json_object_get(json, "v"));
 						ret = newVer != NULL;
 						if(ret)
-							ret = updateMenu(newVer);
+#ifdef HBL
+							ret = updateMenu(newVer, NUSSPLI_TYPE_HBL);
+#else
+							ret = updateMenu(newVer, isAroma() ? NUSSPLI_TYPE_AROMA : NUSSPLI_TYPE_CHANNEL);
+#endif
 						break;
-					case 2: //TODO
-						showUpdateErrorf("The %s version of NUSspli is deprecated!", isAroma() ? "Aroma" : isChannel() ? "Channel" : "HBL");
+					case 2: // Type deprecated, update to what the server suggests
+						const char *nv = json_string_value(json_object_get(json, "v"));
+						ret = nv != NULL;
+						if(ret)
+						{
+							int t = json_integer_value(json_object_get(json, "t"));
+							if(t)
+								ret = updateMenu(nv, t);
+							else
+								ret = false;
+						}
 						break;
 					case 3: // TODO
 					case 4:
@@ -213,7 +226,7 @@ static int ZCALLBACK nus_zstub(voidpf opaque, voidpf stream)
 	return 0;
 }
 
-void update(const char *newVersion)
+void update(const char *newVersion, NUSSPLI_TYPE type)
 {
 	OSDynLoad_Module mod;
 	int(*RL_UnmountCurrentRunningBundle)();
@@ -255,19 +268,32 @@ void update(const char *newVersion)
 	strcat(url, newVersion);
 	strcat(url, "/NUSspli-");
 	strcat(url, newVersion);
-#ifdef NUSSPLI_HBL
-	strcat(url, "-HBL" NUSSPLI_DLVER ".zip");
-#else
-	strcat(url, isAroma() ? "-Aroma" NUSSPLI_DLVER ".zip" : "-Channel" NUSSPLI_DLVER ".zip");
-#endif
-	
+
+	switch(type)
+	{
+		case NUSSPLI_TYPE_AROMA:
+			strcat(url, "-Aroma");
+			break;
+		case NUSSPLI_TYPE_CHANNEL:
+			strcat(url, "-Channel");
+			break;
+		case NUSSPLI_TYPE_HBL:
+			strcat(url, "-HBL");
+			break;
+		default:
+			showUpdateError("Internal error!");
+			goto preUpdateError;
+	}
+
+	strcat(url, NUSSPLI_DLVER ".zip");
+
 	if(downloadFile(url, "NUSspli.zip", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
 	{
 		clearRamBuf();
 		showUpdateErrorf("Error downloading %s", url);
 		goto preUpdateError;
 	}
-	
+
 	startNewFrame();
 	textToFrame(0, 0, "Updating, please wait...");
 	writeScreenLog(1);
@@ -393,12 +419,21 @@ void update(const char *newVersion)
 		addToIOQueue(NULL, 0, 0, file);
 	}
 	while(unzGoToNextFile(zip) == UNZ_OK);
-	
+
 	unzClose(zip);
 	MEMFreeToDefaultHeap(buf);
 	clearRamBuf();
-	flushIOQueue();
-	
+
+	// Uninstall currently running type/version
+#ifdef NUSSPLI_HBL
+	if(!dirExists(UPDATE_HBL_FOLDER))
+	{
+		showUpdateError("Couldn't find NUSspli folder on the SD card");
+		goto updateError;
+	}
+
+	removeDirectory(UPDATE_HBL_FOLDER);
+#else
 	if(isChannel())
 	{
 		MCPTitleListType ownInfo;
@@ -411,82 +446,80 @@ void update(const char *newVersion)
 
 		deinstall(&ownInfo, "NUSspli v" NUSSPLI_VERSION, true, false);
         OSSleepTicks(OSSecondsToTicks(10)); // channelHaxx...
-		
-		if(isAroma())
-			goto aromaInstallation;
-		
-		char *installPath = getStaticPathBuffer(2);
-		strcpy(installPath, UPDATE_TEMP_FOLDER);
-		strcpy(installPath + strlen(UPDATE_TEMP_FOLDER), "NUSspli");
-		
-		install("Update", false, NUSDEV_SD, installPath, ownInfo.indexedDevice[0] == 'u', true, 0);
-		removeDirectory(UPDATE_TEMP_FOLDER);
-		enableShutdown();
 	}
-	else
+	else if(isAroma())
 	{
-		if(isAroma())
-		{
-			if(dirExists(UPDATE_HBL_FOLDER))
-				removeDirectory(UPDATE_HBL_FOLDER);
-			
-			if(fileExists(UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE))
-				remove(UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
-			
-aromaInstallation:
-			RL_UnmountCurrentRunningBundle();
+		RL_UnmountCurrentRunningBundle();
 			OSDynLoad_Release(mod);
-			rename(UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
-			goto finishUpdate;
-		}
-		// else
-		if(!dirExists(UPDATE_HBL_FOLDER))
-		{
-			showUpdateError("Couldn't find NUSspli folder on the SD card");
-			goto updateError;
-		}
-		
-		removeDirectory(UPDATE_HBL_FOLDER);
-#ifdef NUSSPLI_DEBUG
-		NUSFS_ERR err =
-#endif
-		moveDirectory(UPDATE_TEMP_FOLDER "NUSspli", UPDATE_HBL_FOLDER);
-#ifdef NUSSPLI_DEBUG
-		if(err != NUSFS_ERR_NOERR)
-			debugPrintf("Error moving directory: %s", translateNusfsErr(err));
-#endif
-		// endif
-finishUpdate:
-		removeDirectory(UPDATE_TEMP_FOLDER);
-		enableShutdown();
-		startNotification();
-		colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-		textToFrame(0, 0, "Update");
-		textToFrame(1, 0, "Installed successfully!");
-		writeScreenLog(2);
-		drawFrame();
 
-		while(AppRunning())
-		{
-			if(app == APP_STATE_BACKGROUND)
-				continue;
-			if(app == APP_STATE_RETURNING)
-			{
-				colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-				textToFrame(0, 0, "Update");
-				textToFrame(1, 0, "Installed successfully!");
-				writeScreenLog(2);
-				drawFrame();
-			}
-			
-			showFrame();
-			
-			if(vpad.trigger)
-				break;;
-		}
-
-		stopNotification();
+		if(fileExists(UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE))
+			remove(UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
 	}
+#endif
+
+	// Install new type/version
+	flushIOQueue();
+	switch(type)
+	{
+		case NUSSPLI_TYPE_AROMA:
+			rename(UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
+			break;
+		case NUSSPLI_TYPE_CHANNEL:
+			MCPTitleListType ownInfo;
+			MCPError e = MCP_GetOwnTitleInfo(mcpHandle, &ownInfo);
+			if(e != 0)
+			{
+				showUpdateErrorf("Error getting own title info: %#010x", e);
+				goto updateError;
+			}
+
+			char *installPath = getStaticPathBuffer(2);
+			strcpy(installPath, UPDATE_TEMP_FOLDER);
+			strcpy(installPath + strlen(UPDATE_TEMP_FOLDER), "NUSspli");
+
+			install("Update", false, NUSDEV_SD, installPath, ownInfo.indexedDevice[0] == 'u', true, 0);
+			break;
+		case NUSSPLI_TYPE_HBL:
+#ifdef NUSSPLI_DEBUG
+			NUSFS_ERR err =
+#endif
+			moveDirectory(UPDATE_TEMP_FOLDER "NUSspli", UPDATE_HBL_FOLDER);
+#ifdef NUSSPLI_DEBUG
+			if(err != NUSFS_ERR_NOERR)
+				debugPrintf("Error moving directory: %s", translateNusfsErr(err));
+#endif
+			break;
+	}
+
+	removeDirectory(UPDATE_TEMP_FOLDER);
+	enableShutdown();
+	startNotification();
+	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
+	textToFrame(0, 0, "Update");
+	textToFrame(1, 0, "Installed successfully!");
+	writeScreenLog(2);
+	drawFrame();
+
+	while(AppRunning())
+	{
+		if(app == APP_STATE_BACKGROUND)
+			continue;
+		if(app == APP_STATE_RETURNING)
+		{
+			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
+			textToFrame(0, 0, "Update");
+			textToFrame(1, 0, "Installed successfully!");
+			writeScreenLog(2);
+			drawFrame();
+		}
+
+		showFrame();
+
+		if(vpad.trigger)
+			break;;
+	}
+
+	stopNotification();
 	return;
 
 zipError4:

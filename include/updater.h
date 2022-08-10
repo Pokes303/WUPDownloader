@@ -25,8 +25,15 @@
 	extern "C" {
 #endif
 
+typedef enum
+{
+	NUSSPLI_TYPE_AROMA		= 0,
+	NUSSPLI_TYPE_CHANNEL	= 1,
+	NUSSPLI_TYPE_HBL		= 2
+} NUSSPLI_TYPE;
+
 bool updateCheck();
-void update(const char *newVersion);
+void update(const char *newVersion, NUSSPLI_TYPE type);
 
 #ifdef __cplusplus
 	}

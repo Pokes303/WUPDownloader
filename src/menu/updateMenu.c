@@ -51,7 +51,7 @@ static void drawUpdateMenuFrame(const char *newVersion)
 	drawFrame();
 }
 
-bool updateMenu(const char *newVersion)
+bool updateMenu(const char *newVersion, NUSSPLI_TYPE type)
 {
 	drawUpdateMenuFrame(newVersion);
 
@@ -66,7 +66,7 @@ bool updateMenu(const char *newVersion)
 		
 		if(vpad.trigger & VPAD_BUTTON_A)
 		{
-			update(newVersion);
+			update(newVersion, type);
 			return true;
 		}
 		if(vpad.trigger & VPAD_BUTTON_B)

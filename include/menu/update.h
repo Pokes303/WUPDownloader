@@ -21,11 +21,13 @@
 
 #include <wut-fixups.h>
 
+#include <updater.h>
+
 #ifdef __cplusplus
 	extern "C" {
 #endif
 
-bool updateMenu(const char *newVersion);
+bool updateMenu(const char *newVersion, NUSSPLI_TYPE type);
 
 #ifdef __cplusplus
 	}
