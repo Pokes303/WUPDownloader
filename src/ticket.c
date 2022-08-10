@@ -266,7 +266,7 @@ void generateFakeTicket()
 				
 				colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 				textToFrame(0, 0, "Fake ticket generated on:");
-				textToFrame(1, 0, dir);
+				textToFrame(1, 0, prettyDir(dir));
 
 				textToFrame(3, 0, "Press any key to return");
 				drawFrame();

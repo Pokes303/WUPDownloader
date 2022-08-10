@@ -47,6 +47,7 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region);
 bool checkSystemTitleFromEntry(const TitleEntry *entry);
 bool checkSystemTitleFromTid(uint64_t tid);
 bool checkSystemTitleFromListType(MCPTitleListType *entry);
+const char *prettyDir(const char *dir);
 
 #ifdef __cplusplus
 	}

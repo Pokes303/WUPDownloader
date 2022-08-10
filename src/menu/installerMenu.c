@@ -146,22 +146,23 @@ void installerMenu(const char *dir)
 {
 	NUSDEV dev = getDevFromPath(dir);
 	bool keepFiles = dev == NUSDEV_SD;
+	const char *nd = prettyDir(dir);
 	
-	drawInstallerMenuFrame(dir, dev, keepFiles);
+	drawInstallerMenuFrame(nd, dev, keepFiles);
 	
 	while(AppRunning())
 	{
 		if(app == APP_STATE_BACKGROUND)
 			continue;
 		if(app == APP_STATE_RETURNING)
-			drawInstallerMenuFrame(dir, dev, keepFiles);
+			drawInstallerMenuFrame(nd, dev, keepFiles);
 		
 		showFrame();
 		
 		if(vpad.trigger & VPAD_BUTTON_A)
 		{
 			if(brickCheck(dir))
-				install(dir, false, dev, dir, true, keepFiles, getTid(dir));
+				install(nd, false, dev, dir, true, keepFiles, getTid(dir));
 			return;
 		}
 		if(vpad.trigger & VPAD_BUTTON_B)
@@ -169,14 +170,14 @@ void installerMenu(const char *dir)
 		if(vpad.trigger & VPAD_BUTTON_X)
 		{
 			if(brickCheck(dir))
-				install(dir, false, dev, dir, false, keepFiles, getTid(dir));
+				install(nd, false, dev, dir, false, keepFiles, getTid(dir));
 			return;
 		}
 		
 		if(vpad.trigger & VPAD_BUTTON_LEFT)
 		{
 			keepFiles = !keepFiles;
-			drawInstallerMenuFrame(dir, dev, keepFiles);
+			drawInstallerMenuFrame(nd, dev, keepFiles);
 		}
 	}
 }

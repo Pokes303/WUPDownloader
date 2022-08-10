@@ -20,6 +20,7 @@
 
 #include <wut-fixups.h>
 
+#include <limits.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -28,6 +29,7 @@
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
 
+#include <file.h>
 #include <input.h>
 #include <renderer.h>
 #include <state.h>
@@ -291,4 +293,29 @@ bool checkSystemTitleFromListType(MCPTitleListType *entry)
 {
 	const TitleEntry *e = getTitleEntryByTid(entry->titleId);
 	return e == NULL ?  true : checkSystemTitle(entry->titleId, e->region);
+}
+
+const char *prettyDir(const char *dir)
+{
+	int s;
+	static char ret[PATH_MAX];
+
+	if(strncmp(NUSDIR_USB1, dir, strlen(NUSDIR_USB1)) == 0 || strncmp(NUSDIR_USB2, dir, strlen(NUSDIR_USB2)) == 0)
+	{
+		s = strlen(NUSDIR_USB1);
+		strcpy(ret, "USB:/");
+	}
+	else if(strncmp(NUSDIR_SD, dir, strlen(NUSDIR_SD)) == 0)
+	{
+		s = strlen(NUSDIR_SD);
+		strcpy(ret, "SD:/");
+	}
+	else if(strncmp(NUSDIR_MLC, dir, strlen(NUSDIR_MLC)) == 0)
+	{
+		s = strlen(NUSDIR_MLC);
+		strcpy(ret, "NAND:/");
+	}
+
+	strcat(ret, dir + s);
+	return ret;
 }
