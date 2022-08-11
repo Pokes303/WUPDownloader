@@ -272,11 +272,12 @@ size_t readFile(const char *path, void **buffer)
 
 bool verifyTmd(const TMD *tmd, size_t size)
 {
-	if(size >= sizeof(TMD) - (sizeof(TMD_CONTENT) * 1023))
+	if(size >= sizeof(TMD))
 	{
-		if(tmd->num_contents > 0 && tmd->num_contents <= 1024)
+		if(tmd->num_contents > 0)
 		{
-			if(size >= (sizeof(TMD) - (sizeof(TMD_CONTENT) * 1024)) + (sizeof(TMD_CONTENT) * tmd->num_contents))
+			if(size == (sizeof(TMD) - sizeof(TMD_CONTENT)) + (sizeof(TMD_CONTENT) * tmd->num_contents) ||
+					size == (sizeof(TMD) - sizeof(TMD_CONTENT)) + (sizeof(TMD_CONTENT) * tmd->num_contents) + 0x700)
 			{
 				for(int i = 0; i < tmd->num_contents; ++i)
 				{
