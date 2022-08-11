@@ -47,6 +47,7 @@
 
 #include <errno.h>
 #include <file.h>
+#include <limits.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
@@ -251,22 +252,22 @@ static bool unzipUpdate()
 			uint8_t *buf = MEMAllocFromDefaultHeap(IO_BUFSIZE);
 			if(buf != NULL)
 			{
-				char *zipFileName = getStaticPathBuffer(1);
 				unz_file_info zipFileInfo;
-				char *needle;
+				char *zipFileName = getStaticPathBuffer(0);
+				char *path =  getStaticPathBuffer(1);
 				char *fileName = getStaticPathBuffer(2);
 				strcpy(fileName, UPDATE_TEMP_FOLDER);
 				char *fnp = fileName + strlen(UPDATE_TEMP_FOLDER);
-				NUSFILE *file;
-				size_t extracted;
+				char *needle;
 				char *lastSlash;
 				char *lspp;
-
-				char *path =  getStaticPathBuffer(0);
+				NUSFILE *file;
+				size_t extracted;
 				ret = true;
+
 				do
 				{
-					if(unzGetCurrentFileInfo(zip, &zipFileInfo, zipFileName, 256, NULL, 0, NULL, 0) == UNZ_OK)
+					if(unzGetCurrentFileInfo(zip, &zipFileInfo, zipFileName, PATH_MAX - strlen(UPDATE_TEMP_FOLDER) - 1, NULL, 0, NULL, 0) == UNZ_OK)
 					{
 						if(unzOpenCurrentFile(zip) == UNZ_OK)
 						{
