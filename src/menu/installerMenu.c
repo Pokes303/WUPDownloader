@@ -59,31 +59,6 @@ static void drawInstallerMenuFrame(const char *name, NUSDEV dev, bool keepFiles)
 	drawFrame();
 }
 
-static bool brickCheck(const char* dir)
-{
-	size_t s = strlen(dir);
-	char *tmdPath = MEMAllocFromDefaultHeap(s + 10);
-	if(tmdPath == NULL)
-		return false;
-
-	strcpy(tmdPath, dir);
-	strcpy(tmdPath + s, "title.tmd");
-
-	void *tmd;
-	readFile(tmdPath, &tmd);
-	bool ret;
-	if(tmd != NULL)
-	{
-		ret = checkSystemTitleFromTid(((TMD *)tmd)->tid);
-		MEMFreeToDefaultHeap(tmd);
-	}
-	else
-		ret = false;
-
-	MEMFreeToDefaultHeap(tmdPath);
-	return ret;
-}
-
 static NUSDEV getDevFromPath(const char *path)
 {
 	NUSDEV ret = NUSDEV_NONE;
@@ -119,29 +94,6 @@ static NUSDEV getDevFromPath(const char *path)
 	return ret;
 }
 
-static uint64_t getTid(const char *dir)
-{
-	size_t s = strlen(dir);
-	char *path = MEMAllocFromDefaultHeap(s + 10);
-	uint64_t ret = 0;
-	if(path != NULL)
-	{
-		strcpy(path, dir);
-		strcpy(path + s, "title.tmd");
-		void* buf;
-		readFile(path, &buf);
-		if(buf != NULL)
-		{
-			ret = ((TMD *)buf)->tid;
-			MEMFreeToDefaultHeap(buf);
-		}
-
-		MEMFreeToDefaultHeap(path);
-	}
-
-	return ret;
-}
-
 void installerMenu(const char *dir)
 {
 	NUSDEV dev = getDevFromPath(dir);
@@ -159,20 +111,21 @@ void installerMenu(const char *dir)
 		
 		showFrame();
 		
-		if(vpad.trigger & VPAD_BUTTON_A)
+		if((vpad.trigger & VPAD_BUTTON_A) || (vpad.trigger & VPAD_BUTTON_X))
 		{
-			if(brickCheck(dir))
-				install(nd, false, dev, dir, true, keepFiles, getTid(dir));
+			TMD *tmd = getTmd(dir);
+			if(tmd != NULL)
+			{
+				if(checkSystemTitleFromTid(tmd->tid))
+					install(nd, false, dev, dir, vpad.trigger & VPAD_BUTTON_A, keepFiles, tmd->tid);
+
+				MEMFreeToDefaultHeap(tmd);
+			}
+
 			return;
 		}
 		if(vpad.trigger & VPAD_BUTTON_B)
 			return;
-		if(vpad.trigger & VPAD_BUTTON_X)
-		{
-			if(brickCheck(dir))
-				install(nd, false, dev, dir, false, keepFiles, getTid(dir));
-			return;
-		}
 		
 		if(vpad.trigger & VPAD_BUTTON_LEFT)
 		{

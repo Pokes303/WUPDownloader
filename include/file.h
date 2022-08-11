@@ -23,6 +23,7 @@
 #include <wut-fixups.h>
 
 #include <ioQueue.h>
+#include <tmd.h>
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -91,6 +92,7 @@ bool createDirRecursive(const char *dir);
 const char *translateNusfsErr(NUSFS_ERR err);
 size_t getFilesize(FILE *fp);
 size_t readFile(const char *path, void **bufer);
+TMD *getTmd(const char *dir);
 
 #ifdef __cplusplus
 	}

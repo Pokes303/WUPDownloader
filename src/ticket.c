@@ -201,12 +201,8 @@ void generateFakeTicket()
 	if(dir == NULL)
 		return;
 
-	strcat(dir, "title");
-	char *ptr = dir + strlen(dir);
-	strcpy(ptr, ".tmd");
-	void *buf;
-	readFile(dir, &buf);
-	if(buf == NULL)
+	TMD *tmd = getTmd(dir);
+	if(tmd == NULL)
 	{
 		drawErrorFrame("Couldn't open title.tmd", ANY_RETURN);
 
@@ -225,8 +221,8 @@ void generateFakeTicket()
 		return;
 	}
 
-	uint64_t tid = ((TMD *)buf)->tid;
-	MEMFreeToDefaultHeap(buf);
+	uint64_t tid = tmd->tid;
+	MEMFreeToDefaultHeap(tmd);
 
 	char titleID[17];
 	hex(tid, 16, titleID);
@@ -250,8 +246,10 @@ void generateFakeTicket()
 				textToFrame(0, 0, "Generating fake ticket...");
 				drawFrame();
 				showFrame();
-				
-				strcpy(ptr, ".tik");
+
+				strcat(dir, "title.");
+				char *ptr = dir + strlen(dir);
+				strcpy(ptr, "tik");
 
 				const TitleEntry *entry = getTitleEntryByTid(tid);
 				const TitleEntry te = { .name = "UNKNOWN", tid = tid, .region = MCP_REGION_UNKNOWN, .key = 99 };
@@ -260,9 +258,9 @@ void generateFakeTicket()
 
 				generateTik(dir, entry);
 
-				strcpy(ptr, ".cert");
+				strcpy(ptr, "cert");
 				generateCert(dir);
-				strcpy(ptr, ".tik");
+				strcpy(ptr, "tik");
 				
 				colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 				textToFrame(0, 0, "Fake ticket generated on:");

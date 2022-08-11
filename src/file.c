@@ -23,6 +23,7 @@
 #include <file.h>
 #include <ioQueue.h>
 #include <staticMem.h>
+#include <tmd.h>
 #include <utils.h>
 
 #include <crypto.h>
@@ -267,6 +268,29 @@ size_t readFile(const char *path, void **buffer)
 
 	*buffer = NULL;
 	return 0;
+}
+
+TMD *getTmd(const char *dir)
+{
+	size_t s = strlen(dir);
+	char *path = MEMAllocFromDefaultHeap(s + (strlen("title.tmd") + 1));
+	if(path != NULL)
+	{
+		OSBlockMove(path, dir, s, false);
+		strcpy(path + s, "title.tmd");
+
+		debugPrintf("TMD: %s", path);
+		void* buf;
+		readFile(path, &buf);
+		MEMFreeToDefaultHeap(path);
+
+		if(buf != NULL)
+			return buf;
+
+		MEMFreeToDefaultHeap(buf);
+	}
+
+	return NULL;
 }
 
 NUSFS_ERR createDirectory(const char *path, mode_t mode)
