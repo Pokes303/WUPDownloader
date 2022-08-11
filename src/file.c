@@ -285,8 +285,6 @@ TMD *getTmd(const char *dir)
 
 		if(buf != NULL)
 			return buf;
-
-		MEMFreeToDefaultHeap(buf);
 	}
 
 	return NULL;
