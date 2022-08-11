@@ -279,7 +279,6 @@ TMD *getTmd(const char *dir)
 		OSBlockMove(path, dir, s, false);
 		strcpy(path + s, "title.tmd");
 
-		debugPrintf("TMD: %s", path);
 		void* buf;
 		readFile(path, &buf);
 		MEMFreeToDefaultHeap(path);
