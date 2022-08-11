@@ -213,7 +213,7 @@ downloadTMD:
 
 		drawErrorFrame("Invalid TMD file!", ANY_RETURN);
 
-		while(loop && AppRunning())
+		while(AppRunning())
 		{
 			if(app == APP_STATE_BACKGROUND)
 				continue;
