@@ -57,8 +57,8 @@ void generateTik(const char *path, const TitleEntry *titleEntry)
 	NUSFILE *tik = openFile(path, "wb");
 	if(tik == NULL)
 	{
-		char err[1044];
-		sprintf(err, "Could not open path\n%s", path);
+		char *err = getStaticScreenBuffer();
+		sprintf(err, "Could not open path\n%s", prettyDir(path));
 		drawErrorFrame(err, ANY_RETURN);
 		
 		while(AppRunning())
@@ -117,8 +117,8 @@ void generateCert(const char *path)
 	NUSFILE *cert = openFile(path, "wb");
 	if(cert == NULL)
 	{
-		char err[1044];
-		sprintf(err, "Could not open path\n%s", path);
+		char *err = getStaticScreenBuffer();
+		sprintf(err, "Could not open path\n%s", prettyDir(path));
 		drawErrorFrame(err, ANY_RETURN);
 
 		while(AppRunning())
