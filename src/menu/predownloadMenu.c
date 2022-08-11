@@ -176,27 +176,27 @@ void predownloadMenu(const TitleEntry *entry)
 	folderName[0] = titleVer[0] = '\0';
 	TMD *tmd;
 	uint64_t dls;
-	
+
 	bool loop = true;
 	bool inst, toUSB;
 	bool redraw = false;
-	
+
 	char tid[17];
 	char downloadUrl[256];
 downloadTMD:
 	hex(entry->tid, 16, tid);
-	
+
 	debugPrintf("Downloading TMD...");
 	strcpy(downloadUrl, DOWNLOAD_URL);
 	strcat(downloadUrl, tid);
 	strcat(downloadUrl, "/tmd");
-	
+
 	if(strlen(titleVer) > 0)
 	{
 		strcat(downloadUrl, ".");
 		strcat(downloadUrl, titleVer);
 	}
-	
+
 	if(downloadFile(downloadUrl, "TMD", NULL, FILE_TYPE_TMD | FILE_TYPE_TORAM, true))
 	{
 		clearRamBuf();
@@ -204,8 +204,30 @@ downloadTMD:
 		saveConfig(false);
 		return;
 	}
-	
+
 	tmd = (TMD *)getRamBuf();
+	if(!verifyTmd(tmd, getRamBufSize()))
+	{
+		clearRamBuf();
+		saveConfig(false);
+
+		drawErrorFrame("Invalid TMD file!", ANY_RETURN);
+
+		while(loop && AppRunning())
+		{
+			if(app == APP_STATE_BACKGROUND)
+				continue;
+			if(app == APP_STATE_RETURNING)
+				drawErrorFrame("Invalid TMD file!", ANY_RETURN);
+
+			showFrame();
+			if(vpad.trigger)
+				break;
+		}
+
+		return;
+	}
+
 	dls = 0;
 	for(uint16_t i = 0; i < tmd->num_contents; ++i)
 	{

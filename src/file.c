@@ -270,6 +270,41 @@ size_t readFile(const char *path, void **buffer)
 	return 0;
 }
 
+bool verifyTmd(const TMD *tmd, size_t size)
+{
+	if(size >= sizeof(TMD) - (sizeof(TMD_CONTENT) * 1023))
+	{
+		if(tmd->num_contents > 0 && tmd->num_contents <= 1024)
+		{
+			if(size >= (sizeof(TMD) - (sizeof(TMD_CONTENT) * 1024)) + (sizeof(TMD_CONTENT) * tmd->num_contents))
+			{
+				for(int i = 0; i < tmd->num_contents; ++i)
+				{
+					if(tmd->contents[i].index != i)
+					{
+						debugPrintf("Invalid title.tmd file (content: %d, index: %u)", i, tmd->contents[i].index);
+						return false;
+					}
+					if(tmd->contents[i].size > (uint64_t)1024 * 1024 * 1024 * 4)
+					{
+						debugPrintf("Invalid title.tmd file (content: %d, size: %llu)", i, tmd->contents[i].size);
+						return false;
+					}
+				}
+				return true;
+			}
+			else
+				debugPrintf("Wrong title.tmd filesize (num_contents: %u, filesize: 0x%X)", tmd->num_contents, size);
+		}
+		else
+			debugPrintf("Invalid title.tmd file (num_contents: %u)", tmd->num_contents);
+	}
+	else
+		debugPrintf("Wrong title.tmd filesize: 0x%X", size);
+
+	return false;
+}
+
 TMD *getTmd(const char *dir)
 {
 	size_t s = strlen(dir);
@@ -279,12 +314,17 @@ TMD *getTmd(const char *dir)
 		OSBlockMove(path, dir, s, false);
 		strcpy(path + s, "title.tmd");
 
-		void* buf;
-		readFile(path, &buf);
+		TMD *tmd;
+		s = readFile(path, (void **)&tmd);
 		MEMFreeToDefaultHeap(path);
 
-		if(buf != NULL)
-			return buf;
+		if(tmd != NULL)
+		{
+			if(verifyTmd(tmd, s))
+				return tmd;
+
+			MEMFreeToDefaultHeap(tmd);
+		}
 	}
 
 	return NULL;

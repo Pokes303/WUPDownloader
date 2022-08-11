@@ -93,6 +93,7 @@ const char *translateNusfsErr(NUSFS_ERR err);
 size_t getFilesize(FILE *fp);
 size_t readFile(const char *path, void **bufer);
 TMD *getTmd(const char *dir);
+bool verifyTmd(const TMD *tmd, size_t size);
 
 #ifdef __cplusplus
 	}

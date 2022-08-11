@@ -80,7 +80,7 @@ typedef struct WUT_PACKED
 	WUT_UNKNOWN_BYTES(2);
 	uint8_t hash[32];
 	TMD_CONTENT_INFO content_infos[64];
-	TMD_CONTENT contents[64];
+	TMD_CONTENT contents[1024];
 } TMD;
 WUT_CHECK_OFFSET(TMD, 0x0000, sig_type);
 WUT_CHECK_OFFSET(TMD, 0x0004, sig);
@@ -99,7 +99,7 @@ WUT_CHECK_OFFSET(TMD, 0x01E0, boot_index);
 WUT_CHECK_OFFSET(TMD, 0x01E4, hash);
 WUT_CHECK_OFFSET(TMD, 0x0204, content_infos);
 WUT_CHECK_OFFSET(TMD, 0x0B04, contents);
-WUT_CHECK_SIZE(TMD, 0x1704);
+WUT_CHECK_SIZE(TMD, 0xCB04);
 
 #ifdef __cplusplus
 }
