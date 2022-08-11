@@ -197,7 +197,7 @@ downloadTMD:
 		strcat(downloadUrl, titleVer);
 	}
 
-	if(downloadFile(downloadUrl, "TMD", NULL, FILE_TYPE_TMD | FILE_TYPE_TORAM, true))
+	if(downloadFile(downloadUrl, "title.tmd", NULL, FILE_TYPE_TMD | FILE_TYPE_TORAM, true))
 	{
 		clearRamBuf();
 		debugPrintf("Error downloading TMD");
@@ -211,14 +211,14 @@ downloadTMD:
 		clearRamBuf();
 		saveConfig(false);
 
-		drawErrorFrame("Invalid TMD file!", ANY_RETURN);
+		drawErrorFrame("Invalid title.tmd file!", ANY_RETURN);
 
 		while(AppRunning())
 		{
 			if(app == APP_STATE_BACKGROUND)
 				continue;
 			if(app == APP_STATE_RETURNING)
-				drawErrorFrame("Invalid TMD file!", ANY_RETURN);
+				drawErrorFrame("Invalid title.tmd file!", ANY_RETURN);
 
 			showFrame();
 			if(vpad.trigger)

@@ -200,7 +200,7 @@ void generateFakeTicket()
 	TMD *tmd = getTmd(dir);
 	if(tmd == NULL)
 	{
-		drawErrorFrame("Couldn't open title.tmd", ANY_RETURN);
+		drawErrorFrame("Invalid title.tmd file!", ANY_RETURN);
 
 		while(AppRunning())
 		{
@@ -209,7 +209,7 @@ void generateFakeTicket()
 			if(app == APP_STATE_BACKGROUND)
 				continue;
 			if(app == APP_STATE_RETURNING)
-				drawErrorFrame("Couldn't open title.tmd", ANY_RETURN);
+				drawErrorFrame("Invalid title.tmd file!", ANY_RETURN);
 
 			if(vpad.trigger)
 				break;

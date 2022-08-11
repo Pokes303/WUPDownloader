@@ -1070,14 +1070,14 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	NUSFILE *fp = openFile(installDir, "wb");
 	if(fp == NULL)
 	{
-		drawErrorFrame("Can't save TMD file!", ANY_RETURN);
+		drawErrorFrame("Can't save title.tmd file!", ANY_RETURN);
 		
 		while(AppRunning())
 		{
 			if(app == APP_STATE_BACKGROUND)
 				continue;
 			if(app == APP_STATE_RETURNING)
-				drawErrorFrame("Can't save TMD file!", ANY_RETURN);
+				drawErrorFrame("Can't save title.tmd file!", ANY_RETURN);
 			
 			showFrame();
 			
@@ -1089,7 +1089,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	
 	addToIOQueue(tmd, 1, tmdSize, fp);
 	addToIOQueue(NULL, 0, 0, fp);
-	addToScreenLog("TMD saved");
+	addToScreenLog("title.tmd saved");
 	
 	char *toScreen = getToFrameBuffer();
 	strcpy(toScreen, "=>Title type: ");

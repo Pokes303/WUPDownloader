@@ -121,6 +121,22 @@ void installerMenu(const char *dir)
 
 				MEMFreeToDefaultHeap(tmd);
 			}
+			else
+			{
+				drawErrorFrame("Invalid title.tmd file!", ANY_RETURN);
+
+				while(AppRunning())
+				{
+					if(app == APP_STATE_BACKGROUND)
+						continue;
+					if(app == APP_STATE_RETURNING)
+						drawErrorFrame("Invalid title.tmd file!", ANY_RETURN);
+
+					showFrame();
+					if(vpad.trigger)
+						break;
+				}
+			}
 
 			return;
 		}
