@@ -280,35 +280,51 @@ bool verifyTmd(const TMD *tmd, size_t size)
 			if(size == (sizeof(TMD) - sizeof(TMD_CONTENT)) + (sizeof(TMD_CONTENT) * tmd->num_contents) ||
 					size == (sizeof(TMD) - sizeof(TMD_CONTENT)) + (sizeof(TMD_CONTENT) * tmd->num_contents) + 0x700)
 			{
-				uint8_t hash[32];
-				if(getSHA256(((uint8_t *)tmd) + (sizeof(TMD) - sizeof(TMD_CONTENT)), sizeof(TMD_CONTENT) * tmd->num_contents, hash))
+				uint32_t hash[8];
+				uint8_t *ptr = ((uint8_t *)tmd) + (sizeof(TMD) - sizeof(TMD_CONTENT));
+				if(getSHA256(ptr, sizeof(TMD_CONTENT) * tmd->num_contents, (uint8_t *)hash))
 				{
-					for(int i = 0; i < 32; ++i)
+					for(int i = 0; i < 8; ++i)
 					{
 						if(hash[i] != tmd->content_infos[0].hash[i])
 						{
-							debugPrintf("Invalid title.tmd file (hash mismatch)");
+							debugPrintf("Invalid title.tmd file (content hash mismatch)");
 							return false;
 						}
 					}
 
-					for(int i = 0; i < tmd->num_contents; ++i)
+					ptr -= sizeof(TMD_CONTENT_INFO) * 64;
+					if(getSHA256(ptr, sizeof(TMD_CONTENT_INFO) * 64, (uint8_t *)hash))
 					{
-						if(tmd->contents[i].index != i)
+						for(int i = 0; i < 8; ++i)
 						{
-							debugPrintf("Invalid title.tmd file (content: %d, index: %u)", i, tmd->contents[i].index);
-							return false;
+							if(hash[i] != tmd->hash[i])
+							{
+								debugPrintf("Invalid title.tmd file (tmd hash mismatch)");
+								return false;
+							}
 						}
-						if(tmd->contents[i].size > (uint64_t)1024 * 1024 * 1024 * 4)
+
+						for(int i = 0; i < tmd->num_contents; ++i)
 						{
-							debugPrintf("Invalid title.tmd file (content: %d, size: %llu)", i, tmd->contents[i].size);
-							return false;
+							if(tmd->contents[i].index != i)
+							{
+								debugPrintf("Invalid title.tmd file (content: %d, index: %u)", i, tmd->contents[i].index);
+								return false;
+							}
+							if(tmd->contents[i].size > (uint64_t)1024 * 1024 * 1024 * 4)
+							{
+								debugPrintf("Invalid title.tmd file (content: %d, size: %llu)", i, tmd->contents[i].size);
+								return false;
+							}
 						}
+						return true;
 					}
-					return true;
+					else
+						debugPrintf("Error calculating tmd hash for title.tmd file!");
 				}
 				else
-					debugPrintf("Error calculating sha256 hash for title.tmd file!");
+					debugPrintf("Error calculating content hash for title.tmd file!");
 			}
 			else
 				debugPrintf("Wrong title.tmd filesize (num_contents: %u, filesize: 0x%X)", tmd->num_contents, size);

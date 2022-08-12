@@ -51,7 +51,7 @@ typedef struct WUT_PACKED
 {
 	uint16_t index;
 	uint16_t count;
-	uint8_t hash[32];
+	uint32_t hash[8];
 } TMD_CONTENT_INFO;
 WUT_CHECK_OFFSET(TMD_CONTENT_INFO, 0x00, index);
 WUT_CHECK_OFFSET(TMD_CONTENT_INFO, 0x02, count);
@@ -78,7 +78,7 @@ typedef struct WUT_PACKED
 	uint16_t num_contents;
 	uint16_t boot_index;
 	WUT_UNKNOWN_BYTES(2);
-	uint8_t hash[32];
+	uint32_t hash[8];
 	TMD_CONTENT_INFO content_infos[64];
 	TMD_CONTENT contents[1];
 } TMD;
