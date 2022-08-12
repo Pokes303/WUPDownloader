@@ -270,6 +270,7 @@ size_t readFile(const char *path, void **buffer)
 	return 0;
 }
 
+// This uses informations from https://github.com/Maschell/nuspacker
 bool verifyTmd(const TMD *tmd, size_t size)
 {
 	if(size >= sizeof(TMD))
@@ -279,20 +280,35 @@ bool verifyTmd(const TMD *tmd, size_t size)
 			if(size == (sizeof(TMD) - sizeof(TMD_CONTENT)) + (sizeof(TMD_CONTENT) * tmd->num_contents) ||
 					size == (sizeof(TMD) - sizeof(TMD_CONTENT)) + (sizeof(TMD_CONTENT) * tmd->num_contents) + 0x700)
 			{
-				for(int i = 0; i < tmd->num_contents; ++i)
+				uint8_t hash[32];
+				if(getSHA256(((uint8_t *)tmd) + (sizeof(TMD) - sizeof(TMD_CONTENT)), sizeof(TMD_CONTENT) * tmd->num_contents, hash))
 				{
-					if(tmd->contents[i].index != i)
+					for(int i = 0; i < 32; ++i)
 					{
-						debugPrintf("Invalid title.tmd file (content: %d, index: %u)", i, tmd->contents[i].index);
-						return false;
+						if(hash[i] != tmd->content_infos[0].hash[i])
+						{
+							debugPrintf("Invalid title.tmd file (hash mismatch)");
+							return false;
+						}
 					}
-					if(tmd->contents[i].size > (uint64_t)1024 * 1024 * 1024 * 4)
+
+					for(int i = 0; i < tmd->num_contents; ++i)
 					{
-						debugPrintf("Invalid title.tmd file (content: %d, size: %llu)", i, tmd->contents[i].size);
-						return false;
+						if(tmd->contents[i].index != i)
+						{
+							debugPrintf("Invalid title.tmd file (content: %d, index: %u)", i, tmd->contents[i].index);
+							return false;
+						}
+						if(tmd->contents[i].size > (uint64_t)1024 * 1024 * 1024 * 4)
+						{
+							debugPrintf("Invalid title.tmd file (content: %d, size: %llu)", i, tmd->contents[i].size);
+							return false;
+						}
 					}
+					return true;
 				}
-				return true;
+				else
+					debugPrintf("Error calculating sha256 hash for title.tmd file!");
 			}
 			else
 				debugPrintf("Wrong title.tmd filesize (num_contents: %u, filesize: 0x%X)", tmd->num_contents, size);

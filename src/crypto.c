@@ -134,14 +134,14 @@ bool initCrypto()
 		RAND_set_rand_method(&srm) == 1;
 }
 
-bool getMD5(const uint8_t *data, size_t data_len, uint8_t *hash)
+static inline bool getHash(const uint8_t *data, size_t data_len, uint8_t *hash, const EVP_MD *type)
 {
 	EVP_MD_CTX *ctx = EVP_MD_CTX_new();
 	bool ret = false;
 
 	if(ctx)
 	{
-		if(EVP_DigestInit(ctx, EVP_md5()) == 1)
+		if(EVP_DigestInit(ctx, type) == 1)
 		{
 			if(EVP_DigestUpdate(ctx, data, data_len) == 1)
 				ret = EVP_DigestFinal(ctx, hash, NULL) == 1;
@@ -151,6 +151,16 @@ bool getMD5(const uint8_t *data, size_t data_len, uint8_t *hash)
 	}
 
 	return ret;
+}
+
+bool getMD5(const uint8_t *data, size_t data_len, uint8_t *hash)
+{
+	return getHash(data, data_len, hash, EVP_md5());
+}
+
+bool getSHA256(const uint8_t *data, size_t data_len, uint8_t *hash)
+{
+	return getHash(data, data_len, hash, EVP_sha256());
 }
 
 bool encryptAES(const unsigned char *plaintext, int plaintext_len, const unsigned char *key, const unsigned char *iv, unsigned char *ciphertext)
