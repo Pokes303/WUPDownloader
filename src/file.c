@@ -282,7 +282,7 @@ bool verifyTmd(const TMD *tmd, size_t size)
 			{
 				uint32_t hash[8];
 				uint8_t *ptr = ((uint8_t *)tmd) + (sizeof(TMD) - sizeof(TMD_CONTENT));
-				if(getSHA256(ptr, sizeof(TMD_CONTENT) * tmd->num_contents, (uint8_t *)hash))
+				if(getSHA256(ptr, sizeof(TMD_CONTENT) * tmd->num_contents, hash))
 				{
 					for(int i = 0; i < 8; ++i)
 					{
@@ -294,7 +294,7 @@ bool verifyTmd(const TMD *tmd, size_t size)
 					}
 
 					ptr -= sizeof(TMD_CONTENT_INFO) * 64;
-					if(getSHA256(ptr, sizeof(TMD_CONTENT_INFO) * 64, (uint8_t *)hash))
+					if(getSHA256(ptr, sizeof(TMD_CONTENT_INFO) * 64, hash))
 					{
 						for(int i = 0; i < 8; ++i)
 						{
