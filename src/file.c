@@ -312,7 +312,7 @@ bool verifyTmd(const TMD *tmd, size_t size)
 								debugPrintf("Invalid title.tmd file (content: %d, index: %u)", i, tmd->contents[i].index);
 								return false;
 							}
-							if(tmd->contents[i].size > (uint64_t)1024 * 1024 * 1024 * 4)
+							if(tmd->contents[i].size < 32 * 1024 || tmd->contents[i].size > (uint64_t)1024 * 1024 * 1024 * 4)
 							{
 								debugPrintf("Invalid title.tmd file (content: %d, size: %llu)", i, tmd->contents[i].size);
 								return false;
