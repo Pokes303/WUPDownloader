@@ -281,26 +281,26 @@ bool verifyTmd(const TMD *tmd, size_t size)
 					size == (sizeof(TMD) - sizeof(TMD_CONTENT)) + (sizeof(TMD_CONTENT) * tmd->num_contents) + 0x700)
 			{
 				uint32_t hash[8];
-				uint8_t *ptr = ((uint8_t *)tmd) + (sizeof(TMD) - sizeof(TMD_CONTENT));
-				if(getSHA256(ptr, sizeof(TMD_CONTENT) * tmd->num_contents, hash))
+				uint8_t *ptr = ((uint8_t *)tmd) + (sizeof(TMD) - sizeof(TMD_CONTENT) - (sizeof(TMD_CONTENT_INFO) * 64));
+				if(getSHA256(ptr, sizeof(TMD_CONTENT_INFO) * 64, hash))
 				{
 					for(int i = 0; i < 8; ++i)
 					{
-						if(hash[i] != tmd->content_infos[0].hash[i])
+						if(hash[i] != tmd->hash[i])
 						{
-							debugPrintf("Invalid title.tmd file (content hash mismatch)");
+							debugPrintf("Invalid title.tmd file (tmd hash mismatch)");
 							return false;
 						}
 					}
 
-					ptr -= sizeof(TMD_CONTENT_INFO) * 64;
-					if(getSHA256(ptr, sizeof(TMD_CONTENT_INFO) * 64, hash))
+					ptr += sizeof(TMD_CONTENT_INFO) * 64;
+					if(getSHA256(ptr, sizeof(TMD_CONTENT) * tmd->num_contents, hash))
 					{
 						for(int i = 0; i < 8; ++i)
 						{
-							if(hash[i] != tmd->hash[i])
+							if(hash[i] != tmd->content_infos[0].hash[i])
 							{
-								debugPrintf("Invalid title.tmd file (tmd hash mismatch)");
+								debugPrintf("Invalid title.tmd file (content hash mismatch)");
 								return false;
 							}
 						}
@@ -321,10 +321,10 @@ bool verifyTmd(const TMD *tmd, size_t size)
 						return true;
 					}
 					else
-						debugPrintf("Error calculating tmd hash for title.tmd file!");
+						debugPrintf("Error calculating content hash for title.tmd file!");
 				}
 				else
-					debugPrintf("Error calculating content hash for title.tmd file!");
+					debugPrintf("Error calculating tmd hash for title.tmd file!");
 			}
 			else
 				debugPrintf("Wrong title.tmd filesize (num_contents: %u, filesize: 0x%X)", tmd->num_contents, size);
