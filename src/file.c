@@ -273,16 +273,16 @@ size_t readFile(const char *path, void **buffer)
 // This uses informations from https://github.com/Maschell/nuspacker
 bool verifyTmd(const TMD *tmd, size_t size)
 {
-	if(size >= sizeof(TMD)) // Filesize must be large enough to contain num_contents
+	if(size >= sizeof(TMD) + (sizeof(TMD_CONTENT) * 9)) // Minimal title.tmd size
 	{
 		if(tmd->num_contents > 8) // Check for at least 9 contents (.app files)
 		{
-			if(size == (sizeof(TMD) + 0x700 - sizeof(TMD_CONTENT)) + (sizeof(TMD_CONTENT) * tmd->num_contents) ||	// Most title.tmd files have a certificate attached to the end. This certificate is 0x700 bytes long.
-					size == (sizeof(TMD) - sizeof(TMD_CONTENT)) + (sizeof(TMD_CONTENT) * tmd->num_contents))		// Some (like ones made with NUSPacker) don't have a certificate attached through.
+			if(size == (sizeof(TMD) + 0x700) + (sizeof(TMD_CONTENT) * tmd->num_contents) ||	// Most title.tmd files have a certificate attached to the end. This certificate is 0x700 bytes long.
+					size == sizeof(TMD) + (sizeof(TMD_CONTENT) * tmd->num_contents))		// Some (like ones made with NUSPacker) don't have a certificate attached through.
 			{
 				// Validate TMD hash
 				uint32_t hash[8];
-				uint8_t *ptr = ((uint8_t *)tmd) + (sizeof(TMD) - sizeof(TMD_CONTENT) - (sizeof(TMD_CONTENT_INFO) * 64));
+				uint8_t *ptr = ((uint8_t *)tmd) + (sizeof(TMD) - (sizeof(TMD_CONTENT_INFO) * 64));
 				if(getSHA256(ptr, sizeof(TMD_CONTENT_INFO) * 64, hash))
 				{
 					for(int i = 0; i < 8; ++i)
