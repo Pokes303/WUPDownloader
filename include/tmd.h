@@ -30,6 +30,12 @@ extern "C" {
 #endif
 
 // From: https://wiiubrew.org/wiki/Title_metadata
+// And: https://github.com/Maschell/nuspacker
+
+#define TMD_CONTENT_TYPE_ENCRYPTED	0x0001
+#define TMD_CONTENT_TYPE_HASHED		0x0002 // Never seen alone, alsways combined with TMD_CONTENT_TYPE_ENCRYPTED
+#define TMD_CONTENT_TYPE_CONTENT	0x2000
+#define TMD_CONTENT_TYPE_UNKNOWN	0x4000 // Never seen alone, alsways combined with TMD_CONTENT_TYPE_CONTENT
 
 typedef struct WUT_PACKED
 {
@@ -37,8 +43,7 @@ typedef struct WUT_PACKED
 	uint16_t index;
 	uint16_t type;
 	uint64_t size;
-	uint8_t hash[20];
-	WUT_UNKNOWN_BYTES(12);
+	uint32_t hash[8];
 } TMD_CONTENT;
 WUT_CHECK_OFFSET(TMD_CONTENT, 0x00, cid);
 WUT_CHECK_OFFSET(TMD_CONTENT, 0x04, index);

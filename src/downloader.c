@@ -1202,7 +1202,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	for(int i = 0; i < tmd->num_contents; ++i)
 	{
 		data.dltotal += (double)(tmd->contents[i].size);
-		if(tmd->contents[i].type & 0x0002)
+		if(tmd->contents[i].type & TMD_CONTENT_TYPE_HASHED)
 		{
 			++data.contents;
 			data.dltotal += 20; //TODO
@@ -1228,7 +1228,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		}
 		++data.dcontent;
 		
-		if(tmd->contents[i].type & 0x0002)
+		if(tmd->contents[i].type & TMD_CONTENT_TYPE_HASHED)
 		{
 			strcpy(dupp, ".h3");
 			strcpy(idpp, ".h3");
