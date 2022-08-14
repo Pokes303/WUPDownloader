@@ -1159,8 +1159,11 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 				writeScreenLog(3);
 				drawFrame();
 
-				generateTik(installDir, titleEntry);
-				addToScreenLog("Fake ticket created successfully");
+				if(generateTik(installDir, titleEntry))
+					addToScreenLog("Fake ticket created successfully");
+				else
+					return false;
+
 				break;
 			case 1:
 				return true;
@@ -1183,9 +1186,11 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		writeScreenLog(3);
 		drawFrame();
 		
-		generateCert(installDir);
-		
-		addToScreenLog("Cert created!");
+		if(generateCert(installDir))
+			addToScreenLog("Cert created!");
+		else
+			return false;
+
 		if(!AppRunning())
 			return true;
 	}

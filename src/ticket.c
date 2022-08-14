@@ -45,11 +45,11 @@
  * with the randomness of NUSPackager to create unique
  * NUSspli tickets.
  */
-void generateTik(const char *path, const TitleEntry *titleEntry)
+bool generateTik(const char *path, const TitleEntry *titleEntry)
 {
     char encKey[33];
 	if(!generateKey(titleEntry, encKey))
-		return;
+		return false;
 	
 	char tid[17];
 	hex(titleEntry->tid, 16, tid);
@@ -73,7 +73,7 @@ void generateTik(const char *path, const TitleEntry *titleEntry)
 			if(vpad.trigger)
 				break;
 		}
-		return;
+		return false;
 	}
 	
 	debugPrintf("Generating fake ticket at %s", path);
@@ -110,9 +110,10 @@ void generateTik(const char *path, const TitleEntry *titleEntry)
 	writeVoidBytes(tik, 0x60);
 	
 	addToIOQueue(NULL, 0, 0, tik);
+	return true;
 }
 
-void generateCert(const char *path)
+bool generateCert(const char *path)
 {
 	NUSFILE *cert = openFile(path, "wb");
 	if(cert == NULL)
@@ -133,7 +134,7 @@ void generateCert(const char *path)
 			if(vpad.trigger)
 				break;
 		}
-		return;
+		return false;
 	}
 
 	// NUSspli adds its own header.
@@ -173,9 +174,10 @@ void generateCert(const char *path)
 	writeVoidBytes(cert, 0x34);
 
 	addToIOQueue(NULL, 0, 0, cert);
+	return true;
 }
 
-void drawTicketFrame(uint64_t titleID)
+static void drawTicketFrame(uint64_t titleID)
 {
 	char tid[17];
 	hex(titleID, 16, tid);
@@ -237,18 +239,18 @@ void generateFakeTicket()
 
 			strcat(dir, "title.");
 			char *ptr = dir + strlen(dir);
-			strcpy(ptr, "tik");
+			strcpy(ptr, "cert");
+			if(!generateCert(dir))
+				break;
 
 			const TitleEntry *entry = getTitleEntryByTid(tmd->tid);
 			const TitleEntry te = { .name = "UNKNOWN", .tid = tmd->tid, .region = MCP_REGION_UNKNOWN, .key = 99 };
 			if(entry == NULL)
 				entry = &te;
 
-			generateTik(dir, entry);
-
-			strcpy(ptr, "cert");
-			generateCert(dir);
 			strcpy(ptr, "tik");
+			if(!generateTik(dir, entry))
+				break;
 
 			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 			textToFrame(0, 0, "Fake ticket generated on:");

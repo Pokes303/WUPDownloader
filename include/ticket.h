@@ -31,8 +31,8 @@
 	extern "C" {
 #endif
 
-void generateTik(const char *path, const TitleEntry *titleEntry);
-void generateCert(const char *path);
+bool generateTik(const char *path, const TitleEntry *titleEntry);
+bool generateCert(const char *path);
 void generateFakeTicket();
 
 #ifdef __cplusplus
