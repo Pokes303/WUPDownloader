@@ -164,7 +164,7 @@ bool getSHA256(const void *data, size_t data_len, void *hash)
 	return getHash(data, data_len, hash, EVP_sha256());
 }
 
-bool encryptAES(const unsigned char *plaintext, int plaintext_len, const unsigned char *key, const unsigned char *iv, unsigned char *ciphertext)
+bool encryptAES(void *data, int data_len, const unsigned char *key, const unsigned char *iv, void *encrypted)
 {
 	EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
 	bool ret = false;
@@ -174,8 +174,8 @@ bool encryptAES(const unsigned char *plaintext, int plaintext_len, const unsigne
 		if(EVP_EncryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, key, iv) == 1)
 		{
 			int len;
-			if(EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintext_len) == 1)
-				ret = EVP_EncryptFinal_ex(ctx, ciphertext + len, &len) == 1;
+			if(EVP_EncryptUpdate(ctx, encrypted, &len, data, data_len) == 1)
+				ret = EVP_EncryptFinal_ex(ctx, encrypted + len, &len) == 1;
 		}
 
 		EVP_CIPHER_CTX_free(ctx);
