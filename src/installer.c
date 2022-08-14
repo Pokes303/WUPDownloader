@@ -49,13 +49,6 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUs
 {
 	debugPrintf("Cleaning up...");
 
-	startNewFrame();
-	textToFrame(0, 0, "Cancelling installation.");
-	textToFrame(1, 0, "Please wait...");
-	writeScreenLog(2);
-	drawFrame();
-	showFrame();
-
 	switch(dev)
 	{
 		case NUSDEV_USB01:
@@ -70,12 +63,12 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUs
 		removeDirectory(path);
 
 	char *importPath = getStaticPathBuffer(2);
-	strcpy(importPath, toUsb ? "/vol/storage_usb01/usr/import/" : "/vol/storage_mlc01/usr/import/");
+	strcpy(importPath, toUsb ? (getUSB() == NUSDEV_USB01 ? NUSDIR_USB1 "usr/import/" : NUSDIR_USB2 "usr/import/" ) : NUSDIR_MLC "usr/import/");
 	DIR *dir = opendir(importPath);
 
 	if(dir != NULL)
 	{
-		char *ptr = importPath + 16;
+		char *ptr = importPath + strlen(importPath);
 
 		for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
 		{
@@ -83,7 +76,6 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUs
 				continue;
 
 			strcpy(ptr, entry->d_name);
-			debugPrintf("Removing directory %s", importPath);
 			removeDirectory(importPath);
 		}
 

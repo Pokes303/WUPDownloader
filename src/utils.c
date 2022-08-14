@@ -118,7 +118,8 @@ void hexToByte(const char *hex, uint8_t *out)
 static void mcpCallback(MCPError err, void *rawData)
 {
 	McpData *data = (McpData *)rawData;
-	data->err = err;
+	if(data->err == 0)
+		data->err = err;
 	data->processing = false;
 }
 
@@ -157,7 +158,7 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 		err = MCP_InstallGetProgress(mcpHandle, progress);
 		if(err == IOS_ERROR_OK)
 		{
-			if(progress->inProgress == 1 && progress->sizeTotal != 0)
+			if(progress->inProgress == 1 && progress->sizeTotal != 0 && data->err != CUSTOM_MCP_ERROR_CANCELLED)
 			{
 				if(multiplier == 0)
 				{
@@ -190,7 +191,7 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 				barToFrame(1, 0, 40, prg * 100.0f / progress->sizeTotal);
 				sprintf(toScreen, "%.2f / %.2f %s", prg / multiplier, ((double)progress->sizeTotal) / multiplier, multiplierName);
 				textToFrame(1, 41, toScreen);
-				
+
 				if(progress->sizeProgress != 0)
 				{
 					now = OSGetSystemTime();
@@ -202,7 +203,7 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 					}
 					textToFrame(1, ALIGNED_RIGHT, speedBuf);
 				}
-				
+
 				writeScreenLog(2);
 				drawFrame();
 			}
@@ -214,7 +215,7 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 
 		if(inst)
 		{
-			if(ovl < 0)
+			if(ovl == -1)
 			{
 				if(vpad.trigger & VPAD_BUTTON_B)
 					ovl = addErrorOverlay(
@@ -223,13 +224,22 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 						BUTTON_A " Yes || " BUTTON_B " No"
 					);
 			}
-			else
+			else if(ovl >= 0)
 			{
 				if(vpad.trigger & VPAD_BUTTON_A)
 				{
 					removeErrorOverlay(ovl);
 					ovl = -2;
-					break;
+
+					startNewFrame();
+					textToFrame(0, 0, "Cancelling installation.");
+					textToFrame(1, 0, "Please wait...");
+					writeScreenLog(2);
+					drawFrame();
+					showFrame();
+
+					MCP_InstallTitleAbort(mcpHandle);
+					data->err = CUSTOM_MCP_ERROR_CANCELLED;
 				}
 				else if(vpad.trigger & VPAD_BUTTON_B)
 				{
@@ -240,17 +250,7 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 		}
 	}
 
-	if(ovl == -2)
-	{
-		startNewFrame();
-		textToFrame(0, 0, "Please wait...");
-		writeScreenLog(1);
-		drawFrame();
-
-		MCP_InstallTitleAbort(mcpHandle);
-		data->err =  CUSTOM_MCP_ERROR_CANCELLED;
-	}
-	else if(ovl >= 0)
+	if(ovl >= 0)
 		removeErrorOverlay(ovl);
 }
 
