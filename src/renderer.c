@@ -52,8 +52,6 @@
 
 #define SSAA            8
 #define MAX_OVERLAYS    8
-#define SCREEN_X		1280
-#define SCREEN_Y		720
 #define SDL_RECTS		512
 
 typedef struct
@@ -163,10 +161,10 @@ void textToFrameCut(int line, int column, const char *str, int maxWidth)
 	switch(column)
 	{
 		case ALIGNED_CENTER:
-			text.x = (SCREEN_X >> 1) - (text.w >> 1);
+			text.x = (SCREEN_WIDTH >> 1) - (text.w >> 1);
 			break;
 		case ALIGNED_RIGHT:
-			text.x = SCREEN_X - text.w - FONT_SIZE;
+			text.x = SCREEN_WIDTH - text.w - FONT_SIZE;
 			break;
 		default:
 			column *= spaceWidth;
@@ -246,7 +244,7 @@ void lineToFrame(int column, uint32_t color)
 
 	rect->x = FONT_SIZE;
 	rect->y = column + ((FONT_SIZE >> 1) - 1);
-	rect->w = SCREEN_X - (FONT_SIZE << 1);
+	rect->w = SCREEN_WIDTH - (FONT_SIZE << 1);
 	rect->h = 3;
 
 	SDL_Color co = screenColorToSDLcolor(color);
@@ -269,7 +267,7 @@ void boxToFrame(int lineStart, int lineEnd)
 
 	rect[0]->x = FONT_SIZE;
 	rect[0]->y = ((++lineStart) * FONT_SIZE) + ((FONT_SIZE >> 1) - 1);
-	rect[0]->w = SCREEN_X - (FONT_SIZE << 1);
+	rect[0]->w = SCREEN_WIDTH - (FONT_SIZE << 1);
 	rect[0]->h = 3;
 
 	SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_GRAY);
@@ -515,7 +513,7 @@ int addErrorOverlay(const char *err)
 	if(rec.w == 0 || rec.h == 0)
 		return -4;
 
-	errorOverlay[i].tex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_X, SCREEN_Y);
+	errorOverlay[i].tex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_WIDTH, SCREEN_HEIGHT);
 	if(errorOverlay[i].tex  == NULL)
 		return -5;
 
@@ -526,8 +524,8 @@ int addErrorOverlay(const char *err)
 	SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, 0xC0);
 	SDL_RenderClear(renderer);
 
-	rec.x = (SCREEN_X >> 1) - (rec.w >> 1);
-	rec.y = (SCREEN_Y >> 1) - (rec.h >> 1);
+	rec.x = (SCREEN_WIDTH >> 1) - (rec.w >> 1);
+	rec.y = (SCREEN_HEIGHT >> 1) - (rec.h >> 1);
 
 	SDL_Rect *rect = errorOverlay[i].rect;
 
@@ -653,7 +651,7 @@ void resumeRenderer()
 			const SDL_Rect r3 = { .x = 0, .y = 1, .w = 1, .h = 1, };
 			SDL_RenderFillRect(renderer, &r3);
 
-			bgTex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_X, SCREEN_Y);
+			bgTex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_WIDTH, SCREEN_HEIGHT);
 			SDL_SetRenderTarget(renderer, bgTex);
 			SDL_RenderCopy(renderer, tt, NULL, NULL);
 			SDL_DestroyTexture(tt);
@@ -759,13 +757,13 @@ bool initRenderer()
 
 	if(SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO) == 0)
 	{
-		window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_X, SCREEN_Y, 0);
+		window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
 		if(window)
 		{
 			renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 			if(renderer)
 			{
-				frameBuffer = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_X, SCREEN_Y);
+				frameBuffer = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_WIDTH, SCREEN_HEIGHT);
 				if(frameBuffer != NULL)
 				{
 					SDL_SetRenderTarget(renderer, frameBuffer);
@@ -878,8 +876,8 @@ void shutdownRenderer()
 
 	SDL_Rect bye;
 	SDL_QueryTexture(byeTex, NULL, NULL, &(bye.w), &(bye.h));
-	bye.x = (SCREEN_X >> 1) - (bye.w >> 1);
-	bye.y = (SCREEN_Y >> 1) - (bye.h >> 1);
+	bye.x = (SCREEN_WIDTH >> 1) - (bye.w >> 1);
+	bye.y = (SCREEN_HEIGHT >> 1) - (bye.h >> 1);
 
 	SDL_RenderCopy(renderer, byeTex, NULL, &bye);
 	SDL_RenderPresent(renderer);

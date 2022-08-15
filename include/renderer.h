@@ -31,6 +31,9 @@
 
 #include <coreinit/mcp.h>
 
+#define SCREEN_WIDTH	1280
+#define SCREEN_HEIGHT	720
+
 #define FONT_SIZE 28
 
 #define SCREEN_COLOR_BG1		0x911EFFFF
@@ -104,5 +107,5 @@ uint32_t getSpaceWidth();
 #endif
 
 //#define startNewFrame					colorStartNewFrame(SCREEN_COLOR_BLUE)
-#define textToFrame(line, column, str)	textToFrameCut(line, column, str, column == 0 ? 1280 - (FONT_SIZE * 2) : 0)
+#define textToFrame(line, column, str)	textToFrameCut(line, column, str, column == 0 ? SCREEN_WIDTH - (FONT_SIZE * 2) : 0)
 #define getToFrameBuffer()				getStaticScreenBuffer()

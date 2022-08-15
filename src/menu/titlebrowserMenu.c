@@ -149,15 +149,15 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
 				strcpy(toFrame, "[UPD] ");
 			else
 			{
-				textToFrameCut(l, 10, filteredTitleEntries[j]->name, (1280 - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
+				textToFrameCut(l, 10, filteredTitleEntries[j]->name, (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
 				continue;
 			}
 
 			strcat(toFrame, filteredTitleEntries[j]->name);
-			textToFrameCut(l, 10, toFrame, (1280 - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
+			textToFrameCut(l, 10, toFrame, (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
 		}
 		else
-			textToFrameCut(l, 10, filteredTitleEntries[j]->name, (1280 - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
+			textToFrameCut(l, 10, filteredTitleEntries[j]->name, (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
 	}
 	drawFrame();
 }

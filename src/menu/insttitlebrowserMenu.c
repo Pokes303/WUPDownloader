@@ -222,7 +222,7 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 			deviceToFrame(l, 4, im->dt);
 			flagToFrame(l, 7, im->region);
 			strcat(toFrame, (const char *)im->name);
-			textToFrameCut(l, 10, toFrame, (1280 - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
+			textToFrameCut(l, 10, toFrame, (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
 		}
 
 		MEMFreeToDefaultHeap(meta);
