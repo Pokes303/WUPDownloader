@@ -104,5 +104,5 @@ uint32_t getSpaceWidth();
 #endif
 
 //#define startNewFrame					colorStartNewFrame(SCREEN_COLOR_BLUE)
-#define textToFrame(line, column, str)	textToFrameCut(line, column, str, 0)
+#define textToFrame(line, column, str)	textToFrameCut(line, column, str, column == 0 ? 1280 - (FONT_SIZE * 2) : 0)
 #define getToFrameBuffer()				getStaticScreenBuffer()
