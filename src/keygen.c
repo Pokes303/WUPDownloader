@@ -78,27 +78,30 @@ bool generateKey(const TitleEntry *te, char *out)
 			j = 8 - 1 + 10;
 	}
 
-	uint8_t bh[17];
-	OSBlockMove(bh, KEYGEN_SECRET, 10, false);
-	OSBlockMove(bh + 10, ++ti, i, false);
-	if(!getMD5(bh, j, bh))
+	uint8_t key[17];
+	// The salt is a md5 hash of the keygen secret + part of the title key
+	OSBlockMove(key, KEYGEN_SECRET, 10, false);
+	OSBlockMove(key + 10, ++ti, i, false);
+	if(!getMD5(key, j, key))
 		return false;
 
+	// The key is the password salted with the md5 hash from above
 	const char *pw = transformPassword(te->key);
 	debugPrintf("Using password \"%s\"", pw);
-	if(PKCS5_PBKDF2_HMAC_SHA1(pw, strlen(pw), bh, 16, 20, 16, bh) == 0)
+	if(PKCS5_PBKDF2_HMAC_SHA1(pw, strlen(pw), key, 16, 20, 16, key) == 0)
 		return false;
 
-	uint8_t ct[16];
-	OSBlockMove(ct, &(te->tid), 8, false);
-	OSBlockSet(ct + 8, 0, 8);
-
-	if(!encryptAES(bh, 16, getCommonKey(), ct, bh))
+	// The final key needs to be AES encrypted with the Wii U common key and part of the title ID padded with zeroes as IV
+	uint8_t iv[16];
+	OSBlockMove(iv, &(te->tid), 8, false);
+	OSBlockSet(iv + 8, 0, 8);
+	if(!encryptAES(key, 16, getCommonKey(), iv, key))
 		return false;
 
+	// Finally we print the key as a hex string to the out arg
 	for(i = 0; i < 16; ++i)
 	{
-		sprintf(out, "%02x", bh[i]);
+		sprintf(out, "%02x", key[i]);
 		out += 2;
 	}
 
