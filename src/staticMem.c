@@ -19,11 +19,10 @@
 
 #include <wut-fixups.h>
 
-#include <limits.h>
 #include <stdint.h>
 
+#include <coreinit/filesystem.h>
 #include <coreinit/memdefaultheap.h>
-#include <nn/acp/title.h>
 
 #include <staticMem.h>
 #include <renderer.h>
@@ -43,7 +42,7 @@ bool initStaticMem()
 		{
 			for(int i = 0; i < 3; ++i)
 			{
-				staticMemPathBuffer[i] = MEMAllocFromDefaultHeapEx(PATH_MAX, 0x40); // Alignmnt is important for MCP!
+				staticMemPathBuffer[i] = MEMAllocFromDefaultHeapEx(FS_MAX_PATH, 0x40); // Alignmnt is important for MCP!
 				if(staticMemPathBuffer[i] == NULL)
 				{
 					for(--i ; i >= 0; --i)

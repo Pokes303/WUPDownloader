@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <coreinit/filesystem.h>
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
 
@@ -298,7 +299,7 @@ bool checkSystemTitleFromListType(MCPTitleListType *entry)
 const char *prettyDir(const char *dir)
 {
 	int s;
-	static char ret[PATH_MAX];
+	static char ret[FS_MAX_PATH];
 
 	if(strncmp(NUSDIR_USB1, dir, strlen(NUSDIR_USB1)) == 0 || strncmp(NUSDIR_USB2, dir, strlen(NUSDIR_USB2)) == 0)
 	{

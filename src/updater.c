@@ -47,7 +47,6 @@
 
 #include <errno.h>
 #include <file.h>
-#include <limits.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
@@ -267,7 +266,7 @@ static bool unzipUpdate()
 
 				do
 				{
-					if(unzGetCurrentFileInfo(zip, &zipFileInfo, zipFileName, PATH_MAX - strlen(UPDATE_TEMP_FOLDER) - 1, NULL, 0, NULL, 0) == UNZ_OK)
+					if(unzGetCurrentFileInfo(zip, &zipFileInfo, zipFileName, FS_MAX_PATH - strlen(UPDATE_TEMP_FOLDER) - 1, NULL, 0, NULL, 0) == UNZ_OK)
 					{
 						if(unzOpenCurrentFile(zip) == UNZ_OK)
 						{
