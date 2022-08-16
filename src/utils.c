@@ -253,6 +253,8 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 
 	if(ovl >= 0)
 		removeErrorOverlay(ovl);
+
+	MEMFreeToDefaultHeap(progress);
 }
 
 char *errnoToString(int err)

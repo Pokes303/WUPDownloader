@@ -224,8 +224,6 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	enableShutdown();
     t = OSGetSystemTime() - t;
 	addEntropy(&t, sizeof(OSTime));
-	// Quarkys ASAN catched this / seems like MCP already frees it for us
-//	MEMFreeToDefaultHeap(progress);
 	MEMFreeToDefaultHeap(info);
 	
 	// MCP thread finished. Let's see if we got any error - TODO: This is a 1:1 copy&paste from WUP Installer GX2 which itself stole it from WUP Installer Y mod which got it from WUP Installer minor edit by Nexocube who got it from WUP installer JHBL Version by Dimrok who portet it from the ASM of WUP Installer. So I think it's time for something new... ^^
