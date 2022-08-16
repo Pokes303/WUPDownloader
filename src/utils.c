@@ -320,7 +320,6 @@ void debugPrintf(const char *str, ...)
 	va_list va;
 	va_start(va, str);
 	vsnprintf(newStr + tss, 511 - tss, str, va);
-	newStr[511] = '\0';
 	va_end(va);
 
 	WHBLogPrint(newStr);
