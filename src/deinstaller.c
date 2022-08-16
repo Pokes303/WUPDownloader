@@ -59,13 +59,13 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool
 	McpData data;
 	glueMcpData(info, &data);
 	
-	if(!channelHaxx)
-		disableShutdown();
-	
 	//err = MCP_UninstallTitleAsync(mcpHandle, title->path, info);
 	// The above crashes MCP, so let's leave WUT:
 	debugPrintf("Deleting %s", title->path);
 	OSTick t = OSGetTick();
+	if(!channelHaxx)
+		disableShutdown();
+
 	MCPError err = MCP_DeleteTitleAsync(mcpHandle, title->path, info);
 	if(err != 0)
 	{
@@ -75,17 +75,14 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool
 		return false;
 	}
 	
-	if(!channelHaxx)
-		showMcpProgress(&data, name, false);
-
-	t = OSGetTick() - t;
-	addEntropy(&t, sizeof(OSTick));
-	addToScreenLog("Deinstallation finished!");
-	
 	if(channelHaxx)
 		return true;
 
+	showMcpProgress(&data, name, false);
 	enableShutdown();
+	t = OSGetTick() - t;
+	addEntropy(&t, sizeof(OSTick));
+	addToScreenLog("Deinstallation finished!");
 
 	if(!skipEnd)
 	{

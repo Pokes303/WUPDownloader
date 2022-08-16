@@ -190,11 +190,11 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	debugPrintf("Path: %s (%d)", path, strlen(path));
 	
 	// Last preparing step...
-	disableShutdown();
 	glueMcpData(info, &data);
 	
 	// Start the installation process
 	t = OSGetSystemTime();
+	disableShutdown();
 	MCPError err = MCP_InstallTitleAsync(mcpHandle, path, info);
 	
 	if(err != 0)
@@ -221,6 +221,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	}
 	
 	showMcpProgress(&data, game, true);
+	enableShutdown();
     t = OSGetSystemTime() - t;
 	addEntropy(&t, sizeof(OSTime));
 	// Quarkys ASAN catched this / seems like MCP already frees it for us
@@ -237,7 +238,6 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 			case CUSTOM_MCP_ERROR_CANCELLED:
 				cleanupCancelledInstallation(dev, path, toUsb, keepFiles);
 			case CUSTOM_MCP_ERROR_EOM:
-				enableShutdown();
 				return true;
 			case 0xFFFCFFE9:
 				if(hasDeps)
@@ -292,7 +292,6 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 			if(vpad.trigger)
 				break;
 		}
-		enableShutdown();
 		return false;
 	}
 
@@ -310,7 +309,6 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	writeScreenLog(2);
 	drawFrame();
 
-	enableShutdown();
 	startNotification();
 
 	while(AppRunning())
