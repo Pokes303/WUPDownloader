@@ -39,47 +39,45 @@
 #include <utils.h>
 #include <menu/utils.h>
 
-struct DownloadLogList;
-typedef struct DownloadLogList DownloadLogList;
-struct DownloadLogList
+struct LogList;
+typedef struct LogList LogList;
+struct LogList
 {
 	char line[MAX_CHARS + 2];
-	DownloadLogList *nextEntry;
+	LogList *nextEntry;
 };
 
-static DownloadLogList *downloadLogList = NULL;
+static LogList *logList = NULL;
 
 void addToScreenLog(const char *str, ...)
 {
-	DownloadLogList *last;
+	LogList *last;
+	LogList *newEntry;
 	int i = 0;
-	for(DownloadLogList *c = downloadLogList; c != NULL; c = c->nextEntry)
+	for(newEntry = logList; newEntry != NULL; newEntry = newEntry->nextEntry)
 	{
 
 		++i;
-		last = c;
+		last = newEntry;
 	}
 
-	DownloadLogList *newEntry;
 	if(i == MAX_LINES - 2)
 	{
-		newEntry = downloadLogList;
-		downloadLogList = newEntry->nextEntry;
+		newEntry = logList;
+		logList = newEntry->nextEntry;
 	}
 	else
 	{
-		newEntry = MEMAllocFromDefaultHeap(sizeof(DownloadLogList));
+		newEntry = MEMAllocFromDefaultHeap(sizeof(LogList));
 		if(newEntry ==  NULL)
 			return;
 	}
 
 	va_list va;
 	va_start(va, str);
-	vsnprintf(newEntry->line, MAX_CHARS + 1, str, va);
+	vsnprintf(newEntry->line, MAX_CHARS + 2, str, va);
 	va_end(va);
-	newEntry->line[MAX_CHARS + 1] = '0';
 	debugPrintf(newEntry->line);
-
 	newEntry->nextEntry = NULL;
 
 	if(i != 0)
@@ -88,16 +86,16 @@ void addToScreenLog(const char *str, ...)
 		return;
 	}
 
-	downloadLogList = newEntry;
+	logList = newEntry;
 }
 
 void clearScreenLog()
 {
-	DownloadLogList *tmpList;
-	while(downloadLogList != NULL)
+	LogList *tmpList;
+	while(logList != NULL)
 	{
-		tmpList = downloadLogList;
-		downloadLogList = tmpList->nextEntry;
+		tmpList = logList;
+		logList = tmpList->nextEntry;
 		MEMFreeToDefaultHeap(tmpList);
 	}
 }
@@ -106,7 +104,7 @@ void writeScreenLog(int line)
 {
 	lineToFrame(line, SCREEN_COLOR_WHITE);
 
-	DownloadLogList *entry = downloadLogList;
+	LogList *entry = logList;
 	for(int i = line; i != 1 && entry != NULL; --i, entry = entry->nextEntry)
 		;
 
