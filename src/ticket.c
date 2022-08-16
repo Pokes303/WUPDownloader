@@ -47,14 +47,7 @@
  */
 bool generateTik(const char *path, const TitleEntry *titleEntry)
 {
-    char encKey[33];
-	if(!generateKey(titleEntry, encKey))
-		return false;
-	
-	char tid[17];
-	hex(titleEntry->tid, 16, tid);
-	
-	NUSFILE *tik = openFile(path, "wb");
+	FSFileHandle *tik = openFile(path, "w");
 	if(tik == NULL)
 	{
 		char *err = getStaticScreenBuffer();
@@ -75,6 +68,13 @@ bool generateTik(const char *path, const TitleEntry *titleEntry)
 		}
 		return false;
 	}
+
+	char encKey[33];
+	if(!generateKey(titleEntry, encKey))
+		return false;
+
+	char tid[17];
+	hex(titleEntry->tid, 16, tid);
 	
 	debugPrintf("Generating fake ticket at %s", path);
 	
@@ -115,7 +115,7 @@ bool generateTik(const char *path, const TitleEntry *titleEntry)
 
 bool generateCert(const char *path)
 {
-	NUSFILE *cert = openFile(path, "wb");
+	FSFileHandle *cert = openFile(path, "w");
 	if(cert == NULL)
 	{
 		char *err = getStaticScreenBuffer();

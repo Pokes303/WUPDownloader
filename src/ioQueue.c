@@ -24,6 +24,7 @@
 #include <stdio.h>
 
 #include <coreinit/core.h>
+#include <coreinit/filesystem.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
@@ -37,14 +38,15 @@
 #include <utils.h>
 
 #define IOT_STACK_SIZE		0x1000
-#define MAX_IO_QUEUE_ENTRIES	((512 * 1024 * 1024) / IO_BUFSIZE) // 512 MB
+#define MAX_IO_QUEUE_ENTRIES	(512 * (IO_MAX_FILE_BUFFER / (1024 * 1024))) // 512 MB
 #define IO_MAX_FILE_BUFFER	(1024 * 1024) // 1 MB
 
 typedef struct WUT_PACKED
 {
-	volatile NUSFILE *file;
+	volatile bool ready;
+	volatile FSFileHandle *file;
 	volatile size_t size;
-	volatile uint8_t buf[IO_BUFSIZE];
+	volatile uint8_t *buf;
 } WriteQueueEntry;
 
 static OSThread *ioThread;
@@ -55,18 +57,26 @@ static WriteQueueEntry *queueEntries;
 static volatile uint32_t activeReadBuffer;
 static volatile uint32_t activeWriteBuffer;
 
-static volatile int fwriteErrno = 0;
+static volatile FSStatus fwriteErrno = FS_STATUS_OK;
 static volatile int fwriteOverlay = -1;
+
+extern FSClient *__wut_devoptab_fs_client;
 
 static int ioThreadMain(int argc, const char **argv)
 {
 	uint32_t asl;
 	WriteQueueEntry *entry;
-	while(ioRunning && !fwriteErrno)
+	FSCmdBlock cmdBlk;
+	FSStatus err;
+
+	FSInitCmdBlock(&cmdBlk);
+	FSSetCmdPriority(&cmdBlk, 1);
+
+	while(ioRunning && fwriteErrno == FS_STATUS_OK)
 	{
 		asl = activeWriteBuffer;
 		entry = queueEntries + asl;
-		if(entry->file == NULL)
+		if(!entry->ready)
 		{
 			OSSleepTicks(256);
 			continue;
@@ -74,17 +84,19 @@ static int ioThreadMain(int argc, const char **argv)
 
 		if(entry->size) // WRITE command
 		{
-			if(fwrite((void *)entry->buf, entry->size, 1, (FILE *)entry->file->fd) != 1)
-				fwriteErrno = errno;
+			err = FSWriteFile(__wut_devoptab_fs_client, &cmdBlk, (uint8_t *)entry->buf, entry->size, 1, *entry->file, 0, FS_ERROR_FLAG_ALL);
+			if(err != 1)
+				fwriteErrno = err;
+
+			entry->size = 0;
 		}
 		else // Close command
 		{
 			OSTime t = OSGetTime();
-			if(fclose((FILE *)entry->file->fd))
-				fwriteErrno = errno;
+			err = FSCloseFile(__wut_devoptab_fs_client, &cmdBlk, *entry->file, FS_ERROR_FLAG_ALL);
+			if(err != FS_STATUS_OK)
+				fwriteErrno = err;
 
-			MEMFreeToDefaultHeap((void *)entry->file->buffer);
-			MEMFreeToDefaultHeap((void *)entry->file);
 			t = OSGetTime() - t;
 			addEntropy(&t, sizeof(OSTime));
 		}
@@ -94,6 +106,7 @@ static int ioThreadMain(int argc, const char **argv)
 
 		activeWriteBuffer = asl;
 		entry->file = NULL;
+		entry->ready = false;
 	}
 	
 	return 0;
@@ -105,7 +118,21 @@ bool initIOThread()
 	if(queueEntries != NULL)
 	{
 		for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; ++i)
+		{
+			queueEntries[i].buf = MEMAllocFromDefaultHeapEx(IO_MAX_FILE_BUFFER, 0x40);
+			if(queueEntries[i].buf == NULL)
+			{
+				for(--i; i > -1; --i)
+					MEMFreeToDefaultHeap((void *)queueEntries[i].buf);
+
+				MEMFreeToDefaultHeap(queueEntries);
+				return false;
+			}
+
+			queueEntries[i].ready = false;
 			queueEntries[i].file = NULL;
+			queueEntries[i].size = 0;
+		}
 
 		spinCreateLock(ioWriteLock, SPINLOCK_FREE);
 		activeReadBuffer = activeWriteBuffer = 0;
@@ -115,6 +142,9 @@ bool initIOThread()
 		if(ioThread != NULL)
 			return true;
 
+		for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; ++i)
+			MEMFreeToDefaultHeap((void *)queueEntries[i].buf);
+
 		MEMFreeToDefaultHeap(queueEntries);
 	}
 	return false;
@@ -122,13 +152,13 @@ bool initIOThread()
 
 bool checkForQueueErrors()
 {
-	if(fwriteErrno)
+	if(fwriteErrno != FS_STATUS_OK)
 	{
 		if(fwriteOverlay == -1 && OSIsMainCore())
 		{
 			OSSleepTicks(OSMillisecondsToTicks(20)); // Lazy race condition prevention
 			char errMsg[1024];
-			sprintf(errMsg, "Write error:\n%s\n\nThis is an unrecoverable error!", errnoToString(fwriteErrno));
+			sprintf(errMsg, "Write error:\n%s\n\nThis is an unrecoverable error!", translateFSErr(fwriteErrno));
 			fwriteOverlay = addErrorOverlay(errMsg);
 		}
 		return true;
@@ -145,7 +175,7 @@ void shutdownIOThread()
 	{
 		spinLock(ioWriteLock);
 
-		while(queueEntries[activeWriteBuffer].file != NULL)
+		while(queueEntries[activeWriteBuffer].ready)
 			;
 	}
 	
@@ -157,13 +187,16 @@ void shutdownIOThread()
 #else
 	stopThread(ioThread, NULL);
 #endif
+	for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; ++i)
+		MEMFreeToDefaultHeap((void *)queueEntries[i].buf);
+
 	MEMFreeToDefaultHeap(queueEntries);
 }
 
 #ifdef NUSSPLI_DEBUG
 bool queueStalled = false;
 #endif
-size_t addToIOQueue(const void *buf, size_t size, size_t n, NUSFILE *file)
+size_t addToIOQueue(const void *buf, size_t size, size_t n, FSFileHandle *file)
 {
 	if(checkForQueueErrors())
 		return 0;
@@ -177,7 +210,7 @@ retryAddingToQueue:
 			return 0;
 	
     entry = queueEntries + activeReadBuffer;
-	if(entry->file != NULL)
+	if(entry->ready)
 	{
         spinReleaseLock(ioWriteLock);
 #ifdef NUSSPLI_DEBUG
@@ -207,24 +240,48 @@ retryAddingToQueue:
 			goto queueExit;
 		}
 
-		if(size > IO_BUFSIZE)
+		size_t ns = entry->size + size;
+		if(ns > IO_MAX_FILE_BUFFER)
 		{
-            spinReleaseLock(ioWriteLock);
-			debugPrintf("size > %i (%i)", IO_BUFSIZE, size);
-			addToIOQueue(buf, 1, IO_BUFSIZE, file);
-			const uint8_t *newPtr = buf;
-			newPtr += IO_BUFSIZE;
-			addToIOQueue((const void *)newPtr, 1, size - IO_BUFSIZE, file);
+			spinReleaseLock(ioWriteLock);
+			ns = IO_MAX_FILE_BUFFER - entry->size;
+			n = addToIOQueue(buf, 1, ns, file);
+			size -= ns;
+			if(size != 0)
+			{
+				const uint8_t *newPtr = buf;
+				newPtr += ns;
+				n += addToIOQueue((const void *)newPtr, 1, size, file);
+			}
+
 			return n;
 		}
-		
-		OSBlockMove((void *)entry->buf, buf, size, false);
-		entry->size = size;
+
+		OSBlockMove((void *)(entry->buf + entry->size), buf, size, false);
+		entry->size = ns;
+		if(ns != IO_MAX_FILE_BUFFER) // ns < IO_MAX_FILE_BUFFER
+			goto queueExit;
 	}
 	else
+	{
+		if(entry->size != 0)
+		{
+			// TODO: Deduplicate code
+			entry->file = file;
+			entry->ready = true;
+
+			if(++activeReadBuffer == MAX_IO_QUEUE_ENTRIES)
+				activeReadBuffer = 0;
+
+			spinReleaseLock(ioWriteLock);
+			return addToIOQueue(NULL, 0, 0, file);
+		}
+
 		entry->size = 0;
-	
+	}
+
 	entry->file = file;
+	entry->ready = true;
 	
 	if(++activeReadBuffer == MAX_IO_QUEUE_ENTRIES)
 		activeReadBuffer = 0;
@@ -243,7 +300,7 @@ void flushIOQueue()
 	debugPrintf("Flushing...");
 	spinLock(ioWriteLock);
 
-	while(queueEntries[activeWriteBuffer].file)
+	while(queueEntries[activeWriteBuffer].ready)
 	{
 		OSSleepTicks(1024);
 		if(checkForQueueErrors())
@@ -256,31 +313,24 @@ void flushIOQueue()
 	checkForQueueErrors();
 }
 
-NUSFILE *openFile(const char *path, const char *mode)
+FSFileHandle *openFile(const char *path, const char *mode)
 {
 	if(checkForQueueErrors())
 		return NULL;
-
-	NUSFILE *ret = MEMAllocFromDefaultHeap(sizeof(NUSFILE));
-	if(ret == NULL)
-		return NULL;
 	
 	OSTime t = OSGetTime();
-	ret->fd = fopen(path, mode);
-	if(ret->fd != NULL)
-	{
-		t = OSGetTime() - t;
-		addEntropy(&t, sizeof(OSTime));
-		ret->buffer = MEMAllocFromDefaultHeapEx(IO_MAX_FILE_BUFFER, 0x40);
-		if(ret->buffer != NULL)
-		{
-			if(setvbuf((FILE *)ret->fd, (char *)ret->buffer, _IOFBF, IO_MAX_FILE_BUFFER) != 0)
-				debugPrintf("Error setting buffer!");
+	FSFileHandle *ret = MEMAllocFromDefaultHeap(sizeof(FSFileHandle));
+	if(ret == NULL)
+		return NULL;
 
-			return ret;
-		}
-		fclose((FILE *)ret->fd);
-	}
+	FSStatus s = FSOpenFile(__wut_devoptab_fs_client, getCmdBlk(), path, mode, ret, FS_ERROR_FLAG_ALL);
+	if(s == FS_STATUS_OK)
+		return ret;
+
+	t = OSGetTime() - t;
+	addEntropy(&t, sizeof(OSTime));
+
 	MEMFreeToDefaultHeap(ret);
+	debugPrintf("Error opening %s: %s!", path, translateFSErr(s));
 	return NULL;
 }

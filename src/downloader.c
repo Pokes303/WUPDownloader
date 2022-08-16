@@ -81,6 +81,8 @@ static OSThread *dlbgThread = NULL;
 
 static int cancelOverlayId = -1;
 
+extern FSClient *__wut_devoptab_fs_client;
+
 typedef struct
 {
 	bool running;
@@ -489,35 +491,35 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	{
 		if(resume && fileExists(file))
 		{
-			NUSFILE *nf = openFile(file, "rb+");
-			if(nf == NULL)
-				return 1;
-
-			fseek((FILE *)nf->fd, 0, SEEK_END);
-			fileSize = ftello((FILE *)nf->fd);
-			if(fileSize)
+			FSFileHandle *nf;
+			fileSize = getFilesize(file);
+			if(fileSize != 0)
 			{
-				// TODO: Check .h3 files size
 				if((type & FILE_TYPE_H3) || fileSize == data->cs)
 				{
 					sprintf(toScreen, "Download %s skipped!", name);
 					addToScreenLog(toScreen);
-					addToIOQueue(NULL, 0, 0, nf);
 					data->dltmp += (double) fileSize;
 					return 0;
 				}
 				if(fileSize > data->cs)
-				{
-					addToIOQueue(NULL, 0, 0, nf);
-					flushIOQueue();
 					return downloadFile(url, file, data, type, false);
-				}
+
+				nf = openFile(file, "a");
 			}
+			else
+			{
+				nf = openFile(file, "w");
+			}
+
+			if(nf == NULL)
+					return 1;
+
 			fp = (void *)nf;
 		}
 		else
 		{
-			fp = (void *)openFile(file, "wb");
+			fp = (void *)openFile(file, "w");
 			if(fp == NULL)
 				return 1;
 
@@ -559,7 +561,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		if(toRam)
 			fclose((FILE *)fp);
 		else
-			addToIOQueue(NULL, 0, 0, (NUSFILE *)fp);
+			addToIOQueue(NULL, 0, 0, (FSFileHandle *)fp);
 		
 		debugPrintf("curl_easy_setopt error: %s (%d / %ud)", curlError, ret, fileSize);
 		return 1;
@@ -776,7 +778,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	if(toRam)
 		fclose((FILE *)fp);
 	else
-		addToIOQueue(NULL, 0, 0, (NUSFILE *)fp);
+		addToIOQueue(NULL, 0, 0, (FSFileHandle *)fp);
 	
 	if(ret != CURLE_OK)
 	{
@@ -993,18 +995,13 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	if(!dirExists(installDir))
 	{
 		debugPrintf("Creating directory \"%s\"", installDir);
-		NUSFS_ERR err = createDirectory(installDir, 777);
-		if(err == NUSFS_ERR_NOERR)
+		FSStatus err = createDirectory(installDir);
+		if(err == FS_STATUS_OK)
 			addToScreenLog("Install directory successfully created");
 		else
 		{
 			char *toScreen = getToFrameBuffer();
-			const char *errStr = translateNusfsErr(err);
-			if(errStr == NULL)
-				sprintf(toScreen, "Error creating install directory: %d", err);
-			else
-				strcpy(toScreen, errStr);
-
+			strcpy(toScreen, translateFSErr(err));
 			drawErrorFrame(toScreen, ANY_RETURN);
 
 			while(AppRunning())
@@ -1027,23 +1024,18 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	strcat(installDir, "/");
 	
 	addToScreenLog("Started the download of \"%s\"", titleEntry->name);
-	addToScreenLog("The content will be saved on \"%sinstall/%s\"", prettyDir((dlDev & NUSDEV_USB) ? NUSDIR_USB1 : dlDev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC), folderName);
+	addToScreenLog("The content will be saved on \"%s\"", prettyDir(installDir));
 	
 	if(!dirExists(installDir))
 	{
 		debugPrintf("Creating directory \"%s\"", installDir);
-		NUSFS_ERR err = createDirectory(installDir, 777);
-		if(err == NUSFS_ERR_NOERR)
+		FSStatus err = createDirectory(installDir);
+		if(err == FS_STATUS_OK)
 			addToScreenLog("Download directory successfully created");
 		else
 		{
 			char *toScreen = getToFrameBuffer();
-			const char *errStr = translateNusfsErr(err);
-			if(errStr == NULL)
-				sprintf(toScreen, "Error creating download directory: %d", err);
-			else
-				strcpy(toScreen, errStr);
-			
+			strcpy(toScreen, translateFSErr(err));
 			drawErrorFrame(toScreen, ANY_RETURN);
 			
 			while(AppRunning())
@@ -1067,7 +1059,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	char *idp = installDir + strlen(installDir);
 	strcpy(idp, "title.tmd");
 	
-	NUSFILE *fp = openFile(installDir, "wb");
+	FSFileHandle *fp = openFile(installDir, "w");
 	if(fp == NULL)
 	{
 		drawErrorFrame("Can't save title.tmd file!", ANY_RETURN);

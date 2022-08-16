@@ -97,6 +97,8 @@ static void innerMain(bool validCfw)
 	}
 
 	FSInit();
+	FSInitCmdBlock(getCmdBlk());
+	FSSetCmdPriority(getCmdBlk(), 0);
 #ifdef NUSSPLI_HBL
 	romfsInit();
 #endif

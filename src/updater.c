@@ -259,7 +259,7 @@ static bool unzipUpdate()
 				char *needle;
 				char *lastSlash;
 				char *lspp;
-				NUSFILE *file;
+				FSFileHandle *file;
 				size_t extracted;
 				ret = true;
 
@@ -306,7 +306,7 @@ static bool unzipUpdate()
 							if(ret)
 							{
 								sprintf(fnp, "%s%s", path, zipFileName);
-								file = openFile(fileName, "wb");
+								file = openFile(fileName, "w");
 								if(file != NULL)
 								{
 									while(ret)
@@ -397,16 +397,12 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 
 	disableShutdown();
 	removeDirectory(UPDATE_TEMP_FOLDER);
-	NUSFS_ERR err = createDirectory(UPDATE_TEMP_FOLDER, 777);
-	if(err != NUSFS_ERR_NOERR)
+	FSStatus err = createDirectory(UPDATE_TEMP_FOLDER);
+	if(err != FS_STATUS_OK)
 	{
 		char *toScreen = getToFrameBuffer();
 		strcpy(toScreen, "Error creating temporary directory!\n\n");
-		const char *errStr = translateNusfsErr(err);
-		if(errStr == NULL)
-			sprintf(toScreen + strlen(toScreen), "%d", err);
-		else
-			strcat(toScreen, errStr);
+		strcat(toScreen, translateFSErr(err));
 
 		showUpdateError(toScreen);
 		goto updateError;
@@ -513,12 +509,12 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 			break;
 		case NUSSPLI_TYPE_HBL:
 #ifdef NUSSPLI_DEBUG
-			NUSFS_ERR err =
+			FSStatus err =
 #endif
 			moveDirectory(UPDATE_TEMP_FOLDER "NUSspli", UPDATE_HBL_FOLDER);
 #ifdef NUSSPLI_DEBUG
-			if(err != NUSFS_ERR_NOERR)
-				debugPrintf("Error moving directory: %s", translateNusfsErr(err));
+			if(err != FS_STATUS_OK)
+				debugPrintf("Error moving directory: %s", translateFSErr(err));
 #endif
 			break;
 	}

@@ -28,6 +28,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include <coreinit/filesystem.h>
+
 #define NUSDIR_SD		"/vol/app_sd/"
 #define NUSDIR_USB1		"/vol/storage_usb01/"
 #define NUSDIR_USB2		"/vol/storage_usb02/"
@@ -61,15 +63,6 @@ typedef enum
 
 typedef enum
 {
-	NUSFS_ERR_NOERR,
-	NUSFS_ERR_LOCKED,
-	NUSFS_ERR_FULL,
-	NUSFS_ERR_LIMITS,
-	NUSFS_ERR_DONTEXIST
-} NUSFS_ERR;
-
-typedef enum
-{
 	NUSDEV_NONE		= 0x00,
 	NUSDEV_USB01	= 0x01,
 	NUSDEV_USB02	= 0x02,
@@ -78,20 +71,27 @@ typedef enum
 	NUSDEV_MLC		= 0x08,
 } NUSDEV;
 
-void writeVoidBytes(NUSFILE *fp, uint32_t length);
-void writeCustomBytes(NUSFILE *fp, const char *str);
-void writeRandomBytes(NUSFILE *fp, uint32_t length);
-void writeHeader(NUSFILE *fp, FileType type);
+FSCmdBlock *getCmdBlk();
+
+void writeVoidBytes(FSFileHandle *fp, uint32_t length);
+void writeCustomBytes(FSFileHandle *fp, const char *str);
+void writeRandomBytes(FSFileHandle *fp, uint32_t length);
+void writeHeader(FSFileHandle *fp, FileType type);
 
 bool fileExists(const char *path);
 bool dirExists(const char *path);
 void removeDirectory(const char *path);
-NUSFS_ERR moveDirectory(const char *src, const char *dest);
-NUSFS_ERR createDirectory(const char *path, mode_t mode);
+FSStatus moveDirectory(const char *src, const char *dest);
+FSStatus createDirectory(const char *path);
 bool createDirRecursive(const char *dir);
-const char *translateNusfsErr(NUSFS_ERR err);
-size_t getFilesize(FILE *fp);
-size_t readFile(const char *path, void **bufer);
+const char *translateFSErr(FSStatus err);
+size_t getFilesize(const char *path);
+#ifdef NUSSPLI_HBL
+size_t readFile(const char *path, void **buffer);
+#else
+size_t readFileNew(const char *path, void **buffer);
+#define readFile(path, buffer) readFileNew(path, buffer)
+#endif
 TMD *getTmd(const char *dir);
 bool verifyTmd(const TMD *tmd, size_t size);
 

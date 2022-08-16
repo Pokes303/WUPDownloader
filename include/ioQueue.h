@@ -24,22 +24,18 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include <coreinit/filesystem.h>
+
 #ifdef __cplusplus
 	extern "C" {
 #endif
 
-typedef struct
-{
-	volatile FILE *fd;
-	volatile void *buffer;
-} NUSFILE;
-
 bool initIOThread();
 void shutdownIOThread();
 bool checkForQueueErrors();
-size_t addToIOQueue(const void *buf, size_t size, size_t n, NUSFILE *file);
+size_t addToIOQueue(const void *buf, size_t size, size_t n, FSFileHandle *file);
 void flushIOQueue();
-NUSFILE *openFile(const char *patch, const char *mode);
+FSFileHandle *openFile(const char *patch, const char *mode);
 
 #ifdef __cplusplus
 	}

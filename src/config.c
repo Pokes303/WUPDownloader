@@ -394,7 +394,7 @@ bool saveConfig(bool force)
 		return false;
 
 	flushIOQueue();
-	NUSFILE *f = openFile(CONFIG_PATH, "w");
+	FSFileHandle *f = openFile(CONFIG_PATH, "w");
 	if(f == NULL)
 	{
 		MEMFreeToDefaultHeap(json);
