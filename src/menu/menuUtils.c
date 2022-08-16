@@ -51,9 +51,27 @@ static DownloadLogList *downloadLogList = NULL;
 
 void addToScreenLog(const char *str, ...)
 {
-	DownloadLogList *newEntry = MEMAllocFromDefaultHeap(sizeof(DownloadLogList));
-	if(newEntry ==  NULL)
-		return;
+	DownloadLogList *last;
+	int i = 0;
+	for(DownloadLogList *c = downloadLogList; c != NULL; c = c->nextEntry)
+	{
+
+		++i;
+		last = c;
+	}
+
+	DownloadLogList *newEntry;
+	if(i == MAX_LINES - 2)
+	{
+		newEntry = downloadLogList;
+		downloadLogList = newEntry->nextEntry;
+	}
+	else
+	{
+		newEntry = MEMAllocFromDefaultHeap(sizeof(DownloadLogList));
+		if(newEntry ==  NULL)
+			return;
+	}
 
 	va_list va;
 	va_start(va, str);
@@ -64,29 +82,13 @@ void addToScreenLog(const char *str, ...)
 
 	newEntry->nextEntry = NULL;
 
-	if(downloadLogList == NULL)
+	if(i != 0)
 	{
-		downloadLogList = newEntry;
+		last->nextEntry = newEntry;
 		return;
 	}
 
-	DownloadLogList *last;
-	int i = 0;
-	for(DownloadLogList *c = downloadLogList; c != NULL; c = c->nextEntry)
-	{
-		
-		++i;
-		last = c;
-	}
-
-	if(i == MAX_LINES - 2)
-	{
-		DownloadLogList *tmpList = downloadLogList;
-		downloadLogList = tmpList->nextEntry;
-		MEMFreeToDefaultHeap(tmpList);
-	}
-
-	last->nextEntry = newEntry;
+	downloadLogList = newEntry;
 }
 
 void clearScreenLog()
