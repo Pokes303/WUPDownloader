@@ -316,6 +316,8 @@ const char *prettyDir(const char *dir)
 		s = strlen(NUSDIR_MLC);
 		strcpy(ret, "NAND:/");
 	}
+	else
+		return dir;
 
 	strcat(ret, dir + s);
 	return ret;
