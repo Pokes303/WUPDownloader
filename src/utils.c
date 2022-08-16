@@ -126,6 +126,7 @@ static void mcpCallback(MCPError err, void *rawData)
 void glueMcpData(MCPInstallTitleInfo *info, McpData *data)
 {
 	data->processing = true;
+	data->err = 0;
 	uint32_t *ptr = (uint32_t *)info;
 	*ptr = (uint32_t)mcpCallback;
 	*++ptr = (uint32_t)data;
