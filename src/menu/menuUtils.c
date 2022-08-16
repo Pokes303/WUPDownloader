@@ -298,27 +298,26 @@ bool checkSystemTitleFromListType(MCPTitleListType *entry)
 
 const char *prettyDir(const char *dir)
 {
-	int s;
 	static char ret[FS_MAX_PATH];
 
 	if(strncmp(NUSDIR_USB1, dir, strlen(NUSDIR_USB1)) == 0 || strncmp(NUSDIR_USB2, dir, strlen(NUSDIR_USB2)) == 0)
 	{
-		s = strlen(NUSDIR_USB1);
+		dir += strlen(NUSDIR_USB1);
 		strcpy(ret, "USB:/");
 	}
 	else if(strncmp(NUSDIR_SD, dir, strlen(NUSDIR_SD)) == 0)
 	{
-		s = strlen(NUSDIR_SD);
+		dir += strlen(NUSDIR_SD);
 		strcpy(ret, "SD:/");
 	}
 	else if(strncmp(NUSDIR_MLC, dir, strlen(NUSDIR_MLC)) == 0)
 	{
-		s = strlen(NUSDIR_MLC);
+		dir += strlen(NUSDIR_MLC);
 		strcpy(ret, "NAND:/");
 	}
 	else
 		return dir;
 
-	strcat(ret, dir + s);
+	strcat(ret, dir);
 	return ret;
 }
