@@ -69,6 +69,7 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool
 	MCPError err = MCP_DeleteTitleAsync(mcpHandle, title->path, info);
 	if(err != 0)
 	{
+		MEMFreeToDefaultHeap(info);
 		debugPrintf("Err1: %#010x (%d)", err, err);
 		if(!channelHaxx)
 			enableShutdown();
@@ -76,9 +77,13 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool
 	}
 	
 	if(channelHaxx)
+	{
+		MEMFreeToDefaultHeap(info);
 		return true;
+	}
 
 	showMcpProgress(&data, name, false);
+	MEMFreeToDefaultHeap(info);
 	enableShutdown();
 	t = OSGetTick() - t;
 	addEntropy(&t, sizeof(OSTick));
