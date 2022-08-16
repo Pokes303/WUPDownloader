@@ -43,7 +43,7 @@ struct DownloadLogList;
 typedef struct DownloadLogList DownloadLogList;
 struct DownloadLogList
 {
-	char line[MAX_CHARS + 1];
+	char line[MAX_CHARS + 2];
 	DownloadLogList *nextEntry;
 };
 
@@ -57,9 +57,9 @@ void addToScreenLog(const char *str, ...)
 
 	va_list va;
 	va_start(va, str);
-	vsnprintf(newEntry->line, MAX_CHARS, str, va);
+	vsnprintf(newEntry->line, MAX_CHARS + 1, str, va);
 	va_end(va);
-	newEntry->line[MAX_CHARS] = '0';
+	newEntry->line[MAX_CHARS + 1] = '0';
 	debugPrintf(newEntry->line);
 
 	newEntry->nextEntry = NULL;
