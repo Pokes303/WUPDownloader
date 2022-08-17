@@ -260,6 +260,8 @@ retryAddingToQueue:
 
 		if(++activeReadBuffer == MAX_IO_QUEUE_ENTRIES)
 			activeReadBuffer = 0;
+
+		entry = queueEntries + activeReadBuffer;
 	}
 
 	entry->file = file;
