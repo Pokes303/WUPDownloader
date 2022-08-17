@@ -252,22 +252,14 @@ retryAddingToQueue:
 		if(ns != IO_MAX_FILE_BUFFER) // ns < IO_MAX_FILE_BUFFER
 			goto queueExit;
 	}
-	else
+	else if(entry->size != 0)
 	{
-		if(entry->size != 0)
-		{
-			// TODO: Deduplicate code
-			entry->file = file;
-			entry->ready = true;
+		// TODO: Deduplicate code
+		entry->file = file;
+		entry->ready = true;
 
-			if(++activeReadBuffer == MAX_IO_QUEUE_ENTRIES)
-				activeReadBuffer = 0;
-
-			spinReleaseLock(ioWriteLock);
-			return addToIOQueue(NULL, 0, 0, file);
-		}
-
-		entry->size = 0;
+		if(++activeReadBuffer == MAX_IO_QUEUE_ENTRIES)
+			activeReadBuffer = 0;
 	}
 
 	entry->file = file;
