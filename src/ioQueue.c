@@ -114,36 +114,31 @@ bool initIOThread()
 	queueEntries = MEMAllocFromDefaultHeap(MAX_IO_QUEUE_ENTRIES * sizeof(WriteQueueEntry));
 	if(queueEntries != NULL)
 	{
-		for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; ++i)
+		uint8_t *buf = MEMAllocFromDefaultHeapEx(MAX_IO_QUEUE_ENTRIES * IO_MAX_FILE_BUFFER, 0x40);
+		if(buf != NULL)
 		{
-			queueEntries[i].buf = MEMAllocFromDefaultHeapEx(IO_MAX_FILE_BUFFER, 0x40);
-			if(queueEntries[i].buf == NULL)
+			for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; ++i, buf += IO_MAX_FILE_BUFFER)
 			{
-				for(--i; i > -1; --i)
-					MEMFreeToDefaultHeap((void *)queueEntries[i].buf);
-
-				MEMFreeToDefaultHeap(queueEntries);
-				return false;
+				queueEntries[i].ready = false;
+				queueEntries[i].file = NULL;
+				queueEntries[i].size = 0;
+				queueEntries[i].buf = buf;
 			}
 
-			queueEntries[i].ready = false;
-			queueEntries[i].file = NULL;
-			queueEntries[i].size = 0;
+			spinCreateLock(ioWriteLock, SPINLOCK_FREE);
+			activeReadBuffer = activeWriteBuffer = 0;
+			ioRunning = true;
+
+			ioThread = startThread("NUSspli I/O", THREAD_PRIORITY_HIGH, IOT_STACK_SIZE, ioThreadMain, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_CPU0); // We move this to core 0 for maximum performance. Later on move it back to core 1 as we want download threads on core 0 and 2.
+			if(ioThread != NULL)
+				return true;
+
+			MEMFreeToDefaultHeap(buf);
 		}
-
-		spinCreateLock(ioWriteLock, SPINLOCK_FREE);
-		activeReadBuffer = activeWriteBuffer = 0;
-		ioRunning = true;
-
-		ioThread = startThread("NUSspli I/O", THREAD_PRIORITY_HIGH, IOT_STACK_SIZE, ioThreadMain, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_CPU0); // We move this to core 0 for maximum performance. Later on move it back to core 1 as we want download threads on core 0 and 2.
-		if(ioThread != NULL)
-			return true;
-
-		for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; ++i)
-			MEMFreeToDefaultHeap((void *)queueEntries[i].buf);
 
 		MEMFreeToDefaultHeap(queueEntries);
 	}
+
 	return false;
 }
 
@@ -184,9 +179,7 @@ void shutdownIOThread()
 #else
 	stopThread(ioThread, NULL);
 #endif
-	for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; ++i)
-		MEMFreeToDefaultHeap((void *)queueEntries[i].buf);
-
+	MEMFreeToDefaultHeap((void *)queueEntries[0].buf);
 	MEMFreeToDefaultHeap(queueEntries);
 }
 
