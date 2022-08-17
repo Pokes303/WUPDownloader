@@ -37,7 +37,7 @@
 #include <utils.h>
 
 #define IOT_STACK_SIZE		0x1000
-#define MAX_IO_QUEUE_ENTRIES	(832 * (IO_MAX_FILE_BUFFER / (1024 * 1024))) // 832 MB
+#define MAX_IO_QUEUE_ENTRIES	(512 * (IO_MAX_FILE_BUFFER / (1024 * 1024))) // 512 MB
 #define IO_MAX_FILE_BUFFER	(1024 * 1024) // 1 MB
 
 typedef struct WUT_PACKED
@@ -245,16 +245,11 @@ retryAddingToQueue:
 				activeReadBuffer = 0;
 
 			size -= ns;
-			if(size != 0)
-			{
-				const uint8_t *newPtr = buf;
-				newPtr += ns;
-				spinReleaseLock(ioWriteLock);
-				addToIOQueue((const void *)newPtr, 1, size, file);
-				return n;
-			}
-
-			goto queueExit;
+			const uint8_t *newPtr = buf;
+			newPtr += ns;
+			spinReleaseLock(ioWriteLock);
+			addToIOQueue((const void *)newPtr, 1, size, file);
+			return n;
 		}
 
 		OSBlockMove((void *)(entry->buf + entry->size), buf, size, false);
