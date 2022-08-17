@@ -498,7 +498,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 	switch(type)
 	{
 		case NUSSPLI_TYPE_AROMA:
-			rename(UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
+			FSRename(__wut_devoptab_fs_client, getCmdBlk(), UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE, FS_ERROR_FLAG_ALL);
 			break;
 		case NUSSPLI_TYPE_CHANNEL:
 			strcpy(path, UPDATE_TEMP_FOLDER);
