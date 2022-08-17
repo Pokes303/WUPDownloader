@@ -80,7 +80,6 @@ extern int mcpHandle;
 
 #define toLowercase(x) for(int y = strlen(x) - 1; y >= 0; --y) if(isUppercase(x[y])) x[y] += 32;
 
-char* b_tostring(bool b);
 void hex(uint64_t i, int digits, char *out); //ex: 000050D1
 void secsToTime(uint32_t seconds, char *out);
 void getSpeedString(double bytePerSecond, char *out);
