@@ -87,7 +87,6 @@ void getSpeedString(double bytePerSecond, char *out);
 void hexToByte(const char *hex, uint8_t *out);
 void glueMcpData(MCPInstallTitleInfo *info, McpData *data);
 void showMcpProgress(McpData *data, const char *game, const bool inst);
-char *errnoToString(int err);
 #ifdef NUSSPLI_DEBUG
 void debugInit();
 void debugPrintf(const char *str, ...);

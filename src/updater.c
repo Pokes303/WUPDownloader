@@ -45,7 +45,6 @@
 #include <ioapi.h>
 #include <unzip.h>
 
-#include <errno.h>
 #include <file.h>
 #include <stdarg.h>
 #include <stdlib.h>

@@ -257,17 +257,6 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 	MEMFreeToDefaultHeap(progress);
 }
 
-char *errnoToString(int err)
-{
-	char *ret = strerror(err);
-	if(ret)
-		return ret;
-
-	static char errMsg[16];
-	sprintf(errMsg, "Errno: %i", err);
-	return errMsg;
-}
-
 #ifdef NUSSPLI_DEBUG
 
 #include <stdarg.h>

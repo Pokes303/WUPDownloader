@@ -21,7 +21,6 @@
 #include <wut-fixups.h>
 
 #include <dirent.h>
-#include <errno.h>
 #include <math.h>
 #include <netinet/tcp.h>
 #include <stdlib.h>
@@ -508,9 +507,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				nf = openFile(file, "a");
 			}
 			else
-			{
 				nf = openFile(file, "w");
-			}
 
 			if(nf == NULL)
 					return 1;
