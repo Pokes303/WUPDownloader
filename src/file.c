@@ -39,7 +39,6 @@
 #include <coreinit/memory.h>
 #include <coreinit/time.h>
 
-extern FSClient *__wut_devoptab_fs_client;
 static FSCmdBlock cmdBlk;
 
 FSCmdBlock *getCmdBlk()

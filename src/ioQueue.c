@@ -59,8 +59,6 @@ static volatile uint32_t activeWriteBuffer;
 static volatile FSStatus fwriteErrno = FS_STATUS_OK;
 static volatile int fwriteOverlay = -1;
 
-extern FSClient *__wut_devoptab_fs_client;
-
 static int ioThreadMain(int argc, const char **argv)
 {
 	uint32_t asl;

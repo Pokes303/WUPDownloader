@@ -80,8 +80,6 @@ static OSThread *dlbgThread = NULL;
 
 static int cancelOverlayId = -1;
 
-extern FSClient *__wut_devoptab_fs_client;
-
 typedef struct
 {
 	bool running;

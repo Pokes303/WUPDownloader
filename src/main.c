@@ -69,7 +69,6 @@
 #include <whb/crash.h>
 
 static bool mochaReady = false;
-extern FSClient *__wut_devoptab_fs_client;
 
 static void drawLoadingScreen(const char *toScreenLog, const char *loadingMsg)
 {

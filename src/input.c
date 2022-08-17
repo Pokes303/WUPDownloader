@@ -23,6 +23,7 @@
 
 #include <config.h>
 #include <crypto.h>
+#include <file.h>
 #include <input.h>
 #include <messages.h>
 #include <renderer.h>
@@ -67,7 +68,6 @@ static int io = -1;
 
 static Swkbd_CreateArg createArg;
 static Swkbd_AppearArg appearArg;
-extern FSClient *__wut_devoptab_fs_client;
 
 static OSMessageQueue swkbd_queue;
 static OSMessage swkbd_msg[SWKBD_QUEUE_SIZE];

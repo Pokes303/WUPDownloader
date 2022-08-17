@@ -71,6 +71,7 @@ typedef enum
 	NUSDEV_MLC		= 0x08,
 } NUSDEV;
 
+extern FSClient *__wut_devoptab_fs_client;
 FSCmdBlock *getCmdBlk();
 
 void writeVoidBytes(FSFileHandle *fp, uint32_t length);
