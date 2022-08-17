@@ -34,6 +34,7 @@
 #include <input.h>
 #include <renderer.h>
 #include <state.h>
+#include <stdio.h>
 #include <titles.h>
 #include <tmd.h>
 #include <utils.h>

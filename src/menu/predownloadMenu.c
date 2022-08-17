@@ -35,8 +35,10 @@
 #include <menu/utils.h>
 
 #include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
 
+#include <coreinit/filesystem.h>
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
 
@@ -171,7 +173,7 @@ void predownloadMenu(const TitleEntry *entry)
 	NUSDEV usbMounted = getUSB();
     NUSDEV dlDev = usbMounted && dlToUSBenabled() ? usbMounted : NUSDEV_SD;
 	bool keepFiles = true;
-	char folderName[FILENAME_MAX - 11];
+	char folderName[FS_MAX_PATH- 11];
 	char titleVer[33];
 	folderName[0] = titleVer[0] = '\0';
 	TMD *tmd;
@@ -278,7 +280,7 @@ naNedNa:
 		}
 		if(vpad.trigger & VPAD_BUTTON_DOWN)
 		{
-			if(!showKeyboard(KEYBOARD_LAYOUT_TID, KEYBOARD_TYPE_NORMAL, folderName, CHECK_ALPHANUMERICAL, FILENAME_MAX - 11, false, folderName, NULL))
+			if(!showKeyboard(KEYBOARD_LAYOUT_TID, KEYBOARD_TYPE_NORMAL, folderName, CHECK_ALPHANUMERICAL, FS_MAX_PATH - 11, false, folderName, NULL))
 				folderName[0] = '\0';
 			redraw = true;
 		}

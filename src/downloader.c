@@ -884,7 +884,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		if(!toRam)
 		{
 			flushIOQueue();
-			remove(file);
+			FSRemove(__wut_devoptab_fs_client, getCmdBlk(), file, FS_ERROR_FLAG_ALL);
 		}
 
 		if(resp == 404 && (type & FILE_TYPE_TMD) == FILE_TYPE_TMD) //Title.tmd not found

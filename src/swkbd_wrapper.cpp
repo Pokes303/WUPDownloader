@@ -24,13 +24,14 @@
 #include <cstdlib>
 #include <string>
 
+#include <coreinit/filesystem.h>
 #include <coreinit/memdefaultheap.h>
 
 #include <utils.h>
 #include <swkbd_wrapper.h>
 
 static bool kbd_initialized = false;
-static char ifs[FILENAME_MAX]; // TODO
+static char ifs[FS_MAX_PATH]; // TODO
 
 uint32_t Swkbd_GetWorkMemorySize(uint32_t unk)
 {

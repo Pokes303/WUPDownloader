@@ -22,7 +22,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include <dirent.h>
-#include <stdio.h>
 
 #include <coreinit/ios.h>
 #include <coreinit/mcp.h>

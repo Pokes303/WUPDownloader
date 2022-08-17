@@ -33,8 +33,6 @@
 #include <utils.h>
 #include <menu/utils.h>
 
-#include <stdio.h>
-
 #include <vpad/input.h>
 #include <coreinit/dynload.h>
 #include <coreinit/memdefaultheap.h>

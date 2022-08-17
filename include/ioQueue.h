@@ -22,7 +22,6 @@
 #include <wut-fixups.h>
 
 #include <stdbool.h>
-#include <stdio.h>
 
 #include <coreinit/filesystem.h>
 
