@@ -50,7 +50,6 @@ typedef struct WUT_PACKED
 
 static OSThread *ioThread;
 static volatile bool ioRunning = false;
-static spinlock ioWriteLock;
 
 static WriteQueueEntry *queueEntries;
 static volatile uint32_t activeReadBuffer;
@@ -125,7 +124,6 @@ bool initIOThread()
 				queueEntries[i].buf = buf;
 			}
 
-			spinCreateLock(ioWriteLock, SPINLOCK_FREE);
 			activeReadBuffer = activeWriteBuffer = 0;
 			ioRunning = true;
 
@@ -165,8 +163,6 @@ void shutdownIOThread()
 
 	if(!checkForQueueErrors())
 	{
-		spinLock(ioWriteLock);
-
 		while(queueEntries[activeWriteBuffer].ready)
 			;
 	}
@@ -194,15 +190,9 @@ size_t addToIOQueue(const void *buf, size_t size, size_t n, FSFileHandle *file)
     WriteQueueEntry *entry;
 		
 retryAddingToQueue:
-	
-	while(!spinTryLock(ioWriteLock))
-		if(!ioRunning)
-			return 0;
-	
-    entry = queueEntries + activeReadBuffer;
+	entry = queueEntries + activeReadBuffer;
 	if(entry->ready)
 	{
-        spinReleaseLock(ioWriteLock);
 #ifdef NUSSPLI_DEBUG
 		if(!queueStalled)
 		{
@@ -225,10 +215,7 @@ retryAddingToQueue:
 	{
 		size *= n;
 		if(size == 0)
-		{
-			n = 0;
-			goto queueExit;
-		}
+			return 0;
 
 		size_t ns = entry->size + size;
 		if(ns > IO_MAX_FILE_BUFFER)
@@ -247,7 +234,6 @@ retryAddingToQueue:
 			size -= ns;
 			const uint8_t *newPtr = buf;
 			newPtr += ns;
-			spinReleaseLock(ioWriteLock);
 			addToIOQueue((const void *)newPtr, 1, size, file);
 			return n;
 		}
@@ -255,7 +241,7 @@ retryAddingToQueue:
 		OSBlockMove((void *)(entry->buf + entry->size), buf, size, false);
 		entry->size = ns;
 		if(ns != IO_MAX_FILE_BUFFER) // ns < IO_MAX_FILE_BUFFER
-			goto queueExit;
+			return n;
 	}
 	else if(entry->size != 0)
 	{
@@ -274,10 +260,6 @@ retryAddingToQueue:
 	
 	if(++activeReadBuffer == MAX_IO_QUEUE_ENTRIES)
 		activeReadBuffer = 0;
-
-queueExit:
-	spinReleaseLock(ioWriteLock);
-	return n;
 }
 
 void flushIOQueue()
@@ -287,7 +269,6 @@ void flushIOQueue()
 
 	int ovl = addErrorOverlay("Flushing queue, please wait...");
 	debugPrintf("Flushing...");
-	spinLock(ioWriteLock);
 
 	while(queueEntries[activeWriteBuffer].ready)
 	{
@@ -296,7 +277,6 @@ void flushIOQueue()
 			break;
 	}
 
-	spinReleaseLock(ioWriteLock);
 	removeErrorOverlay(ovl);
 
 	checkForQueueErrors();
