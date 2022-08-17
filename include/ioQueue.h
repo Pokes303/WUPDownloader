@@ -35,7 +35,7 @@ void shutdownIOThread();
 bool checkForQueueErrors();
 size_t addToIOQueue(const void *buf, size_t size, size_t n, FSFileHandle *file);
 void flushIOQueue();
-FSFileHandle *openFile(const char *patch, const char *mode);
+FSFileHandle *openFile(const char *patch, const char *mode, size_t filesize);
 
 #ifdef __cplusplus
 	}

@@ -393,8 +393,9 @@ bool saveConfig(bool force)
 	if(json == NULL)
 		return false;
 
+	entropy = strlen(json);
 	flushIOQueue();
-	FSFileHandle *f = openFile(CONFIG_PATH, "w");
+	FSFileHandle *f = openFile(CONFIG_PATH, "w", entropy);
 	if(f == NULL)
 	{
 		MEMFreeToDefaultHeap(json);
@@ -410,7 +411,7 @@ bool saveConfig(bool force)
 		return false;
 	}
 
-	addToIOQueue(json, 1, strlen(json), f);
+	addToIOQueue(json, 1, entropy, f);
 	MEMFreeToDefaultHeap(json);
 	addToIOQueue(NULL, 0, 0, f);
 	changed = false;

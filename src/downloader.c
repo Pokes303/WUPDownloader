@@ -502,10 +502,10 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				if(fileSize > data->cs)
 					return downloadFile(url, file, data, type, false);
 
-				nf = openFile(file, "a");
+				nf = openFile(file, "a", 0);
 			}
 			else
-				nf = openFile(file, "w");
+				nf = openFile(file, "w", data->cs);
 
 			if(nf == NULL)
 					return 1;
@@ -514,7 +514,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		}
 		else
 		{
-			fp = (void *)openFile(file, "w");
+			fp = (void *)openFile(file, "w", data->cs);
 			if(fp == NULL)
 				return 1;
 
@@ -1054,7 +1054,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	char *idp = installDir + strlen(installDir);
 	strcpy(idp, "title.tmd");
 	
-	FSFileHandle *fp = openFile(installDir, "w");
+	FSFileHandle *fp = openFile(installDir, "w", tmdSize);
 	if(fp == NULL)
 	{
 		drawErrorFrame("Can't save title.tmd file!", ANY_RETURN);

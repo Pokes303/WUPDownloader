@@ -47,7 +47,7 @@
  */
 bool generateTik(const char *path, const TitleEntry *titleEntry)
 {
-	FSFileHandle *tik = openFile(path, "w");
+	FSFileHandle *tik = openFile(path, "w", 0);
 	if(tik == NULL)
 	{
 		char *err = getStaticScreenBuffer();
@@ -115,7 +115,7 @@ bool generateTik(const char *path, const TitleEntry *titleEntry)
 
 bool generateCert(const char *path)
 {
-	FSFileHandle *cert = openFile(path, "w");
+	FSFileHandle *cert = openFile(path, "w", 0);
 	if(cert == NULL)
 	{
 		char *err = getStaticScreenBuffer();

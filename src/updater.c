@@ -305,7 +305,7 @@ static bool unzipUpdate()
 							if(ret)
 							{
 								sprintf(fnp, "%s%s", path, zipFileName);
-								file = openFile(fileName, "w");
+								file = openFile(fileName, "w", 0);
 								if(file != NULL)
 								{
 									while(ret)
