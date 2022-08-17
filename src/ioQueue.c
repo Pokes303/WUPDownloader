@@ -233,18 +233,28 @@ retryAddingToQueue:
 		size_t ns = entry->size + size;
 		if(ns > IO_MAX_FILE_BUFFER)
 		{
-			spinReleaseLock(ioWriteLock);
 			ns = IO_MAX_FILE_BUFFER - entry->size;
-			n = addToIOQueue(buf, 1, ns, file);
+			OSBlockMove((void *)(entry->buf + entry->size), buf, ns, false);
+			entry->size = IO_MAX_FILE_BUFFER;
+
+			// TODO: Deduplicate code
+			entry->file = file;
+			entry->ready = true;
+
+			if(++activeReadBuffer == MAX_IO_QUEUE_ENTRIES)
+				activeReadBuffer = 0;
+
 			size -= ns;
 			if(size != 0)
 			{
 				const uint8_t *newPtr = buf;
 				newPtr += ns;
-				n += addToIOQueue((const void *)newPtr, 1, size, file);
+				spinReleaseLock(ioWriteLock);
+				addToIOQueue((const void *)newPtr, 1, size, file);
+				return n;
 			}
 
-			return n;
+			goto queueExit;
 		}
 
 		OSBlockMove((void *)(entry->buf + entry->size), buf, size, false);
