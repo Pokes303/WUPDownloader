@@ -82,14 +82,14 @@ bool fileExists(const char *path);
 bool dirExists(const char *path);
 void removeDirectory(const char *path);
 FSStatus moveDirectory(const char *src, const char *dest);
-FSStatus createDirectory(const char *path);
-bool createDirRecursive(const char *dir);
-const char *translateFSErr(FSStatus err);
-size_t getFilesize(const char *path);
+FSStatus createDirectory(const char *path) __attribute__((__hot__));
+bool createDirRecursive(const char *dir) __attribute__((__hot__));
+const char *translateFSErr(FSStatus err) __attribute__((__cold__));
+size_t getFilesize(const char *path) __attribute__((__hot__));
 #ifdef NUSSPLI_HBL
-size_t readFile(const char *path, void **buffer);
+size_t readFile(const char *path, void **buffer) __attribute__((__hot__));
 #else
-size_t readFileNew(const char *path, void **buffer);
+size_t readFileNew(const char *path, void **buffer) __attribute__((__hot__));
 #define readFile(path, buffer) readFileNew(path, buffer)
 #endif
 TMD *getTmd(const char *dir);

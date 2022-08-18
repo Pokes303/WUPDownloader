@@ -58,6 +58,7 @@ static volatile uint32_t activeWriteBuffer;
 static volatile FSStatus fwriteErrno = FS_STATUS_OK;
 static volatile int fwriteOverlay = -1;
 
+static int ioThreadMain(int argc, const char **argv) __attribute__((__hot__));
 static int ioThreadMain(int argc, const char **argv)
 {
 	uint32_t asl;

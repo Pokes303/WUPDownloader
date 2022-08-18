@@ -96,6 +96,7 @@ typedef struct
 	cancelOverlayId = -1;					\
 }
 
+static int progressCallback(void *rawData, double dltotal, double dlnow, double ultotal, double ulnow) __attribute__((__hot__));
 static int progressCallback(void *rawData, double dltotal, double dlnow, double ultotal, double ulnow)
 {
 	curlProgressData *data = (curlProgressData *)rawData;
@@ -119,6 +120,7 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 	return 0;
 }
 
+static int dlbgThreadMain(int argc, const char **argv) __attribute__((__cold__)):
 static int dlbgThreadMain(int argc, const char **argv)
 {
 	debugPrintf("Socket optimizer running!");
@@ -216,6 +218,7 @@ static int initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 	return CURL_SOCKOPT_OK;
 }
 
+static CURLcode certloader(CURL *curl, void *sslctx, void *parm) __attribute__((__cold__));
 static CURLcode certloader(CURL *curl, void *sslctx, void *parm)
 {
 	if(inf == NULL)
