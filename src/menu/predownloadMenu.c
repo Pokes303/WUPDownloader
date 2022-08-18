@@ -199,7 +199,7 @@ downloadTMD:
 		strcat(downloadUrl, titleVer);
 	}
 
-	if(downloadFile(downloadUrl, "title.tmd", NULL, FILE_TYPE_TMD | FILE_TYPE_TORAM, true))
+	if(downloadFile(downloadUrl, "title.tmd", NULL, FILE_TYPE_TMD | FILE_TYPE_TORAM, false))
 	{
 		clearRamBuf();
 		debugPrintf("Error downloading TMD");

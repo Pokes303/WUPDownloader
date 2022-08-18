@@ -517,7 +517,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		}
 		else
 		{
-			fp = (void *)openFile(file, "w", data->cs);
+			fp = (void *)openFile(file, "w", data == NULL ? 0 : data->cs);
 			if(fp == NULL)
 				return 1;
 
@@ -1139,7 +1139,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	strcpy(idp, "title.tik");
 	if(!fileExists(installDir))
 	{
-		int tikRes = downloadFile(downloadUrl, installDir, NULL, FILE_TYPE_TIK, true);
+		int tikRes = downloadFile(downloadUrl, installDir, NULL, FILE_TYPE_TIK, false);
 		switch(tikRes)
 		{
 			case 2:
