@@ -42,7 +42,7 @@ typedef enum
 
 extern APP_STATE app;
 
-void initState();
+void initState() __attribute__((__cold__));
 void enableApd();
 void disableApd();
 void enableShutdown();
@@ -53,7 +53,7 @@ bool isAroma();
 #else
 bool isChannel();
 #endif
-bool AppRunning();
+bool AppRunning() __attribute__((__hot__));
 uint32_t homeButtonCallback(void *dummy);
 
 #ifdef __cplusplus

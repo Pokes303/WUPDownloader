@@ -77,7 +77,7 @@ typedef enum
 } DEVICE_TYPE;
 
 bool initRenderer();
-void shutdownRenderer();
+void shutdownRenderer() __attribute__((__cold__));
 void pauseRenderer();
 void resumeRenderer();
 void colorStartNewFrame(uint32_t color);
@@ -85,10 +85,10 @@ static inline void startNewFrame()
 {
 	colorStartNewFrame(SCREEN_COLOR_BLUE);
 }
-void showFrame();
+void showFrame() __attribute__((__hot__));
 void drawFrame();
 void drawKeyboard(bool tv);
-void textToFrameCut(int line, int column, const char *str, int maxWidth);
+void textToFrameCut(int line, int column, const char *str, int maxWidth) __attribute__((__hot__));
 int textToFrameMultiline(int x, int y, const char *text, size_t len);
 void lineToFrame(int column, uint32_t color);
 void boxToFrame(int lineStart, int lineEnd);

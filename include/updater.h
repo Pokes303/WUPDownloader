@@ -33,7 +33,7 @@ typedef enum
 } NUSSPLI_TYPE;
 
 bool updateCheck();
-void update(const char *newVersion, NUSSPLI_TYPE type);
+void update(const char *newVersion, NUSSPLI_TYPE type) __attribute__((__cold__));
 
 #ifdef __cplusplus
 	}

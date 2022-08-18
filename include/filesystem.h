@@ -29,8 +29,8 @@
 	extern "C" {
 #endif
 
-bool initFS();
-void deinitFS();
+bool initFS() __attribute__((__cold__));
+void deinitFS() __attribute__((__cold__));
 NUSDEV getUSB();
 
 #ifdef __cplusplus

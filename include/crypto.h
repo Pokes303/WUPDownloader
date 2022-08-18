@@ -32,7 +32,7 @@
 #define deinitCrypto()
 
 bool initCrypto();
-void addEntropy(void *e, size_t len);
+void addEntropy(void *e, size_t len) __attribute__((__hot__));
 int osslBytes(unsigned char *buf, int num);
 bool getMD5(const void *data, size_t data_len, void *hash);
 bool getSHA256(const void *data, size_t data_len, void *hash);

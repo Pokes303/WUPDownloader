@@ -80,10 +80,10 @@ typedef enum
 	CT_VPAD_0 = 4 + VPAD_CHAN_0,
 } ControllerType;
 
-bool SWKBD_Init();
-void SWKBD_Shutdown();
+bool SWKBD_Init() __attribute__((__cold__));
+void SWKBD_Shutdown() __attribute__((__cold__));
 
-void readInput();
+void readInput() __attribute__((__hot__));
 bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, KeyboardChecks check, int maxlength, bool limit, const char *input, const char *okStr);
 
 #ifdef __cplusplus

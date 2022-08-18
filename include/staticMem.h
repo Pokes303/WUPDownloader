@@ -31,12 +31,12 @@
 	extern "C" {
 #endif
 
-bool initStaticMem();
-void shutdownStaticMem();
+bool initStaticMem() __attribute__((__cold__));
+void shutdownStaticMem() __attribute__((__cold__));
 
-char *getStaticScreenBuffer();
-char *getStaticLineBuffer();
-char *getStaticPathBuffer(uint32_t i);
+char *getStaticScreenBuffer() __attribute__((__hot__));
+char *getStaticLineBuffer() __attribute__((__hot__));
+char *getStaticPathBuffer(uint32_t i) __attribute__((__hot__));
 
 #ifdef __cplusplus
 	}

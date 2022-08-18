@@ -59,7 +59,7 @@ typedef enum
 #define spinLockAsMutex(lock)			while(!spinTryLock(lock)) { OSSleepTicks(256); }
 #define spinReleaseLock(lock)			lock = SPINLOCK_FREE
 
-OSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksize, OSThreadEntryPointFn mainfunc, int argc, char *argv, OSThreadAttributes attribs);
+OSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksize, OSThreadEntryPointFn mainfunc, int argc, char *argv, OSThreadAttributes attribs) __attribute__((__hot__));
 
 #ifdef NUSSPLI_DEBUG
 #define stopThread(thread, ret)																																\
