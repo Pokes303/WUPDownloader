@@ -42,7 +42,6 @@
 
 typedef struct WUT_PACKED
 {
-	volatile bool ready;
 	volatile FSFileHandle *file;
 	volatile size_t size;
 	volatile uint8_t *buf;
@@ -73,7 +72,7 @@ static int ioThreadMain(int argc, const char **argv)
 	{
 		asl = activeWriteBuffer;
 		entry = queueEntries + asl;
-		if(!entry->ready)
+		if(entry->file == NULL)
 		{
 			OSSleepTicks(256);
 			continue;
@@ -103,7 +102,6 @@ static int ioThreadMain(int argc, const char **argv)
 
 		activeWriteBuffer = asl;
 		entry->file = NULL;
-		entry->ready = false;
 	}
 	
 	return 0;
@@ -119,7 +117,6 @@ bool initIOThread()
 		{
 			for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; ++i, buf += IO_MAX_FILE_BUFFER)
 			{
-				queueEntries[i].ready = false;
 				queueEntries[i].file = NULL;
 				queueEntries[i].size = 0;
 				queueEntries[i].buf = buf;
@@ -164,7 +161,7 @@ void shutdownIOThread()
 
 	if(!checkForQueueErrors())
 	{
-		while(queueEntries[activeWriteBuffer].ready)
+		while(queueEntries[activeWriteBuffer].file != NULL)
 			;
 	}
 	
@@ -192,7 +189,7 @@ size_t addToIOQueue(const void *buf, size_t size, size_t n, FSFileHandle *file)
 		
 retryAddingToQueue:
 	entry = queueEntries + activeReadBuffer;
-	if(entry->ready)
+	if(entry->file != NULL)
 	{
 #ifdef NUSSPLI_DEBUG
 		if(!queueStalled)
@@ -227,8 +224,6 @@ retryAddingToQueue:
 
 			// TODO: Deduplicate code
 			entry->file = file;
-			entry->ready = true;
-
 			if(++activeReadBuffer == MAX_IO_QUEUE_ENTRIES)
 				activeReadBuffer = 0;
 
@@ -248,8 +243,6 @@ retryAddingToQueue:
 	{
 		// TODO: Deduplicate code
 		entry->file = file;
-		entry->ready = true;
-
 		if(++activeReadBuffer == MAX_IO_QUEUE_ENTRIES)
 			activeReadBuffer = 0;
 
@@ -257,8 +250,6 @@ retryAddingToQueue:
 	}
 
 	entry->file = file;
-	entry->ready = true;
-	
 	if(++activeReadBuffer == MAX_IO_QUEUE_ENTRIES)
 		activeReadBuffer = 0;
 
@@ -273,7 +264,7 @@ void flushIOQueue()
 	int ovl = addErrorOverlay("Flushing queue, please wait...");
 	debugPrintf("Flushing...");
 
-	while(queueEntries[activeWriteBuffer].ready)
+	while(queueEntries[activeWriteBuffer].file != NULL)
 	{
 		OSSleepTicks(1024);
 		if(checkForQueueErrors())

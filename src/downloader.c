@@ -120,7 +120,7 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 	return 0;
 }
 
-static int dlbgThreadMain(int argc, const char **argv) __attribute__((__cold__)):
+static int dlbgThreadMain(int argc, const char **argv) __attribute__((__cold__));
 static int dlbgThreadMain(int argc, const char **argv)
 {
 	debugPrintf("Socket optimizer running!");
