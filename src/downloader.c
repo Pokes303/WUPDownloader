@@ -482,10 +482,8 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 	size_t fileSize;
 	if(toRam)
 	{
-		fileSize = 0;
 		fp = (void *)open_memstream((char **)&ramBuf, (size_t *)&ramBufSize);
-		if(fp == NULL)
-			return 1;
+		fileSize = 0;
 	}
 	else
 	{
@@ -510,20 +508,17 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 			else
 				nf = openFile(file, "w", data->cs);
 
-			if(nf == NULL)
-					return 1;
-
 			fp = (void *)nf;
 		}
 		else
 		{
 			fp = (void *)openFile(file, "w", data == NULL ? 0 : data->cs);
-			if(fp == NULL)
-				return 1;
-
 			fileSize = 0;
 		}
 	}
+
+	if(fp == NULL)
+		return 1;
 
 	curlError[0] = '\0';
 	volatile curlProgressData cdata;
