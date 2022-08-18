@@ -144,7 +144,6 @@ bool checkForQueueErrors()
 	{
 		if(fwriteOverlay == -1 && OSIsMainCore())
 		{
-			OSSleepTicks(OSMillisecondsToTicks(20)); // Lazy race condition prevention
 			char errMsg[1024];
 			sprintf(errMsg, "Write error:\n%s\n\nThis is an unrecoverable error!", translateFSErr(fwriteErrno));
 			fwriteOverlay = addErrorOverlay(errMsg);
