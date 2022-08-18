@@ -37,8 +37,8 @@
 #include <utils.h>
 
 #define IOT_STACK_SIZE		0x1000
-#define MAX_IO_QUEUE_ENTRIES	(512 * (IO_MAX_FILE_BUFFER / (1024 * 1024))) // 512 MB
 #define IO_MAX_FILE_BUFFER	(1024 * 1024) // 1 MB
+#define MAX_IO_QUEUE_ENTRIES	(512 * (IO_MAX_FILE_BUFFER / (1024 * 1024))) // 512 MB
 
 typedef struct WUT_PACKED
 {
