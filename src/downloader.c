@@ -506,7 +506,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 				nf = openFile(file, "a", 0);
 			}
 			else
-				nf = openFile(file, "w", data->cs);
+				nf = openFile(file, "w", data == NULL ? 0 : data->cs);
 
 			fp = (void *)nf;
 		}
