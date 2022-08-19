@@ -66,7 +66,7 @@
 	#define NUSSPLI_DLVER ""
 #endif
 
-void showUpdateError(const char* msg)
+static void showUpdateError(const char* msg)
 {
 	enableShutdown();
 	drawErrorFrame(msg, ANY_RETURN);
@@ -84,7 +84,7 @@ void showUpdateError(const char* msg)
 	}
 }
 
-void showUpdateErrorf(const char *msg, ...)
+static void showUpdateErrorf(const char *msg, ...)
 {
 	va_list va;
 	va_start(va, msg);
