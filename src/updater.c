@@ -489,7 +489,8 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 
 		RL_UnmountCurrentRunningBundle();
 		OSDynLoad_Release(mod);
-		remove(UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
+		strcpy(path, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
+		FSRemove(__wut_devoptab_fs_client, getCmdBlk(), path, FS_ERROR_FLAG_ALL);
 	}
 #endif
 
