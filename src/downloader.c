@@ -283,7 +283,7 @@ bool initDownloader()
 	inf = sk_X509_INFO_new_null();
 	if(inf != NULL)
 	{
-		char *fn = getStaticPathBuffer(0);
+		char *fn = getStaticPathBuffer(2);
 		strcpy(fn, ROMFS_PATH "ca-certificates/");
 		void *buf;
 		size_t bufsize;
@@ -920,7 +920,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		if(!toRam)
 		{
 			flushIOQueue();
-			char *newFile = getStaticPathBuffer(3);
+			char *newFile = getStaticPathBuffer(2);
 			strcpy(newFile, file);
 			FSRemove(__wut_devoptab_fs_client, getCmdBlk(), newFile, FS_ERROR_FLAG_ALL);
 		}
@@ -1023,7 +1023,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		strcat(folderName, titleVer);
 	}
 	
-	char *installDir = getStaticPathBuffer(2);
+	char *installDir = getStaticPathBuffer(3);
 	strcpy(installDir, dlDev == NUSDEV_USB01 ? INSTALL_DIR_USB1 : (dlDev == NUSDEV_USB02 ? INSTALL_DIR_USB2 : (dlDev == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC)));
 	if(!dirExists(installDir))
 	{

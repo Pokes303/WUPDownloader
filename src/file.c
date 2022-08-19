@@ -135,7 +135,7 @@ bool dirExists(const char *path)
 void removeDirectory(const char *path)
 {
 	size_t len = strlen(path);
-	char *newPath = getStaticPathBuffer(3);
+	char *newPath = getStaticPathBuffer(0);
 	strcpy(newPath, path);
 
 	if(newPath[len - 1] != '/')
@@ -189,7 +189,7 @@ FSStatus moveDirectory(const char *src, const char *dest)
 	if(ret == FS_STATUS_OK)
 	{
 		len = strlen(dest) + 1;
-		char *newDest = getStaticPathBuffer(3);
+		char *newDest = getStaticPathBuffer(1);
 		if(newDest != dest)
 			OSBlockMove(newDest, dest, len, false);
 
@@ -236,7 +236,7 @@ FSStatus moveDirectory(const char *src, const char *dest)
 // There are no files > 4 GB on the Wii U, so size_t should be more than enough.
 size_t getFilesize(const char *path)
 {
-	char *newPath = getStaticPathBuffer(3);
+	char *newPath = getStaticPathBuffer(0);
 	strcpy(newPath, path);
 
 	FSStat stat;
@@ -257,7 +257,7 @@ size_t readFileNew(const char *path, void **buffer)
 	if(filesize != -1)
 	{
 		FSFileHandle handle;
-		path = getStaticPathBuffer(3); // getFilesize() setted it for us
+		path = getStaticPathBuffer(0); // getFilesize() setted it for us
 		if(FSOpenFile(__wut_devoptab_fs_client, &cmdBlk, path, "r", &handle,  FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
 		{
 			*buffer = MEMAllocFromDefaultHeapEx(FS_ALIGN(filesize), 0x40);

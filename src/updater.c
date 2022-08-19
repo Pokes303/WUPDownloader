@@ -250,9 +250,9 @@ static bool unzipUpdate()
 			if(buf != NULL)
 			{
 				unz_file_info zipFileInfo;
-				char *zipFileName = getStaticPathBuffer(0);
-				char *path =  getStaticPathBuffer(1);
-				char *fileName = getStaticPathBuffer(2);
+				char *zipFileName = getStaticPathBuffer(1);
+				char *path =  getStaticPathBuffer(2);
+				char *fileName = getStaticPathBuffer(3);
 				strcpy(fileName, UPDATE_TEMP_FOLDER);
 				char *fnp = fileName + strlen(UPDATE_TEMP_FOLDER);
 				char *needle;
@@ -407,7 +407,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 		goto updateError;
 	}
 
-	char *path =  getStaticPathBuffer(0);
+	char *path =  getStaticPathBuffer(2);
 	strcpy(path, UPDATE_DOWNLOAD_URL);
 	strcpy(path + strlen(UPDATE_DOWNLOAD_URL), newVersion);
 	strcat(path, "/NUSspli-");
@@ -499,7 +499,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 	{
 		case NUSSPLI_TYPE_AROMA:
 			strcpy(path, UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE);
-			char *path2 = getStaticPathBuffer(3);
+			char *path2 = getStaticPathBuffer(0);
 			strcpy(path2, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
 			FSRename(__wut_devoptab_fs_client, getCmdBlk(), path, path2, FS_ERROR_FLAG_ALL);
 			break;

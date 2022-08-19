@@ -285,7 +285,7 @@ FSFileHandle *openFile(const char *path, const char *mode, size_t filesize)
 	if(ret == NULL)
 		return NULL;
 
-	char *newPath = getStaticPathBuffer(3);
+	char *newPath = getStaticPathBuffer(0);
 	strcpy(newPath, path);
 	FSStatus s = FSOpenFileEx(__wut_devoptab_fs_client, getCmdBlk(), newPath, mode, 0x660,  filesize == 0 ?  FS_OPEN_FLAG_NONE  : FS_OPEN_FLAG_PREALLOC_SIZE , filesize, ret, FS_ERROR_FLAG_ALL);
 	if(s == FS_STATUS_OK)

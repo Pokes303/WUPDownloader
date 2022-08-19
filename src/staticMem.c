@@ -82,6 +82,10 @@ char *getStaticLineBuffer()
 	return staticMemLineBuffer;
 }
 
+/*
+ * Path 0 and 1 for file operations.
+ * 2 and 3 for anything else.
+ */
 char *getStaticPathBuffer(uint32_t i)
 {
 	return staticMemPathBuffer[i];
