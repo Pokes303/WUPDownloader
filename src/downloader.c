@@ -288,6 +288,7 @@ bool initDownloader()
 		void *buf;
 		size_t bufsize;
 		BIO *bio;
+#ifndef NUSSPLI_HBL
 		FSDirectoryHandle dir;
 		if(FSOpenDir(__wut_devoptab_fs_client, getCmdBlk(), fn, &dir, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
 		{
@@ -323,6 +324,42 @@ bool initDownloader()
 
 			FSCloseDir(__wut_devoptab_fs_client, getCmdBlk(), dir, FS_ERROR_FLAG_ALL);
 		}
+#else
+		DIR *dir = opendir(fn);
+		if(dir != NULL)
+		{
+			char *ptr = fn + strlen(fn);
+			STACK_OF(X509_INFO) *inft;
+			for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
+			{
+				if(entry->d_name[0] == '.')
+					continue;
+
+				strcpy(ptr, entry->d_name);
+				bufsize = readFile(fn, &buf);
+				if(buf == NULL)
+					continue;
+
+				bio = BIO_new_mem_buf(buf, bufsize);
+				if(bio != NULL)
+				{
+					inft = PEM_X509_INFO_read_bio(bio, inf, NULL, NULL);
+#ifdef NUSSPLI_DEBUG
+					if(inft == NULL)
+						debugPrintf("Error reading %s: %s!", fn, ERR_reason_error_string(ERR_get_error()));
+					else
+						debugPrintf("Cert %s loaded!", fn);
+#endif
+				}
+				else
+					debugPrintf("Error creating BIO for %s!", fn);
+
+				BIO_free(bio); // BIO_get_close(bio) == BIO_CLOSE, so it frees the underlying buffer for us.
+			}
+
+			closedir(dir);
+		}
+#endif
 		else
 			debugPrintf("Error opening %s!", fn);
 	}
