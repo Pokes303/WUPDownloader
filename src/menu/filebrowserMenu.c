@@ -85,6 +85,7 @@ char *fileBrowserMenu()
 	bool mov;
 	FSDirectoryHandle dir;
 	char *ret = NULL;
+	char *path;
 	
 refreshDirList:
     OSTime t = OSGetTime();
@@ -93,7 +94,9 @@ refreshDirList:
 	foldersSize = 1;
 	cursor = pos = 0;
 
-	if(FSOpenDir(__wut_devoptab_fs_client, getCmdBlk(), (activeDevice & NUSDEV_USB) ? (usbMounted == NUSDEV_USB01 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC), &dir, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
+	path = getStaticPathBuffer(2);
+	strcpy(path, (activeDevice & NUSDEV_USB) ? (usbMounted == NUSDEV_USB01 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC));
+	if(FSOpenDir(__wut_devoptab_fs_client, getCmdBlk(), path, &dir, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
 	{
 		size_t len;
 		FSDirectoryEntry entry;

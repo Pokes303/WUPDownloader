@@ -135,9 +135,11 @@ bool dirExists(const char *path)
 void removeDirectory(const char *path)
 {
 	size_t len = strlen(path);
-	char *newPath = getStaticPathBuffer(0);
+	char *newPath = MEMAllocFromDefaultHeapEx(FS_MAX_PATH, 0x40);
+	if(newPath == NULL)
+		return;
+
 	strcpy(newPath, path);
-	
 	if(newPath[len - 1] != '/')
 	{
 		newPath[len] = '/';
@@ -165,6 +167,7 @@ void removeDirectory(const char *path)
 	else
 		debugPrintf("Path \"%s\" not found!", newPath);
 
+	MEMFreeToDefaultHeap(newPath);
     t = OSGetTime() - t;
 	addEntropy(&t, sizeof(OSTime));
 }
@@ -172,7 +175,9 @@ void removeDirectory(const char *path)
 FSStatus moveDirectory(const char *src, const char *dest)
 {
 	size_t len = strlen(src);
-	char *newSrc = getStaticPathBuffer(0);
+	char *newSrc = MEMAllocFromDefaultHeapEx(FS_MAX_PATH, 0x40);
+	if(newSrc == NULL)
+		return FS_STATUS_FATAL_ERROR;
 	OSBlockMove(newSrc, src, ++len, false);
 
 	char *inSrc = newSrc + --len;
@@ -183,56 +188,71 @@ FSStatus moveDirectory(const char *src, const char *dest)
 
 	OSTime t = OSGetTime();
 	FSDirectoryHandle dir;
-	if(FSOpenDir(__wut_devoptab_fs_client, &cmdBlk, src, &dir, FS_ERROR_FLAG_ALL) != FS_STATUS_OK)
-		return FS_STATUS_NOT_FOUND;
+	FSStatus ret = FSOpenDir(__wut_devoptab_fs_client, &cmdBlk, newSrc, &dir, FS_ERROR_FLAG_ALL);
 
-	FSStatus err = createDirectory(dest);
-	if(err != FS_STATUS_OK)
-		return err;
-
-	len = strlen(dest);
-	char *newDest = getStaticPathBuffer(1);
-	OSBlockMove(newDest, dest, ++len, false);
-
-	char *inDest = newDest + --len;
-	if(*--inDest != '/')
-		*++inDest = '/';
-
-	++inDest;
-
-	FSDirectoryEntry entry;
-	while(err == FS_STATUS_OK && FSReadDir(__wut_devoptab_fs_client, &cmdBlk, dir, &entry, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
+	if(ret == FS_STATUS_OK)
 	{
-		len = strlen(entry.name);
-		OSBlockMove(inSrc, entry.name, ++len, false);
-		OSBlockMove(inDest, entry.name, len, false);
-
-		if(entry.info.flags & FS_STAT_DIRECTORY)
+		len = strlen(dest);
+		char *newDest = MEMAllocFromDefaultHeapEx(FS_MAX_PATH, 0x40);
+		if(newDest != NULL)
 		{
-			debugPrintf("\tmoveDirectory('%s', '%s')", newSrc, newDest);
-			err = moveDirectory(newSrc, newDest);
+			OSBlockMove(newDest, dest, ++len, false);
+			ret = createDirectory(newDest);
+			if(ret == FS_STATUS_OK)
+			{
+				char *inDest = newDest + --len;
+				if(*--inDest != '/')
+					*++inDest = '/';
+
+				++inDest;
+
+				FSDirectoryEntry entry;
+				while(ret == FS_STATUS_OK && FSReadDir(__wut_devoptab_fs_client, &cmdBlk, dir, &entry, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
+				{
+					len = strlen(entry.name);
+					OSBlockMove(inSrc, entry.name, ++len, false);
+					OSBlockMove(inDest, entry.name, len, false);
+
+					if(entry.info.flags & FS_STAT_DIRECTORY)
+					{
+						debugPrintf("\tmoveDirectory('%s', '%s')", newSrc, newDest);
+						ret = moveDirectory(newSrc, newDest);
+					}
+					else
+					{
+						debugPrintf("\trename('%s', '%s')", newSrc, newDest);
+						ret = FSRename(__wut_devoptab_fs_client, &cmdBlk, newSrc, newDest, FS_ERROR_FLAG_ALL);
+					}
+				}
+			}
+
+			MEMFreeToDefaultHeap(newDest);
 		}
 		else
-		{
-			debugPrintf("\trename('%s', '%s')", newSrc, newDest);
-			err = FSRename(__wut_devoptab_fs_client, &cmdBlk, newSrc, newDest, FS_ERROR_FLAG_ALL);
-		}
+			ret = FS_STATUS_FATAL_ERROR;
+
+		FSCloseDir(__wut_devoptab_fs_client, &cmdBlk, dir, FS_ERROR_FLAG_ALL);
+		*--inSrc = '\0';
+		FSRemove(__wut_devoptab_fs_client, &cmdBlk, newSrc, FS_ERROR_FLAG_ALL);
+
+		t = OSGetTime() - t;
+		addEntropy(&t, sizeof(OSTime));
 	}
 
-	FSCloseDir(__wut_devoptab_fs_client, &cmdBlk, dir, FS_ERROR_FLAG_ALL);
-	FSRemove(__wut_devoptab_fs_client, &cmdBlk, src, FS_ERROR_FLAG_ALL);
-    t = OSGetTime() - t;
-	addEntropy(&t, sizeof(OSTime));
-	return err;
+	MEMFreeToDefaultHeap(newSrc);
+	return ret;
 }
 
 // There are no files > 4 GB on the Wii U, so size_t should be more than enough.
 size_t getFilesize(const char *path)
 {
+	char *newPath = getStaticPathBuffer(3);
+	strcpy(newPath, path);
+
 	FSStat stat;
 	OSTime t = OSGetTime();
 
-	if(FSGetStat(__wut_devoptab_fs_client, &cmdBlk, path, &stat, FS_ERROR_FLAG_ALL) != FS_STATUS_OK)
+	if(FSGetStat(__wut_devoptab_fs_client, &cmdBlk, newPath, &stat, FS_ERROR_FLAG_ALL) != FS_STATUS_OK)
 		return -1;
 
 	t = OSGetTime() - t;
@@ -247,6 +267,7 @@ size_t readFileNew(const char *path, void **buffer)
 	if(filesize != -1)
 	{
 		FSFileHandle handle;
+		path = getStaticPathBuffer(3); // getFilesize() setted it for us
 		if(FSOpenFile(__wut_devoptab_fs_client, &cmdBlk, path, "r", &handle,  FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
 		{
 			*buffer = MEMAllocFromDefaultHeapEx(FS_ALIGN(filesize), 0x40);

@@ -30,7 +30,7 @@
 
 static char *staticMemToFrameBuffer;
 static char *staticMemLineBuffer;
-static char *staticMemPathBuffer[3];
+static char *staticMemPathBuffer[4];
 
 bool initStaticMem()
 {
@@ -40,7 +40,7 @@ bool initStaticMem()
 		staticMemLineBuffer = MEMAllocFromDefaultHeap(TO_FRAME_BUFFER_SIZE);
 		if(staticMemLineBuffer != NULL)
 		{
-			for(int i = 0; i < 3; ++i)
+			for(int i = 0; i < 4; ++i)
 			{
 				staticMemPathBuffer[i] = MEMAllocFromDefaultHeapEx(FS_MAX_PATH, 0x40); // Alignmnt is important for MCP!
 				if(staticMemPathBuffer[i] == NULL)
@@ -68,7 +68,7 @@ void shutdownStaticMem()
 {
 	MEMFreeToDefaultHeap(staticMemToFrameBuffer);
 	MEMFreeToDefaultHeap(staticMemLineBuffer);
-	for(int i = 0; i < 3; ++i)
+	for(int i = 0; i < 4; ++i)
 		MEMFreeToDefaultHeap(staticMemPathBuffer[i]);
 }
 
