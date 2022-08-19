@@ -62,24 +62,25 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUs
 	if(!keepFiles)
 		removeDirectory(path);
 
+	FSDirectoryHandle dir;
 	char *importPath = getStaticPathBuffer(2);
 	strcpy(importPath, toUsb ? (getUSB() == NUSDEV_USB01 ? NUSDIR_USB1 "usr/import/" : NUSDIR_USB2 "usr/import/" ) : NUSDIR_MLC "usr/import/");
-	DIR *dir = opendir(importPath);
 
-	if(dir != NULL)
+	if(FSOpenDir(__wut_devoptab_fs_client, getCmdBlk(), importPath, &dir, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
 	{
 		char *ptr = importPath + strlen(importPath);
+		FSDirectoryEntry entry;
 
-		for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
+		while(FSReadDir(__wut_devoptab_fs_client, getCmdBlk(), dir, &entry, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
 		{
-			if(entry->d_name[0] == '.' || !(entry->d_type & DT_DIR) || strlen(entry->d_name) != 8)
+			if(entry.name[0] == '.' || !(entry.info.flags & FS_STAT_DIRECTORY ) || strlen(entry.name) != 8)
 				continue;
 
-			strcpy(ptr, entry->d_name);
+			strcpy(ptr, entry.name);
 			removeDirectory(importPath);
 		}
 
-		closedir(dir);
+		FSCloseDir(__wut_devoptab_fs_client, getCmdBlk(), dir, FS_ERROR_FLAG_ALL);
 	}
 }
 

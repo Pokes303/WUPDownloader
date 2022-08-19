@@ -288,17 +288,18 @@ bool initDownloader()
 		void *buf;
 		size_t bufsize;
 		BIO *bio;
-		DIR *dir = opendir(fn);
-		if(dir != NULL)
+		FSDirectoryHandle dir;
+		if(FSOpenDir(__wut_devoptab_fs_client, getCmdBlk(), fn, &dir, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
 		{
 			char *ptr = fn + strlen(fn);
 			STACK_OF(X509_INFO) *inft;
-			for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
+			FSDirectoryEntry entry;
+			while(FSReadDir(__wut_devoptab_fs_client, getCmdBlk(), dir, &entry, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
 			{
-				if(entry->d_name[0] == '.')
+				if(entry.name[0] == '.')
 					continue;
 
-				strcpy(ptr, entry->d_name);
+				strcpy(ptr, entry.name);
 				bufsize = readFile(fn, &buf);
 				if(buf == NULL)
 					continue;
@@ -320,7 +321,7 @@ bool initDownloader()
 				BIO_free(bio); // BIO_get_close(bio) == BIO_CLOSE, so it frees the underlying buffer for us.
 			}
 
-			closedir(dir);
+			FSCloseDir(__wut_devoptab_fs_client, getCmdBlk(), dir, FS_ERROR_FLAG_ALL);
 		}
 		else
 			debugPrintf("Error opening %s!", fn);

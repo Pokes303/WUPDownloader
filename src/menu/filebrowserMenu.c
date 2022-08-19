@@ -83,7 +83,7 @@ char *fileBrowserMenu()
 	NUSDEV usbMounted = getUSB();
 	NUSDEV activeDevice = usbMounted ? NUSDEV_USB : NUSDEV_SD;
 	bool mov;
-	DIR *dir;
+	FSDirectoryHandle dir;
 	char *ret = NULL;
 	
 refreshDirList:
@@ -93,40 +93,51 @@ refreshDirList:
 	foldersSize = 1;
 	cursor = pos = 0;
 
-	dir = opendir((activeDevice & NUSDEV_USB) ? (usbMounted == NUSDEV_USB01 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC));
-	if(dir != NULL)
+	if(FSOpenDir(__wut_devoptab_fs_client, getCmdBlk(), (activeDevice & NUSDEV_USB) ? (usbMounted == NUSDEV_USB01 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC), &dir, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
 	{
 		size_t len;
-		for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
-			if(entry->d_type & DT_DIR) //Check if it's a directory
+		FSDirectoryEntry entry;
+		while(FSReadDir(__wut_devoptab_fs_client, getCmdBlk(), dir, &entry, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
+			if(entry.info.flags & FS_STAT_DIRECTORY) //Check if it's a directory
 			{
 				if(foldersSize == max_folders)
 				{
 					max_folders += 64;
 					if(max_folders < foldersSize) // buffer overrun, shouldn't happen
+					{
+						FSCloseDir(__wut_devoptab_fs_client, getCmdBlk(), dir, FS_ERROR_FLAG_ALL);
 						goto exitFileBrowserMenu;
+					}
 
 					char **tf = MEMAllocFromDefaultHeap(sizeof(char *) * max_folders);
 					if(tf == NULL)
+					{
+						FSCloseDir(__wut_devoptab_fs_client, getCmdBlk(), dir, FS_ERROR_FLAG_ALL);
 						goto exitFileBrowserMenu;
+					}
 
 					OSBlockMove(tf, folders, sizeof(char *) * foldersSize, false);
 					MEMFreeToDefaultHeap(folders);
 					folders = tf;
 				}
 
-				len = strlen(entry->d_name);
+				len = strlen(entry.name);
 				folders[foldersSize] = MEMAllocFromDefaultHeap(len + 2);
 				if(folders[foldersSize] == NULL)
+				{
+					FSCloseDir(__wut_devoptab_fs_client, getCmdBlk(), dir, FS_ERROR_FLAG_ALL);
 					goto exitFileBrowserMenu;
+				}
 
-				OSBlockMove(folders[foldersSize], entry->d_name, len, false);
+				OSBlockMove(folders[foldersSize], entry.name, len, false);
 				folders[foldersSize][len] = '/';
 				folders[foldersSize][++len] = '\0';
 				++foldersSize;
 			}
-		closedir(dir);
+
+		FSCloseDir(__wut_devoptab_fs_client, getCmdBlk(), dir, FS_ERROR_FLAG_ALL);
 	}
+
 	t = OSGetTime() - t;
 	addEntropy(&t, sizeof(OSTime));
 	
@@ -149,7 +160,7 @@ refreshDirList:
 			goto exitFileBrowserMenu;
 		if(vpad.trigger & VPAD_BUTTON_A)
 		{
-			if(dir != NULL)
+			if(foldersSize != 1)
 			{
 				ret = getStaticPathBuffer(2);
 				strcpy(ret, (activeDevice & NUSDEV_USB) ? (usbMounted == NUSDEV_USB01 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC));
