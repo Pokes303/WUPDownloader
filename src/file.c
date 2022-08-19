@@ -156,14 +156,10 @@ void removeDirectory(const char *path)
 			if(entry.info.flags & FS_STAT_DIRECTORY)
 				removeDirectory(newPath);
 			else
-			{
-				debugPrintf("Removing %s", newPath);
 				FSRemove(__wut_devoptab_fs_client, &cmdBlk, newPath, FS_ERROR_FLAG_ALL);
-			}
 		}
 		FSCloseDir(__wut_devoptab_fs_client, &cmdBlk, dir, FS_ERROR_FLAG_ALL);
 		newPath[len  -  1] = '\0';
-		debugPrintf("Removing %s", newPath);
 		FSRemove(__wut_devoptab_fs_client, &cmdBlk, newPath, FS_ERROR_FLAG_ALL);
 	}
 	else
