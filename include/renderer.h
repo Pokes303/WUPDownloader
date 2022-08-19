@@ -81,10 +81,6 @@ void shutdownRenderer() __attribute__((__cold__));
 void pauseRenderer();
 void resumeRenderer();
 void colorStartNewFrame(uint32_t color);
-static inline void startNewFrame()
-{
-	colorStartNewFrame(SCREEN_COLOR_BLUE);
-}
 void showFrame() __attribute__((__hot__));
 void drawFrame();
 void drawKeyboard(bool tv);
@@ -106,6 +102,6 @@ uint32_t getSpaceWidth();
 	}
 #endif
 
-//#define startNewFrame					colorStartNewFrame(SCREEN_COLOR_BLUE)
+#define startNewFrame()					colorStartNewFrame(SCREEN_COLOR_BLUE)
 #define textToFrame(line, column, str)	textToFrameCut(line, column, str, column == 0 ? SCREEN_WIDTH - (FONT_SIZE * 2) : 0)
 #define getToFrameBuffer()				getStaticScreenBuffer()
