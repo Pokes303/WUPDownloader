@@ -135,11 +135,9 @@ bool dirExists(const char *path)
 void removeDirectory(const char *path)
 {
 	size_t len = strlen(path);
-	char *newPath = MEMAllocFromDefaultHeapEx(FS_MAX_PATH, 0x40);
-	if(newPath == NULL)
-		return;
-
+	char *newPath = getStaticPathBuffer(3);
 	strcpy(newPath, path);
+
 	if(newPath[len - 1] != '/')
 	{
 		newPath[len] = '/';
@@ -167,18 +165,16 @@ void removeDirectory(const char *path)
 	else
 		debugPrintf("Path \"%s\" not found!", newPath);
 
-	MEMFreeToDefaultHeap(newPath);
     t = OSGetTime() - t;
 	addEntropy(&t, sizeof(OSTime));
 }
 
 FSStatus moveDirectory(const char *src, const char *dest)
 {
-	size_t len = strlen(src);
-	char *newSrc = MEMAllocFromDefaultHeapEx(FS_MAX_PATH, 0x40);
-	if(newSrc == NULL)
-		return FS_STATUS_FATAL_ERROR;
-	OSBlockMove(newSrc, src, ++len, false);
+	size_t len = strlen(src) + 1;
+	char *newSrc = getStaticPathBuffer(0);
+	if(newSrc != src)
+		OSBlockMove(newSrc, src, len, false);
 
 	char *inSrc = newSrc + --len;
 	if(*--inSrc != '/')
@@ -192,44 +188,39 @@ FSStatus moveDirectory(const char *src, const char *dest)
 
 	if(ret == FS_STATUS_OK)
 	{
-		len = strlen(dest);
-		char *newDest = MEMAllocFromDefaultHeapEx(FS_MAX_PATH, 0x40);
-		if(newDest != NULL)
+		len = strlen(dest) + 1;
+		char *newDest = getStaticPathBuffer(3);
+		if(newDest != dest)
+			OSBlockMove(newDest, dest, len, false);
+
+		ret = createDirectory(newDest);
+		if(ret == FS_STATUS_OK)
 		{
-			OSBlockMove(newDest, dest, ++len, false);
-			ret = createDirectory(newDest);
-			if(ret == FS_STATUS_OK)
+			char *inDest = newDest + --len;
+			if(*--inDest != '/')
+				*++inDest = '/';
+
+			++inDest;
+
+			FSDirectoryEntry entry;
+			while(ret == FS_STATUS_OK && FSReadDir(__wut_devoptab_fs_client, &cmdBlk, dir, &entry, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
 			{
-				char *inDest = newDest + --len;
-				if(*--inDest != '/')
-					*++inDest = '/';
+				len = strlen(entry.name);
+				OSBlockMove(inSrc, entry.name, ++len, false);
+				OSBlockMove(inDest, entry.name, len, false);
 
-				++inDest;
-
-				FSDirectoryEntry entry;
-				while(ret == FS_STATUS_OK && FSReadDir(__wut_devoptab_fs_client, &cmdBlk, dir, &entry, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
+				if(entry.info.flags & FS_STAT_DIRECTORY)
 				{
-					len = strlen(entry.name);
-					OSBlockMove(inSrc, entry.name, ++len, false);
-					OSBlockMove(inDest, entry.name, len, false);
-
-					if(entry.info.flags & FS_STAT_DIRECTORY)
-					{
-						debugPrintf("\tmoveDirectory('%s', '%s')", newSrc, newDest);
-						ret = moveDirectory(newSrc, newDest);
-					}
-					else
-					{
-						debugPrintf("\trename('%s', '%s')", newSrc, newDest);
-						ret = FSRename(__wut_devoptab_fs_client, &cmdBlk, newSrc, newDest, FS_ERROR_FLAG_ALL);
-					}
+					debugPrintf("\tmoveDirectory('%s', '%s')", newSrc, newDest);
+					ret = moveDirectory(newSrc, newDest);
+				}
+				else
+				{
+					debugPrintf("\trename('%s', '%s')", newSrc, newDest);
+					ret = FSRename(__wut_devoptab_fs_client, &cmdBlk, newSrc, newDest, FS_ERROR_FLAG_ALL);
 				}
 			}
-
-			MEMFreeToDefaultHeap(newDest);
 		}
-		else
-			ret = FS_STATUS_FATAL_ERROR;
 
 		FSCloseDir(__wut_devoptab_fs_client, &cmdBlk, dir, FS_ERROR_FLAG_ALL);
 		*--inSrc = '\0';
@@ -239,7 +230,6 @@ FSStatus moveDirectory(const char *src, const char *dest)
 		addEntropy(&t, sizeof(OSTime));
 	}
 
-	MEMFreeToDefaultHeap(newSrc);
 	return ret;
 }
 

@@ -500,8 +500,8 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 		case NUSSPLI_TYPE_AROMA:
 			strcpy(path, UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE);
 			char *path2 = getStaticPathBuffer(3);
-			strcpy(path2, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE, FS_ERROR_FLAG_ALL);
-			FSRename(__wut_devoptab_fs_client, getCmdBlk(), path, path2);
+			strcpy(path2, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
+			FSRename(__wut_devoptab_fs_client, getCmdBlk(), path, path2, FS_ERROR_FLAG_ALL);
 			break;
 		case NUSSPLI_TYPE_CHANNEL:
 			strcpy(path, UPDATE_TEMP_FOLDER);
