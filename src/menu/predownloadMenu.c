@@ -403,10 +403,11 @@ naNedNa:
 	}
 
 	uint64_t freeSpace;
-	if(FSGetFreeSpaceSize(__wut_devoptab_fs_client, getCmdBlk(), dlDev == NUSDEV_USB01 ? INSTALL_DIR_USB1 : (dlDev == NUSDEV_USB02 ? INSTALL_DIR_USB2 : (dlDev == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC)), &freeSpace, FS_ERROR_FLAG_ALL) == FS_STATUS_OK && dls > freeSpace)
+	char *nd = dlDev == NUSDEV_USB01 ? NUSDIR_USB1 : (dlDev == NUSDEV_USB02 ? NUSDIR_USB2 : (dlDev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC)); // TODO: Make const
+	if(FSGetFreeSpaceSize(__wut_devoptab_fs_client, getCmdBlk(), nd, &freeSpace, FS_ERROR_FLAG_ALL) == FS_STATUS_OK && dls > freeSpace)
 	{
 		char *toFrameBuffer = getToFrameBuffer();
-		sprintf(toFrameBuffer, "Not enough free space on %s\n\nPress any button to go back.", prettyDir(dlDev == NUSDEV_USB01 ? NUSDIR_USB1 : (dlDev == NUSDEV_USB02 ? NUSDIR_USB2 : (dlDev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC))));
+		sprintf(toFrameBuffer, "Not enough free space on %s\n\nPress any button to go back.", prettyDir(nd));
 		int ovl = addErrorOverlay(toFrameBuffer);
 
 		while(AppRunning())
