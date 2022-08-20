@@ -286,6 +286,16 @@ const char *getNotificationString(NOTIF_METHOD method)
 	}
 }
 
+static inline bool setValue(json_t *config, const char *key, json_t *value)
+{
+	if(value == NULL)
+		return false;
+
+	bool ret = json_object_set(config, "Auto resume failed downloads", value);
+	json_decref(value);
+	return ret;
+}
+
 bool saveConfig(bool force)
 {
 	debugPrintf("saveConfig()");
@@ -296,134 +306,72 @@ bool saveConfig(bool force)
 		return true;
 	
 	json_t *config = json_object();
-	if(config == NULL )
-		return false;
-	
-	json_t *value = json_integer(CONFIG_VERSION);
-	if(value == NULL)
+	bool ret = false;
+	if(config != NULL )
 	{
+		json_t *value = json_integer(CONFIG_VERSION);
+		if(setValue(config, "File Version", value))
+		{
+			value = checkForUpdates ? json_true() : json_false();
+			if(setValue(config, "Check for updates", value))
+			{
+				value = autoResume ? json_true() : json_false();
+				if(setValue(config, "Auto resume failed downloads", value))
+				{
+					value = json_string(getLanguageString(lang));
+					if(setValue(config, "Language", value))
+					{
+						value = json_string(getFormattedRegion(getRegion()));
+						if(setValue(config, "Region", value))
+						{
+							value = dlToUSB ? json_true() : json_false();
+							if(setValue(config, "Download to USB", value))
+							{
+								value = json_string(getNotificationString(getNotificationMethod()));
+								if(setValue(config, "Notification method", value))
+								{
+									uint32_t entropy;
+									osslBytes((unsigned char *)&entropy, 4);
+									value = json_integer(entropy);
+									if(setValue(config, "Seed", value))
+									{
+										char *json = json_dumps(config, JSON_INDENT(4));
+										if(json != NULL)
+										{
+											entropy = strlen(json);
+											flushIOQueue();
+											FSFileHandle *f = openFile(CONFIG_PATH, "w", 0);
+											if(f != NULL)
+											{
+												addToIOQueue(json, 1, entropy, f);
+												addToIOQueue(NULL, 0, 0, f);
+												changed = false;
+												ret = true;
+											}
+											else
+											{
+												drawErrorFrame("Couldn't save config file!\nYour SD card might be write locked.", ANY_RETURN);
+												showFrame();
+
+												while(!(vpad.trigger))
+													showFrame();
+											}
+
+											MEMFreeToDefaultHeap(json);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
 		json_decref(config);
-		return false;
-	}
-	if(json_object_set(config, "File Version", value))
-	{
-		json_decref(config);
-		json_decref(value);
-		return false;
 	}
 
-	value = checkForUpdates ? json_true() : json_false();
-	if(value == NULL)
-	{
-		json_decref(config);
-		return false;
-	}
-	if(json_object_set(config, "Check for updates", value))
-	{
-		json_decref(config);
-		json_decref(value);
-		return false;
-	}
-	
-	value = autoResume ? json_true() : json_false();
-	if(value == NULL)
-	{
-		json_decref(config);
-		return false;
-	}
-	if(json_object_set(config, "Auto resume failed downloads", value))
-	{
-		json_decref(config);
-		json_decref(value);
-		return false;
-	}
-	
-	value = json_string(getLanguageString(lang));
-	if(value == NULL)
-	{
-		json_decref(config);
-		return false;
-	}
-	if(json_object_set(config, "Language", value))
-	{
-		json_decref(config);
-		json_decref(value);
-		return false;
-	}
-
-	value = json_string(getFormattedRegion(getRegion()));
-	if(value == NULL)
-	{
-		json_decref(config);
-		return false;
-	}
-	if(json_object_set(config, "Region", value))
-	{
-		json_decref(config);
-		json_decref(value);
-		return false;
-	}
-	
-	value = dlToUSB ? json_true() : json_false();
-	if(value == NULL)
-	{
-		json_decref(config);
-		return false;
-	}
-	if(json_object_set(config, "Download to USB", value))
-	{
-		json_decref(config);
-		json_decref(value);
-		return false;
-	}
-
-	value = json_string(getNotificationString(getNotificationMethod()));
-	if(value == NULL)
-	{
-		json_decref(config);
-		return false;
-	}
-	if(json_object_set(config, "Notification method", value))
-	{
-		json_decref(config);
-		json_decref(value);
-		return false;
-	}
-
-	uint32_t entropy;
-	osslBytes((unsigned char *)&entropy, 4);
-	value = json_integer(entropy);
-	if(value != NULL && json_object_set(config, "Seed", value))
-		json_decref(value);
-
-	char *json = json_dumps(config, JSON_INDENT(4));
-	json_decref(config);
-	if(json == NULL)
-		return false;
-
-	entropy = strlen(json);
-	flushIOQueue();
-	FSFileHandle *f = openFile(CONFIG_PATH, "w", 0);
-	if(f == NULL)
-	{
-		MEMFreeToDefaultHeap(json);
-		debugPrintf("Can't open " CONFIG_PATH);
-		saveFailed = true;
-
-		drawErrorFrame("Couldn't save config file!\nYour SD card might be write locked.", ANY_RETURN);
-		showFrame();
-
-		while(!(vpad.trigger))
-			showFrame();
-
-		return false;
-	}
-
-	addToIOQueue(json, 1, entropy, f);
-	MEMFreeToDefaultHeap(json);
-	addToIOQueue(NULL, 0, 0, f);
-	changed = false;
-	return true;
+	return ret;
 }
 
 bool updateCheckEnabled()
