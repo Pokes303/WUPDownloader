@@ -394,7 +394,7 @@ bool saveConfig(bool force)
 
 	entropy = strlen(json);
 	flushIOQueue();
-	FSFileHandle *f = openFile(CONFIG_PATH, "w", entropy);
+	FSFileHandle *f = openFile(CONFIG_PATH, "w", 0);
 	if(f == NULL)
 	{
 		MEMFreeToDefaultHeap(json);
