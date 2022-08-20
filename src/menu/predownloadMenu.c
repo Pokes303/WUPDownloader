@@ -309,7 +309,7 @@ naNedNa:
 					else
 					{
 						dlDev = NUSDEV_SD;
-						keepFiles = false;
+						keepFiles = true;
 						setDlToUSB(false);
 					}
 			}
