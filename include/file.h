@@ -71,7 +71,7 @@ typedef enum
 } NUSDEV;
 
 extern FSClient *__wut_devoptab_fs_client;
-FSCmdBlock *getCmdBlk();
+FSCmdBlock *getCmdBlk() __attribute__((__hot__));
 
 void writeVoidBytes(FSFileHandle *fp, uint32_t length);
 void writeCustomBytes(FSFileHandle *fp, const char *str);
