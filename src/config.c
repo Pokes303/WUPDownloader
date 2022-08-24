@@ -291,8 +291,11 @@ static inline bool setValue(json_t *config, const char *key, json_t *value)
 	if(value == NULL)
 		return false;
 
-	bool ret = json_object_set(config, "Auto resume failed downloads", value);
+	bool ret = !json_object_set(config, key, value);
 	json_decref(value);
+	if(!ret)
+		debugPrintf("Error setting %s", key);
+
 	return ret;
 }
 
@@ -370,6 +373,8 @@ bool saveConfig(bool force)
 
 		json_decref(config);
 	}
+	else
+		debugPrintf("config == NULL");
 
 	return ret;
 }
