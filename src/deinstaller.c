@@ -33,6 +33,7 @@
 #include <deinstaller.h>
 #include <file.h>
 #include <input.h>
+#include <localisation.h>
 #include <notifications.h>
 #include <osdefs.h>
 #include <renderer.h>
@@ -43,9 +44,12 @@
 bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool skipEnd)
 {
 	startNewFrame();
-	textToFrame(0, 0, "Uninstalling");
-	textToFrame(0, 19, name);
-	textToFrame(1, 0, "Preparing...");
+	char *toFrame = getToFrameBuffer();
+	strcpy(toFrame, gettext("Uninstalling"));
+	strcat(toFrame, " ");
+	strcat(toFrame, name);
+	textToFrame(0, 0, toFrame);
+	textToFrame(1, 0, gettext("Preparing..."));
 	writeScreenLog(2);
 	drawFrame();
 	showFrame();
@@ -93,7 +97,7 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool
 
 		colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 		textToFrame(0, 0, name);
-		textToFrame(1, 0, "Uninstalled successfully!");
+		textToFrame(1, 0, gettext("Uninstalled successfully!"));
 		writeScreenLog(2);
 		drawFrame();
 
@@ -105,7 +109,7 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool
 			{
 				colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 				textToFrame(0, 0, name);
-				textToFrame(1, 0, "Uninstalled successfully!");
+				textToFrame(1, 0, gettext("Uninstalled successfully!"));
 				writeScreenLog(2);
 				drawFrame();
 			}

@@ -54,8 +54,8 @@ static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
 static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t size, bool installed, const char *folderName, bool usbMounted, NUSDEV dlDev, bool keepFiles)
 {
 	startNewFrame();
-	
-	textToFrame(0, 0, "Name:");
+
+	textToFrame(0, 0, gettext("Name:"));
 
 	char *toFrame = getToFrameBuffer();
 	strcpy(toFrame, entry->name);
@@ -90,13 +90,30 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 	}
 	
 	sprintf(toFrame, "%.02f %s", fsize, bs);
-	textToFrame(++line, 0, "Size:");
+	textToFrame(++line, 0, gettext("Size:"));
 	textToFrame(++line, 3, toFrame);
 
-	textToFrame(++line, 0, "Provided title version [Only numbers]:");
-	textToFrame(++line, 3, titleVer[0] == '\0' ? "<LATEST>" : titleVer);
+	strcpy(toFrame, gettext("Provided title version"));
+	strcat(toFrame, " [");
+	strcat(toFrame, gettext("Only numbers"));
+	strcat(toFrame, "]:");
+	textToFrame(++line, 0, toFrame);
+
+	if(titleVer[0] == '\0')
+	{
+		toFrame[0] = '<';
+		strcpy(toFrame + 1, gettext("LATEST"));
+		strcat(toFrame, ">");
+		textToFrame(++line, 3, toFrame);
+	}
+	else
+		textToFrame(++line, 3, titleVer);
 	
-	textToFrame(++line, 0, "Custom folder name [ASCII only]:");
+	strcpy(toFrame, gettext("Custom folder name"));
+	strcat(toFrame, " [");
+	strcat(toFrame, gettext("ASCII only"));
+	strcat(toFrame, "]:");
+	textToFrame(++line, 0, toFrame);
 	textToFrame(++line, 3, folderName);
 	
 	line = MAX_LINES - 1;
@@ -113,10 +130,10 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 		case NUSDEV_MLC:
 			strcat(toFrame, usbMounted ? "USB" : "SD");
 	}
-	textToFrame(line--, 0, toFrame);
+	textToFrame(line--, 0, gettext(toFrame));
 
 	if(dlDev != NUSDEV_SD)
-		textToFrame(line--, 0, "WARNING: Files on USB/NAND will always be deleted after installing!");
+		textToFrame(line--, 0, gettext("WARNING: Files on USB/NAND will always be deleted after installing!"));
 	else
 	{
 		strcpy(toFrame, "Press " BUTTON_LEFT " to ");
@@ -124,26 +141,26 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 		strcat(toFrame, " downloaded files after the installation");
 		textToFrame(line--, 0, toFrame);
 	}
-	
+
 	lineToFrame(line--, SCREEN_COLOR_WHITE);
 	
-	textToFrame(line--, 0, "Press " BUTTON_DOWN " to set a custom name to the download folder");
-	textToFrame(line--, 0, "Press " BUTTON_RIGHT " to set the title version");
+	textToFrame(line--, 0, gettext("Press " BUTTON_DOWN " to set a custom name to the download folder"));
+	textToFrame(line--, 0, gettext("Press " BUTTON_RIGHT " to set the title version"));
 	lineToFrame(line--, SCREEN_COLOR_WHITE);
 	
-	textToFrame(line--, 0, "Press " BUTTON_B " to return");
+	textToFrame(line--, 0, gettext("Press " BUTTON_B " to return"));
 	
 	strcpy(toFrame, "Press " BUTTON_Y " to download to ");
 	strcat(toFrame, (dlDev & NUSDEV_USB) ? "USB" : dlDev == NUSDEV_SD ? "SD" : "NAND");
 	strcat(toFrame, " only");
-	textToFrame(line--, 0, toFrame);
+	textToFrame(line--, 0, gettext(toFrame));
 	
-	textToFrame(line--, 0, "Press " BUTTON_X " to install to NAND");
+	textToFrame(line--, 0, gettext("Press " BUTTON_X " to install to NAND"));
 	if(usbMounted)
-		textToFrame(line--, 0, "Press " BUTTON_A " to install to USB");
+		textToFrame(line--, 0, gettext("Press " BUTTON_A " to install to USB"));
 	
 	if(installed)
-		textToFrame(line--, 0, "Press \uE079 to uninstall");
+		textToFrame(line--, 0, gettext("Press \uE079 to uninstall"));
 	
 	lineToFrame(line, SCREEN_COLOR_WHITE);
 	
@@ -154,11 +171,13 @@ static int drawPDDemoFrame(const TitleEntry *entry, bool inst)
 {
 	char *toFrame = getToFrameBuffer();
 	strcpy(toFrame, entry->name);
-	strcat(toFrame, " is a demo.\n"
-		BUTTON_A " ");
+	strcat(toFrame, " ");
+	strcat(toFrame, gettext("is a demo."));
+	strcat(toFrame, "\n\n" BUTTON_A " ");
 
-	strcat(toFrame, inst ? "Install" : "Download");
-	strcat(toFrame, " main game || " BUTTON_B " Continue");
+	strcat(toFrame, gettext(inst ? "Install main game" : "Download main game"));
+	strcat(toFrame, " || " BUTTON_B " ");
+	strcat(toFrame, gettext("Continue"));
 
 	return addErrorOverlay(toFrame);
 }
@@ -212,14 +231,14 @@ downloadTMD:
 		clearRamBuf();
 		saveConfig(false);
 
-		drawErrorFrame("Invalid title.tmd file!", ANY_RETURN);
+		drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
 
 		while(AppRunning())
 		{
 			if(app == APP_STATE_BACKGROUND)
 				continue;
 			if(app == APP_STATE_RETURNING)
-				drawErrorFrame("Invalid title.tmd file!", ANY_RETURN);
+				drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
 
 			showFrame();
 			if(vpad.trigger)
@@ -377,12 +396,12 @@ naNedNa:
 
 	if(dlDev == NUSDEV_MLC)
 	{
-		int ovl = addErrorOverlay(
+		int ovl = addErrorOverlay(gettext(
 			"Downloading to NAND is dangerous,\n"
 			"it could brick your Wii U!\n\n"
 
 			"Are you sure you want to do this?"
-		);
+		));
 
 		while(AppRunning())
 		{
@@ -405,9 +424,12 @@ naNedNa:
 	char *nd = dlDev == NUSDEV_USB01 ? NUSDIR_USB1 : (dlDev == NUSDEV_USB02 ? NUSDIR_USB2 : (dlDev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC)); // TODO: Make const
 	if(FSGetFreeSpaceSize(__wut_devoptab_fs_client, getCmdBlk(), nd, &freeSpace, FS_ERROR_FLAG_ALL) == FS_STATUS_OK && dls > freeSpace)
 	{
-		char *toFrameBuffer = getToFrameBuffer();
-		sprintf(toFrameBuffer, "Not enough free space on %s\n\nPress any button to go back.", prettyDir(nd));
-		int ovl = addErrorOverlay(toFrameBuffer);
+		char *toFrame = getToFrameBuffer();
+		const char *i10n = gettext("Not enough free space on");
+		strcpy(toFrame, i10n);
+		sprintf(toFrame + strlen(i10n), "  %s\n\n", prettyDir(nd));
+		strcat(toFrame, gettext("Press any key to return"));
+		int ovl = addErrorOverlay(toFrame);
 
 		while(AppRunning())
 		{

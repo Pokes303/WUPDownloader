@@ -31,6 +31,7 @@
 
 #include <file.h>
 #include <input.h>
+#include <localisation.h>
 #include <renderer.h>
 #include <state.h>
 #include <stdio.h>
@@ -140,17 +141,17 @@ void drawErrorFrame(const char *text, ErrorOptions option)
 	line = MAX_LINES;
 
 	if(option == ANY_RETURN)
-		textToFrame(--line, 0, "Press any key to return");
+		textToFrame(--line, 0, gettext("Press any key to return"));
 	else
 	{
 		if(option & B_RETURN)
-			textToFrame(--line, 0, "Press " BUTTON_B " to return");
+			textToFrame(--line, 0, gettext("Press " BUTTON_B " to return"));
 
 		if(option & Y_RETRY)
-			textToFrame(--line, 0, "Press " BUTTON_Y " to retry");
+			textToFrame(--line, 0, gettext("Press " BUTTON_Y " to retry"));
 
 		if(option & A_CONTINUE)
-			textToFrame(--line, 0, "Press " BUTTON_A " to continue");
+			textToFrame(--line, 0, gettext("Press " BUTTON_A " to continue"));
 	}
 
 	lineToFrame(--line, SCREEN_COLOR_WHITE);
@@ -213,10 +214,14 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region)
 			return true;
 	}
 
-	int ovl = addErrorOverlay("This is a reliable way to brick your console!\n"
-		"Are you sure you want to do that?\n"
-		"\n"
-		BUTTON_A " Yes || " BUTTON_B " No");
+	char *toFrame = getToFrameBuffer();
+	sprintf(toFrame,
+			"%s\n\n" BUTTON_A " %s || " BUTTON_B "%s",
+		gettext("This is a reliable way to brick your console!\nAre you sure you want to do that?"),
+		gettext("Yes"),
+		gettext("No")
+	);
+	int ovl = addErrorOverlay(toFrame);
 
 	bool ret = true;
 	while(AppRunning())
@@ -235,9 +240,13 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region)
 	removeErrorOverlay(ovl);
 	if(ret)
 	{
-		ovl = addErrorOverlay("Are you really sure you want to brick your Wii U?\n"
-			"\n"
-			BUTTON_A " Yes || " BUTTON_B " No");
+		sprintf(toFrame,
+				"%s\n\n" BUTTON_A " %s || " BUTTON_B "%s",
+				gettext("Are you really sure you want to brick your Wii U?"),
+				gettext("Yes"),
+				gettext("No")
+		);
+		ovl = addErrorOverlay(toFrame);
 
 		while(AppRunning())
 		{
@@ -256,10 +265,13 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region)
 
 	if(ret)
 	{
-		ovl = addErrorOverlay("You're on your own doing this,\n"
-			"do you understand the consequences?\n"
-			"\n"
-			BUTTON_A " Yes || " BUTTON_B " No");
+		sprintf(toFrame,
+				"%s\n\n" BUTTON_A " %s || " BUTTON_B "%s",
+				gettext("You're on your own doing this,\ndo you understand the consequences?"),
+				gettext("Yes"),
+				gettext("No")
+		);
+		ovl = addErrorOverlay(toFrame);
 
 		while(AppRunning())
 		{

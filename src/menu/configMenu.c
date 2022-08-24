@@ -32,7 +32,7 @@
 
 #include <coreinit/mcp.h>
 
-#define ENTRY_COUNT 3
+#define ENTRY_COUNT 4
 
 static int cursorPos = 0;
 
@@ -41,28 +41,54 @@ static void drawConfigMenu()
 	startNewFrame();
 	char *toScreen = getToFrameBuffer();
 
-	strcpy(toScreen, "Online updates: ");
-	strcpy(toScreen + 16, updateCheckEnabled() ? "Enabled" : "Disabled");
+	strcpy(toScreen, gettext("Language:"));
+	strcat(toScreen, " ");
+	strcat(toScreen, gettext(menuLangToString(getMenuLanguage())));
 	textToFrame(0, 4, toScreen);
 
-	strcpy(toScreen, "Auto resume failed downloads: ");
-	strcpy(toScreen + 30, autoResumeEnabled() ? "Enabled" : "Disabled");
+	strcpy(toScreen, gettext("Online updates:"));
+	strcat(toScreen, " ");
+	strcat(toScreen, gettext(updateCheckEnabled() ? "Enabled" : "Disabled"));
 	textToFrame(1, 4, toScreen);
 
-	strcpy(toScreen, "Notification method: ");
-	strcpy(toScreen + 21, getNotificationString(getNotificationMethod()));
+	strcpy(toScreen, gettext("Auto resume failed downloads:"));
+	strcat(toScreen, " ");
+	strcat(toScreen, gettext(autoResumeEnabled() ? "Enabled" : "Disabled"));
 	textToFrame(2, 4, toScreen);
 
-	strcpy(toScreen, "Region: ");
-	strcpy(toScreen + 8, getFormattedRegion(getRegion()));
+	strcpy(toScreen, gettext("Notification method:"));
+	strcat(toScreen, " ");
+	strcat(toScreen, gettext(getNotificationString(getNotificationMethod())));
 	textToFrame(3, 4, toScreen);
+
+	strcpy(toScreen, gettext("Region:"));
+	strcat(toScreen, " ");
+	strcat(toScreen, gettext(getFormattedRegion(getRegion())));
+	textToFrame(4, 4, toScreen);
 	
 	lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
-	textToFrame(MAX_LINES - 1, 0, "Press " BUTTON_B " to go back");
+	textToFrame(MAX_LINES - 1, 0, gettext("Press " BUTTON_B " to return"));
 
 	arrowToFrame(cursorPos, 0);
 
 	drawFrame();
+}
+
+static inline void switchMenuLanguage()
+{
+	MENU_LANGUAGE lang = getMenuLanguage();
+
+	switch((int)lang)
+	{
+		case MENU_LANGUAGE_ENGLISH:
+			lang = MENU_LANGUAGE_GERMAN;
+			break;
+		case MENU_LANGUAGE_GERMAN:
+			lang = MENU_LANGUAGE_ENGLISH;
+			break;
+	}
+
+	setMenuLanguage(lang);
 }
 
 static inline void switchNotificationMethod()
@@ -173,15 +199,18 @@ void configMenu()
 			switch(cursorPos)
 			{
 				case 0:
-					setUpdateCheck(!updateCheckEnabled());
+					switchMenuLanguage();
 					break;
 				case 1:
-					setAutoResume(!autoResumeEnabled());
+					setUpdateCheck(!updateCheckEnabled());
 					break;
 				case 2:
-					switchNotificationMethod();
+					setAutoResume(!autoResumeEnabled());
 					break;
 				case 3:
+					switchNotificationMethod();
+					break;
+				case 4:
 					switchRegion();
 					break;
 			}

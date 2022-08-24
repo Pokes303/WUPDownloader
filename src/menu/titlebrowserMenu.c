@@ -22,6 +22,7 @@
 #include <config.h>
 #include <file.h>
 #include <input.h>
+#include <localisation.h>
 #include <renderer.h>
 #include <state.h>
 #include <titles.h>
@@ -49,13 +50,21 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
 	startNewFrame();
 
 	// Games, Updates, DLC, Demos, All
-	static const char *tabLabels[5] = { "Games", "Updates", "DLC", "Demos", "All" };
+	const char *tabLabels[5] = { gettext("Games"), gettext("Updates"), gettext("DLC"), gettext("Demos"), gettext("All") };
 	for(int i = 0; i < 5; ++i)
 		tabToFrame(0, i, tabLabels[i], i == tab);
 
 	boxToFrame(1, MAX_LINES - 2);
 
-	textToFrame(MAX_LINES - 1, ALIGNED_CENTER, "Press " BUTTON_A " to select || " BUTTON_B " to return || " BUTTON_X " to enter a title ID || " BUTTON_Y " to search");
+	char *toFrame = getToFrameBuffer();
+	strcpy(toFrame, gettext("Press " BUTTON_A " to select"));
+	strcat(toFrame, " || ");
+	strcat(toFrame, gettext(BUTTON_B " to return"));
+	strcat(toFrame, " || ");
+	strcat(toFrame, gettext(BUTTON_X " to enter a title ID"));
+	strcat(toFrame, " || ");
+	strcat(toFrame, gettext(BUTTON_Y " to search"));
+	textToFrame(MAX_LINES - 1, ALIGNED_CENTER, toFrame);
 
 	size_t j;
 	size_t max;
@@ -126,7 +135,6 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
 	j = filteredTitleEntrySize - pos;
 	max = j < MAX_TITLEBROWSER_LINES ? j : MAX_TITLEBROWSER_LINES;
 	MCPTitleListType titleList;
-	char *toFrame = getToFrameBuffer();
 	for(size_t i = 0; i < max; ++i)
 	{
 		l = i + 2;
@@ -339,7 +347,7 @@ void titleBrowserMenu()
 		{
 			char oldSearch[sizeof(search)];
 			strcpy(oldSearch, search);
-			showKeyboard(KEYBOARD_LAYOUT_NORMAL, KEYBOARD_TYPE_NORMAL, search, CHECK_NONE, 128, false, search, "Search");
+			showKeyboard(KEYBOARD_LAYOUT_NORMAL, KEYBOARD_TYPE_NORMAL, search, CHECK_NONE, 128, false, search, gettext("Search"));
 			if(strcmp(oldSearch, search) != 0)
 			{
 				cursor = pos = 0;

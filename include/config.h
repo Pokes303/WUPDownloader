@@ -24,6 +24,7 @@
 #include <stdbool.h>
 
 #include <file.h>
+#include <localisation.h>
 #include <swkbd_wrapper.h>
 
 #include <coreinit/mcp.h>
@@ -41,6 +42,12 @@ typedef enum
 	NOTIF_METHOD_RUMBLE	= 0x01,
 	NOTIF_METHOD_LED	= 0x02,
 } NOTIF_METHOD;
+
+typedef enum
+{
+	MENU_LANGUAGE_ENGLISH,
+	MENU_LANGUAGE_GERMAN,
+} MENU_LANGUAGE;
 
 bool initConfig();
 bool saveConfig(bool force);
@@ -60,6 +67,9 @@ bool dlToUSBenabled();
 void setDlToUSB(bool toUSB);
 NOTIF_METHOD getNotificationMethod();
 void setNotificationMethod(NOTIF_METHOD method);
+MENU_LANGUAGE getMenuLanguage();
+void setMenuLanguage(MENU_LANGUAGE lang);
+const char *menuLangToString(MENU_LANGUAGE lang);
 
 #ifdef __cplusplus
 	}

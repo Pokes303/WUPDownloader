@@ -22,6 +22,7 @@
 
 #include <crypto.h>
 #include <input.h>
+#include <localisation.h>
 #include <renderer.h>
 #include <state.h>
 #include <utils.h>
@@ -78,22 +79,38 @@ void secsToTime(uint32_t seconds, char *out)
 	seconds = seconds % 60;
 
 	bool visible = false;
+	const char *i10n;
 
 	if (hour)
 	{
-		sprintf(out, "%u hours ", hour);
+		sprintf(out, "%u ", hour);
 		out += strlen(out);
+		i10n = gettext("hours");
+		strcpy(out, i10n);
+		out += strlen(i10n);
+		strcpy(out++, " ");
 		visible = true;
 	}
 	if (minute || visible)
 	{
-		sprintf(out, "%02u minutes ", minute);
-		out += strlen(out);
+		sprintf(out, "%02u ", minute);
+		out += 3;
+		i10n = gettext("minutes");
+		strcpy(out, i10n);
+		out += strlen(i10n);
+		strcpy(out++, " ");
 		visible = true;
 	}
 
 	if (seconds || visible)
-		sprintf(out, "%02u seconds ", seconds);
+	{
+		sprintf(out, "%02u ", seconds);
+		out += 3;
+		i10n = gettext("seconds");
+		strcpy(out, i10n);
+		out += strlen(i10n);
+		strcpy(out, " ");
+	}
 	else
 		strcpy(out, "N/A");
 }
@@ -185,7 +202,8 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 					}
 				}
 				startNewFrame();
-				strcpy(toScreen, inst ? "Installing " : "Uninstalling ");
+				strcpy(toScreen, gettext(inst ? "Installing" : "Uninstalling"));
+				strcat(toScreen, " ");
 				strcat(toScreen, game);
 				textToFrame(0, 0, toScreen);
                 double prg = (double)progress->sizeProgress;
@@ -219,11 +237,10 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 			if(ovl == -1)
 			{
 				if(vpad.trigger & VPAD_BUTTON_B)
-					ovl = addErrorOverlay(
-						"Do you really want to cancel?\n"
-						"\n"
-						BUTTON_A " Yes || " BUTTON_B " No"
-					);
+				{
+					sprintf(toScreen, "%s\n\n" BUTTON_A " %s || " BUTTON_B " %s", gettext("Do you really want to cancel?"), gettext("Yes"), gettext("No"));
+					ovl = addErrorOverlay(toScreen);
+				}
 			}
 			else if(ovl >= 0)
 			{
@@ -233,8 +250,8 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 					ovl = -2;
 
 					startNewFrame();
-					textToFrame(0, 0, "Cancelling installation.");
-					textToFrame(1, 0, "Please wait...");
+					textToFrame(0, 0, gettext("Cancelling installation."));
+					textToFrame(1, 0, gettext("Please wait..."));
 					writeScreenLog(2);
 					drawFrame();
 					showFrame();

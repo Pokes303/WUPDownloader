@@ -23,6 +23,7 @@
 #include <file.h>
 #include <filesystem.h>
 #include <input.h>
+#include <localisation.h>
 #include <renderer.h>
 #include <state.h>
 #include <menu/filebrowser.h>
@@ -39,18 +40,27 @@
 static void drawFBMenuFrame(char **folders, size_t foldersSize, const size_t pos, const size_t cursor, const NUSDEV activeDevice, bool usbMounted)
 {
 	startNewFrame();
-	textToFrame(0, 6, "Select a folder:");
+	textToFrame(0, 6, gettext("Select a folder:"));
 
 	boxToFrame(1, MAX_LINES - 3);
 
 	char *toWrite = getToFrameBuffer();
-	strcpy(toWrite, "Press " BUTTON_A " to select || " BUTTON_B " to return || " BUTTON_X " to switch to ");
-	strcat(toWrite, activeDevice == NUSDEV_USB ? "SD" : activeDevice == NUSDEV_SD ? "NAND" : usbMounted ? "USB" : "SD");
-	strcat(toWrite, " || " BUTTON_Y " to refresh");
+	strcpy(toWrite, gettext("Press " BUTTON_A " to select"));
+	strcat(toWrite, " || ");
+	strcat(toWrite, gettext(BUTTON_B " to return"));
+	strcat(toWrite, " || ");
+
+	char *l = getStaticLineBuffer();
+	strcpy(l, BUTTON_X " to switch to ");
+	strcat(l, activeDevice == NUSDEV_USB ? "SD" : activeDevice == NUSDEV_SD ? "NAND" : usbMounted ? "USB" : "SD");
+	strcat(toWrite, gettext(l));
+	strcat(toWrite, " || ");
+	strcat(toWrite, gettext(BUTTON_Y " to refresh"));
 	textToFrame(MAX_LINES - 2, ALIGNED_CENTER, toWrite);
 
-	strcpy(toWrite, "Searching on => ");
-	strcpy(toWrite + 16, activeDevice == NUSDEV_USB ? "USB" : activeDevice == NUSDEV_SD ? "SD" : "NAND");
+	strcpy(toWrite, gettext("Searching on"));
+	strcat(toWrite, " => ");
+	strcat(toWrite, activeDevice == NUSDEV_USB ? "USB" : activeDevice == NUSDEV_SD ? "SD" : "NAND");
 	strcat(toWrite, ":/install/");
 	textToFrame(MAX_LINES - 1, ALIGNED_CENTER, toWrite);
 

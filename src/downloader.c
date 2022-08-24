@@ -35,6 +35,7 @@
 #include <input.h>
 #include <installer.h>
 #include <ioQueue.h>
+#include <localisation.h>
 #include <menu/utils.h>
 #include <notifications.h>
 #include <osdefs.h>
@@ -454,41 +455,41 @@ static int dlThreadMain(int argc, const char **argv)
 	x.dltotal = 0.0D;							\
 }
 
-static char *translateCurlError(CURLcode err, char *curlError)
+static const char *translateCurlError(CURLcode err, char *curlError)
 {
-	char *ret;
+	const char *ret;
 	switch(err)
 	{
 		case CURLE_COULDNT_RESOLVE_HOST:
-			ret = "Couldn't resolve hostname";
+			ret = gettext("Couldn't resolve hostname");
 			break;
 		case CURLE_COULDNT_CONNECT:
-			ret = "Couldn't connect to server";
+			ret = gettext("Couldn't connect to server");
 			break;
 		case CURLE_OPERATION_TIMEDOUT:
-			ret = "Operation timed out";
+			ret = gettext("Operation timed out");
 			break;
 		case CURLE_GOT_NOTHING:
-			ret=  "The server didn't return any data";
+			ret=  gettext("The server didn't return any data");
 			break;
 		case CURLE_SEND_ERROR:
 		case CURLE_RECV_ERROR:
 		case CURLE_PARTIAL_FILE:
-			ret = "I/O error";
+			ret = gettext("I/O error");
 			break;
 		case CURLE_PEER_FAILED_VERIFICATION:
-			ret = "Verification failed";
+			ret = gettext("Verification failed");
 			break;
 		case CURLE_SSL_CONNECT_ERROR:
-			ret = "Handshake failed";
+			ret = gettext("Handshake failed");
 			break;
 
 		case CURLE_FAILED_INIT:
 		case CURLE_READ_ERROR:
 		case CURLE_OUT_OF_MEMORY:
-			return "Internal error";
+			return gettext("Internal error");
 		default:
-			return "Unknown libcurl error";
+			return gettext("Unknown libcurl error");
 	}
 
 	return curlError[0] == '\0' ? ret : curlError;
@@ -643,8 +644,9 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
 				frames = 60;
 				startNewFrame();
-				strcpy(toScreen, "Downloading ");
-				strcpy(toScreen + 12, name);
+				strcpy(toScreen, gettext("Downloading"));
+				strcat(toScreen, " ");
+				strcat(toScreen, name);
 				textToFrame(0, 0, toScreen);
 				barToFrame(1, 0, 29, dlnow / dltotal * 100.0D);
 
@@ -711,8 +713,9 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 			{
 				frames = 1;
 				startNewFrame();
-				strcpy(toScreen, "Preparing ");
-				strcpy(toScreen + 10, name);
+				strcpy(toScreen, gettext("Preparing"));
+				strcat(toScreen, " ");
+				strcat(toScreen, name);
 				textToFrame(0, 0, toScreen);
 			}
 
@@ -776,11 +779,14 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		if(cancelOverlayId < 0)
 		{
 			if(vpad.trigger & VPAD_BUTTON_B)
-				cancelOverlayId = addErrorOverlay(
-					"Do you really want to cancel?\n"
-					"\n"
-					BUTTON_A " Yes || " BUTTON_B " No"
-				);
+			{
+				strcpy(toScreen, gettext("Do you really want to cancel?"));
+				strcat(toScreen, "\n\n" BUTTON_A " ");
+				strcat(toScreen, gettext("Yes"));
+				strcat(toScreen, " || " BUTTON_B " ");
+				strcat(toScreen, gettext("No"));
+				cancelOverlayId = addErrorOverlay(toScreen);
+			}
 		}
 		else
 		{
@@ -841,11 +847,11 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 			case CURLE_SEND_ERROR:
 			case CURLE_RECV_ERROR:
 			case CURLE_PARTIAL_FILE:
-				sprintf(toScreen, "Network error:\n\t%s!\n\ncheck the network settings and try again", te);
+				sprintf(toScreen, "%s:\n\t%s\n\n%s", gettext("Network error"), te, gettext("check the network settings and try again"));
 				break;
 			case CURLE_PEER_FAILED_VERIFICATION:
 			case CURLE_SSL_CONNECT_ERROR:
-				sprintf(toScreen, "SSL error:\n\t%s!\n\ncheck your Wii Us date and time settings", te);
+				sprintf(toScreen, "%s:\n\t%s!\n\n%s", gettext("SSL error"), te, gettext("check your Wii Us date and time settings"));
 				break;
 			default:
 				sprintf(toScreen, "%s:\n\t%d %s", te, ret, curlError);
@@ -856,14 +862,19 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 			closeCancelOverlay();
 		
 		int os;
+
 		char *p;
 		if(autoResumeEnabled())
 		{
 			os = 9 * 60; // 9 seconds with 60 FPS
 			frames = os;
 			strcat(toScreen, "\n\n");
-			p = toScreen + strlen(toScreen) + 12;
-			strcat(toScreen, "Next try in _ seconds.");
+			p = toScreen + strlen(toScreen);
+			const char *pt = gettext("Next try in _ seconds.");
+			strcpy(p, pt);
+			const char *n = strchr(pt, '_');
+			p += n - pt;
+			strcat(toScreen, pt);
 		}
 		else
 			drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
@@ -926,14 +937,17 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
 		if(resp == 404 && (type & FILE_TYPE_TMD) == FILE_TYPE_TMD) //Title.tmd not found
 		{
-			drawErrorFrame("The download of title.tmd failed with error: 404\n\nThe title cannot be found on the NUS, maybe the provided title ID doesn't exists or\nthe TMD was deleted", B_RETURN | Y_RETRY);
+			strcpy(toScreen, gettext("The download of title.tmd failed with error: 404"));
+			strcat(toScreen, "\n\n");
+			strcat(toScreen, gettext("The title cannot be found on the NUS, maybe the provided title ID doesn't exists or\nthe TMD was deleted"));
+			drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
 
 			while(AppRunning())
 			{
 				if(app == APP_STATE_BACKGROUND)
 					continue;
 				if(app == APP_STATE_RETURNING)
-					drawErrorFrame("The download of title.tmd failed with error: 404\n\nThe title cannot be found on the NUS, maybe the provided title ID doesn't exists or\nthe TMD was deleted", B_RETURN | Y_RETRY);
+					drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
 
 				showFrame();
 
@@ -949,9 +963,13 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 		}
 		else
 		{
-			sprintf(toScreen, "The download returned a result different to 200 (OK): %ld\nFile: %s\n\n", resp, toRam ? file : prettyDir(file));
+			sprintf(toScreen, "%s: %ld\n%s: %s\n\n", gettext("The download returned a result different to 200 (OK)"), resp, gettext("File"), toRam ? file : prettyDir(file));
 			if(resp == 400)
-				strcat(toScreen, "Request failed. Try again\n\n");
+			{
+				strcat(toScreen, gettext("Request failed. Try again"));
+				strcat(toScreen, "\n\n");
+			}
+
 			drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
 
 			while(AppRunning())
@@ -988,7 +1006,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 #define showPrepScreen(x)										\
 {																\
 	startNewFrame();											\
-	textToFrame(0, 0, "Preparing the download of");				\
+	textToFrame(0, 0, gettext("Preparing the download of"));	\
 	textToFrame(1, 3, x == NULL ? "NULL" : x);					\
 	writeScreenLog(2);											\
 	drawFrame();												\
@@ -1179,7 +1197,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 			case 2:
 				addToScreenLog("title.tik not found on the NUS. Generating...");
 				startNewFrame();
-				textToFrame(0, 0, "Creating fake title.tik");
+				textToFrame(0, 0, gettext("Creating fake title.tik"));
 				writeScreenLog(3);
 				drawFrame();
 
@@ -1206,7 +1224,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	{
 		debugPrintf("Creating CERT...");
 		startNewFrame();
-		textToFrame(0, 0, "Creating CERT");
+		textToFrame(0, 0, gettext("Creating CERT"));
 		writeScreenLog(3);
 		drawFrame();
 		
@@ -1288,7 +1306,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 	
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 	textToFrame(0, 0, titleEntry->name);
-	textToFrame(1, 0, "Downloaded successfully!");
+	textToFrame(1, 0, gettext("Downloaded successfully!"));
 	writeScreenLog(2);
 	drawFrame();
 
@@ -1303,7 +1321,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 		{
 			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 			textToFrame(0, 0, titleEntry->name);
-			textToFrame(1, 0, "Downloaded successfully!");
+			textToFrame(1, 0, gettext("Downloaded successfully!"));
 			writeScreenLog(2);
 			drawFrame();
 		}

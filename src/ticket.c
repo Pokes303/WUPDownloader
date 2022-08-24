@@ -26,6 +26,7 @@
 #include <input.h>
 #include <ioQueue.h>
 #include <keygen.h>
+#include <localisation.h>
 #include <renderer.h>
 #include <state.h>
 #include <titles.h>
@@ -51,7 +52,7 @@ bool generateTik(const char *path, const TitleEntry *titleEntry)
 	if(tik == NULL)
 	{
 		char *err = getStaticScreenBuffer();
-		sprintf(err, "Could not open path\n%s", prettyDir(path));
+		sprintf(err, "%s\n%s", gettext("Could not open path"), prettyDir(path));
 		drawErrorFrame(err, ANY_RETURN);
 		
 		while(AppRunning())
@@ -119,7 +120,7 @@ bool generateCert(const char *path)
 	if(cert == NULL)
 	{
 		char *err = getStaticScreenBuffer();
-		sprintf(err, "Could not open path\n%s", prettyDir(path));
+		sprintf(err, "%s\n%s", gettext("Could not open path"), prettyDir(path));
 		drawErrorFrame(err, ANY_RETURN);
 
 		while(AppRunning())
@@ -183,12 +184,12 @@ static void drawTicketFrame(uint64_t titleID)
 	hex(titleID, 16, tid);
 
 	startNewFrame();
-	textToFrame(0, 0, "Title ID:");
+	textToFrame(0, 0, gettext("Title ID:"));
 	textToFrame(1, 3, tid);
 	
 	int line = MAX_LINES - 1;
-	textToFrame(line--, 0, "Press " BUTTON_B " to return");
-	textToFrame(line--, 0, "Press " BUTTON_A " to continue");
+	textToFrame(line--, 0, gettext("Press " BUTTON_B " to return"));
+	textToFrame(line--, 0, gettext("Press " BUTTON_A " to continue"));
 	lineToFrame(line, SCREEN_COLOR_WHITE);
 	drawFrame();
 }
@@ -202,7 +203,7 @@ void generateFakeTicket()
 	TMD *tmd = getTmd(dir);
 	if(tmd == NULL)
 	{
-		drawErrorFrame("Invalid title.tmd file!", ANY_RETURN);
+		drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
 
 		while(AppRunning())
 		{
@@ -211,7 +212,7 @@ void generateFakeTicket()
 			if(app == APP_STATE_BACKGROUND)
 				continue;
 			if(app == APP_STATE_RETURNING)
-				drawErrorFrame("Invalid title.tmd file!", ANY_RETURN);
+				drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
 
 			if(vpad.trigger)
 				break;
@@ -233,7 +234,7 @@ void generateFakeTicket()
 		if(vpad.trigger & VPAD_BUTTON_A)
 		{
 			startNewFrame();
-			textToFrame(0, 0, "Generating fake ticket...");
+			textToFrame(0, 0, gettext("Generating fake ticket..."));
 			drawFrame();
 			showFrame();
 
@@ -253,10 +254,10 @@ void generateFakeTicket()
 				break;
 
 			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-			textToFrame(0, 0, "Fake ticket generated on:");
+			textToFrame(0, 0, gettext("Fake ticket generated on:"));
 			textToFrame(1, 0, prettyDir(dir));
 
-			textToFrame(3, 0, "Press any key to return");
+			textToFrame(3, 0, gettext("Press any key to return"));
 			drawFrame();
 
 			while(AppRunning())

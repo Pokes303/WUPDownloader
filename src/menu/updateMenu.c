@@ -19,6 +19,7 @@
 #include <wut-fixups.h>
 
 #include <input.h>
+#include <localisation.h>
 #include <staticMem.h>
 #include <renderer.h>
 #include <state.h>
@@ -41,12 +42,13 @@ static void drawUpdateMenuFrame(const char *newVersion)
 	
 	textToFrame(4, ALIGNED_CENTER, NUSSPLI_COPYRIGHT);
 	
-	textToFrame(7, 0, "Update available!");
+	textToFrame(7, 0, gettext("Update available!"));
 	lineToFrame(MAX_LINES - 3, SCREEN_COLOR_WHITE);
-	strcpy(toScreen, "Press " BUTTON_A " to update to ");
+	strcpy(toScreen, gettext("Press " BUTTON_A " to update to"));
+	strcat(toScreen, " ");
 	strcat(toScreen, newVersion);
 	textToFrame(MAX_LINES - 2, 0, toScreen);
-	textToFrame(MAX_LINES - 1, 0, "Press " BUTTON_B " to cancel");
+	textToFrame(MAX_LINES - 1, 0, gettext("Press " BUTTON_B " to cancel"));
 	drawFrame();
 }
 
