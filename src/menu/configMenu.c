@@ -78,14 +78,36 @@ static inline void switchMenuLanguage()
 {
 	MENU_LANGUAGE lang = getMenuLanguage();
 
-	switch((int)lang)
+	if(vpad.trigger & VPAD_BUTTON_LEFT)
 	{
-		case MENU_LANGUAGE_ENGLISH:
-			lang = MENU_LANGUAGE_GERMAN;
-			break;
-		case MENU_LANGUAGE_GERMAN:
-			lang = MENU_LANGUAGE_ENGLISH;
-			break;
+		switch((int)lang)
+		{
+			case MENU_LANGUAGE_ENGLISH:
+				lang = MENU_LANGUAGE_SPANISH;
+				break;
+			case MENU_LANGUAGE_SPANISH:
+				lang = MENU_LANGUAGE_GERMAN;
+				break;
+			case MENU_LANGUAGE_GERMAN:
+				lang = MENU_LANGUAGE_ENGLISH;
+				break;
+		}
+	}
+	else
+	{
+		switch((int)lang)
+		{
+			case MENU_LANGUAGE_ENGLISH:
+				lang = MENU_LANGUAGE_GERMAN;
+				break;
+			case MENU_LANGUAGE_GERMAN:
+				lang = MENU_LANGUAGE_SPANISH;
+				break;
+			case MENU_LANGUAGE_SPANISH:
+				lang = MENU_LANGUAGE_ENGLISH;
+				break;
+		}
+
 	}
 
 	setMenuLanguage(lang);

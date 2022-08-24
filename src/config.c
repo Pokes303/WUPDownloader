@@ -86,6 +86,8 @@ const char *menuLangToString(MENU_LANGUAGE lang)
 			return LANG_ENG;
 		case MENU_LANGUAGE_GERMAN:
 			return LANG_GER;
+		case MENU_LANGUAGE_SPANISH:
+			return LANG_SPA;
 		default:
 			return LANG_SYS;
 	}
@@ -97,6 +99,8 @@ static inline MENU_LANGUAGE sysLangToMenuLang(Swkbd_LanguageType lang)
 	{
 		case Swkbd_LanguageType__German:
 			return MENU_LANGUAGE_GERMAN;
+		case Swkbd_LanguageType__Spanish:
+			return MENU_LANGUAGE_SPANISH;
 //		case Swkbd_LanguageType__English:
 		default:
 			return MENU_LANGUAGE_ENGLISH;
@@ -109,6 +113,8 @@ static MENU_LANGUAGE stringToMenuLang(const char *lang)
 		return MENU_LANGUAGE_ENGLISH;
 	if(strcmp(lang, LANG_ENG) == 0)
 		return MENU_LANGUAGE_GERMAN;
+	if(strcmp(lang, LANG_SPA) == 0)
+		return MENU_LANGUAGE_SPANISH;
 
 	return sysLangToMenuLang(sysLang);
 }
@@ -121,6 +127,8 @@ static inline const char *getLocalisationFile(MENU_LANGUAGE lang)
 	{
 		case MENU_LANGUAGE_GERMAN:
 			return LOCALE_PATH LANG_GER LOCALE_EXTENSION;
+		case MENU_LANGUAGE_SPANISH:
+			return LOCALE_PATH LANG_SPA LOCALE_EXTENSION;
 //		case Swkbd_LanguageType__English:
 		default:
 			return NULL;
@@ -357,6 +365,8 @@ static const char *getMenuLanguageString(MENU_LANGUAGE lang)
 			return LANG_ENG;
 		case MENU_LANGUAGE_GERMAN:
 			return LANG_GER;
+		case MENU_LANGUAGE_SPANISH:
+			return LANG_SPA;
 		default: // Should never happen
 			return NULL;
 	}
