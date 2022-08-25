@@ -4,7 +4,7 @@
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
- * the Free Software Foundation; either version 2 of the License, or       *
+ * the Free Software Foundation; either version 3 of the License, or       *
  * (at your option) any later version.                                     *
  *                                                                         *
  * This program is distributed in the hope that it will be useful,         *
@@ -13,8 +13,7 @@
  * GNU General Public License for more details.                            *
  *                                                                         *
  * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
+ * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
 #include <wut-fixups.h>
@@ -34,6 +33,7 @@
 #include <deinstaller.h>
 #include <file.h>
 #include <input.h>
+#include <localisation.h>
 #include <notifications.h>
 #include <osdefs.h>
 #include <renderer.h>
@@ -44,9 +44,12 @@
 bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool skipEnd)
 {
 	startNewFrame();
-	textToFrame(0, 0, "Uninstalling");
-	textToFrame(0, 19, name);
-	textToFrame(1, 0, "Preparing...");
+	char *toFrame = getToFrameBuffer();
+	strcpy(toFrame, gettext("Uninstalling"));
+	strcat(toFrame, " ");
+	strcat(toFrame, name);
+	textToFrame(0, 0, toFrame);
+	textToFrame(1, 0, gettext("Preparing..."));
 	writeScreenLog(2);
 	drawFrame();
 	showFrame();
@@ -94,7 +97,7 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool
 
 		colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 		textToFrame(0, 0, name);
-		textToFrame(1, 0, "Uninstalled successfully!");
+		textToFrame(1, 0, gettext("Uninstalled successfully!"));
 		writeScreenLog(2);
 		drawFrame();
 
@@ -106,7 +109,7 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool
 			{
 				colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 				textToFrame(0, 0, name);
-				textToFrame(1, 0, "Uninstalled successfully!");
+				textToFrame(1, 0, gettext("Uninstalled successfully!"));
 				writeScreenLog(2);
 				drawFrame();
 			}

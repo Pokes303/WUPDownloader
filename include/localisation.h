@@ -1,6 +1,7 @@
 /***************************************************************************
- * This file is part of NUSspli.                                           *
- * Copyright (c) 2020 V10lator <v10lator@myway.de>                         *
+ * Copyright (C) 2015 Dimok                                                *
+ * Copyright (c) 2022 V10lator <v10lator@myway.de>                         *
+ * Copyright (c) 2022 Xpl0itU <DaThinkingChair@protonmail.com>             *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
@@ -13,21 +14,23 @@
  * GNU General Public License for more details.                            *
  *                                                                         *
  * You should have received a copy of the GNU General Public License along *
- * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
+ * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *             *
  ***************************************************************************/
 
 #pragma once
 
 #include <wut-fixups.h>
 
-#include <titles.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 	extern "C" {
 #endif
 
-void titleBrowserMenu();
+bool gettextLoadLanguage(const char* langFile);
+void gettextCleanUp() __attribute__((__cold__));
+const char *gettext(const char *msg) __attribute__((__hot__));
 
 #ifdef __cplusplus
-	}
+    }
 #endif

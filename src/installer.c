@@ -4,7 +4,7 @@
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
- * the Free Software Foundation; either version 2 of the License, or       *
+ * the Free Software Foundation; either version 3 of the License, or       *
  * (at your option) any later version.                                     *
  *                                                                         *
  * This program is distributed in the hope that it will be useful,         *
@@ -13,8 +13,7 @@
  * GNU General Public License for more details.                            *
  *                                                                         *
  * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
+ * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
 #include <wut-fixups.h>
@@ -38,6 +37,7 @@
 #include <input.h>
 #include <installer.h>
 #include <ioQueue.h>
+#include <localisation.h>
 #include <notifications.h>
 #include <renderer.h>
 #include <state.h>
@@ -95,11 +95,12 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 
 	startNewFrame();
 	char *toScreen = getToFrameBuffer();
-	strcpy(toScreen, "Installing ");
+	strcpy(toScreen, gettext("Installing"));
+	strcat(toScreen, " ");
 	strcat(toScreen, game);
 	textToFrame(0, 0, toScreen);
 	barToFrame(1, 0, 40, 0);
-	textToFrame(1, 41, "Preparing. This might take some time. Please be patient.");
+	textToFrame(1, 41, gettext("Preparing. This might take some time. Please be patient."));
 	writeScreenLog(2);
 	drawFrame();
 	showFrame();
@@ -121,19 +122,22 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 		switch(data.err)
 		{
 			case 0xfffbf3e2:
-				sprintf(toScreen, "No title.tmd found at \"%s\"", path);
+				sprintf(toScreen, "%s \"%s\"", gettext("No title.tmd found at"), path);
 				break;
 			case 0xfffbfc17:
 				sprintf(toScreen,
-						"Internal error installing \"%s\""
+						"%s \"%s\""
 #ifdef NUSSPLI_HBL
-						"We're supporting HBL on Tiramisu and HBLC v2.1 fix by Gary only!"
+						"\n%s"
 #endif
-						, path
+						, gettext("Internal error installing"), path
+#ifdef NUSSPLI_HBL
+						, gettext("We're supporting HBL on Tiramisu and HBLC v2.1 fix by Gary only!")
+#endif
 				);
 				break;
 			default:
-				sprintf(toScreen, "Error getting info for \"%s\" from MCP: %#010x", path, data.err);
+				sprintf(toScreen, "%s \"%s\" %s: %#010x", gettext("Error getting info for"), path, gettext("from MCP"), data.err);
 		}
 		
 		debugPrintf(toScreen);
@@ -167,8 +171,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 
 	if(data.err != 0)
 	{
-		char *err = toUsb ? "Error opening USB device" : "Error opening internal memory";
-		debugPrintf(err);
+		const char *err = gettext(toUsb ? "Error opening USB device" : "Error opening internal memory");
 		addToScreenLog("Installation failed!");
 		drawErrorFrame(err, ANY_RETURN);
 		
@@ -200,7 +203,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	
 	if(err != 0)
 	{
-		sprintf(toScreen, "Error starting async installation of \"%s\": %#010x", path, data.err);
+		sprintf(toScreen, "%s \"%s\": %#010x", gettext("Error starting async installation of"), path, data.err);
 		debugPrintf(toScreen);
 		addToScreenLog("Installation failed!");
 		drawErrorFrame(toScreen, ANY_RETURN);
@@ -231,7 +234,8 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	if(data.err != 0)
 	{
 		debugPrintf("Installation failed with result: %#010x", data.err);
-		strcpy(toScreen, "Installation failed!\n\n");
+		strcpy(toScreen, gettext("Installation failed!"));
+		strcat(toScreen, "\n\n");
 		switch(data.err)
 		{
 			case CUSTOM_MCP_ERROR_CANCELLED:
@@ -243,37 +247,41 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 				{
 					strcat(toScreen, "Install the main game to the same storage medium first");
 					if(toUsb)
-						strcat(toScreen, "\nAlso make sure there is no error with the USB drive");
+					{
+						strcat(toScreen, "\n");
+						strcat(toScreen, gettext("Also make sure there is no error with the USB drive"));
+					}
 				}
 				else if(toUsb)
-					strcat(toScreen, "Possible USB error");
+					strcat(toScreen, gettext("Possible USB error"));
 				break;
 			case 0xFFFBF446:
 			case 0xFFFBF43F:
-				strcat(toScreen, "Possible missing or bad title.tik file");
+				strcat(toScreen, gettext("Possible missing or bad title.tik file"));
 				break;
 			case 0xFFFBF441:
-				strcat(toScreen, "Possible incorrect console for DLC title.tik file");
+				strcat(toScreen, gettext("Possible incorrect console for DLC title.tik file"));
 				break;
 			case 0xFFFCFFE4:
-				strcat(toScreen, "Not enough free space on target device");
+				strcat(toScreen, gettext("Not enough free space on target device"));
 				break;
 			case 0xFFFFF825:
 			case 0xFFFFF82E:
-				strcat(toScreen, "Files might be corrupt or bad storage medium.\nTry redownloading files or reformat/replace target device");
+				strcat(toScreen, gettext("Files might be corrupt or bad storage medium.\nTry redownloading files or reformat/replace target device"));
 				break;
 			default:
 				if ((data.err & 0xFFFF0000) == 0xFFFB0000)
 				{
 					if(dev & NUSDEV_USB)
-						strcat(toScreen, "Possible USB failure. Check your drives power source.\nAlso f");
-					else
-						strcat(toScreen, "F");
+					{
+						strcat(toScreen, gettext("Possible USB failure. Check your drives power source."));
+						strcat(toScreen, "\n");
+					}
 
-					strcat(toScreen, "iles might be corrupt");
+					strcat(toScreen, gettext("Files might be corrupt"));
 				}
 				else
-					sprintf(toScreen + 12, "Unknown Error: %#010x", data.err);
+					sprintf(toScreen + strlen(toScreen), "%s: %#010x", gettext("Unknown Error"), data.err);
 		}
 		
 		addToScreenLog("Installation failed!");
@@ -304,7 +312,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 	
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 	textToFrame(0, 0, game);
-	textToFrame(1, 0, "Installed successfully!");
+	textToFrame(1, 0, gettext("Installed successfully!"));
 	writeScreenLog(2);
 	drawFrame();
 
@@ -318,7 +326,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 		{
 			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
 			textToFrame(0, 0, game);
-			textToFrame(1, 0, "Installed successfully!");
+			textToFrame(1, 0, gettext("Installed successfully!"));
 			writeScreenLog(2);
 			drawFrame();
 		}

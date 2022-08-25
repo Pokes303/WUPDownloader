@@ -4,7 +4,7 @@
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
- * the Free Software Foundation; either version 2 of the License, or       *
+ * the Free Software Foundation; either version 3 of the License, or       *
  * (at your option) any later version.                                     *
  *                                                                         *
  * This program is distributed in the hope that it will be useful,         *
@@ -13,8 +13,7 @@
  * GNU General Public License for more details.                            *
  *                                                                         *
  * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
+ * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
 #include <wut-fixups.h>
@@ -22,6 +21,7 @@
 #include <file.h>
 #include <input.h>
 #include <installer.h>
+#include <localisation.h>
 #include <renderer.h>
 #include <state.h>
 #include <tmd.h>
@@ -40,20 +40,20 @@ static void drawInstallerMenuFrame(const char *name, NUSDEV dev, bool keepFiles)
 	textToFrame(0, 0, name);
 	
 	lineToFrame(MAX_LINES - 6, SCREEN_COLOR_WHITE);
-	textToFrame(MAX_LINES - 5, 0, "Press " BUTTON_A " to install to USB");
-	textToFrame(MAX_LINES - 4, 0, "Press " BUTTON_X " to install to NAND");
-	textToFrame(MAX_LINES - 3, 0, "Press " BUTTON_B " to return");
+	textToFrame(MAX_LINES - 5, 0, gettext("Press " BUTTON_A " to install to USB"));
+	textToFrame(MAX_LINES - 4, 0, gettext("Press " BUTTON_X " to install to NAND"));
+	textToFrame(MAX_LINES - 3, 0, gettext("Press " BUTTON_B " to return"));
 	
 	lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
 	if(dev != NUSDEV_SD)
-		textToFrame(MAX_LINES - 1, 0, "WARNING: Files on USB/NAND will always be deleted after installing!");
+		textToFrame(MAX_LINES - 1, 0, gettext("WARNING: Files on USB/NAND will always be deleted after installing!"));
 	else
 	{
 		char *toFrame = getToFrameBuffer();
 		strcpy(toFrame, "Press " BUTTON_LEFT " to ");
 		strcat(toFrame, keepFiles ? "delete" : "keep");
 		strcat(toFrame, " files after the installation");
-		textToFrame(MAX_LINES - 1, 0, toFrame);
+		textToFrame(MAX_LINES - 1, 0, gettext(toFrame));
 	}
 	
 	drawFrame();
@@ -123,14 +123,14 @@ void installerMenu(const char *dir)
 			}
 			else
 			{
-				drawErrorFrame("Invalid title.tmd file!", ANY_RETURN);
+				drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
 
 				while(AppRunning())
 				{
 					if(app == APP_STATE_BACKGROUND)
 						continue;
 					if(app == APP_STATE_RETURNING)
-						drawErrorFrame("Invalid title.tmd file!", ANY_RETURN);
+						drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
 
 					showFrame();
 					if(vpad.trigger)

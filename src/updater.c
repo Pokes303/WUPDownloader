@@ -4,7 +4,7 @@
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
- * the Free Software Foundation; either version 2 of the License, or       *
+ * the Free Software Foundation; either version 3 of the License, or       *
  * (at your option) any later version.                                     *
  *                                                                         *
  * This program is distributed in the hope that it will be useful,         *
@@ -13,8 +13,7 @@
  * GNU General Public License for more details.                            *
  *                                                                         *
  * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
+ * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
 #include <wut-fixups.h>
@@ -99,12 +98,6 @@ bool updateCheck()
 	if(!updateCheckEnabled())
 		return false;
 	
-	startNewFrame();
-	textToFrame(0, 0, "Preparing download");
-	writeScreenLog(1);
-	drawFrame();
-	showFrame();
-
 	const char *updateChkUrl =
 #ifdef NUSSPLI_HBL
 	UPDATE_CHECK_URL "h";
@@ -116,7 +109,7 @@ bool updateCheck()
 	if(downloadFile(updateChkUrl, "JSON", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) == 0)
 	{
 		startNewFrame();
-		textToFrame(0, 0, "Parsing JSON");
+		textToFrame(0, 0, gettext("Parsing JSON"));
 		writeScreenLog(1);
 		drawFrame();
 		showFrame();
@@ -156,10 +149,10 @@ bool updateCheck()
 						break;
 					case 3: // TODO
 					case 4:
-						showUpdateError("Internal server error!");
+						showUpdateError(gettext("Internal server error!"));
 						break;
 					default: // TODO
-						showUpdateErrorf("Invalid state value: %d", json_integer_value(jsonObj));
+						showUpdateErrorf("%s: %d", gettext("Invalid state value"), json_integer_value(jsonObj));
 						break;
 				}
 			}
@@ -295,7 +288,7 @@ static bool unzipUpdate()
 
 								if(!createDirRecursive(fileName))
 								{
-									showUpdateErrorf("Error creating directory: %s", prettyDir(fileName));
+									showUpdateErrorf("%s: %s", gettext("Error creating directory"), prettyDir(fileName));
 									ret = false;
 								}
 							}
@@ -313,7 +306,7 @@ static bool unzipUpdate()
 										extracted = unzReadCurrentFile(zip, buf, IO_BUFSIZE);
 										if(extracted < 0)
 										{
-											showUpdateErrorf("Error extracting file: %s", prettyDir(fileName));
+											showUpdateErrorf("%s: %s", gettext("Error extracting file"), prettyDir(fileName));
 											ret = false;
 											break;
 										}
@@ -322,7 +315,7 @@ static bool unzipUpdate()
 										{
 											if(addToIOQueue(buf, 1, extracted, file) != extracted)
 											{
-												showUpdateErrorf("Error writing file: %s", prettyDir(fileName));
+												showUpdateErrorf("%s: %s", gettext("Error writing file"), prettyDir(fileName));
 												ret = false;
 												break;
 											}
@@ -335,7 +328,7 @@ static bool unzipUpdate()
 								}
 								else
 								{
-									showUpdateErrorf("Error opening file: %s", prettyDir(fileName));
+									showUpdateErrorf("%s: %s", gettext("Error opening file"), prettyDir(fileName));
 									ret = false;
 								}
 							}
@@ -344,13 +337,13 @@ static bool unzipUpdate()
 						}
 						else
 						{
-							showUpdateError("Error opening zip file");
+							showUpdateError(gettext("Error opening zip file"));
 							ret = false;
 						}
 					}
 					else
 					{
-						showUpdateError("Error extracting zip");
+						showUpdateError(gettext("Error extracting zip"));
 						ret = false;
 					}
 				}
@@ -358,16 +351,14 @@ static bool unzipUpdate()
 
 				MEMFreeToDefaultHeap(buf);
 			}
-			else
-				showUpdateError("Error allocating memory");
 		}
 		else
-			showUpdateError("Error getting zip info");
+			showUpdateError(gettext("Error getting zip info"));
 
 		unzClose(zip);
 	}
 	else
-		showUpdateError("Error opening zip!");
+		showUpdateError(gettext("Error opening zip!"));
 
 	return ret;
 }
@@ -388,7 +379,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 		}
 		if(err != OS_DYNLOAD_OK)
 		{
-			showUpdateError("Aroma version too old to allow auto-updates");
+			showUpdateError(gettext("Aroma version too old to allow auto-updates"));
 			return;
 		}
 	}
@@ -400,7 +391,8 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 	if(err != FS_STATUS_OK)
 	{
 		char *toScreen = getToFrameBuffer();
-		strcpy(toScreen, "Error creating temporary directory!\n\n");
+		strcpy(toScreen, gettext("Error creating temporary directory!"));
+		strcat(toScreen, "\n\n");
 		strcat(toScreen, translateFSErr(err));
 
 		showUpdateError(toScreen);
@@ -434,12 +426,12 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 	if(downloadFile(path, "NUSspli.zip", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false) != 0)
 	{
 		clearRamBuf();
-		showUpdateErrorf("Error downloading %s", path);
+		showUpdateErrorf("%s %s", gettext("Error downloading"), path);
 		goto updateError;
 	}
 
 	startNewFrame();
-	textToFrame(0, 0, "Updating, please wait...");
+	textToFrame(0, 0, gettext("Updating, please wait..."));
 	writeScreenLog(1);
 	drawFrame();
 	showFrame();
@@ -457,7 +449,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 #ifdef NUSSPLI_HBL
 	if(!dirExists(UPDATE_HBL_FOLDER))
 	{
-		showUpdateError("Couldn't find NUSspli folder on the SD card");
+		showUpdateError(gettext("Couldn't find NUSspli folder on the SD card"));
 		goto updateError;
 	}
 
@@ -469,7 +461,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 		MCPError err = MCP_GetOwnTitleInfo(mcpHandle, &ownInfo);
 		if(err != 0)
 		{
-			showUpdateErrorf("Error getting own title info: %#010x", err);
+			showUpdateErrorf("%s: %#010x", gettext("Error getting own title info"), err);
 			goto updateError;
 		}
 
@@ -483,7 +475,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 	{
 		if(!fileExists(UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE))
 		{
-			showUpdateError("Couldn't find NUSspli file on the SD card");
+			showUpdateError(gettext("Couldn't find NUSspli file on the SD card"));
 			goto updateError;
 		}
 
@@ -526,8 +518,8 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 	enableShutdown();
 	startNotification();
 	colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-	textToFrame(0, 0, "Update");
-	textToFrame(1, 0, "Installed successfully!");
+	textToFrame(0, 0, gettext("Update"));
+	textToFrame(1, 0, gettext("Installed successfully!"));
 	writeScreenLog(2);
 	drawFrame();
 
@@ -538,8 +530,8 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 		if(app == APP_STATE_RETURNING)
 		{
 			colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-			textToFrame(0, 0, "Update");
-			textToFrame(1, 0, "Installed successfully!");
+			textToFrame(0, 0, gettext("Update"));
+			textToFrame(1, 0, gettext("Installed successfully!"));
 			writeScreenLog(2);
 			drawFrame();
 		}

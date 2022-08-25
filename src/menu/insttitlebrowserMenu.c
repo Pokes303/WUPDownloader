@@ -5,7 +5,7 @@
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
- * the Free Software Foundation; either version 2 of the License, or       *
+ * the Free Software Foundation; either version 3 of the License, or       *
  * (at your option) any later version.                                     *
  *                                                                         *
  * This program is distributed in the hope that it will be useful,         *
@@ -14,8 +14,7 @@
  * GNU General Public License for more details.                            *
  *                                                                         *
  * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
+ * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
 #include <wut-fixups.h>
@@ -23,6 +22,7 @@
 #include <deinstaller.h>
 #include <file.h>
 #include <input.h>
+#include <localisation.h>
 #include <osdefs.h>
 #include <renderer.h>
 #include <state.h>
@@ -195,14 +195,18 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
 {
 	startNewFrame();
 	boxToFrame(0, MAX_LINES - 2);
-	textToFrame(MAX_LINES - 1, ALIGNED_CENTER, "Press " BUTTON_A " to delete || " BUTTON_B " to return");
+
+	char *toFrame = getToFrameBuffer();
+	strcpy(toFrame, gettext("Press " BUTTON_A " to delete"));
+	strcat(toFrame, " || ");
+	strcat(toFrame, gettext(BUTTON_B " to return"));
+	textToFrame(MAX_LINES - 1, ALIGNED_CENTER, toFrame);
 	
 	size_t max = ititleEntrySize - pos;
 	if(max > MAX_ITITLEBROWSER_LINES)
 		max = MAX_ITITLEBROWSER_LINES;
 
 	volatile INST_META *im;
-	char *toFrame = getToFrameBuffer();
 	ACPMetaXml *meta = MEMAllocFromDefaultHeapEx(sizeof(ACPMetaXml), 0x40);
 	if(meta)
 	{
@@ -457,11 +461,19 @@ loopEntry:
 	{
 		volatile INST_META *im = installedTitles + cursor + pos;
 		char *toFrame = getToFrameBuffer();
-		strcpy(toFrame, "Do you really want to uninstall\n");
+		strcpy(toFrame, gettext("Do you really want to uninstall"));
+		strcat(toFrame, "\n");
 		strcat(toFrame, (char *)im->name);
-		strcat(toFrame, "\nfrom your ");
-		strcat(toFrame, im->dt == DEVICE_TYPE_USB ? "USB" : im->dt == DEVICE_TYPE_NAND ? "NAND" : "unknown");
-		strcat(toFrame, " drive?\n\n" BUTTON_A " Yes || " BUTTON_B " No");
+		strcat(toFrame, "\n");
+		strcat(toFrame, gettext("from your"));
+		strcat(toFrame, " ");
+		strcat(toFrame, im->dt == DEVICE_TYPE_USB ? "USB" : im->dt == DEVICE_TYPE_NAND ? "NAND" : gettext("unknown"));
+		strcat(toFrame, " ");
+		strcat(toFrame, gettext("drive?"));
+		strcat(toFrame, "\n\n" BUTTON_A " ");
+		strcat(toFrame, gettext("Yes"));
+		strcat(toFrame, " || " BUTTON_B " ");
+		strcat(toFrame, gettext("No"));
 		int r = addErrorOverlay(toFrame);
 
 		while(AppRunning())

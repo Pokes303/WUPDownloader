@@ -5,7 +5,7 @@
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
- * the Free Software Foundation; either version 2 of the License, or       *
+ * the Free Software Foundation; either version 3 of the License, or       *
  * (at your option) any later version.                                     *
  *                                                                         *
  * This program is distributed in the hope that it will be useful,         *
@@ -14,8 +14,7 @@
  * GNU General Public License for more details.                            *
  *                                                                         *
  * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.             *
+ * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
 #pragma once
@@ -25,6 +24,7 @@
 #include <stdbool.h>
 
 #include <file.h>
+#include <localisation.h>
 #include <swkbd_wrapper.h>
 
 #include <coreinit/mcp.h>
@@ -42,6 +42,13 @@ typedef enum
 	NOTIF_METHOD_RUMBLE	= 0x01,
 	NOTIF_METHOD_LED	= 0x02,
 } NOTIF_METHOD;
+
+typedef enum
+{
+	MENU_LANGUAGE_ENGLISH,
+	MENU_LANGUAGE_GERMAN,
+	MENU_LANGUAGE_SPANISH,
+} MENU_LANGUAGE;
 
 bool initConfig();
 bool saveConfig(bool force);
@@ -61,6 +68,9 @@ bool dlToUSBenabled();
 void setDlToUSB(bool toUSB);
 NOTIF_METHOD getNotificationMethod();
 void setNotificationMethod(NOTIF_METHOD method);
+MENU_LANGUAGE getMenuLanguage();
+void setMenuLanguage(MENU_LANGUAGE lang);
+const char *menuLangToString(MENU_LANGUAGE lang);
 
 #ifdef __cplusplus
 	}
