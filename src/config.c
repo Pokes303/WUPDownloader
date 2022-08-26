@@ -88,6 +88,8 @@ const char *menuLangToString(MENU_LANGUAGE lang)
 			return LANG_GER;
 		case MENU_LANGUAGE_SPANISH:
 			return LANG_SPA;
+		case MENU_LANGUAGE_RUSSIAN:
+			return LANG_RUS;
 		default:
 			return LANG_SYS;
 	}
@@ -101,6 +103,8 @@ static inline MENU_LANGUAGE sysLangToMenuLang(Swkbd_LanguageType lang)
 			return MENU_LANGUAGE_GERMAN;
 		case Swkbd_LanguageType__Spanish:
 			return MENU_LANGUAGE_SPANISH;
+		case Swkbd_LanguageType__Russian:
+			return MENU_LANGUAGE_RUSSIAN;
 //		case Swkbd_LanguageType__English:
 		default:
 			return MENU_LANGUAGE_ENGLISH;
@@ -115,6 +119,8 @@ static MENU_LANGUAGE stringToMenuLang(const char *lang)
 		return MENU_LANGUAGE_GERMAN;
 	if(strcmp(lang, LANG_SPA) == 0)
 		return MENU_LANGUAGE_SPANISH;
+	if(strcmp(lang, LANG_RUS) == 0)
+		return MENU_LANGUAGE_RUSSIAN;
 
 	return sysLangToMenuLang(sysLang);
 }
@@ -129,6 +135,8 @@ static inline const char *getLocalisationFile(MENU_LANGUAGE lang)
 			return LOCALE_PATH LANG_GER LOCALE_EXTENSION;
 		case MENU_LANGUAGE_SPANISH:
 			return LOCALE_PATH LANG_SPA LOCALE_EXTENSION;
+		case MENU_LANGUAGE_RUSSIAN:
+			return LOCALE_PATH LANG_RUS LOCALE_EXTENSION;
 //		case Swkbd_LanguageType__English:
 		default:
 			return NULL;
@@ -357,21 +365,6 @@ bool initConfig()
 	}
 }
 
-static const char *getMenuLanguageString(MENU_LANGUAGE lang)
-{
-	switch(lang)
-	{
-		case MENU_LANGUAGE_ENGLISH:
-			return LANG_ENG;
-		case MENU_LANGUAGE_GERMAN:
-			return LANG_GER;
-		case MENU_LANGUAGE_SPANISH:
-			return LANG_SPA;
-		default: // Should never happen
-			return NULL;
-	}
-}
-
 const char *getLanguageString(Swkbd_LanguageType language)
 {
 	switch(language)
@@ -455,7 +448,7 @@ bool saveConfig(bool force)
 				value = autoResume ? json_true() : json_false();
 				if(setValue(config, "Auto resume failed downloads", value))
 				{
-					value = json_string(getMenuLanguageString(menuLang));
+					value = json_string(menuLangToString(menuLang));
 					if(setValue(config, "Menu language", value))
 					{
 						value = json_string(getLanguageString(lang));
