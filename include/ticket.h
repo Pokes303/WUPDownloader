@@ -26,7 +26,7 @@
 #include <stdbool.h>
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif
 
 bool generateTik(const char *path, const TitleEntry *titleEntry);
@@ -34,5 +34,5 @@ bool generateCert(const char *path);
 void generateFakeTicket();
 
 #ifdef __cplusplus
-	}
+}
 #endif

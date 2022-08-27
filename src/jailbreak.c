@@ -28,14 +28,14 @@
 
 bool jailbreak()
 {
-	MochaRPXLoadInfo info = {
-		.target = LOAD_RPX_TARGET_SD_CARD,
-		.filesize = 0,
-		.fileoffset = 0,
-		.path = "wiiu/apps/NUSspli/NUSspli.rpx",
-	};
+    MochaRPXLoadInfo info = {
+        .target = LOAD_RPX_TARGET_SD_CARD,
+        .filesize = 0,
+        .fileoffset = 0,
+        .path = "wiiu/apps/NUSspli/NUSspli.rpx",
+    };
 
-	return Mocha_LaunchRPX(&info) == MOCHA_RESULT_SUCCESS;
+    return Mocha_LaunchRPX(&info) == MOCHA_RESULT_SUCCESS;
 }
 
 #endif // ifdef NUSSPLI_HBL

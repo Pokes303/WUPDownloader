@@ -23,7 +23,7 @@
 #include <stdbool.h>
 
 #ifdef NUSSPLI_HBL
-    #define sanityCheck() true
+#define sanityCheck() true
 #else
-    bool sanityCheck();
+bool sanityCheck();
 #endif

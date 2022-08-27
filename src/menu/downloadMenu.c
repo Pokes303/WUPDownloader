@@ -20,14 +20,14 @@
 #include <wut-fixups.h>
 
 #include <input.h>
-#include <renderer.h>
-#include <staticMem.h>
-#include <state.h>
-#include <titles.h>
-#include <utils.h>
 #include <menu/download.h>
 #include <menu/predownload.h>
 #include <menu/utils.h>
+#include <renderer.h>
+#include <state.h>
+#include <staticMem.h>
+#include <titles.h>
+#include <utils.h>
 
 #include <stdint.h>
 
@@ -35,26 +35,26 @@
 
 bool downloadMenu()
 {
-	char titleID[17];
-	char titleVer[33];
-	char folderName[FS_MAX_PATH - 11];
-	titleID[0] = titleVer[0] = folderName[0] = '\0';
-	
-	if(!showKeyboard(KEYBOARD_LAYOUT_TID, KEYBOARD_TYPE_RESTRICTED, titleID, CHECK_HEXADECIMAL, 16, true, "00050000101", NULL))
-		return false;
-	
-	if(!AppRunning())
-		return true;
-	
-	toLowercase(titleID);
-	uint64_t tid;
-	hexToByte(titleID, (uint8_t *)&tid);
-	
-	const TitleEntry *entry = getTitleEntryByTid(tid);
-	const TitleEntry e = { .name = "UNKNOWN", .tid = tid, .region = MCP_REGION_UNKNOWN, .key = 99 };
-	if(entry == NULL)
-		entry = &e;
-	
-	predownloadMenu(entry);
-	return true;
+    char titleID[17];
+    char titleVer[33];
+    char folderName[FS_MAX_PATH - 11];
+    titleID[0] = titleVer[0] = folderName[0] = '\0';
+
+    if(!showKeyboard(KEYBOARD_LAYOUT_TID, KEYBOARD_TYPE_RESTRICTED, titleID, CHECK_HEXADECIMAL, 16, true, "00050000101", NULL))
+        return false;
+
+    if(!AppRunning())
+        return true;
+
+    toLowercase(titleID);
+    uint64_t tid;
+    hexToByte(titleID, (uint8_t *)&tid);
+
+    const TitleEntry *entry = getTitleEntryByTid(tid);
+    const TitleEntry e = { .name = "UNKNOWN", .tid = tid, .region = MCP_REGION_UNKNOWN, .key = 99 };
+    if(entry == NULL)
+        entry = &e;
+
+    predownloadMenu(entry);
+    return true;
 }

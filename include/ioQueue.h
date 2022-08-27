@@ -25,7 +25,7 @@
 #include <coreinit/filesystem.h>
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif
 
 bool initIOThread() __attribute__((__cold__));
@@ -36,5 +36,5 @@ void flushIOQueue();
 FSFileHandle *openFile(const char *patch, const char *mode, size_t filesize);
 
 #ifdef __cplusplus
-	}
+}
 #endif

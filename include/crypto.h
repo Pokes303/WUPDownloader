@@ -25,7 +25,7 @@
 #include <stddef.h>
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif
 
 #define deinitCrypto()
@@ -38,5 +38,5 @@ bool getSHA256(const void *data, size_t data_len, void *hash);
 bool encryptAES(void *data, int data_len, const unsigned char *key, const unsigned char *iv, void *encrypted);
 
 #ifdef __cplusplus
-	}
+}
 #endif

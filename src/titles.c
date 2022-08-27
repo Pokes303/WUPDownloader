@@ -22,11 +22,11 @@
 #include <config.h>
 #include <downloader.h>
 #include <gtitles.h>
+#include <menu/utils.h>
 #include <renderer.h>
 #include <romfs.h>
 #include <titles.h>
 #include <utils.h>
-#include <menu/utils.h>
 
 #include <limits.h>
 #include <stdbool.h>
@@ -38,69 +38,68 @@
 
 const TitleEntry *getTitleEntryByTid(uint64_t tid)
 {
-	static TITLE_CATEGORY cat;
+    static TITLE_CATEGORY cat;
 
-	switch(getTidHighFromTid(tid))
-	{
-		case TID_HIGH_GAME:
-			cat = TITLE_CATEGORY_GAME;
-			break;
-		case TID_HIGH_UPDATE:
-			cat = TITLE_CATEGORY_UPDATE;
-			break;
-		case TID_HIGH_DLC:
-			cat = TITLE_CATEGORY_DLC;
-			break;
-		case TID_HIGH_DEMO:
-			cat = TITLE_CATEGORY_DEMO;
-			break;
-		default:
-			cat = TITLE_CATEGORY_ALL;
-		
-	}
+    switch(getTidHighFromTid(tid))
+        {
+        case TID_HIGH_GAME:
+            cat = TITLE_CATEGORY_GAME;
+            break;
+        case TID_HIGH_UPDATE:
+            cat = TITLE_CATEGORY_UPDATE;
+            break;
+        case TID_HIGH_DLC:
+            cat = TITLE_CATEGORY_DLC;
+            break;
+        case TID_HIGH_DEMO:
+            cat = TITLE_CATEGORY_DEMO;
+            break;
+        default:
+            cat = TITLE_CATEGORY_ALL;
+        }
 
-	const TitleEntry *haystack = getTitleEntries(cat);
-	size_t haySize = getTitleEntriesSize(cat);
+    const TitleEntry *haystack = getTitleEntries(cat);
+    size_t haySize = getTitleEntriesSize(cat);
 
-	for(++haySize; --haySize; ++haystack)
-		if(haystack->tid == tid)
-			return haystack;
+    for(++haySize; --haySize; ++haystack)
+        if(haystack->tid == tid)
+            return haystack;
 
-	return NULL;
+    return NULL;
 }
 
 const char *tid2name(const char *tid)
 {
-	uint64_t rtid;
-	hexToByte(tid, (uint8_t *)&rtid);
-	const TitleEntry *e = getTitleEntryByTid(rtid);
-	return e == NULL ? "UNKNOWN" : e->name;
+    uint64_t rtid;
+    hexToByte(tid, (uint8_t *)&rtid);
+    const TitleEntry *e = getTitleEntryByTid(rtid);
+    return e == NULL ? "UNKNOWN" : e->name;
 }
 
 bool name2tid(const char *name, char *out)
 {
-	size_t lower = 0;
-	size_t upper = getTitleEntriesSize(TITLE_CATEGORY_ALL);
-	size_t current = upper >> 1;
-	int strret;
+    size_t lower = 0;
+    size_t upper = getTitleEntriesSize(TITLE_CATEGORY_ALL);
+    size_t current = upper >> 1;
+    int strret;
 
-	const TitleEntry *titleEntry = getTitleEntries(TITLE_CATEGORY_ALL);
-	while(lower != upper)
-	{
-		strret =  strcmp(titleEntry[current].name, name);
-		if(strret == 0)
-		{
-			hex(titleEntry[current].tid, 16, out);
-            return true;
+    const TitleEntry *titleEntry = getTitleEntries(TITLE_CATEGORY_ALL);
+    while(lower != upper)
+        {
+            strret = strcmp(titleEntry[current].name, name);
+            if(strret == 0)
+                {
+                    hex(titleEntry[current].tid, 16, out);
+                    return true;
+                }
+
+            if(strret < 0)
+                upper = current;
+            else
+                lower = current;
+
+            current = ((upper - lower) >> 1) + lower;
         }
 
-		if(strret < 0)
-			upper = current;
-		else
-			lower = current;
-
-		current = ((upper - lower) >> 1) + lower;
-	}
-
-	return false;
+    return false;
 }

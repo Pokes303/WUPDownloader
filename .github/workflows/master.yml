@@ -6,17 +6,17 @@ on:
       - master
 
 jobs:
-#  clang-format:
-#    runs-on: ubuntu-20.04
-#    steps:
-#      - name: checkout
-#        uses: actions/checkout@v2
-#        with:
-#          fetch-depth: 0
-#      - name: clang-format
-#        run: |
-#          git submodule update --init --recursive
-#          docker run --rm -v ${PWD}:/src wiiuenv/clang-format:13.0.0-2 -e gtitles.c -e gtitles.h -e SDL_FontCache.c -e SDL_FontCache.h -r ./src ./include
+  clang-format:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: clang-format
+        run: |
+          git submodule update --init --recursive
+          docker run --rm -v ${PWD}:/src wiiuenv/clang-format:13.0.0-2 -e gtitles.c -e SDL_FontCache.c -e SDL_FontCache.h -r ./src -r ./include
   build-binary:
     name: Build binary
     runs-on: ubuntu-20.04

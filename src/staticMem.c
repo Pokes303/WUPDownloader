@@ -23,8 +23,8 @@
 #include <coreinit/filesystem.h>
 #include <coreinit/memdefaultheap.h>
 
-#include <staticMem.h>
 #include <renderer.h>
+#include <staticMem.h>
 #include <titles.h>
 
 static char *staticMemToFrameBuffer;
@@ -33,52 +33,52 @@ static char *staticMemPathBuffer[4];
 
 bool initStaticMem()
 {
-	staticMemToFrameBuffer = MEMAllocFromDefaultHeap(TO_FRAME_BUFFER_SIZE);
-	if(staticMemToFrameBuffer != NULL)
-	{
-		staticMemLineBuffer = MEMAllocFromDefaultHeap(TO_FRAME_BUFFER_SIZE);
-		if(staticMemLineBuffer != NULL)
-		{
-			for(int i = 0; i < 4; ++i)
-			{
-				staticMemPathBuffer[i] = MEMAllocFromDefaultHeapEx(FS_MAX_PATH, 0x40); // Alignmnt is important for MCP!
-				if(staticMemPathBuffer[i] == NULL)
-				{
-					for(--i ; i >= 0; --i)
-						MEMFreeToDefaultHeap(staticMemPathBuffer[i]);
+    staticMemToFrameBuffer = MEMAllocFromDefaultHeap(TO_FRAME_BUFFER_SIZE);
+    if(staticMemToFrameBuffer != NULL)
+        {
+            staticMemLineBuffer = MEMAllocFromDefaultHeap(TO_FRAME_BUFFER_SIZE);
+            if(staticMemLineBuffer != NULL)
+                {
+                    for(int i = 0; i < 4; ++i)
+                        {
+                            staticMemPathBuffer[i] = MEMAllocFromDefaultHeapEx(FS_MAX_PATH, 0x40); // Alignmnt is important for MCP!
+                            if(staticMemPathBuffer[i] == NULL)
+                                {
+                                    for(--i; i >= 0; --i)
+                                        MEMFreeToDefaultHeap(staticMemPathBuffer[i]);
 
-					goto staticFailure;
-				}
-			}
+                                    goto staticFailure;
+                                }
+                        }
 
-			return true;
+                    return true;
 
-staticFailure:
-			MEMFreeToDefaultHeap(staticMemLineBuffer);
-		}
+                staticFailure:
+                    MEMFreeToDefaultHeap(staticMemLineBuffer);
+                }
 
-		MEMFreeToDefaultHeap(staticMemToFrameBuffer);
-	}
+            MEMFreeToDefaultHeap(staticMemToFrameBuffer);
+        }
 
-	return false;
+    return false;
 }
 
 void shutdownStaticMem()
 {
-	MEMFreeToDefaultHeap(staticMemToFrameBuffer);
-	MEMFreeToDefaultHeap(staticMemLineBuffer);
-	for(int i = 0; i < 4; ++i)
-		MEMFreeToDefaultHeap(staticMemPathBuffer[i]);
+    MEMFreeToDefaultHeap(staticMemToFrameBuffer);
+    MEMFreeToDefaultHeap(staticMemLineBuffer);
+    for(int i = 0; i < 4; ++i)
+        MEMFreeToDefaultHeap(staticMemPathBuffer[i]);
 }
 
 char *getStaticScreenBuffer()
 {
-	return staticMemToFrameBuffer;
+    return staticMemToFrameBuffer;
 }
 
 char *getStaticLineBuffer()
 {
-	return staticMemLineBuffer;
+    return staticMemLineBuffer;
 }
 
 /*
@@ -87,5 +87,5 @@ char *getStaticLineBuffer()
  */
 char *getStaticPathBuffer(uint32_t i)
 {
-	return staticMemPathBuffer[i];
+    return staticMemPathBuffer[i];
 }

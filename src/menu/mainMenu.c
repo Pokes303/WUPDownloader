@@ -23,18 +23,18 @@
 #include <input.h>
 #include <installer.h>
 #include <localisation.h>
+#include <menu/config.h>
+#include <menu/filebrowser.h>
+#include <menu/installer.h>
+#include <menu/insttitlebrowser.h>
+#include <menu/main.h>
+#include <menu/titlebrowser.h>
+#include <menu/utils.h>
 #include <renderer.h>
 #include <state.h>
 #include <staticMem.h>
 #include <ticket.h>
 #include <utils.h>
-#include <menu/config.h>
-#include <menu/filebrowser.h>
-#include <menu/installer.h>
-#include <menu/insttitlebrowser.h>
-#include <menu/titlebrowser.h>
-#include <menu/main.h>
-#include <menu/utils.h>
 
 #include <coreinit/memdefaultheap.h>
 
@@ -42,79 +42,79 @@
 
 static void drawMainMenuFrame()
 {
-	startNewFrame();
-	boxToFrame(0, 5);
-	textToFrame(1, ALIGNED_CENTER, "NUSspli");
-	textToFrame(3, ALIGNED_CENTER, "NUS simple packet loader/installer [" NUSSPLI_VERSION "]");
+    startNewFrame();
+    boxToFrame(0, 5);
+    textToFrame(1, ALIGNED_CENTER, "NUSspli");
+    textToFrame(3, ALIGNED_CENTER, "NUS simple packet loader/installer [" NUSSPLI_VERSION "]");
 
-	textToFrame(4, ALIGNED_CENTER, NUSSPLI_COPYRIGHT);
+    textToFrame(4, ALIGNED_CENTER, NUSSPLI_COPYRIGHT);
 
-	textToFrame(12, 0, gettext("Press " BUTTON_A " to download content"));
-	textToFrame(13, 0, gettext("Press " BUTTON_X " to install content"));
-	textToFrame(14, 0, gettext("Press " BUTTON_Y " to generate a fake <title.tik> file"));
-	textToFrame(15, 0, gettext("Press " BUTTON_RIGHT " to uninstall a title"));
-	textToFrame(16, 0, gettext("Press " BUTTON_LEFT " for options"));
-	textToFrame(17, 0, gettext("Press " BUTTON_HOME " or " BUTTON_B " to exit"));
+    textToFrame(12, 0, gettext("Press " BUTTON_A " to download content"));
+    textToFrame(13, 0, gettext("Press " BUTTON_X " to install content"));
+    textToFrame(14, 0, gettext("Press " BUTTON_Y " to generate a fake <title.tik> file"));
+    textToFrame(15, 0, gettext("Press " BUTTON_RIGHT " to uninstall a title"));
+    textToFrame(16, 0, gettext("Press " BUTTON_LEFT " for options"));
+    textToFrame(17, 0, gettext("Press " BUTTON_HOME " or " BUTTON_B " to exit"));
 
-	textToFrame(8, MAX_CHARS - 27, gettext("Developers:"));
-	textToFrame(9, MAX_CHARS - 26, "• DaThinkingChair");
-	textToFrame(10, MAX_CHARS - 26, "• Pokes303");
-	textToFrame(11, MAX_CHARS - 26, "• V10lator");
+    textToFrame(8, MAX_CHARS - 27, gettext("Developers:"));
+    textToFrame(9, MAX_CHARS - 26, "• DaThinkingChair");
+    textToFrame(10, MAX_CHARS - 26, "• Pokes303");
+    textToFrame(11, MAX_CHARS - 26, "• V10lator");
 
-	textToFrame(13, MAX_CHARS - 27, gettext("Thanks to:"));
-	textToFrame(14, MAX_CHARS - 26, "• E1ite007");
-	textToFrame(15, MAX_CHARS - 26, "• SDL");
-	textToFrame(16, MAX_CHARS - 26, "• WUP installer");
+    textToFrame(13, MAX_CHARS - 27, gettext("Thanks to:"));
+    textToFrame(14, MAX_CHARS - 26, "• E1ite007");
+    textToFrame(15, MAX_CHARS - 26, "• SDL");
+    textToFrame(16, MAX_CHARS - 26, "• WUP installer");
 
-	textToFrame(18, MAX_CHARS - 27, gettext("Beta testers:"));
-	textToFrame(19, MAX_CHARS - 26, "• jacobsson");
-	textToFrame(20, MAX_CHARS - 26, "• LuckyDingo");
-	textToFrame(21, MAX_CHARS - 26, "• Vague Rant");
-	drawFrame();
+    textToFrame(18, MAX_CHARS - 27, gettext("Beta testers:"));
+    textToFrame(19, MAX_CHARS - 26, "• jacobsson");
+    textToFrame(20, MAX_CHARS - 26, "• LuckyDingo");
+    textToFrame(21, MAX_CHARS - 26, "• Vague Rant");
+    drawFrame();
 }
 
 void mainMenu()
 {
-	drawMainMenuFrame();
+    drawMainMenuFrame();
 
-	while(AppRunning())
-	{
-		if(app == APP_STATE_BACKGROUND)
-			continue;
-		if(app == APP_STATE_RETURNING)
-			drawMainMenuFrame();
-		
-		showFrame();
-		
-		if(vpad.trigger & VPAD_BUTTON_A)
-		{
-			titleBrowserMenu();
-			drawMainMenuFrame();
-		}
-		else if(vpad.trigger & VPAD_BUTTON_X)
-		{
-			char *dir = fileBrowserMenu();
-			if(dir != NULL)
-				installerMenu(dir);
+    while(AppRunning())
+        {
+            if(app == APP_STATE_BACKGROUND)
+                continue;
+            if(app == APP_STATE_RETURNING)
+                drawMainMenuFrame();
 
-			drawMainMenuFrame();
-		}
-		else if(vpad.trigger & VPAD_BUTTON_LEFT)
-		{
-			configMenu();
-			drawMainMenuFrame();
-		}
-		else if(vpad.trigger & VPAD_BUTTON_Y)
-		{
-			generateFakeTicket();
-			drawMainMenuFrame();
-		}
-		else if(vpad.trigger & VPAD_BUTTON_RIGHT)
-		{
-			ititleBrowserMenu();
-			drawMainMenuFrame();
-		}
-		else if(vpad.trigger & VPAD_BUTTON_B)
-			return;
-	}
+            showFrame();
+
+            if(vpad.trigger & VPAD_BUTTON_A)
+                {
+                    titleBrowserMenu();
+                    drawMainMenuFrame();
+                }
+            else if(vpad.trigger & VPAD_BUTTON_X)
+                {
+                    char *dir = fileBrowserMenu();
+                    if(dir != NULL)
+                        installerMenu(dir);
+
+                    drawMainMenuFrame();
+                }
+            else if(vpad.trigger & VPAD_BUTTON_LEFT)
+                {
+                    configMenu();
+                    drawMainMenuFrame();
+                }
+            else if(vpad.trigger & VPAD_BUTTON_Y)
+                {
+                    generateFakeTicket();
+                    drawMainMenuFrame();
+                }
+            else if(vpad.trigger & VPAD_BUTTON_RIGHT)
+                {
+                    ititleBrowserMenu();
+                    drawMainMenuFrame();
+                }
+            else if(vpad.trigger & VPAD_BUTTON_B)
+                return;
+        }
 }

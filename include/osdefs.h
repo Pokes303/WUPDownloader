@@ -29,27 +29,25 @@
 #include <nn/acp/title.h>
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif
 
 // ACP
 extern ACPResult ACPGetTitleMetaXmlByTitleListType(MCPTitleListType *titleListType, ACPMetaXml *out);
 
 // ACT
-uint32_t GetPersistentId()
-	asm("GetPersistentId__Q2_2nn3actFv");
-
+uint32_t GetPersistentId() asm("GetPersistentId__Q2_2nn3actFv");
 
 // MCP
 extern MCPError MCP_DeleteTitleAsync(int handle, char *path, MCPInstallTitleInfo *out);
 
 // SO
-extern int somemopt (int type, void *buf, size_t bufsize, int unk);
+extern int somemopt(int type, void *buf, size_t bufsize, int unk);
 
 // GX2
 extern void GX2SetDRCGamma(float gamma);
 extern void GX2SetTVGamma(float gamma);
 
 #ifdef __cplusplus
-	}
+}
 #endif

@@ -25,18 +25,18 @@
 #include <stdint.h>
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif
 
 typedef enum
 {
-	APP_STATE_STOPPING,
-	APP_STATE_HOME,
-	APP_STATE_STOPPED,
-	APP_STATE_RUNNING,
-	APP_STATE_BACKGROUND,
-	APP_STATE_RETURNING,
-	
+    APP_STATE_STOPPING,
+    APP_STATE_HOME,
+    APP_STATE_STOPPED,
+    APP_STATE_RUNNING,
+    APP_STATE_BACKGROUND,
+    APP_STATE_RETURNING,
+
 } APP_STATE;
 
 extern APP_STATE app;
@@ -56,5 +56,5 @@ bool AppRunning() __attribute__((__hot__));
 uint32_t homeButtonCallback(void *dummy);
 
 #ifdef __cplusplus
-	}
+}
 #endif

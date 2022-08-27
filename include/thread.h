@@ -27,10 +27,10 @@
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/thread.h>
 
-#define DEFAULT_STACKSIZE		0xFFF8
+#define DEFAULT_STACKSIZE 0xFFF8
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif
 
 /*
@@ -46,37 +46,44 @@ typedef enum
     THREAD_PRIORITY_LOW = 15,
 } THREAD_PRIORITY;
 
-#define spinlock volatile uint32_t
+#define spinlock                     volatile uint32_t
 
-#define SPINLOCK_FREE	false
-#define SPINLOCK_LOCKED	true
+#define SPINLOCK_FREE                false
+#define SPINLOCK_LOCKED              true
 
-#define spinCreateLock(lock, locked)	lock = locked
-#define spinIsLocked(lock)				(lock)
-#define spinTryLock(lock)				OSCompareAndSwapAtomic(&lock, SPINLOCK_FREE, SPINLOCK_LOCKED)
-#define spinLock(lock)					while(!spinTryLock(lock)) {}
-#define spinLockAsMutex(lock)			while(!spinTryLock(lock)) { OSSleepTicks(256); }
-#define spinReleaseLock(lock)			lock = SPINLOCK_FREE
+#define spinCreateLock(lock, locked) lock = locked
+#define spinIsLocked(lock)           (lock)
+#define spinTryLock(lock)            OSCompareAndSwapAtomic(&lock, SPINLOCK_FREE, SPINLOCK_LOCKED)
+#define spinLock(lock)        \
+    while(!spinTryLock(lock)) \
+        {                     \
+        }
+#define spinLockAsMutex(lock)  \
+    while(!spinTryLock(lock))  \
+        {                      \
+            OSSleepTicks(256); \
+        }
+#define spinReleaseLock(lock) lock = SPINLOCK_FREE
 
 OSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksize, OSThreadEntryPointFn mainfunc, int argc, char *argv, OSThreadAttributes attribs) __attribute__((__hot__));
 
 #ifdef NUSSPLI_DEBUG
-#define stopThread(thread, ret)																																\
-{																																							\
-	OSJoinThread(thread, ret);																																\
-	debugPrintf("STACK: %s: 0x%08X/0x%08X", thread->name, OSCheckThreadStackUsage(thread), ((uint32_t)thread->stackStart) - ((uint32_t)thread->stackEnd));	\
-	OSDetachThread(thread);																																	\
-	MEMFreeToDefaultHeap(thread);																															\
-}
+#define stopThread(thread, ret)                                                                                                                                \
+    {                                                                                                                                                          \
+        OSJoinThread(thread, ret);                                                                                                                             \
+        debugPrintf("STACK: %s: 0x%08X/0x%08X", thread->name, OSCheckThreadStackUsage(thread), ((uint32_t)thread->stackStart) - ((uint32_t)thread->stackEnd)); \
+        OSDetachThread(thread);                                                                                                                                \
+        MEMFreeToDefaultHeap(thread);                                                                                                                          \
+    }
 #else
-#define stopThread(thread, ret)																	\
-{																								\
-	OSJoinThread(thread, ret);																	\
-	OSDetachThread(thread);																		\
-	MEMFreeToDefaultHeap(thread);																\
-}
+#define stopThread(thread, ret)       \
+    {                                 \
+        OSJoinThread(thread, ret);    \
+        OSDetachThread(thread);       \
+        MEMFreeToDefaultHeap(thread); \
+    }
 #endif
 
 #ifdef __cplusplus
-    }
+}
 #endif

@@ -24,26 +24,26 @@
 #include <stdbool.h>
 
 #include <file.h>
+#include <menu/download.h>
 #include <titles.h>
 #include <tmd.h>
-#include <menu/download.h>
 
 #include <coreinit/memdefaultheap.h>
 #include <wut_structsize.h>
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif
 
 typedef struct WUT_PACKED
 {
-	uint16_t contents; //Contents count
-	uint16_t dcontent; //Actual content number
-	double dlnow;
-	double dltotal;
-	double dltmp;
-	uint32_t eta;
-	size_t cs;
+    uint16_t contents; // Contents count
+    uint16_t dcontent; // Actual content number
+    double dlnow;
+    double dltotal;
+    double dltmp;
+    uint32_t eta;
+    size_t cs;
 } downloadData;
 
 #define DOWNLOAD_URL "http://ccs.cdn.wup.shop.nintendo.net/ccs/download/"
@@ -57,5 +57,5 @@ size_t getRamBufSize();
 void clearRamBuf();
 
 #ifdef __cplusplus
-	}
+}
 #endif

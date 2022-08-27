@@ -19,8 +19,8 @@
 
 #include <wut-fixups.h>
 
-#include <string.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <localisation.h>
 
@@ -36,9 +36,9 @@ struct MSG;
 typedef struct MSG MSG;
 struct MSG
 {
-	uint32_t hash;
-	const char* msgstr;
-	MSG *next;
+    uint32_t hash;
+    const char *msgstr;
+    MSG *next;
 };
 
 static MSG *baseMSG = NULL;
@@ -57,106 +57,105 @@ static MSG *baseMSG = NULL;
  */
 static inline uint32_t hash_string(const unsigned char *str_param)
 {
-	uint32_t hash = 0;
+    uint32_t hash = 0;
 
-	while(*str_param != '\0')
-		hash = HASHMULTIPLIER * hash + *str_param++;
+    while(*str_param != '\0')
+        hash = HASHMULTIPLIER * hash + *str_param++;
 
-	return hash;
+    return hash;
 }
 
 static void addMSG(const char *msgid, const char *msgstr)
 {
-	if(!msgstr)
-		return;
+    if(!msgstr)
+        return;
 
-	MSG *msg = (MSG *)MEMAllocFromDefaultHeap(sizeof(MSG));
-	msg->hash = hash_string((unsigned char *)msgid);
-	msg->msgstr = strdup(msgstr);
-	msg->next = NULL;
+    MSG *msg = (MSG *)MEMAllocFromDefaultHeap(sizeof(MSG));
+    msg->hash = hash_string((unsigned char *)msgid);
+    msg->msgstr = strdup(msgstr);
+    msg->next = NULL;
 
-	if(baseMSG == NULL)
-		baseMSG = msg;
-	else
-	{
-		MSG *last = baseMSG;
-		while(last->next != NULL)
-			last = last->next;
+    if(baseMSG == NULL)
+        baseMSG = msg;
+    else
+        {
+            MSG *last = baseMSG;
+            while(last->next != NULL)
+                last = last->next;
 
-		last->next = msg;
-	}
+            last->next = msg;
+        }
 
-	return;
+    return;
 }
 
 void gettextCleanUp()
 {
-	while(baseMSG)
-	{
-		MSG *nextMsg = baseMSG->next;
-		MEMFreeToDefaultHeap((void *)(baseMSG->msgstr));
-		MEMFreeToDefaultHeap(baseMSG);
-		baseMSG = nextMsg;
-	}
+    while(baseMSG)
+        {
+            MSG *nextMsg = baseMSG->next;
+            MEMFreeToDefaultHeap((void *)(baseMSG->msgstr));
+            MEMFreeToDefaultHeap(baseMSG);
+            baseMSG = nextMsg;
+        }
 }
 
-bool gettextLoadLanguage(const char* langFile)
+bool gettextLoadLanguage(const char *langFile)
 {
-	debugPrintf("Loading language file: %s", langFile);
+    debugPrintf("Loading language file: %s", langFile);
 
-	void *buffer;
-	size_t size = readFile(langFile, &buffer);
-	if(buffer == NULL)
-		return false;
+    void *buffer;
+    size_t size = readFile(langFile, &buffer);
+    if(buffer == NULL)
+        return false;
 
-	bool ret = true;
+    bool ret = true;
 #ifdef NUSSPLI_DEBUG
-	json_error_t jerr;
-	json_t *json = json_loadb(buffer, size, 0, &jerr);
+    json_error_t jerr;
+    json_t *json = json_loadb(buffer, size, 0, &jerr);
 #else
-	json_t *json = json_loadb(buffer, size, 0, NULL);
+    json_t *json = json_loadb(buffer, size, 0, NULL);
 #endif
-	if(json)
-	{
-		size = json_object_size(json);
-		if(size != 0)
-		{
-			const char *key;
-			json_t *value;
-			json_object_foreach(json, key, value)
-			{
-				if(json_is_string(value))
-					addMSG(key, json_string_value(value));
-				else
-					debugPrintf("Not a string: %s", key);
-			}
-		}
-		else
-		{
-			debugPrintf("Error parsing json!");
-			ret = false;
-		}
+    if(json)
+        {
+            size = json_object_size(json);
+            if(size != 0)
+                {
+                    const char *key;
+                    json_t *value;
+                    json_object_foreach(json, key, value)
+                    {
+                        if(json_is_string(value))
+                            addMSG(key, json_string_value(value));
+                        else
+                            debugPrintf("Not a string: %s", key);
+                    }
+                }
+            else
+                {
+                    debugPrintf("Error parsing json!");
+                    ret = false;
+                }
 
-		json_decref(json);
-	}
-	else
-	{
-		debugPrintf("Error parsing json: %s", jerr.text);
-		ret = false;
-	}
+            json_decref(json);
+        }
+    else
+        {
+            debugPrintf("Error parsing json: %s", jerr.text);
+            ret = false;
+        }
 
-	MEMFreeToDefaultHeap(buffer);
-	return ret;
+    MEMFreeToDefaultHeap(buffer);
+    return ret;
 }
 
 const char *gettext(const char *msgid)
 {
-	uint32_t hash = hash_string((unsigned char *)msgid);
+    uint32_t hash = hash_string((unsigned char *)msgid);
 
-	for(MSG *msg = baseMSG; msg != NULL; msg = msg->next)
-		if(msg->hash == hash)
-			return msg->msgstr;
+    for(MSG *msg = baseMSG; msg != NULL; msg = msg->next)
+        if(msg->hash == hash)
+            return msg->msgstr;
 
-	return msgid;
+    return msgid;
 }
-

@@ -20,59 +20,59 @@
 
 #include <input.h>
 #include <localisation.h>
-#include <staticMem.h>
+#include <menu/utils.h>
 #include <renderer.h>
 #include <state.h>
-#include <utils.h>
+#include <staticMem.h>
 #include <updater.h>
-#include <menu/utils.h>
+#include <utils.h>
 
 #include <string.h>
 
 static void drawUpdateMenuFrame(const char *newVersion)
 {
-	startNewFrame();
-	boxToFrame(0, 5);
-	textToFrame(1, ALIGNED_CENTER, "NUSspli");
-	char *toScreen = getToFrameBuffer();
-	strcpy(toScreen, "NUS simple packet loader/installer [");
-	strcat(toScreen, NUSSPLI_VERSION);
-	strcat(toScreen, "]");
-	textToFrame(3, ALIGNED_CENTER, toScreen);
-	
-	textToFrame(4, ALIGNED_CENTER, NUSSPLI_COPYRIGHT);
-	
-	textToFrame(7, 0, gettext("Update available!"));
-	lineToFrame(MAX_LINES - 3, SCREEN_COLOR_WHITE);
-	strcpy(toScreen, gettext("Press " BUTTON_A " to update to"));
-	strcat(toScreen, " ");
-	strcat(toScreen, newVersion);
-	textToFrame(MAX_LINES - 2, 0, toScreen);
-	textToFrame(MAX_LINES - 1, 0, gettext("Press " BUTTON_B " to cancel"));
-	drawFrame();
+    startNewFrame();
+    boxToFrame(0, 5);
+    textToFrame(1, ALIGNED_CENTER, "NUSspli");
+    char *toScreen = getToFrameBuffer();
+    strcpy(toScreen, "NUS simple packet loader/installer [");
+    strcat(toScreen, NUSSPLI_VERSION);
+    strcat(toScreen, "]");
+    textToFrame(3, ALIGNED_CENTER, toScreen);
+
+    textToFrame(4, ALIGNED_CENTER, NUSSPLI_COPYRIGHT);
+
+    textToFrame(7, 0, gettext("Update available!"));
+    lineToFrame(MAX_LINES - 3, SCREEN_COLOR_WHITE);
+    strcpy(toScreen, gettext("Press " BUTTON_A " to update to"));
+    strcat(toScreen, " ");
+    strcat(toScreen, newVersion);
+    textToFrame(MAX_LINES - 2, 0, toScreen);
+    textToFrame(MAX_LINES - 1, 0, gettext("Press " BUTTON_B " to cancel"));
+    drawFrame();
 }
 
 bool updateMenu(const char *newVersion, NUSSPLI_TYPE type)
 {
-	drawUpdateMenuFrame(newVersion);
+    drawUpdateMenuFrame(newVersion);
 
-	while(AppRunning())
-	{
-		if(app == APP_STATE_BACKGROUND)
-			continue;
-		if(app == APP_STATE_RETURNING)
-			drawUpdateMenuFrame(newVersion);
-		
-		showFrame();
-		
-		if(vpad.trigger & VPAD_BUTTON_A)
-		{
-			update(newVersion, type);
-			return true;
-		}
-		if(vpad.trigger & VPAD_BUTTON_B)
-			break;
-	}
+    while(AppRunning())
+        {
+            if(app == APP_STATE_BACKGROUND)
+                continue;
+            if(app == APP_STATE_RETURNING)
+                drawUpdateMenuFrame(newVersion);
 
-	return false;
+            showFrame();
+
+            if(vpad.trigger & VPAD_BUTTON_A)
+                {
+                    update(newVersion, type);
+                    return true;
+                }
+            if(vpad.trigger & VPAD_BUTTON_B)
+                break;
+        }
+
+    return false;
 }

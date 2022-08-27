@@ -21,11 +21,11 @@
 #include <wut-fixups.h>
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif
 
 uint8_t *getCommonKey();
 
 #ifdef __cplusplus
-	}
+}
 #endif

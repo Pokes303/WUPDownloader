@@ -26,57 +26,57 @@
 #include <padscore/wpad.h>
 #include <vpad/input.h>
 
-#define BUTTON_A		"\uE000"
-#define BUTTON_B		"\uE001"
-#define BUTTON_X		"\uE002"
-#define BUTTON_Y		"\uE003"
+#define BUTTON_A          "\uE000"
+#define BUTTON_B          "\uE001"
+#define BUTTON_X          "\uE002"
+#define BUTTON_Y          "\uE003"
 
-#define BUTTON_PLUS		"\uE045"
-#define BUTTON_MINUS	"\uE046"
+#define BUTTON_PLUS       "\uE045"
+#define BUTTON_MINUS      "\uE046"
 
-#define BUTTON_LEFT		"\uE07B"
-#define BUTTON_RIGHT	"\uE07C"
-#define BUTTON_UP		"\uE079"
-#define BUTTON_DOWN		"\uE07A"
+#define BUTTON_LEFT       "\uE07B"
+#define BUTTON_RIGHT      "\uE07C"
+#define BUTTON_UP         "\uE079"
+#define BUTTON_DOWN       "\uE07A"
 
 #define BUTTON_LEFT_RIGHT "\uE07E"
 
-#define BUTTON_HOME		"\uE044"
+#define BUTTON_HOME       "\uE044"
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif
 
 extern VPADStatus vpad;
 
 typedef enum
 {
-	CHECK_NONE,			//No check
-	CHECK_NUMERICAL,	//Only numbers
-	CHECK_HEXADECIMAL,	//Only hex
-	CHECK_ALPHANUMERICAL,	//Only letters or numbers
-	CHECK_URL,
+    CHECK_NONE, // No check
+    CHECK_NUMERICAL, // Only numbers
+    CHECK_HEXADECIMAL, // Only hex
+    CHECK_ALPHANUMERICAL, // Only letters or numbers
+    CHECK_URL,
 } KeyboardChecks;
 
 typedef enum
 {
-	KEYBOARD_TYPE_RESTRICTED,
-	KEYBOARD_TYPE_NORMAL
+    KEYBOARD_TYPE_RESTRICTED,
+    KEYBOARD_TYPE_NORMAL
 } KeyboardType;
 
 typedef enum
 {
-	KEYBOARD_LAYOUT_NORMAL	= 0,
-	KEYBOARD_LAYOUT_TID	= 2,
+    KEYBOARD_LAYOUT_NORMAL = 0,
+    KEYBOARD_LAYOUT_TID = 2,
 } KeyboardLayout;
 
 typedef enum
 {
-	CT_WPAD_0 = WPAD_CHAN_0,
-	CT_WPAD_1 = WPAD_CHAN_1,
-	CT_WPAD_2 = WPAD_CHAN_2,
-	CT_WPAD_3 = WPAD_CHAN_3,
-	CT_VPAD_0 = 4 + VPAD_CHAN_0,
+    CT_WPAD_0 = WPAD_CHAN_0,
+    CT_WPAD_1 = WPAD_CHAN_1,
+    CT_WPAD_2 = WPAD_CHAN_2,
+    CT_WPAD_3 = WPAD_CHAN_3,
+    CT_VPAD_0 = 4 + VPAD_CHAN_0,
 } ControllerType;
 
 bool SWKBD_Init() __attribute__((__cold__));
@@ -86,5 +86,5 @@ void readInput() __attribute__((__hot__));
 bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, KeyboardChecks check, int maxlength, bool limit, const char *input, const char *okStr);
 
 #ifdef __cplusplus
-	}
+}
 #endif

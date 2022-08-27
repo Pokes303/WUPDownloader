@@ -29,27 +29,27 @@
 
 #include <coreinit/mcp.h>
 
-#define CONFIG_PATH NUSDIR_SD "/NUSspli.txt"
+#define CONFIG_PATH            NUSDIR_SD "/NUSspli.txt"
 #define TITLE_KEY_URL_MAX_SIZE 1024
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif
 
 typedef enum
 {
-	NOTIF_METHOD_NONE	= 0x00,
-	NOTIF_METHOD_RUMBLE	= 0x01,
-	NOTIF_METHOD_LED	= 0x02,
+    NOTIF_METHOD_NONE = 0x00,
+    NOTIF_METHOD_RUMBLE = 0x01,
+    NOTIF_METHOD_LED = 0x02,
 } NOTIF_METHOD;
 
 typedef enum
 {
-	MENU_LANGUAGE_ENGLISH,
-	MENU_LANGUAGE_GERMAN,
-	MENU_LANGUAGE_SPANISH,
-	MENU_LANGUAGE_ITALIAN,
-	MENU_LANGUAGE_RUSSIAN,
+    MENU_LANGUAGE_ENGLISH,
+    MENU_LANGUAGE_GERMAN,
+    MENU_LANGUAGE_SPANISH,
+    MENU_LANGUAGE_ITALIAN,
+    MENU_LANGUAGE_RUSSIAN,
 } MENU_LANGUAGE;
 
 bool initConfig();
@@ -75,5 +75,5 @@ void setMenuLanguage(MENU_LANGUAGE lang);
 const char *menuLangToString(MENU_LANGUAGE lang);
 
 #ifdef __cplusplus
-	}
+}
 #endif

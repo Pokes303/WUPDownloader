@@ -18,9 +18,9 @@
 
 #include <wut-fixups.h>
 
+#include <dirent.h>
 #include <stdbool.h>
 #include <string.h>
-#include <dirent.h>
 
 #include <coreinit/ios.h>
 #include <coreinit/mcp.h>
@@ -34,93 +34,93 @@
 #include <file.h>
 #include <input.h>
 #include <localisation.h>
+#include <menu/utils.h>
 #include <notifications.h>
 #include <osdefs.h>
 #include <renderer.h>
 #include <state.h>
 #include <utils.h>
-#include <menu/utils.h>
 
 bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool skipEnd)
 {
-	startNewFrame();
-	char *toFrame = getToFrameBuffer();
-	strcpy(toFrame, gettext("Uninstalling"));
-	strcat(toFrame, " ");
-	strcat(toFrame, name);
-	textToFrame(0, 0, toFrame);
-	textToFrame(1, 0, gettext("Preparing..."));
-	writeScreenLog(2);
-	drawFrame();
-	showFrame();
+    startNewFrame();
+    char *toFrame = getToFrameBuffer();
+    strcpy(toFrame, gettext("Uninstalling"));
+    strcat(toFrame, " ");
+    strcat(toFrame, name);
+    textToFrame(0, 0, toFrame);
+    textToFrame(1, 0, gettext("Preparing..."));
+    writeScreenLog(2);
+    drawFrame();
+    showFrame();
 
-	MCPInstallTitleInfo *info = MEMAllocFromDefaultHeapEx(sizeof(MCPInstallTitleInfo), 0x40);
-	if(info == NULL)
-		return false;
+    MCPInstallTitleInfo *info = MEMAllocFromDefaultHeapEx(sizeof(MCPInstallTitleInfo), 0x40);
+    if(info == NULL)
+        return false;
 
-	McpData data;
-	glueMcpData(info, &data);
-	
-	//err = MCP_UninstallTitleAsync(mcpHandle, title->path, info);
-	// The above crashes MCP, so let's leave WUT:
-	debugPrintf("Deleting %s", title->path);
-	OSTick t = OSGetTick();
-	if(!channelHaxx)
-		disableShutdown();
+    McpData data;
+    glueMcpData(info, &data);
 
-	MCPError err = MCP_DeleteTitleAsync(mcpHandle, title->path, info);
-	if(err != 0)
-	{
-		MEMFreeToDefaultHeap(info);
-		debugPrintf("Err1: %#010x (%d)", err, err);
-		if(!channelHaxx)
-			enableShutdown();
-		return false;
-	}
-	
-	if(channelHaxx)
-	{
-		MEMFreeToDefaultHeap(info);
-		return true;
-	}
+    // err = MCP_UninstallTitleAsync(mcpHandle, title->path, info);
+    //  The above crashes MCP, so let's leave WUT:
+    debugPrintf("Deleting %s", title->path);
+    OSTick t = OSGetTick();
+    if(!channelHaxx)
+        disableShutdown();
 
-	showMcpProgress(&data, name, false);
-	MEMFreeToDefaultHeap(info);
-	enableShutdown();
-	t = OSGetTick() - t;
-	addEntropy(&t, sizeof(OSTick));
-	addToScreenLog("Deinstallation finished!");
+    MCPError err = MCP_DeleteTitleAsync(mcpHandle, title->path, info);
+    if(err != 0)
+        {
+            MEMFreeToDefaultHeap(info);
+            debugPrintf("Err1: %#010x (%d)", err, err);
+            if(!channelHaxx)
+                enableShutdown();
+            return false;
+        }
 
-	if(!skipEnd)
-	{
-		startNotification();
+    if(channelHaxx)
+        {
+            MEMFreeToDefaultHeap(info);
+            return true;
+        }
 
-		colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-		textToFrame(0, 0, name);
-		textToFrame(1, 0, gettext("Uninstalled successfully!"));
-		writeScreenLog(2);
-		drawFrame();
+    showMcpProgress(&data, name, false);
+    MEMFreeToDefaultHeap(info);
+    enableShutdown();
+    t = OSGetTick() - t;
+    addEntropy(&t, sizeof(OSTick));
+    addToScreenLog("Deinstallation finished!");
 
-		while(AppRunning())
-		{
-			if(app == APP_STATE_BACKGROUND)
-				continue;
-			if(app == APP_STATE_RETURNING)
-			{
-				colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-				textToFrame(0, 0, name);
-				textToFrame(1, 0, gettext("Uninstalled successfully!"));
-				writeScreenLog(2);
-				drawFrame();
-			}
+    if(!skipEnd)
+        {
+            startNotification();
 
-			showFrame();
+            colorStartNewFrame(SCREEN_COLOR_D_GREEN);
+            textToFrame(0, 0, name);
+            textToFrame(1, 0, gettext("Uninstalled successfully!"));
+            writeScreenLog(2);
+            drawFrame();
 
-			if(vpad.trigger)
-				break;
-		}
+            while(AppRunning())
+                {
+                    if(app == APP_STATE_BACKGROUND)
+                        continue;
+                    if(app == APP_STATE_RETURNING)
+                        {
+                            colorStartNewFrame(SCREEN_COLOR_D_GREEN);
+                            textToFrame(0, 0, name);
+                            textToFrame(1, 0, gettext("Uninstalled successfully!"));
+                            writeScreenLog(2);
+                            drawFrame();
+                        }
 
-		stopNotification();
-	}
-	return true;
+                    showFrame();
+
+                    if(vpad.trigger)
+                        break;
+                }
+
+            stopNotification();
+        }
+    return true;
 }

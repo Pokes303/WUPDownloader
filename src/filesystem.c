@@ -32,42 +32,42 @@ static NUSDEV usb = NUSDEV_SD;
 bool initFS()
 {
 
-	if(FSAInit() == FS_ERROR_OK)
-	{
-		handle = FSAAddClient(NULL);
-		if(handle)
-		{
-			FSError err = FSAMount(handle, "/vol/external01", "/vol/app_sd", FSA_MOUNT_FLAG_BIND_MOUNT, NULL, 0);
-			if(err == FS_ERROR_OK)
-				return true;
+    if(FSAInit() == FS_ERROR_OK)
+        {
+            handle = FSAAddClient(NULL);
+            if(handle)
+                {
+                    FSError err = FSAMount(handle, "/vol/external01", "/vol/app_sd", FSA_MOUNT_FLAG_BIND_MOUNT, NULL, 0);
+                    if(err == FS_ERROR_OK)
+                        return true;
 
-			FSADelClient(handle);
-		}
+                    FSADelClient(handle);
+                }
 
-		FSAShutdown();
-	}
+            FSAShutdown();
+        }
 
-	return false;
+    return false;
 }
 
 void deinitFS()
 {
-	FSAUnmount(handle, "/vol/app_sd", FSA_UNMOUNT_FLAG_BIND_MOUNT);
-	FSADelClient(handle);
-	FSAShutdown();
+    FSAUnmount(handle, "/vol/app_sd", FSA_UNMOUNT_FLAG_BIND_MOUNT);
+    FSADelClient(handle);
+    FSAShutdown();
 }
 
 NUSDEV getUSB()
 {
-	if(usb == NUSDEV_SD)
-	{
-		if(dirExists(NUSDIR_USB1 "usr"))
-			usb = NUSDEV_USB01;
-		else if(dirExists(NUSDIR_USB2 "usr"))
-			usb = NUSDEV_USB02;
-		else
-			usb = NUSDEV_NONE;
-	}
+    if(usb == NUSDEV_SD)
+        {
+            if(dirExists(NUSDIR_USB1 "usr"))
+                usb = NUSDEV_USB01;
+            else if(dirExists(NUSDIR_USB2 "usr"))
+                usb = NUSDEV_USB02;
+            else
+                usb = NUSDEV_NONE;
+        }
 
-	return usb;
+    return usb;
 }

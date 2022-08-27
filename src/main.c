@@ -28,22 +28,22 @@
 #include <installer.h>
 #include <ioQueue.h>
 #include <jailbreak.h>
+#include <menu/download.h>
+#include <menu/main.h>
+#include <menu/utils.h>
 #include <notifications.h>
 #include <osdefs.h>
 #include <otp.h>
 #include <renderer.h>
 #include <romfs-wiiu.h>
 #include <sanity.h>
-#include <staticMem.h>
 #include <state.h>
+#include <staticMem.h>
 #include <thread.h>
 #include <ticket.h>
 #include <titles.h>
 #include <updater.h>
 #include <utils.h>
-#include <menu/download.h>
-#include <menu/main.h>
-#include <menu/utils.h>
 
 #include <limits.h>
 #include <stdlib.h>
@@ -71,273 +71,272 @@ static bool mochaReady = false;
 
 static void drawLoadingScreen(const char *toScreenLog, const char *loadingMsg)
 {
-	addToScreenLog(toScreenLog);
-	startNewFrame();
-	textToFrame(0, 0, loadingMsg);
-	writeScreenLog(1);
-	drawFrame();
+    addToScreenLog(toScreenLog);
+    startNewFrame();
+    textToFrame(0, 0, loadingMsg);
+    writeScreenLog(1);
+    drawFrame();
 }
 
 static void innerMain(bool validCfw)
 {
-	OSThread *mainThread = OSGetCurrentThread();
-	OSSetThreadName(mainThread, "NUSspli");
+    OSThread *mainThread = OSGetCurrentThread();
+    OSSetThreadName(mainThread, "NUSspli");
 #ifdef NUSSPLI_HBL
-	OSSetThreadStackUsage(mainThread);
+    OSSetThreadStackUsage(mainThread);
 #endif
 
-	if(validCfw)
-	{
-		addEntropy(&(mainThread->id), sizeof(uint16_t));
-		addEntropy(mainThread->stackStart, 4);
+    if(validCfw)
+        {
+            addEntropy(&(mainThread->id), sizeof(uint16_t));
+            addEntropy(mainThread->stackStart, 4);
 
-		checkStacks("main");
-	}
+            checkStacks("main");
+        }
 
-	FSInit();
-	FSInitCmdBlock(getCmdBlk());
-	FSSetCmdPriority(getCmdBlk(), 0);
+    FSInit();
+    FSInitCmdBlock(getCmdBlk());
+    FSSetCmdPriority(getCmdBlk(), 0);
 #ifdef NUSSPLI_HBL
-	romfsInit();
+    romfsInit();
 #endif
 
-	KPADInit();
-	WPADEnableURCC(true);
+    KPADInit();
+    WPADEnableURCC(true);
 
-	if(initStaticMem())
-	{
-		if(initRenderer())
-		{
-			readInput(); // bug #95
-			char *lerr = NULL;
-			if(validCfw)
-			{
-				if(OSSetThreadPriority(mainThread, THREAD_PRIORITY_HIGH))
-					addToScreenLog("Changed main thread priority!");
-				else
-					addToScreenLog("WARNING: Error changing main thread priority!");
+    if(initStaticMem())
+        {
+            if(initRenderer())
+                {
+                    readInput(); // bug #95
+                    char *lerr = NULL;
+                    if(validCfw)
+                        {
+                            if(OSSetThreadPriority(mainThread, THREAD_PRIORITY_HIGH))
+                                addToScreenLog("Changed main thread priority!");
+                            else
+                                addToScreenLog("WARNING: Error changing main thread priority!");
 
-				startNewFrame();
-				textToFrame(0, 0, "Loading filesystem...");
-				writeScreenLog(1);
-				drawFrame();
+                            startNewFrame();
+                            textToFrame(0, 0, "Loading filesystem...");
+                            writeScreenLog(1);
+                            drawFrame();
 
-				if(initFS())
-				{
-					drawLoadingScreen("Filesystem initialized!", "Loading OpenSSL..");
-					if(initCrypto())
-					{
-						drawLoadingScreen("OpenSSL initialized!", "Loading MCP...");
-						mcpHandle = MCP_Open();
-						if(mcpHandle != 0)
-						{
-							drawLoadingScreen("MCP initialized!", "Checking sanity...");
-							if(sanityCheck())
-							{
-								drawLoadingScreen("Sanity checked!", "Loading notification system...");
-								if(initNotifications())
-								{
-									drawLoadingScreen("Notification system initialized!", "Loading downloader...");
-									if(initDownloader())
-									{
-										drawLoadingScreen("Downloader initialized!", "Loading I/O thread...");
-										if(initIOThread())
-										{
-											drawLoadingScreen("I/O thread initialized!", "Loading config...");
-											if(initConfig())
-											{
-												drawLoadingScreen("Config loaded!", "Loading SWKBD...");
-												if(SWKBD_Init())
-												{
-													drawLoadingScreen("SWKBD initialized!", "Loading menu...");
-													checkStacks("main()");
-													if(!updateCheck())
-													{
-														checkStacks("main");
-														mainMenu(); // main loop
-														checkStacks("main");
-														debugPrintf("Deinitializing libraries...");
-													}
+                            if(initFS())
+                                {
+                                    drawLoadingScreen("Filesystem initialized!", "Loading OpenSSL..");
+                                    if(initCrypto())
+                                        {
+                                            drawLoadingScreen("OpenSSL initialized!", "Loading MCP...");
+                                            mcpHandle = MCP_Open();
+                                            if(mcpHandle != 0)
+                                                {
+                                                    drawLoadingScreen("MCP initialized!", "Checking sanity...");
+                                                    if(sanityCheck())
+                                                        {
+                                                            drawLoadingScreen("Sanity checked!", "Loading notification system...");
+                                                            if(initNotifications())
+                                                                {
+                                                                    drawLoadingScreen("Notification system initialized!", "Loading downloader...");
+                                                                    if(initDownloader())
+                                                                        {
+                                                                            drawLoadingScreen("Downloader initialized!", "Loading I/O thread...");
+                                                                            if(initIOThread())
+                                                                                {
+                                                                                    drawLoadingScreen("I/O thread initialized!", "Loading config...");
+                                                                                    if(initConfig())
+                                                                                        {
+                                                                                            drawLoadingScreen("Config loaded!", "Loading SWKBD...");
+                                                                                            if(SWKBD_Init())
+                                                                                                {
+                                                                                                    drawLoadingScreen("SWKBD initialized!", "Loading menu...");
+                                                                                                    checkStacks("main()");
+                                                                                                    if(!updateCheck())
+                                                                                                        {
+                                                                                                            checkStacks("main");
+                                                                                                            mainMenu(); // main loop
+                                                                                                            checkStacks("main");
+                                                                                                            debugPrintf("Deinitializing libraries...");
+                                                                                                        }
 
-													SWKBD_Shutdown();
-													debugPrintf("SWKBD closed");
-												}
-												else
-													lerr = "Couldn't initialize SWKBD!";
+                                                                                                    SWKBD_Shutdown();
+                                                                                                    debugPrintf("SWKBD closed");
+                                                                                                }
+                                                                                            else
+                                                                                                lerr = "Couldn't initialize SWKBD!";
 
-												saveConfig(false);
-											}
-											else
-												lerr = "Couldn't load config file!\n\nMost likely your SD card is write locked!";
+                                                                                            saveConfig(false);
+                                                                                        }
+                                                                                    else
+                                                                                        lerr = "Couldn't load config file!\n\nMost likely your SD card is write locked!";
 
-											shutdownIOThread();
-											debugPrintf("I/O thread closed");
-										}
-										else
-											lerr = "Couldn't load I/O thread!";
+                                                                                    shutdownIOThread();
+                                                                                    debugPrintf("I/O thread closed");
+                                                                                }
+                                                                            else
+                                                                                lerr = "Couldn't load I/O thread!";
 
-										deinitDownloader();
-									}
-									else
-										lerr = "Couldn't initialize downloader!";
+                                                                            deinitDownloader();
+                                                                        }
+                                                                    else
+                                                                        lerr = "Couldn't initialize downloader!";
 
-									deinitNotifications();
-									debugPrintf("Notification system closed");
-								}
-								else
-									lerr = "Couldn't initialize notification system!";
-							}
-							else
-								lerr = "No support for rebrands, use original NUSspli!";
+                                                                    deinitNotifications();
+                                                                    debugPrintf("Notification system closed");
+                                                                }
+                                                            else
+                                                                lerr = "Couldn't initialize notification system!";
+                                                        }
+                                                    else
+                                                        lerr = "No support for rebrands, use original NUSspli!";
 
-							MCP_Close(mcpHandle);
-							debugPrintf("MCP closed");
-						}
-						else
-							lerr = "Couldn't initialize MCP!";
+                                                    MCP_Close(mcpHandle);
+                                                    debugPrintf("MCP closed");
+                                                }
+                                            else
+                                                lerr = "Couldn't initialize MCP!";
 
-						deinitCrypto();
-						debugPrintf("OpenSSL closed");
-					}
-					else
-						lerr = "Couldn't initialize OpenSSL!";
+                                            deinitCrypto();
+                                            debugPrintf("OpenSSL closed");
+                                        }
+                                    else
+                                        lerr = "Couldn't initialize OpenSSL!";
 
-					deinitFS();
-					debugPrintf("Filesystem closed");
-				}
-				else
-					lerr = "Couldn't initialize filesystem!";
-			}
-			else
-				lerr = "Unsupported environment.\nEither you're not using Tiramisu or your Tiramisu version is out of date.";
+                                    deinitFS();
+                                    debugPrintf("Filesystem closed");
+                                }
+                            else
+                                lerr = "Couldn't initialize filesystem!";
+                        }
+                    else
+                        lerr = "Unsupported environment.\nEither you're not using Tiramisu or your Tiramisu version is out of date.";
 
-			if(lerr != NULL)
-			{
-				drawErrorFrame(lerr, ANY_RETURN);
-				showFrame();
+                    if(lerr != NULL)
+                        {
+                            drawErrorFrame(lerr, ANY_RETURN);
+                            showFrame();
 
-				while(!(vpad.trigger))
-					showFrame();
-			}
+                            while(!(vpad.trigger))
+                                showFrame();
+                        }
 
-			shutdownRenderer();
-			debugPrintf("SDL closed");
-		}
+                    shutdownRenderer();
+                    debugPrintf("SDL closed");
+                }
 
-		shutdownStaticMem();
-	}
-	else
-		debugPrintf("Error inititalizing static memory!");
+            shutdownStaticMem();
+        }
+    else
+        debugPrintf("Error inititalizing static memory!");
 
-	debugPrintf("Clearing screen log");
-	clearScreenLog();
-	KPADShutdown();
+    debugPrintf("Clearing screen log");
+    clearScreenLog();
+    KPADShutdown();
 
-	debugPrintf("Shutting down filesystem");
+    debugPrintf("Shutting down filesystem");
 #ifdef NUSSPLI_HBL
-	romfsExit();
+    romfsExit();
 #endif
-	FSShutdown();
+    FSShutdown();
 }
 
 static bool cfwValid()
 {
-	mochaReady = Mocha_InitLibrary() == MOCHA_RESULT_SUCCESS;
-	bool ret = mochaReady;
-	if(ret)
-	{
-		ret = Mocha_UnlockFSClient(__wut_devoptab_fs_client) == MOCHA_RESULT_SUCCESS;
-		if(ret)
-		{
-			WiiUConsoleOTP otp;
-			ret = Mocha_ReadOTP(&otp) == MOCHA_RESULT_SUCCESS;
-			if(ret)
-			{
-				MochaRPXLoadInfo info = {
-					.target = 0xDEADBEEF,
-					.filesize = 0,
-					.fileoffset = 0,
-					.path = "dummy"
-				};
+    mochaReady = Mocha_InitLibrary() == MOCHA_RESULT_SUCCESS;
+    bool ret = mochaReady;
+    if(ret)
+        {
+            ret = Mocha_UnlockFSClient(__wut_devoptab_fs_client) == MOCHA_RESULT_SUCCESS;
+            if(ret)
+                {
+                    WiiUConsoleOTP otp;
+                    ret = Mocha_ReadOTP(&otp) == MOCHA_RESULT_SUCCESS;
+                    if(ret)
+                        {
+                            MochaRPXLoadInfo info = {
+                                .target = 0xDEADBEEF,
+                                .filesize = 0,
+                                .fileoffset = 0,
+                                .path = "dummy"
+                            };
 
-				MochaUtilsStatus s = Mocha_LaunchRPX(&info);
-				ret = s != MOCHA_RESULT_UNSUPPORTED_API_VERSION && s != MOCHA_RESULT_UNSUPPORTED_COMMAND;
-			}
-		}
-	}
+                            MochaUtilsStatus s = Mocha_LaunchRPX(&info);
+                            ret = s != MOCHA_RESULT_UNSUPPORTED_API_VERSION && s != MOCHA_RESULT_UNSUPPORTED_COMMAND;
+                        }
+                }
+        }
 
-	return ret;
+    return ret;
 }
 
 int main()
 {
-	initState();
+    initState();
 
 #ifdef NUSSPLI_HBL
-	bool jailbreaking;
-	uint64_t tid = OSGetTitleID();
+    bool jailbreaking;
+    uint64_t tid = OSGetTitleID();
 #endif
-	if(cfwValid())
-	{
+    if(cfwValid())
+        {
 #ifdef NUSSPLI_HBL
-		jailbreaking = !isAroma() && (tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004A000; // Mii Maker
-		if(jailbreaking)
-			jailbreaking = jailbreak();
+            jailbreaking = !isAroma() && (tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004A000; // Mii Maker
+            if(jailbreaking)
+                jailbreaking = jailbreak();
 
-		if(!jailbreaking)
+            if(!jailbreaking)
 #endif
-			innerMain(true);
-	}
-	else
-	{
-		innerMain(false);
+                innerMain(true);
+        }
+    else
+        {
+            innerMain(false);
 #ifdef NUSSPLI_HBL
-		jailbreaking = false;
+            jailbreaking = false;
 #endif
-	}
+        }
 
-	if(mochaReady)
-		Mocha_DeinitLibrary();
+    if(mochaReady)
+        Mocha_DeinitLibrary();
 
 #ifdef NUSSPLI_DEBUG
-	checkStacks("main");
-	debugPrintf("Bye!");
-	shutdownDebug();
+    checkStacks("main");
+    debugPrintf("Bye!");
+    shutdownDebug();
 #endif
-	
-	if(app != APP_STATE_STOPPED)
-	{
+
+    if(app != APP_STATE_STOPPED)
+        {
 #ifdef NUSSPLI_HBL
-		if(!jailbreaking && !isAroma() && (tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004E000) // Health & Safety
-		{
-			tid &= 0xFFFFFFFFFFFF0FFF;
-			tid |= 0x000000000000A000;
-			_SYSLaunchTitleWithStdArgsInNoSplash(tid, NULL);
-		}
+            if(!jailbreaking && !isAroma() && (tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004E000) // Health & Safety
+                {
+                    tid &= 0xFFFFFFFFFFFF0FFF;
+                    tid |= 0x000000000000A000;
+                    _SYSLaunchTitleWithStdArgsInNoSplash(tid, NULL);
+                }
 
 #else
-		SYSLaunchMenu();
+            SYSLaunchMenu();
 #endif
-		if(app == APP_STATE_HOME)
-		{
-			app = APP_STATE_RUNNING;
-			while(AppRunning())
-				;
-		}
-		
-		if(app == APP_STATE_STOPPING)
-			ProcUIDrawDoneRelease();
-		
-		int ps;
-		do
-		{
-			ps = ProcUIProcessMessages(true);
-			if(ps == PROCUI_STATUS_RELEASE_FOREGROUND)
-				ProcUIDrawDoneRelease();
-		}
-		while(ps != PROCUI_STATUS_EXITING);
-	}
-	
-	ProcUIShutdown();
-	return 0;
+            if(app == APP_STATE_HOME)
+                {
+                    app = APP_STATE_RUNNING;
+                    while(AppRunning())
+                        ;
+                }
+
+            if(app == APP_STATE_STOPPING)
+                ProcUIDrawDoneRelease();
+
+            int ps;
+            do
+                {
+                    ps = ProcUIProcessMessages(true);
+                    if(ps == PROCUI_STATUS_RELEASE_FOREGROUND)
+                        ProcUIDrawDoneRelease();
+            } while(ps != PROCUI_STATUS_EXITING);
+        }
+
+    ProcUIShutdown();
+    return 0;
 }

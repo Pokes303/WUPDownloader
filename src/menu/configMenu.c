@@ -21,12 +21,12 @@
 
 #include <config.h>
 #include <input.h>
-#include <renderer.h>
-#include <state.h>
-#include <titles.h>
 #include <menu/download.h>
 #include <menu/main.h>
 #include <menu/utils.h>
+#include <renderer.h>
+#include <state.h>
+#include <titles.h>
 
 #include <string.h>
 
@@ -38,238 +38,237 @@ static int cursorPos = 0;
 
 static void drawConfigMenu()
 {
-	startNewFrame();
-	char *toScreen = getToFrameBuffer();
+    startNewFrame();
+    char *toScreen = getToFrameBuffer();
 
-	strcpy(toScreen, gettext("Language:"));
-	strcat(toScreen, " ");
-	strcat(toScreen, gettext(menuLangToString(getMenuLanguage())));
-	textToFrame(0, 4, toScreen);
+    strcpy(toScreen, gettext("Language:"));
+    strcat(toScreen, " ");
+    strcat(toScreen, gettext(menuLangToString(getMenuLanguage())));
+    textToFrame(0, 4, toScreen);
 
-	strcpy(toScreen, gettext("Online updates:"));
-	strcat(toScreen, " ");
-	strcat(toScreen, gettext(updateCheckEnabled() ? "Enabled" : "Disabled"));
-	textToFrame(1, 4, toScreen);
+    strcpy(toScreen, gettext("Online updates:"));
+    strcat(toScreen, " ");
+    strcat(toScreen, gettext(updateCheckEnabled() ? "Enabled" : "Disabled"));
+    textToFrame(1, 4, toScreen);
 
-	strcpy(toScreen, gettext("Auto resume failed downloads:"));
-	strcat(toScreen, " ");
-	strcat(toScreen, gettext(autoResumeEnabled() ? "Enabled" : "Disabled"));
-	textToFrame(2, 4, toScreen);
+    strcpy(toScreen, gettext("Auto resume failed downloads:"));
+    strcat(toScreen, " ");
+    strcat(toScreen, gettext(autoResumeEnabled() ? "Enabled" : "Disabled"));
+    textToFrame(2, 4, toScreen);
 
-	strcpy(toScreen, gettext("Notification method:"));
-	strcat(toScreen, " ");
-	strcat(toScreen, gettext(getNotificationString(getNotificationMethod())));
-	textToFrame(3, 4, toScreen);
+    strcpy(toScreen, gettext("Notification method:"));
+    strcat(toScreen, " ");
+    strcat(toScreen, gettext(getNotificationString(getNotificationMethod())));
+    textToFrame(3, 4, toScreen);
 
-	strcpy(toScreen, gettext("Region:"));
-	strcat(toScreen, " ");
-	strcat(toScreen, gettext(getFormattedRegion(getRegion())));
-	textToFrame(4, 4, toScreen);
-	
-	lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
-	textToFrame(MAX_LINES - 1, 0, gettext("Press " BUTTON_B " to return"));
+    strcpy(toScreen, gettext("Region:"));
+    strcat(toScreen, " ");
+    strcat(toScreen, gettext(getFormattedRegion(getRegion())));
+    textToFrame(4, 4, toScreen);
 
-	arrowToFrame(cursorPos, 0);
+    lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
+    textToFrame(MAX_LINES - 1, 0, gettext("Press " BUTTON_B " to return"));
 
-	drawFrame();
+    arrowToFrame(cursorPos, 0);
+
+    drawFrame();
 }
 
 static inline void switchMenuLanguage()
 {
-	MENU_LANGUAGE lang = getMenuLanguage();
+    MENU_LANGUAGE lang = getMenuLanguage();
 
-	if(vpad.trigger & VPAD_BUTTON_LEFT)
-	{
-		switch((int)lang)
-		{
-			case MENU_LANGUAGE_ENGLISH:
-				lang = MENU_LANGUAGE_RUSSIAN;
-				break;
-			case MENU_LANGUAGE_RUSSIAN:
-				lang = MENU_LANGUAGE_ITALIAN;
-				break;
-			case MENU_LANGUAGE_ITALIAN:
-				lang = MENU_LANGUAGE_SPANISH;
-				break;
-			case MENU_LANGUAGE_SPANISH:
-				lang = MENU_LANGUAGE_GERMAN;
-				break;
-			case MENU_LANGUAGE_GERMAN:
-				lang = MENU_LANGUAGE_ENGLISH;
-				break;
-		}
-	}
-	else
-	{
-		switch((int)lang)
-		{
-			case MENU_LANGUAGE_ENGLISH:
-				lang = MENU_LANGUAGE_GERMAN;
-				break;
-			case MENU_LANGUAGE_GERMAN:
-				lang = MENU_LANGUAGE_SPANISH;
-				break;
-			case MENU_LANGUAGE_SPANISH:
-				lang = MENU_LANGUAGE_ITALIAN;
-				break;
-			case MENU_LANGUAGE_ITALIAN:
-				lang = MENU_LANGUAGE_RUSSIAN;
-				break;
-			case MENU_LANGUAGE_RUSSIAN:
-				lang = MENU_LANGUAGE_ENGLISH;
-				break;
-		}
+    if(vpad.trigger & VPAD_BUTTON_LEFT)
+        {
+            switch((int)lang)
+                {
+                case MENU_LANGUAGE_ENGLISH:
+                    lang = MENU_LANGUAGE_RUSSIAN;
+                    break;
+                case MENU_LANGUAGE_RUSSIAN:
+                    lang = MENU_LANGUAGE_ITALIAN;
+                    break;
+                case MENU_LANGUAGE_ITALIAN:
+                    lang = MENU_LANGUAGE_SPANISH;
+                    break;
+                case MENU_LANGUAGE_SPANISH:
+                    lang = MENU_LANGUAGE_GERMAN;
+                    break;
+                case MENU_LANGUAGE_GERMAN:
+                    lang = MENU_LANGUAGE_ENGLISH;
+                    break;
+                }
+        }
+    else
+        {
+            switch((int)lang)
+                {
+                case MENU_LANGUAGE_ENGLISH:
+                    lang = MENU_LANGUAGE_GERMAN;
+                    break;
+                case MENU_LANGUAGE_GERMAN:
+                    lang = MENU_LANGUAGE_SPANISH;
+                    break;
+                case MENU_LANGUAGE_SPANISH:
+                    lang = MENU_LANGUAGE_ITALIAN;
+                    break;
+                case MENU_LANGUAGE_ITALIAN:
+                    lang = MENU_LANGUAGE_RUSSIAN;
+                    break;
+                case MENU_LANGUAGE_RUSSIAN:
+                    lang = MENU_LANGUAGE_ENGLISH;
+                    break;
+                }
+        }
 
-	}
-
-	setMenuLanguage(lang);
+    setMenuLanguage(lang);
 }
 
 static inline void switchNotificationMethod()
 {
-	NOTIF_METHOD m = getNotificationMethod();
+    NOTIF_METHOD m = getNotificationMethod();
 
-	if(vpad.trigger & VPAD_BUTTON_LEFT)
-	{
-		switch((int)m)
-		{
-			case NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED:
-				m = NOTIF_METHOD_NONE;
-				break;
-			case NOTIF_METHOD_NONE:
-				m = NOTIF_METHOD_RUMBLE;
-				break;
-			case NOTIF_METHOD_RUMBLE:
-				m = NOTIF_METHOD_LED;
-				break;
-			case NOTIF_METHOD_LED:
-				m = NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED;
-		}
-	}
-	else
-	{
-		switch((int)m)
-		{
-			case NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED:
-				m = NOTIF_METHOD_LED;
-				break;
-			case NOTIF_METHOD_LED:
-				m = NOTIF_METHOD_RUMBLE;
-				break;
-			case NOTIF_METHOD_RUMBLE:
-				m = NOTIF_METHOD_NONE;
-				break;
-			case NOTIF_METHOD_NONE:
-				m = NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED;
-		}
-	}
+    if(vpad.trigger & VPAD_BUTTON_LEFT)
+        {
+            switch((int)m)
+                {
+                case NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED:
+                    m = NOTIF_METHOD_NONE;
+                    break;
+                case NOTIF_METHOD_NONE:
+                    m = NOTIF_METHOD_RUMBLE;
+                    break;
+                case NOTIF_METHOD_RUMBLE:
+                    m = NOTIF_METHOD_LED;
+                    break;
+                case NOTIF_METHOD_LED:
+                    m = NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED;
+                }
+        }
+    else
+        {
+            switch((int)m)
+                {
+                case NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED:
+                    m = NOTIF_METHOD_LED;
+                    break;
+                case NOTIF_METHOD_LED:
+                    m = NOTIF_METHOD_RUMBLE;
+                    break;
+                case NOTIF_METHOD_RUMBLE:
+                    m = NOTIF_METHOD_NONE;
+                    break;
+                case NOTIF_METHOD_NONE:
+                    m = NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED;
+                }
+        }
 
-	setNotificationMethod(m);
+    setNotificationMethod(m);
 }
 
 static inline void switchRegion()
 {
-	MCPRegion reg = getRegion();
+    MCPRegion reg = getRegion();
 
-	if(vpad.trigger & VPAD_BUTTON_LEFT)
-	{
-		switch((int)reg)
-		{
-			case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
-				reg = MCP_REGION_JAPAN;
-				break;
-			case MCP_REGION_JAPAN:
-				reg = MCP_REGION_USA;
-				break;
-			case MCP_REGION_USA:
-				reg = MCP_REGION_EUROPE;
-				break;
-			case MCP_REGION_EUROPE:
-				reg = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN;
-		}
-	}
-	else
-	{
-		switch((int)reg)
-		{
-			case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
-				reg = MCP_REGION_EUROPE;
-				break;
-			case MCP_REGION_EUROPE:
-				reg = MCP_REGION_USA;
-				break;
-			case MCP_REGION_USA:
-				reg = MCP_REGION_JAPAN;
-				break;
-			case MCP_REGION_JAPAN:
-				reg = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN;
-		}
-	}
+    if(vpad.trigger & VPAD_BUTTON_LEFT)
+        {
+            switch((int)reg)
+                {
+                case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
+                    reg = MCP_REGION_JAPAN;
+                    break;
+                case MCP_REGION_JAPAN:
+                    reg = MCP_REGION_USA;
+                    break;
+                case MCP_REGION_USA:
+                    reg = MCP_REGION_EUROPE;
+                    break;
+                case MCP_REGION_EUROPE:
+                    reg = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN;
+                }
+        }
+    else
+        {
+            switch((int)reg)
+                {
+                case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
+                    reg = MCP_REGION_EUROPE;
+                    break;
+                case MCP_REGION_EUROPE:
+                    reg = MCP_REGION_USA;
+                    break;
+                case MCP_REGION_USA:
+                    reg = MCP_REGION_JAPAN;
+                    break;
+                case MCP_REGION_JAPAN:
+                    reg = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN;
+                }
+        }
 
-	setRegion(reg);
+    setRegion(reg);
 }
 
 void configMenu()
 {
-	drawConfigMenu();
-	
-	bool redraw = false;
-	while(AppRunning())
-	{
-		if(app == APP_STATE_BACKGROUND)
-			continue;
-		if(app == APP_STATE_RETURNING)
-			drawConfigMenu();
-		
-		showFrame();
-		if(vpad.trigger & VPAD_BUTTON_B)
-		{
-			saveConfig(false);
-			return;
-		}
+    drawConfigMenu();
 
-		if(vpad.trigger & (VPAD_BUTTON_RIGHT | VPAD_BUTTON_LEFT | VPAD_BUTTON_A))
-		{
-			switch(cursorPos)
-			{
-				case 0:
-					switchMenuLanguage();
-					break;
-				case 1:
-					setUpdateCheck(!updateCheckEnabled());
-					break;
-				case 2:
-					setAutoResume(!autoResumeEnabled());
-					break;
-				case 3:
-					switchNotificationMethod();
-					break;
-				case 4:
-					switchRegion();
-					break;
-			}
+    bool redraw = false;
+    while(AppRunning())
+        {
+            if(app == APP_STATE_BACKGROUND)
+                continue;
+            if(app == APP_STATE_RETURNING)
+                drawConfigMenu();
 
-			redraw = true;
-		}
-		else if(vpad.trigger & VPAD_BUTTON_UP)
-		{
-			--cursorPos;
-			if(cursorPos < 0)
-				cursorPos = ENTRY_COUNT;
-			redraw = true;
-		}
-		else if(vpad.trigger & VPAD_BUTTON_DOWN)
-		{
-			++cursorPos;
-			if(cursorPos > ENTRY_COUNT)
-				cursorPos = 0;
-			redraw = true;
-		}
+            showFrame();
+            if(vpad.trigger & VPAD_BUTTON_B)
+                {
+                    saveConfig(false);
+                    return;
+                }
 
-		if(redraw)
-		{
-			drawConfigMenu();
-			redraw = false;
-		}
-	}
+            if(vpad.trigger & (VPAD_BUTTON_RIGHT | VPAD_BUTTON_LEFT | VPAD_BUTTON_A))
+                {
+                    switch(cursorPos)
+                        {
+                        case 0:
+                            switchMenuLanguage();
+                            break;
+                        case 1:
+                            setUpdateCheck(!updateCheckEnabled());
+                            break;
+                        case 2:
+                            setAutoResume(!autoResumeEnabled());
+                            break;
+                        case 3:
+                            switchNotificationMethod();
+                            break;
+                        case 4:
+                            switchRegion();
+                            break;
+                        }
+
+                    redraw = true;
+                }
+            else if(vpad.trigger & VPAD_BUTTON_UP)
+                {
+                    --cursorPos;
+                    if(cursorPos < 0)
+                        cursorPos = ENTRY_COUNT;
+                    redraw = true;
+                }
+            else if(vpad.trigger & VPAD_BUTTON_DOWN)
+                {
+                    ++cursorPos;
+                    if(cursorPos > ENTRY_COUNT)
+                        cursorPos = 0;
+                    redraw = true;
+                }
+
+            if(redraw)
+                {
+                    drawConfigMenu();
+                    redraw = false;
+                }
+        }
 }

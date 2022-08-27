@@ -21,7 +21,7 @@
 #include <wut-fixups.h>
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif
 
 bool initNotifications();
@@ -30,5 +30,5 @@ void startNotification();
 void stopNotification();
 
 #ifdef __cplusplus
-	}
+}
 #endif

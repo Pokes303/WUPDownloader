@@ -48,132 +48,132 @@ static bool apdDisabled = false;
 
 void enableApd()
 {
-	if(!apdEnabled || !apdDisabled)
-		return;
-	
-	if(IMEnableAPD() == 0)
-	{
-		apdDisabled = false;
-		debugPrintf("APD enabled!");
-	}
-	else
-		debugPrintf("Error enabling APD!");
+    if(!apdEnabled || !apdDisabled)
+        return;
+
+    if(IMEnableAPD() == 0)
+        {
+            apdDisabled = false;
+            debugPrintf("APD enabled!");
+        }
+    else
+        debugPrintf("Error enabling APD!");
 }
 
 void disableApd()
 {
-	if(!apdEnabled || apdDisabled)
-		return;
-	
-	if(IMDisableAPD() == 0)
-	{
-		apdDisabled = true;
-		debugPrintf("APD disabled!");
-	}
-	else
-		debugPrintf("Error disabling APD!");
+    if(!apdEnabled || apdDisabled)
+        return;
+
+    if(IMDisableAPD() == 0)
+        {
+            apdDisabled = true;
+            debugPrintf("APD disabled!");
+        }
+    else
+        debugPrintf("Error disabling APD!");
 }
 
 void enableShutdown()
 {
-	if(shutdownEnabled)
-		return;
-	
-	enableApd();
-	shutdownEnabled = true;
-	debugPrintf("Home key enabled!");
+    if(shutdownEnabled)
+        return;
+
+    enableApd();
+    shutdownEnabled = true;
+    debugPrintf("Home key enabled!");
 }
 void disableShutdown()
 {
-	if(!shutdownEnabled)
-		return;
-	
-	disableApd();
-	shutdownEnabled = false;
-	debugPrintf("Home key disabled!");
+    if(!shutdownEnabled)
+        return;
+
+    disableApd();
+    shutdownEnabled = false;
+    debugPrintf("Home key disabled!");
 }
 
 bool isAroma()
 {
-	return aroma;
+    return aroma;
 }
 
 #ifndef NUSSPLI_HBL
 bool isChannel()
 {
-	return channel;
+    return channel;
 }
 #endif
 
 uint32_t homeButtonCallback(void *dummy)
 {
-	if(shutdownEnabled)
-	{
-		shutdownEnabled = false;
-		app = APP_STATE_HOME;
-	}
-	
-	return 0;
+    if(shutdownEnabled)
+        {
+            shutdownEnabled = false;
+            app = APP_STATE_HOME;
+        }
+
+    return 0;
 }
 
 void initState()
 {
-	ProcUIInit(&OSSavesDone_ReadyToRelease);
-	OSTime t = OSGetTime();
-	
-	app = APP_STATE_RUNNING;
-	
-	debugInit();
-	debugPrintf("NUSspli " NUSSPLI_VERSION);
-	
-	ProcUIRegisterCallback(PROCUI_CALLBACK_HOME_BUTTON_DENIED, &homeButtonCallback, NULL, 100);
-	OSEnableHomeButtonMenu(false);
-	
-	OSDynLoad_Module mod;
-	aroma = OSDynLoad_Acquire("homebrew_kernel", &mod) == OS_DYNLOAD_OK;
+    ProcUIInit(&OSSavesDone_ReadyToRelease);
+    OSTime t = OSGetTime();
+
+    app = APP_STATE_RUNNING;
+
+    debugInit();
+    debugPrintf("NUSspli " NUSSPLI_VERSION);
+
+    ProcUIRegisterCallback(PROCUI_CALLBACK_HOME_BUTTON_DENIED, &homeButtonCallback, NULL, 100);
+    OSEnableHomeButtonMenu(false);
+
+    OSDynLoad_Module mod;
+    aroma = OSDynLoad_Acquire("homebrew_kernel", &mod) == OS_DYNLOAD_OK;
     if(aroma)
         OSDynLoad_Release(mod);
 
 #ifndef NUSSPLI_HBL
-	channel = OSGetTitleID() == 0x0005000010155373;
+    channel = OSGetTitleID() == 0x0005000010155373;
 #endif
-	
+
     uint32_t ime;
-	if(IMIsAPDEnabledBySysSettings(&ime) == 0)
-		apdEnabled = ime == 1;
-	else
-	{
-		debugPrintf("Couldn't read APD sys setting!");
-		apdEnabled = false;
-	}
-	debugPrintf("APD enabled by sys settings: %s (%d)", apdEnabled ? "true" : "false", (uint32_t)ime);
+    if(IMIsAPDEnabledBySysSettings(&ime) == 0)
+        apdEnabled = ime == 1;
+    else
+        {
+            debugPrintf("Couldn't read APD sys setting!");
+            apdEnabled = false;
+        }
+    debugPrintf("APD enabled by sys settings: %s (%d)", apdEnabled ? "true" : "false", (uint32_t)ime);
     t = OSGetTime() - t;
-	addEntropy(&t, sizeof(OSTime));
+    addEntropy(&t, sizeof(OSTime));
 }
 
 bool AppRunning()
 {
-	if(app == APP_STATE_STOPPING || app == APP_STATE_HOME || app == APP_STATE_STOPPED)
-		return false;
-	
-	if(OSIsMainCore())
-	{
-		switch(ProcUIProcessMessages(true))
-		{
-			case PROCUI_STATUS_EXITING:
-				// Real exit request from CafeOS
-				app = APP_STATE_STOPPED;
-				break;
-			case PROCUI_STATUS_RELEASE_FOREGROUND:
-				// Exit with power button
-				shutdownRenderer();
-				app = APP_STATE_STOPPING;
-				break;
-			default:
-				// Normal loop execution
-				break;
-		}
-	}
-	
-	return true;
+    if(app == APP_STATE_STOPPING || app == APP_STATE_HOME || app == APP_STATE_STOPPED)
+        return false;
+
+    if(OSIsMainCore())
+        {
+            switch(ProcUIProcessMessages(true))
+                {
+                case PROCUI_STATUS_EXITING:
+                    // Real exit request from CafeOS
+                    app = APP_STATE_STOPPED;
+                    break;
+                case PROCUI_STATUS_RELEASE_FOREGROUND:
+                    // Exit with power button
+                    shutdownRenderer();
+                    app = APP_STATE_STOPPING;
+                    break;
+                default:
+                    // Normal loop execution
+                    break;
+                }
+        }
+
+    return true;
 }

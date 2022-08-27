@@ -28,57 +28,61 @@
 #include <coreinit/mcp.h>
 #include <coreinit/thread.h>
 
-#define NAPI_URL		"https://napi.nbg01.v10lator.de/v2/"
-#define NUSSPLI_COPYRIGHT	"© 2020-2022 V10lator <v10lator@myway.de>"
+#define NAPI_URL                   "https://napi.nbg01.v10lator.de/v2/"
+#define NUSSPLI_COPYRIGHT          "© 2020-2022 V10lator <v10lator@myway.de>"
 
-#define CUSTOM_MCP_ERROR_EOM		0xDEAD0001
-#define CUSTOM_MCP_ERROR_CANCELLED	0xDEAD0002
+#define CUSTOM_MCP_ERROR_EOM       0xDEAD0001
+#define CUSTOM_MCP_ERROR_CANCELLED 0xDEAD0002
 
 #ifdef NUSSPLI_DEBUG
-	#include <whb/log.h>
-	#include <whb/log_udp.h>
-	#define shutdownDebug WHBLogUdpDeinit
+#include <whb/log.h>
+#include <whb/log_udp.h>
+#define shutdownDebug WHBLogUdpDeinit
 #else
-	#define debugPrintf(...)
-	#define checkStacks(...)
-	#define debugInit()
-	#define shutdownDebug()
+#define debugPrintf(...)
+#define checkStacks(...)
+#define debugInit()
+#define shutdownDebug()
 #endif
 
 #ifdef __cplusplus
-	#include <codecvt>
-	
-	template<class I, class E, class S>
-	struct codecvt : std::codecvt<I, E, S>
-	{
-		~codecvt()
-		{}
-	};
+#include <codecvt>
 
-	extern "C" {
+template <class I, class E, class S>
+struct codecvt : std::codecvt<I, E, S>
+{
+    ~codecvt()
+    {
+    }
+};
+
+extern "C" {
 #endif
 
 typedef struct
 {
-	bool processing;
-	MCPError err;
+    bool processing;
+    MCPError err;
 } McpData;
 
 extern int mcpHandle;
 
-#define isNumber(x) (x >= '0' && x <= '9')
-#define isLowercase(x) (x >= 'a' && x <= 'z')
-#define isUppercase(x) (x >= 'A' && x <= 'Z')
+#define isNumber(x)         (x >= '0' && x <= '9')
+#define isLowercase(x)      (x >= 'a' && x <= 'z')
+#define isUppercase(x)      (x >= 'A' && x <= 'Z')
 #define isAlphanumerical(x) (isLowercase(x) || isUppercase(x) || isNumber(x))
 // Keep it to ASCII for FTPiiU compat.
 #define isAllowedInFilename(x) (x >= ' ' && x <= '~' && x != '/' && x != '\\' && x != '"' && x != '*' && x != ':' && x != '<' && x != '>' && x != '?' && x != '|')
-#define isLowercaseHexa(x) (isNumber(x) || (x >= 'a' && x <= 'f'))
-#define isUppercaseHexa(x) (isNumber(x) || (x >= 'A' && x <= 'F'))
-#define isHexa(x) (isLowercaseHexa(x) || isUppercaseHexa(x))
+#define isLowercaseHexa(x)     (isNumber(x) || (x >= 'a' && x <= 'f'))
+#define isUppercaseHexa(x)     (isNumber(x) || (x >= 'A' && x <= 'F'))
+#define isHexa(x)              (isLowercaseHexa(x) || isUppercaseHexa(x))
 
-#define toLowercase(x) for(int y = strlen(x) - 1; y >= 0; --y) if(isUppercase(x[y])) x[y] += 32;
+#define toLowercase(x)                      \
+    for(int y = strlen(x) - 1; y >= 0; --y) \
+        if(isUppercase(x[y]))               \
+            x[y] += 32;
 
-void hex(uint64_t i, int digits, char *out); //ex: 000050D1
+void hex(uint64_t i, int digits, char *out); // ex: 000050D1
 void secsToTime(uint32_t seconds, char *out);
 void getSpeedString(double bytePerSecond, char *out);
 void hexToByte(const char *hex, uint8_t *out);
@@ -91,5 +95,5 @@ void checkStacks(const char *src);
 #endif
 
 #ifdef __cplusplus
-	}
+}
 #endif

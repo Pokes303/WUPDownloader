@@ -25,13 +25,13 @@
 #include <stdbool.h>
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif
 
 bool jailbreak();
 
 #ifdef __cplusplus
-	}
+}
 #endif
 
 #endif // ifdef NUSSPLI_HBL

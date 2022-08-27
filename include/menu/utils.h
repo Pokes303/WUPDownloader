@@ -28,14 +28,15 @@
 #include <coreinit/mcp.h>
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif
 
-typedef enum {
-	ANY_RETURN	= 0xFFFFFFFF,
-	B_RETURN	= 1,
-	A_CONTINUE	= 1 << 1,
-	Y_RETRY 	= 1 << 2,
+typedef enum
+{
+    ANY_RETURN = 0xFFFFFFFF,
+    B_RETURN = 1,
+    A_CONTINUE = 1 << 1,
+    Y_RETRY = 1 << 2,
 } ErrorOptions;
 
 void addToScreenLog(const char *str, ...);
@@ -49,5 +50,5 @@ bool checkSystemTitleFromListType(MCPTitleListType *entry);
 const char *prettyDir(const char *dir);
 
 #ifdef __cplusplus
-	}
+}
 #endif

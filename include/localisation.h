@@ -24,13 +24,13 @@
 #include <stdbool.h>
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif
 
-bool gettextLoadLanguage(const char* langFile);
+bool gettextLoadLanguage(const char *langFile);
 void gettextCleanUp() __attribute__((__cold__));
 const char *gettext(const char *msg) __attribute__((__hot__));
 
 #ifdef __cplusplus
-    }
+}
 #endif
