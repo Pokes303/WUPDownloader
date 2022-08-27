@@ -54,8 +54,6 @@ static void drawFBMenuFrame(char **folders, size_t foldersSize, const size_t pos
 	strcpy(l, BUTTON_X " to switch to ");
 	strcat(l, activeDevice == NUSDEV_USB ? "SD" : activeDevice == NUSDEV_SD ? "NAND" : usbMounted ? "USB" : "SD");
 	strcat(toWrite, gettext(l));
-	strcat(toWrite, " || ");
-	strcat(toWrite, gettext(BUTTON_Y " to refresh"));
 	textToFrame(MAX_LINES - 2, ALIGNED_CENTER, toWrite);
 
 	strcpy(toWrite, gettext("Searching on"));
@@ -319,8 +317,6 @@ refreshDirList:
 			}
 			goto refreshDirList;
 		}
-		if(vpad.trigger & VPAD_BUTTON_Y)
-			goto refreshDirList;
 		
 		if(oldHold && !(vpad.hold & (VPAD_BUTTON_UP | VPAD_BUTTON_DOWN | VPAD_BUTTON_LEFT | VPAD_BUTTON_RIGHT)))
 			oldHold = 0;

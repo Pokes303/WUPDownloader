@@ -12,7 +12,7 @@
     "Games": "Juegos",
     "Updates": "Actualizaciones",
     "All": "Todo",
-    "Press \uE000 to select": "\uE000 para seleccionar",
+    "Press \uE000 to select": "Presiona \uE000 para seleccionar",
     "\uE001 to return": "\uE001 para volver",
     "\uE002 to enter a title ID": "\uE002 para introducir un title ID",
     "\uE003 to search": "\uE003 para buscar",
@@ -21,7 +21,6 @@
     "\uE002 to switch to SD": "\uE002 para ir a SD",
     "\uE002 to switch to NAND": "\uE002 para ir a NAND",
     "\uE002 to switch to USB": "\uE002 para ir a USB",
-    "\uE003 to refresh": "\uE003 para recargar",
     "Searching on": "Buscando en",
 
     "Press \uE000 to delete": "Presiona \uE000 para desinstalar",
