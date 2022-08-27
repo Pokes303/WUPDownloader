@@ -22,6 +22,14 @@ jobs:
     runs-on: ubuntu-20.04
 #    needs: clang-format
     steps:
+      - name: update container
+        run: |
+          mkdir -p /usr/share/man/man1 /usr/share/man/man2
+          /bin/bash -c "$(curl -sL https://raw.githubusercontent.com/V10lator/NUSspli/master/apt-fast/install.sh)"
+          apt-fast -y --no-install-recommends upgrade
+          apt-fast -y install --no-install-recommends autoconf automake libtool openjdk-11-jre-headless
+          apt-fast clean
+          rm -rf install.sh /var/lib/apt/lists/* /usr/share/man
       - name: checkout
         uses: actions/checkout@v2
         with:
@@ -34,9 +42,7 @@ jobs:
       - name: Get version number
         if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') }}
         run: |
-          apt-fast -y update
-          apt-fast -y upgrade
-          apt-fast -y install libxml2-utils
+          apt-fast -y install --no-install-recommends libxml2-utils
           echo "::set-output name=version::$(xmllint --xpath 'app/version/text()' meta/hbl/meta.xml)"
         id: version
       - name: Upload Aroma version

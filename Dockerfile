@@ -8,13 +8,7 @@ ENV openssl_ver=3.0.5 \
  WUT_ROOT=$DEVKITPRO/wut
 WORKDIR /
 
-RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
- apt-get update && \
- apt-get -y --no-install-recommends upgrade && \
- apt-get -y install --no-install-recommends autoconf automake libtool openjdk-11-jre-headless && \
- apt-get clean && \
- rm -rf /var/lib/apt/lists/* /usr/share/man && \
- wget https://www.openssl.org/source/openssl-$openssl_ver.tar.gz && \
+RUN wget https://www.openssl.org/source/openssl-$openssl_ver.tar.gz && \
  mkdir /openssl && \
  tar xf openssl-$openssl_ver.tar.gz -C /openssl --strip-components=1 && \
  rm -f openssl-$openssl_ver.tar.gz && \
