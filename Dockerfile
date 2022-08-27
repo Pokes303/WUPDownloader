@@ -100,7 +100,7 @@ PKG_CONFIG=$DEVKITPRO/portlibs/wiiu/bin/powerpc-eabi-pkg-config && \
  rm -rf curl && \
  git clone --recursive https://github.com/wiiu-env/libmocha --single-branch && \
  cd libmocha && \
- git checkout b0dee4269875a62ea2a4b40e58dd919de07cdee2 && \
+ git checkout 51c67f8c4f85fa9b0bfadf2fe895eab2638f3452 && \
  make -j$(nproc) && \
  make install && \
  cd .. && \
