@@ -184,9 +184,10 @@ static bool SWKBD_Show(SWKBD_Args *args, KeyboardLayout layout, KeyboardType typ
 	if(okStr)
 	{
 		size_t strLen = strlen(okStr);
-		appearArg.keyboardArg.configArg.str = MEMAllocFromDefaultHeap(++strLen);
+		appearArg.keyboardArg.configArg.str = MEMAllocFromDefaultHeap(sizeof(char16_t) * ++strLen);
 		if(appearArg.keyboardArg.configArg.str)
-			OSBlockMove(appearArg.keyboardArg.configArg.str, okStr, strLen, false);
+			for(size_t i = 0; i < strLen; ++i)
+				appearArg.keyboardArg.configArg.str[i] = okStr[i];
 	}
 	else
 		appearArg.keyboardArg.configArg.str = NULL;

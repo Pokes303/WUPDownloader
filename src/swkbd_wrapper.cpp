@@ -74,8 +74,14 @@ const char16_t *Swkbd_GetInputFormString16()
 
 void Swkbd_SetInputFormString(const char *str)
 {
-	size_t len = strlen(str);
-	if(str == nullptr || len == 0)
+	size_t len;
+
+	if(str == nullptr)
+		len = 0;
+	else
+		len = strlen(str);
+
+	if(len == 0)
 	{
 		nn::swkbd::SetInputFormString(u"");
 		return;
