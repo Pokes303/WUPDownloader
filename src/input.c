@@ -560,7 +560,7 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
 		SWKBD_Render(&args, check);
 //		sleepTillFrameEnd();
 		
-		if(args.okButtonEnabled && (Swkbd_IsDecideOkButton(&dummy) || (lastUsedController == CT_VPAD_0 && vpad.trigger & VPAD_BUTTON_A) || vpad.trigger & VPAD_BUTTON_PLUS))
+		if(args.okButtonEnabled && (Swkbd_IsDecideOkButton(&dummy) || vpad.trigger & VPAD_BUTTON_PLUS))
 		{
 			debugPrintf("SWKBD Ok button pressed");
 			char *outputStr = Swkbd_GetInputFormString();
