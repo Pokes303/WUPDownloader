@@ -21,14 +21,13 @@
 #include <wut-fixups.h>
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
-    bool initNotifications();
-    void deinitNotifications();
-    void startNotification();
-    void stopNotification();
+bool initNotifications();
+void deinitNotifications();
+void startNotification();
+void stopNotification();
 
 #ifdef __cplusplus
 }

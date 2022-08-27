@@ -30,8 +30,7 @@
 typedef __uint_least16_t char16_t;
 #else
 #include <string>
-extern "C"
-{
+extern "C" {
 #endif
 
 // Enums copied from https://github.com/devkitPro/wut/blob/master/include/nn/swkbd/swkbd_cpp.h

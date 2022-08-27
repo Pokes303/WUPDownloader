@@ -23,11 +23,10 @@
 #include <updater.h>
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
-    bool updateMenu(const char *newVersion, NUSSPLI_TYPE type);
+bool updateMenu(const char *newVersion, NUSSPLI_TYPE type);
 
 #ifdef __cplusplus
 }

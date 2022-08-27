@@ -24,11 +24,10 @@
 #include <titles.h>
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
-    void predownloadMenu(const TitleEntry *entry);
+void predownloadMenu(const TitleEntry *entry);
 
 #ifdef __cplusplus
 }

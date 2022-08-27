@@ -25,11 +25,10 @@
 #include <titles.h>
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
-    bool generateKey(const TitleEntry *te, char *out);
+bool generateKey(const TitleEntry *te, char *out);
 
 #ifdef __cplusplus
 }

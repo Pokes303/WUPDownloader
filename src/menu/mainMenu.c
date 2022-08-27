@@ -78,43 +78,43 @@ void mainMenu()
     drawMainMenuFrame();
 
     while(AppRunning())
-    {
-        if(app == APP_STATE_BACKGROUND)
-            continue;
-        if(app == APP_STATE_RETURNING)
-            drawMainMenuFrame();
+        {
+            if(app == APP_STATE_BACKGROUND)
+                continue;
+            if(app == APP_STATE_RETURNING)
+                drawMainMenuFrame();
 
-        showFrame();
+            showFrame();
 
-        if(vpad.trigger & VPAD_BUTTON_A)
-        {
-            titleBrowserMenu();
-            drawMainMenuFrame();
-        }
-        else if(vpad.trigger & VPAD_BUTTON_X)
-        {
-            char *dir = fileBrowserMenu();
-            if(dir != NULL)
-                installerMenu(dir);
+            if(vpad.trigger & VPAD_BUTTON_A)
+                {
+                    titleBrowserMenu();
+                    drawMainMenuFrame();
+                }
+            else if(vpad.trigger & VPAD_BUTTON_X)
+                {
+                    char *dir = fileBrowserMenu();
+                    if(dir != NULL)
+                        installerMenu(dir);
 
-            drawMainMenuFrame();
+                    drawMainMenuFrame();
+                }
+            else if(vpad.trigger & VPAD_BUTTON_LEFT)
+                {
+                    configMenu();
+                    drawMainMenuFrame();
+                }
+            else if(vpad.trigger & VPAD_BUTTON_Y)
+                {
+                    generateFakeTicket();
+                    drawMainMenuFrame();
+                }
+            else if(vpad.trigger & VPAD_BUTTON_RIGHT)
+                {
+                    ititleBrowserMenu();
+                    drawMainMenuFrame();
+                }
+            else if(vpad.trigger & VPAD_BUTTON_B)
+                return;
         }
-        else if(vpad.trigger & VPAD_BUTTON_LEFT)
-        {
-            configMenu();
-            drawMainMenuFrame();
-        }
-        else if(vpad.trigger & VPAD_BUTTON_Y)
-        {
-            generateFakeTicket();
-            drawMainMenuFrame();
-        }
-        else if(vpad.trigger & VPAD_BUTTON_RIGHT)
-        {
-            ititleBrowserMenu();
-            drawMainMenuFrame();
-        }
-        else if(vpad.trigger & VPAD_BUTTON_B)
-            return;
-    }
 }

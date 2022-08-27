@@ -35,30 +35,30 @@ bool initStaticMem()
 {
     staticMemToFrameBuffer = MEMAllocFromDefaultHeap(TO_FRAME_BUFFER_SIZE);
     if(staticMemToFrameBuffer != NULL)
-    {
-        staticMemLineBuffer = MEMAllocFromDefaultHeap(TO_FRAME_BUFFER_SIZE);
-        if(staticMemLineBuffer != NULL)
         {
-            for(int i = 0; i < 4; ++i)
-            {
-                staticMemPathBuffer[i] = MEMAllocFromDefaultHeapEx(FS_MAX_PATH, 0x40); // Alignmnt is important for MCP!
-                if(staticMemPathBuffer[i] == NULL)
+            staticMemLineBuffer = MEMAllocFromDefaultHeap(TO_FRAME_BUFFER_SIZE);
+            if(staticMemLineBuffer != NULL)
                 {
-                    for(--i; i >= 0; --i)
-                        MEMFreeToDefaultHeap(staticMemPathBuffer[i]);
+                    for(int i = 0; i < 4; ++i)
+                        {
+                            staticMemPathBuffer[i] = MEMAllocFromDefaultHeapEx(FS_MAX_PATH, 0x40); // Alignmnt is important for MCP!
+                            if(staticMemPathBuffer[i] == NULL)
+                                {
+                                    for(--i; i >= 0; --i)
+                                        MEMFreeToDefaultHeap(staticMemPathBuffer[i]);
 
-                    goto staticFailure;
+                                    goto staticFailure;
+                                }
+                        }
+
+                    return true;
+
+                staticFailure:
+                    MEMFreeToDefaultHeap(staticMemLineBuffer);
                 }
-            }
 
-            return true;
-
-        staticFailure:
-            MEMFreeToDefaultHeap(staticMemLineBuffer);
+            MEMFreeToDefaultHeap(staticMemToFrameBuffer);
         }
-
-        MEMFreeToDefaultHeap(staticMemToFrameBuffer);
-    }
 
     return false;
 }
