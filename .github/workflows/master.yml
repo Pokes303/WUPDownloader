@@ -29,7 +29,6 @@ jobs:
           apt-fast -y --no-install-recommends upgrade
           apt-fast -y install --no-install-recommends autoconf automake libtool openjdk-11-jre-headless
           apt-fast clean
-          rm -rf install.sh /var/lib/apt/lists/* /usr/share/man
       - name: checkout
         uses: actions/checkout@v2
         with:
