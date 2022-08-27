@@ -63,7 +63,7 @@ static ControllerType lastUsedController;
 
 static int io = -1;
 
-static Swkbd_CreateArg createArg;
+static Swkbd_CreateArg createArg = { .workMemory = NULL, .unk_0x08 = 0 };
 static Swkbd_AppearArg appearArg;
 
 static OSMessageQueue swkbd_queue;
@@ -181,15 +181,15 @@ static bool SWKBD_Show(SWKBD_Args *args, KeyboardLayout layout, KeyboardType typ
 		return false;
     }
 	
-	appearArg.keyboardArg.configArg.str = NULL;
 	if(okStr)
 	{
 		size_t strLen = strlen(okStr);
 		appearArg.keyboardArg.configArg.str = MEMAllocFromDefaultHeap(++strLen);
 		if(appearArg.keyboardArg.configArg.str)
-			for(size_t i = 0; i < strLen; ++i)
-				appearArg.keyboardArg.configArg.str[i] = okStr[i];
+			OSBlockMove(appearArg.keyboardArg.configArg.str, okStr, strLen, false);
 	}
+	else
+		appearArg.keyboardArg.configArg.str = NULL;
 	
 	// Show the keyboard
 	appearArg.keyboardArg.configArg.languageType = getKeyboardLanguage();
@@ -304,8 +304,7 @@ bool SWKBD_Init()
 			createArg.regionType = Swkbd_RegionType__Europe;
 			break;
 	}
-	
-	createArg.unk_0x08 = 0;
+
 	createArg.fsClient = __wut_devoptab_fs_client;
 	OSDynLoadAllocFn oAlloc;
 	OSDynLoadFreeFn oFree;
