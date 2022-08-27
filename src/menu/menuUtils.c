@@ -163,12 +163,12 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region)
 {
     switch(getTidHighFromTid(tid))
     {
-    case TID_HIGH_SYSTEM_APP:
-    case TID_HIGH_SYSTEM_DATA:
-    case TID_HIGH_SYSTEM_APPLET:
-        break;
-    default:
-        return true;
+        case TID_HIGH_SYSTEM_APP:
+        case TID_HIGH_SYSTEM_DATA:
+        case TID_HIGH_SYSTEM_APPLET:
+            break;
+        default:
+            return true;
     }
 
     MCPRegion reg;
@@ -196,22 +196,22 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region)
     debugPrintf("Title region: 0x%08X", region);
     switch(reg)
     {
-    case MCP_REGION_EUROPE:
-        if(region & MCP_REGION_EUROPE)
+        case MCP_REGION_EUROPE:
+            if(region & MCP_REGION_EUROPE)
+                return true;
+            break;
+        case MCP_REGION_USA:
+            if(region & MCP_REGION_USA)
+                return true;
+            break;
+        case MCP_REGION_JAPAN:
+            if(region & MCP_REGION_JAPAN)
+                return true;
+            break;
+        default:
+            // TODO: MCP_REGION_CHINA, MCP_REGION_KOREA, MCP_REGION_TAIWAN
+            debugPrintf("Unknwon region: %d", reg);
             return true;
-        break;
-    case MCP_REGION_USA:
-        if(region & MCP_REGION_USA)
-            return true;
-        break;
-    case MCP_REGION_JAPAN:
-        if(region & MCP_REGION_JAPAN)
-            return true;
-        break;
-    default:
-        // TODO: MCP_REGION_CHINA, MCP_REGION_KOREA, MCP_REGION_TAIWAN
-        debugPrintf("Unknwon region: %d", reg);
-        return true;
     }
 
     char *toFrame = getToFrameBuffer();

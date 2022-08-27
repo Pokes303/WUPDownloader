@@ -82,42 +82,42 @@ static inline void switchMenuLanguage()
     {
         switch((int)lang)
         {
-        case MENU_LANGUAGE_ENGLISH:
-            lang = MENU_LANGUAGE_RUSSIAN;
-            break;
-        case MENU_LANGUAGE_RUSSIAN:
-            lang = MENU_LANGUAGE_ITALIAN;
-            break;
-        case MENU_LANGUAGE_ITALIAN:
-            lang = MENU_LANGUAGE_SPANISH;
-            break;
-        case MENU_LANGUAGE_SPANISH:
-            lang = MENU_LANGUAGE_GERMAN;
-            break;
-        case MENU_LANGUAGE_GERMAN:
-            lang = MENU_LANGUAGE_ENGLISH;
-            break;
+            case MENU_LANGUAGE_ENGLISH:
+                lang = MENU_LANGUAGE_RUSSIAN;
+                break;
+            case MENU_LANGUAGE_RUSSIAN:
+                lang = MENU_LANGUAGE_ITALIAN;
+                break;
+            case MENU_LANGUAGE_ITALIAN:
+                lang = MENU_LANGUAGE_SPANISH;
+                break;
+            case MENU_LANGUAGE_SPANISH:
+                lang = MENU_LANGUAGE_GERMAN;
+                break;
+            case MENU_LANGUAGE_GERMAN:
+                lang = MENU_LANGUAGE_ENGLISH;
+                break;
         }
     }
     else
     {
         switch((int)lang)
         {
-        case MENU_LANGUAGE_ENGLISH:
-            lang = MENU_LANGUAGE_GERMAN;
-            break;
-        case MENU_LANGUAGE_GERMAN:
-            lang = MENU_LANGUAGE_SPANISH;
-            break;
-        case MENU_LANGUAGE_SPANISH:
-            lang = MENU_LANGUAGE_ITALIAN;
-            break;
-        case MENU_LANGUAGE_ITALIAN:
-            lang = MENU_LANGUAGE_RUSSIAN;
-            break;
-        case MENU_LANGUAGE_RUSSIAN:
-            lang = MENU_LANGUAGE_ENGLISH;
-            break;
+            case MENU_LANGUAGE_ENGLISH:
+                lang = MENU_LANGUAGE_GERMAN;
+                break;
+            case MENU_LANGUAGE_GERMAN:
+                lang = MENU_LANGUAGE_SPANISH;
+                break;
+            case MENU_LANGUAGE_SPANISH:
+                lang = MENU_LANGUAGE_ITALIAN;
+                break;
+            case MENU_LANGUAGE_ITALIAN:
+                lang = MENU_LANGUAGE_RUSSIAN;
+                break;
+            case MENU_LANGUAGE_RUSSIAN:
+                lang = MENU_LANGUAGE_ENGLISH;
+                break;
         }
     }
 
@@ -132,34 +132,34 @@ static inline void switchNotificationMethod()
     {
         switch((int)m)
         {
-        case NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED:
-            m = NOTIF_METHOD_NONE;
-            break;
-        case NOTIF_METHOD_NONE:
-            m = NOTIF_METHOD_RUMBLE;
-            break;
-        case NOTIF_METHOD_RUMBLE:
-            m = NOTIF_METHOD_LED;
-            break;
-        case NOTIF_METHOD_LED:
-            m = NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED;
+            case NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED:
+                m = NOTIF_METHOD_NONE;
+                break;
+            case NOTIF_METHOD_NONE:
+                m = NOTIF_METHOD_RUMBLE;
+                break;
+            case NOTIF_METHOD_RUMBLE:
+                m = NOTIF_METHOD_LED;
+                break;
+            case NOTIF_METHOD_LED:
+                m = NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED;
         }
     }
     else
     {
         switch((int)m)
         {
-        case NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED:
-            m = NOTIF_METHOD_LED;
-            break;
-        case NOTIF_METHOD_LED:
-            m = NOTIF_METHOD_RUMBLE;
-            break;
-        case NOTIF_METHOD_RUMBLE:
-            m = NOTIF_METHOD_NONE;
-            break;
-        case NOTIF_METHOD_NONE:
-            m = NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED;
+            case NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED:
+                m = NOTIF_METHOD_LED;
+                break;
+            case NOTIF_METHOD_LED:
+                m = NOTIF_METHOD_RUMBLE;
+                break;
+            case NOTIF_METHOD_RUMBLE:
+                m = NOTIF_METHOD_NONE;
+                break;
+            case NOTIF_METHOD_NONE:
+                m = NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED;
         }
     }
 
@@ -174,34 +174,34 @@ static inline void switchRegion()
     {
         switch((int)reg)
         {
-        case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
-            reg = MCP_REGION_JAPAN;
-            break;
-        case MCP_REGION_JAPAN:
-            reg = MCP_REGION_USA;
-            break;
-        case MCP_REGION_USA:
-            reg = MCP_REGION_EUROPE;
-            break;
-        case MCP_REGION_EUROPE:
-            reg = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN;
+            case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
+                reg = MCP_REGION_JAPAN;
+                break;
+            case MCP_REGION_JAPAN:
+                reg = MCP_REGION_USA;
+                break;
+            case MCP_REGION_USA:
+                reg = MCP_REGION_EUROPE;
+                break;
+            case MCP_REGION_EUROPE:
+                reg = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN;
         }
     }
     else
     {
         switch((int)reg)
         {
-        case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
-            reg = MCP_REGION_EUROPE;
-            break;
-        case MCP_REGION_EUROPE:
-            reg = MCP_REGION_USA;
-            break;
-        case MCP_REGION_USA:
-            reg = MCP_REGION_JAPAN;
-            break;
-        case MCP_REGION_JAPAN:
-            reg = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN;
+            case MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN:
+                reg = MCP_REGION_EUROPE;
+                break;
+            case MCP_REGION_EUROPE:
+                reg = MCP_REGION_USA;
+                break;
+            case MCP_REGION_USA:
+                reg = MCP_REGION_JAPAN;
+                break;
+            case MCP_REGION_JAPAN:
+                reg = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN;
         }
     }
 
@@ -231,21 +231,21 @@ void configMenu()
         {
             switch(cursorPos)
             {
-            case 0:
-                switchMenuLanguage();
-                break;
-            case 1:
-                setUpdateCheck(!updateCheckEnabled());
-                break;
-            case 2:
-                setAutoResume(!autoResumeEnabled());
-                break;
-            case 3:
-                switchNotificationMethod();
-                break;
-            case 4:
-                switchRegion();
-                break;
+                case 0:
+                    switchMenuLanguage();
+                    break;
+                case 1:
+                    setUpdateCheck(!updateCheckEnabled());
+                    break;
+                case 2:
+                    setAutoResume(!autoResumeEnabled());
+                    break;
+                case 3:
+                    switchNotificationMethod();
+                    break;
+                case 4:
+                    switchRegion();
+                    break;
             }
 
             redraw = true;

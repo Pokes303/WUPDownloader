@@ -99,17 +99,17 @@ void writeHeader(FSFileHandle *fp, FileType type)
     int v;
     switch(type)
     {
-    case FILE_TYPE_TIK:
-        cb = "0x5469636B6574"; // Ticket
-        v = 0xB9;
-        break;
-    case FILE_TYPE_CERT:
-        cb = "0x4365727469666963617465"; // "Certificate"
-        v = 0xB4;
-        break;
-    default:
-        cb = "00";
-        v = 0xBE;
+        case FILE_TYPE_TIK:
+            cb = "0x5469636B6574"; // Ticket
+            v = 0xB9;
+            break;
+        case FILE_TYPE_CERT:
+            cb = "0x4365727469666963617465"; // "Certificate"
+            v = 0xB4;
+            break;
+        default:
+            cb = "00";
+            v = 0xBE;
     }
 
     writeCustomBytes(fp, cb);
@@ -496,23 +496,23 @@ const char *translateFSErr(FSStatus err)
 {
     switch(err)
     {
-    case FS_STATUS_PERMISSION_ERROR:
-        return "Permission error (read only filesystem?)";
-    case FS_STATUS_MEDIA_ERROR:
-    case FS_STATUS_CORRUPTED:
-    case FS_STATUS_ACCESS_ERROR:
-        return "Filesystem error";
-    case FS_STATUS_NOT_FOUND:
-        return "Not found";
-    case FS_STATUS_NOT_FILE:
-        return "Not a file";
-    case FS_STATUS_NOT_DIR:
-        return "Not a folder";
-    case FS_STATUS_FILE_TOO_BIG:
-    case FS_STATUS_STORAGE_FULL:
-        return "Not enough free space";
-    default:
-        break;
+        case FS_STATUS_PERMISSION_ERROR:
+            return "Permission error (read only filesystem?)";
+        case FS_STATUS_MEDIA_ERROR:
+        case FS_STATUS_CORRUPTED:
+        case FS_STATUS_ACCESS_ERROR:
+            return "Filesystem error";
+        case FS_STATUS_NOT_FOUND:
+            return "Not found";
+        case FS_STATUS_NOT_FILE:
+            return "Not a file";
+        case FS_STATUS_NOT_DIR:
+            return "Not a folder";
+        case FS_STATUS_FILE_TOO_BIG:
+        case FS_STATUS_STORAGE_FULL:
+            return "Not enough free space";
+        default:
+            break;
     }
 
     static char ret[32];

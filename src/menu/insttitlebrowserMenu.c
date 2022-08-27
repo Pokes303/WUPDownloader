@@ -89,14 +89,14 @@ static volatile INST_META *getInstalledTitle(size_t index, ACPMetaXml *meta, boo
         MCPTitleListType *list = ititleEntries + index;
         switch(list->indexedDevice[0])
         {
-        case 'u':
-            title->dt = DEVICE_TYPE_USB;
-            break;
-        case 'm':
-            title->dt = DEVICE_TYPE_NAND;
-            break;
-        default: // TODO: bt. drh, slc
-            title->dt = DEVICE_TYPE_UNKNOWN;
+            case 'u':
+                title->dt = DEVICE_TYPE_USB;
+                break;
+            case 'm':
+                title->dt = DEVICE_TYPE_NAND;
+                break;
+            default: // TODO: bt. drh, slc
+                title->dt = DEVICE_TYPE_UNKNOWN;
         }
 
         const TitleEntry *e = getTitleEntryByTid(list->titleId);
@@ -113,16 +113,16 @@ static volatile INST_META *getInstalledTitle(size_t index, ACPMetaXml *meta, boo
 
         switch(getTidHighFromTid(list->titleId))
         {
-        case TID_HIGH_UPDATE:
-            title->isDlc = false;
-            title->isUpdate = true;
-            break;
-        case TID_HIGH_DLC:
-            title->isDlc = true;
-            title->isUpdate = false;
-            break;
-        default:
-            title->isDlc = title->isUpdate = false;
+            case TID_HIGH_UPDATE:
+                title->isDlc = false;
+                title->isUpdate = true;
+                break;
+            case TID_HIGH_DLC:
+                title->isDlc = true;
+                title->isUpdate = false;
+                break;
+            default:
+                title->isDlc = title->isUpdate = false;
         }
 
         if(ACPGetTitleMetaXmlByTitleListType(list, meta) == ACP_RESULT_SUCCESS)
@@ -170,14 +170,14 @@ static int asyncTitleLoader(int argc, const char **argv)
     {
         switch(asyncState)
         {
-        case ASYNC_STATE_FWD:
-            cur = min++;
-            break;
-        case ASYNC_STATE_BKWD:
-            cur = max--;
-            break;
-        case ASYNC_STATE_EXIT:
-            goto asyncExit;
+            case ASYNC_STATE_FWD:
+                cur = min++;
+                break;
+            case ASYNC_STATE_BKWD:
+                cur = max--;
+                break;
+            case ASYNC_STATE_EXIT:
+                goto asyncExit;
         }
 
         getInstalledTitle(cur, meta, false);

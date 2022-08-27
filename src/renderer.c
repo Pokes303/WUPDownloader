@@ -165,15 +165,15 @@ void textToFrameCut(int line, int column, const char *str, int maxWidth)
 
     switch(column)
     {
-    case ALIGNED_CENTER:
-        text.x = (SCREEN_WIDTH >> 1) - (text.w >> 1);
-        break;
-    case ALIGNED_RIGHT:
-        text.x = SCREEN_WIDTH - text.w - FONT_SIZE;
-        break;
-    default:
-        column *= spaceWidth;
-        text.x = column + FONT_SIZE;
+        case ALIGNED_CENTER:
+            text.x = (SCREEN_WIDTH >> 1) - (text.w >> 1);
+            break;
+        case ALIGNED_RIGHT:
+            text.x = SCREEN_WIDTH - text.w - FONT_SIZE;
+            break;
+        default:
+            column *= spaceWidth;
+            text.x = column + FONT_SIZE;
     }
 
     FC_DrawBox(font, renderer, text, str);
@@ -683,30 +683,30 @@ void resumeRenderer()
             {
                 switch(i)
                 {
-                case 0:
-                    tex = ROMFS_PATH "textures/flags/unk.png";
-                    break;
-                case 1:
-                    tex = ROMFS_PATH "textures/flags/eur.png";
-                    break;
-                case 2:
-                    tex = ROMFS_PATH "textures/flags/usa.png";
-                    break;
-                case 3:
-                    tex = ROMFS_PATH "textures/flags/jap.png";
-                    break;
-                case 4:
-                    tex = ROMFS_PATH "textures/flags/eurUsa.png";
-                    break;
-                case 5:
-                    tex = ROMFS_PATH "textures/flags/eurJap.png";
-                    break;
-                case 6:
-                    tex = ROMFS_PATH "textures/flags/usaJap.png";
-                    break;
-                case 7:
-                    tex = ROMFS_PATH "textures/flags/multi.png";
-                    break;
+                    case 0:
+                        tex = ROMFS_PATH "textures/flags/unk.png";
+                        break;
+                    case 1:
+                        tex = ROMFS_PATH "textures/flags/eur.png";
+                        break;
+                    case 2:
+                        tex = ROMFS_PATH "textures/flags/usa.png";
+                        break;
+                    case 3:
+                        tex = ROMFS_PATH "textures/flags/jap.png";
+                        break;
+                    case 4:
+                        tex = ROMFS_PATH "textures/flags/eurUsa.png";
+                        break;
+                    case 5:
+                        tex = ROMFS_PATH "textures/flags/eurJap.png";
+                        break;
+                    case 6:
+                        tex = ROMFS_PATH "textures/flags/usaJap.png";
+                        break;
+                    case 7:
+                        tex = ROMFS_PATH "textures/flags/multi.png";
+                        break;
                 }
                 loadTexture(tex, flagTex + i);
             }
@@ -715,15 +715,15 @@ void resumeRenderer()
             {
                 switch(i)
                 {
-                case 0:
-                    tex = ROMFS_PATH "textures/dev/unk.png";
-                    break;
-                case 1:
-                    tex = ROMFS_PATH "textures/dev/usb.png";
-                    break;
-                case 2:
-                    tex = ROMFS_PATH "textures/dev/nand.png";
-                    break;
+                    case 0:
+                        tex = ROMFS_PATH "textures/dev/unk.png";
+                        break;
+                    case 1:
+                        tex = ROMFS_PATH "textures/dev/usb.png";
+                        break;
+                    case 2:
+                        tex = ROMFS_PATH "textures/dev/nand.png";
+                        break;
                 }
                 loadTexture(tex, deviceTex + i);
             }

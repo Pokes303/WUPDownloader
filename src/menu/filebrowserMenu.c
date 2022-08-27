@@ -309,14 +309,14 @@ refreshDirList:
         {
             switch((int)activeDevice)
             {
-            case NUSDEV_USB:
-                activeDevice = NUSDEV_SD;
-                break;
-            case NUSDEV_SD:
-                activeDevice = NUSDEV_MLC;
-                break;
-            case NUSDEV_MLC:
-                activeDevice = usbMounted ? NUSDEV_USB : NUSDEV_SD;
+                case NUSDEV_USB:
+                    activeDevice = NUSDEV_SD;
+                    break;
+                case NUSDEV_SD:
+                    activeDevice = NUSDEV_MLC;
+                    break;
+                case NUSDEV_MLC:
+                    activeDevice = usbMounted ? NUSDEV_USB : NUSDEV_SD;
             }
             goto refreshDirList;
         }

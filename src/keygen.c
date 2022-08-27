@@ -36,27 +36,27 @@ static inline const char *transformPassword(TITLE_KEY in)
 {
     switch(in)
     {
-    case TITLE_KEY_mypass:
-        return "mypass";
-    case TITLE_KEY_nintendo:
-        return "nintendo";
-    case TITLE_KEY_test:
-        return "test";
-    case TITLE_KEY_1234567890:
-        return "1234567890";
-    case TITLE_KEY_Lucy131211:
-        return "Lucy131211";
-    case TITLE_KEY_fbf10:
-        return "fbf10";
-    case TITLE_KEY_5678:
-        return "5678";
-    case TITLE_KEY_1234:
-        return "1234";
-    case TITLE_KEY_:
-        return "";
-    default:
-        debugPrintf("Unknown password!");
-        return "mypass"; // Seems to work so far even for newest releases
+        case TITLE_KEY_mypass:
+            return "mypass";
+        case TITLE_KEY_nintendo:
+            return "nintendo";
+        case TITLE_KEY_test:
+            return "test";
+        case TITLE_KEY_1234567890:
+            return "1234567890";
+        case TITLE_KEY_Lucy131211:
+            return "Lucy131211";
+        case TITLE_KEY_fbf10:
+            return "fbf10";
+        case TITLE_KEY_5678:
+            return "5678";
+        case TITLE_KEY_1234:
+            return "1234";
+        case TITLE_KEY_:
+            return "";
+        default:
+            debugPrintf("Unknown password!");
+            return "mypass"; // Seems to work so far even for newest releases
     }
 }
 
@@ -67,14 +67,14 @@ bool generateKey(const TitleEntry *te, char *out)
     size_t j;
     switch(getTidHighFromTid(te->tid))
     {
-    case TID_HIGH_VWII_IOS:
-        ti += 2;
-        i = 8 - 3;
-        j = 8 - 3 + 10;
-        break;
-    default:
-        i = 8 - 1;
-        j = 8 - 1 + 10;
+        case TID_HIGH_VWII_IOS:
+            ti += 2;
+            i = 8 - 3;
+            j = 8 - 3 + 10;
+            break;
+        default:
+            i = 8 - 1;
+            j = 8 - 1 + 10;
     }
 
     uint8_t key[17];

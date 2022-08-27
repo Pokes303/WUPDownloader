@@ -121,19 +121,19 @@ static void SWKBD_Render(SWKBD_Args *args, KeyboardChecks check)
                 checkingFunction cf;
                 switch(check)
                 {
-                case CHECK_HEXADECIMAL:
-                    cf = &isH;
-                    break;
-                case CHECK_ALPHANUMERICAL:
-                    cf = &isA;
-                    break;
-                case CHECK_URL:
-                    cf = &isUrl;
-                    break;
-                default:
-                    // DEAD CODE
-                    debugPrintf("0xDEADC0DE: %d", check);
-                    return;
+                    case CHECK_HEXADECIMAL:
+                        cf = &isH;
+                        break;
+                    case CHECK_ALPHANUMERICAL:
+                        cf = &isA;
+                        break;
+                    case CHECK_URL:
+                        cf = &isUrl;
+                        break;
+                    default:
+                        // DEAD CODE
+                        debugPrintf("0xDEADC0DE: %d", check);
+                        return;
                 }
 
                 for(len = 0; inputFormString[len] != '\0'; ++len)
@@ -195,32 +195,32 @@ static bool SWKBD_Show(SWKBD_Args *args, KeyboardLayout layout, KeyboardType typ
     appearArg.keyboardArg.configArg.languageType = getKeyboardLanguage();
     switch(appearArg.keyboardArg.configArg.languageType)
     {
-    case Swkbd_LanguageType__Japanese:
-        appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__Japanese;
-        break;
-    case Swkbd_LanguageType__French:
-        appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__French;
-        break;
-    case Swkbd_LanguageType__German:
-        appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__German;
-        break;
-    case Swkbd_LanguageType__Italian:
-        appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__Italian;
-        break;
-    case Swkbd_LanguageType__Spanish:
-        appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__Spanish;
-        break;
-    case Swkbd_LanguageType__Dutch:
-        appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__Dutch;
-        break;
-    case Swkbd_LanguageType__Potuguese:
-        appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__Portuguese;
-        break;
-    case Swkbd_LanguageType__Russian:
-        appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__Russian;
-        break;
-    default:
-        appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__English;
+        case Swkbd_LanguageType__Japanese:
+            appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__Japanese;
+            break;
+        case Swkbd_LanguageType__French:
+            appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__French;
+            break;
+        case Swkbd_LanguageType__German:
+            appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__German;
+            break;
+        case Swkbd_LanguageType__Italian:
+            appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__Italian;
+            break;
+        case Swkbd_LanguageType__Spanish:
+            appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__Spanish;
+            break;
+        case Swkbd_LanguageType__Dutch:
+            appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__Dutch;
+            break;
+        case Swkbd_LanguageType__Potuguese:
+            appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__Portuguese;
+            break;
+        case Swkbd_LanguageType__Russian:
+            appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__Russian;
+            break;
+        default:
+            appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__English;
     }
 
     appearArg.keyboardArg.configArg.controllerType = lastUsedController;
@@ -285,24 +285,24 @@ bool SWKBD_Init()
 
     switch(getKeyboardLanguage())
     {
-    case Swkbd_LanguageType__Japanese:
-        createArg.regionType = Swkbd_RegionType__Japan;
-        break;
-    case Swkbd_LanguageType__English:
-        createArg.regionType = Swkbd_RegionType__USA;
-        break;
-    case Swkbd_LanguageType__Chinese1:
-        createArg.regionType = Swkbd_RegionType__China;
-        break;
-    case Swkbd_LanguageType__Korean:
-        createArg.regionType = Swkbd_RegionType__Korea;
-        break;
-    case Swkbd_LanguageType__Chinese2:
-        createArg.regionType = Swkbd_RegionType__Taiwan;
-        break;
-    default:
-        createArg.regionType = Swkbd_RegionType__Europe;
-        break;
+        case Swkbd_LanguageType__Japanese:
+            createArg.regionType = Swkbd_RegionType__Japan;
+            break;
+        case Swkbd_LanguageType__English:
+            createArg.regionType = Swkbd_RegionType__USA;
+            break;
+        case Swkbd_LanguageType__Chinese1:
+            createArg.regionType = Swkbd_RegionType__China;
+            break;
+        case Swkbd_LanguageType__Korean:
+            createArg.regionType = Swkbd_RegionType__Korea;
+            break;
+        case Swkbd_LanguageType__Chinese2:
+            createArg.regionType = Swkbd_RegionType__Taiwan;
+            break;
+        default:
+            createArg.regionType = Swkbd_RegionType__Europe;
+            break;
     }
 
     createArg.fsClient = __wut_devoptab_fs_client;

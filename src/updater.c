@@ -122,38 +122,38 @@ bool updateCheck()
             {
                 switch(json_integer_value(jsonObj))
                 {
-                case 0:
-                    debugPrintf("Newest version!");
-                    break;
-                case 1: // Update
-                    const char *newVer = json_string_value(json_object_get(json, "v"));
-                    ret = newVer != NULL;
-                    if(ret)
+                    case 0:
+                        debugPrintf("Newest version!");
+                        break;
+                    case 1: // Update
+                        const char *newVer = json_string_value(json_object_get(json, "v"));
+                        ret = newVer != NULL;
+                        if(ret)
 #ifdef NUSSPLI_HBL
-                        ret = updateMenu(newVer, NUSSPLI_TYPE_HBL);
+                            ret = updateMenu(newVer, NUSSPLI_TYPE_HBL);
 #else
-                        ret = updateMenu(newVer, isAroma() ? NUSSPLI_TYPE_AROMA : NUSSPLI_TYPE_CHANNEL);
+                            ret = updateMenu(newVer, isAroma() ? NUSSPLI_TYPE_AROMA : NUSSPLI_TYPE_CHANNEL);
 #endif
-                    break;
-                case 2: // Type deprecated, update to what the server suggests
-                    const char *nv = json_string_value(json_object_get(json, "v"));
-                    ret = nv != NULL;
-                    if(ret)
-                    {
-                        int t = json_integer_value(json_object_get(json, "t"));
-                        if(t)
-                            ret = updateMenu(nv, t);
-                        else
-                            ret = false;
-                    }
-                    break;
-                case 3: // TODO
-                case 4:
-                    showUpdateError(gettext("Internal server error!"));
-                    break;
-                default: // TODO
-                    showUpdateErrorf("%s: %d", gettext("Invalid state value"), json_integer_value(jsonObj));
-                    break;
+                        break;
+                    case 2: // Type deprecated, update to what the server suggests
+                        const char *nv = json_string_value(json_object_get(json, "v"));
+                        ret = nv != NULL;
+                        if(ret)
+                        {
+                            int t = json_integer_value(json_object_get(json, "t"));
+                            if(t)
+                                ret = updateMenu(nv, t);
+                            else
+                                ret = false;
+                        }
+                        break;
+                    case 3: // TODO
+                    case 4:
+                        showUpdateError(gettext("Internal server error!"));
+                        break;
+                    default: // TODO
+                        showUpdateErrorf("%s: %d", gettext("Invalid state value"), json_integer_value(jsonObj));
+                        break;
                 }
             }
             else
@@ -199,15 +199,15 @@ static long ZCALLBACK nus_zseek(voidpf opaque, voidpf stream, uLong offset, int 
 {
     switch(origin)
     {
-    case ZLIB_FILEFUNC_SEEK_CUR:
-        *((long *)(stream)) += offset;
-        break;
-    case ZLIB_FILEFUNC_SEEK_END:
-        *((long *)(stream)) = getRamBufSize() + offset;
-        break;
-    case ZLIB_FILEFUNC_SEEK_SET:
-        *((long *)(stream)) = offset;
-        break;
+        case ZLIB_FILEFUNC_SEEK_CUR:
+            *((long *)(stream)) += offset;
+            break;
+        case ZLIB_FILEFUNC_SEEK_END:
+            *((long *)(stream)) = getRamBufSize() + offset;
+            break;
+        case ZLIB_FILEFUNC_SEEK_SET:
+            *((long *)(stream)) = offset;
+            break;
     }
 
     return 0;
@@ -406,18 +406,18 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 
     switch(type)
     {
-    case NUSSPLI_TYPE_AROMA:
-        strcat(path, "-Aroma");
-        break;
-    case NUSSPLI_TYPE_CHANNEL:
-        strcat(path, "-Channel");
-        break;
-    case NUSSPLI_TYPE_HBL:
-        strcat(path, "-HBL");
-        break;
-    default:
-        showUpdateError("Internal error!");
-        goto updateError;
+        case NUSSPLI_TYPE_AROMA:
+            strcat(path, "-Aroma");
+            break;
+        case NUSSPLI_TYPE_CHANNEL:
+            strcat(path, "-Channel");
+            break;
+        case NUSSPLI_TYPE_HBL:
+            strcat(path, "-HBL");
+            break;
+        default:
+            showUpdateError("Internal error!");
+            goto updateError;
     }
 
     strcat(path, NUSSPLI_DLVER ".zip");
@@ -489,28 +489,28 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
     flushIOQueue();
     switch(type)
     {
-    case NUSSPLI_TYPE_AROMA:
-        strcpy(path, UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE);
-        char *path2 = getStaticPathBuffer(0);
-        strcpy(path2, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
-        FSRename(__wut_devoptab_fs_client, getCmdBlk(), path, path2, FS_ERROR_FLAG_ALL);
-        break;
-    case NUSSPLI_TYPE_CHANNEL:
-        strcpy(path, UPDATE_TEMP_FOLDER);
-        strcpy(path + strlen(UPDATE_TEMP_FOLDER), "NUSspli");
+        case NUSSPLI_TYPE_AROMA:
+            strcpy(path, UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE);
+            char *path2 = getStaticPathBuffer(0);
+            strcpy(path2, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
+            FSRename(__wut_devoptab_fs_client, getCmdBlk(), path, path2, FS_ERROR_FLAG_ALL);
+            break;
+        case NUSSPLI_TYPE_CHANNEL:
+            strcpy(path, UPDATE_TEMP_FOLDER);
+            strcpy(path + strlen(UPDATE_TEMP_FOLDER), "NUSspli");
 
-        install("Update", false, NUSDEV_SD, path, toUSB, true, 0);
-        break;
-    case NUSSPLI_TYPE_HBL:
+            install("Update", false, NUSDEV_SD, path, toUSB, true, 0);
+            break;
+        case NUSSPLI_TYPE_HBL:
 #ifdef NUSSPLI_DEBUG
-        FSStatus err =
+            FSStatus err =
 #endif
-            moveDirectory(UPDATE_TEMP_FOLDER "NUSspli", UPDATE_HBL_FOLDER);
+                moveDirectory(UPDATE_TEMP_FOLDER "NUSspli", UPDATE_HBL_FOLDER);
 #ifdef NUSSPLI_DEBUG
-        if(err != FS_STATUS_OK)
-            debugPrintf("Error moving directory: %s", translateFSErr(err));
+            if(err != FS_STATUS_OK)
+                debugPrintf("Error moving directory: %s", translateFSErr(err));
 #endif
-        break;
+            break;
     }
 
     removeDirectory(UPDATE_TEMP_FOLDER);

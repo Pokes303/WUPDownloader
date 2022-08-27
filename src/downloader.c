@@ -459,36 +459,36 @@ static const char *translateCurlError(CURLcode err, char *curlError)
     const char *ret;
     switch(err)
     {
-    case CURLE_COULDNT_RESOLVE_HOST:
-        ret = gettext("Couldn't resolve hostname");
-        break;
-    case CURLE_COULDNT_CONNECT:
-        ret = gettext("Couldn't connect to server");
-        break;
-    case CURLE_OPERATION_TIMEDOUT:
-        ret = gettext("Operation timed out");
-        break;
-    case CURLE_GOT_NOTHING:
-        ret = gettext("The server didn't return any data");
-        break;
-    case CURLE_SEND_ERROR:
-    case CURLE_RECV_ERROR:
-    case CURLE_PARTIAL_FILE:
-        ret = gettext("I/O error");
-        break;
-    case CURLE_PEER_FAILED_VERIFICATION:
-        ret = gettext("Verification failed");
-        break;
-    case CURLE_SSL_CONNECT_ERROR:
-        ret = gettext("Handshake failed");
-        break;
+        case CURLE_COULDNT_RESOLVE_HOST:
+            ret = gettext("Couldn't resolve hostname");
+            break;
+        case CURLE_COULDNT_CONNECT:
+            ret = gettext("Couldn't connect to server");
+            break;
+        case CURLE_OPERATION_TIMEDOUT:
+            ret = gettext("Operation timed out");
+            break;
+        case CURLE_GOT_NOTHING:
+            ret = gettext("The server didn't return any data");
+            break;
+        case CURLE_SEND_ERROR:
+        case CURLE_RECV_ERROR:
+        case CURLE_PARTIAL_FILE:
+            ret = gettext("I/O error");
+            break;
+        case CURLE_PEER_FAILED_VERIFICATION:
+            ret = gettext("Verification failed");
+            break;
+        case CURLE_SSL_CONNECT_ERROR:
+            ret = gettext("Handshake failed");
+            break;
 
-    case CURLE_FAILED_INIT:
-    case CURLE_READ_ERROR:
-    case CURLE_OUT_OF_MEMORY:
-        return gettext("Internal error");
-    default:
-        return gettext("Unknown libcurl error");
+        case CURLE_FAILED_INIT:
+        case CURLE_READ_ERROR:
+        case CURLE_OUT_OF_MEMORY:
+            return gettext("Internal error");
+        default:
+            return gettext("Unknown libcurl error");
     }
 
     return curlError[0] == '\0' ? ret : curlError;
@@ -822,38 +822,38 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
         {
             switch(cdata.error)
             {
-            case CURLE_ABORTED_BY_CALLBACK:
-                return 1;
-            case CURLE_OK:
-                break;
-            default:
-                ret = cdata.error;
+                case CURLE_ABORTED_BY_CALLBACK:
+                    return 1;
+                case CURLE_OK:
+                    break;
+                default:
+                    ret = cdata.error;
             }
         }
 
         const char *te = translateCurlError(ret, curlError);
         switch(ret)
         {
-        case CURLE_RANGE_ERROR:
-            int r = downloadFile(url, file, data, type, false);
-            curlReuseConnection = false;
-            return r;
-        case CURLE_COULDNT_RESOLVE_HOST:
-        case CURLE_COULDNT_CONNECT:
-        case CURLE_OPERATION_TIMEDOUT:
-        case CURLE_GOT_NOTHING:
-        case CURLE_SEND_ERROR:
-        case CURLE_RECV_ERROR:
-        case CURLE_PARTIAL_FILE:
-            sprintf(toScreen, "%s:\n\t%s\n\n%s", gettext("Network error"), te, gettext("check the network settings and try again"));
-            break;
-        case CURLE_PEER_FAILED_VERIFICATION:
-        case CURLE_SSL_CONNECT_ERROR:
-            sprintf(toScreen, "%s:\n\t%s!\n\n%s", gettext("SSL error"), te, gettext("check your Wii Us date and time settings"));
-            break;
-        default:
-            sprintf(toScreen, "%s:\n\t%d %s", te, ret, curlError);
-            break;
+            case CURLE_RANGE_ERROR:
+                int r = downloadFile(url, file, data, type, false);
+                curlReuseConnection = false;
+                return r;
+            case CURLE_COULDNT_RESOLVE_HOST:
+            case CURLE_COULDNT_CONNECT:
+            case CURLE_OPERATION_TIMEDOUT:
+            case CURLE_GOT_NOTHING:
+            case CURLE_SEND_ERROR:
+            case CURLE_RECV_ERROR:
+            case CURLE_PARTIAL_FILE:
+                sprintf(toScreen, "%s:\n\t%s\n\n%s", gettext("Network error"), te, gettext("check the network settings and try again"));
+                break;
+            case CURLE_PEER_FAILED_VERIFICATION:
+            case CURLE_SSL_CONNECT_ERROR:
+                sprintf(toScreen, "%s:\n\t%s!\n\n%s", gettext("SSL error"), te, gettext("check your Wii Us date and time settings"));
+                break;
+            default:
+                sprintf(toScreen, "%s:\n\t%d %s", te, ret, curlError);
+                break;
         }
 
         if(data != NULL && cancelOverlayId >= 0)
@@ -1137,51 +1137,51 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
     bool hasDependencies;
     switch(getTidHighFromTid(tmd->tid)) // Title type
     {
-    case TID_HIGH_GAME:
-        strcat(toScreen, "eShop or Packed");
-        hasDependencies = false;
-        break;
-    case TID_HIGH_DEMO:
-        strcat(toScreen, "eShop/Kiosk demo");
-        hasDependencies = false;
-        break;
-    case TID_HIGH_DLC:
-        strcat(toScreen, "eShop DLC");
-        hasDependencies = true;
-        break;
-    case TID_HIGH_UPDATE:
-        strcat(toScreen, "eShop Update");
-        hasDependencies = true;
-        break;
-    case TID_HIGH_SYSTEM_APP:
-        strcat(toScreen, "System Application");
-        hasDependencies = false;
-        break;
-    case TID_HIGH_SYSTEM_DATA:
-        strcat(toScreen, "System Data Archive");
-        hasDependencies = false;
-        break;
-    case TID_HIGH_SYSTEM_APPLET:
-        strcat(toScreen, "Applet");
-        hasDependencies = false;
-        break;
-    // vWii //
-    case TID_HIGH_VWII_IOS:
-        strcat(toScreen, "Wii IOS");
-        hasDependencies = false;
-        break;
-    case TID_HIGH_VWII_SYSTEM_APP:
-        strcat(toScreen, "vWii System Application");
-        hasDependencies = false;
-        break;
-    case TID_HIGH_VWII_SYSTEM:
-        strcat(toScreen, "vWii System Channel");
-        hasDependencies = false;
-        break;
-    default:
-        sprintf(toScreen + strlen(toScreen), "Unknown (0x%08X)", getTidHighFromTid(tmd->tid));
-        hasDependencies = false;
-        break;
+        case TID_HIGH_GAME:
+            strcat(toScreen, "eShop or Packed");
+            hasDependencies = false;
+            break;
+        case TID_HIGH_DEMO:
+            strcat(toScreen, "eShop/Kiosk demo");
+            hasDependencies = false;
+            break;
+        case TID_HIGH_DLC:
+            strcat(toScreen, "eShop DLC");
+            hasDependencies = true;
+            break;
+        case TID_HIGH_UPDATE:
+            strcat(toScreen, "eShop Update");
+            hasDependencies = true;
+            break;
+        case TID_HIGH_SYSTEM_APP:
+            strcat(toScreen, "System Application");
+            hasDependencies = false;
+            break;
+        case TID_HIGH_SYSTEM_DATA:
+            strcat(toScreen, "System Data Archive");
+            hasDependencies = false;
+            break;
+        case TID_HIGH_SYSTEM_APPLET:
+            strcat(toScreen, "Applet");
+            hasDependencies = false;
+            break;
+        // vWii //
+        case TID_HIGH_VWII_IOS:
+            strcat(toScreen, "Wii IOS");
+            hasDependencies = false;
+            break;
+        case TID_HIGH_VWII_SYSTEM_APP:
+            strcat(toScreen, "vWii System Application");
+            hasDependencies = false;
+            break;
+        case TID_HIGH_VWII_SYSTEM:
+            strcat(toScreen, "vWii System Channel");
+            hasDependencies = false;
+            break;
+        default:
+            sprintf(toScreen + strlen(toScreen), "Unknown (0x%08X)", getTidHighFromTid(tmd->tid));
+            hasDependencies = false;
+            break;
     }
     addToScreenLog(toScreen);
 
@@ -1193,23 +1193,23 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
         int tikRes = downloadFile(downloadUrl, installDir, NULL, FILE_TYPE_TIK, false);
         switch(tikRes)
         {
-        case 2:
-            addToScreenLog("title.tik not found on the NUS. Generating...");
-            startNewFrame();
-            textToFrame(0, 0, gettext("Creating fake title.tik"));
-            writeScreenLog(3);
-            drawFrame();
+            case 2:
+                addToScreenLog("title.tik not found on the NUS. Generating...");
+                startNewFrame();
+                textToFrame(0, 0, gettext("Creating fake title.tik"));
+                writeScreenLog(3);
+                drawFrame();
 
-            if(generateTik(installDir, titleEntry))
-                addToScreenLog("Fake ticket created successfully");
-            else
-                return false;
+                if(generateTik(installDir, titleEntry))
+                    addToScreenLog("Fake ticket created successfully");
+                else
+                    return false;
 
-            break;
-        case 1:
-            return true;
-        default:
-            break;
+                break;
+            case 1:
+                return true;
+            default:
+                break;
         }
     }
     else

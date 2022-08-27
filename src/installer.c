@@ -51,12 +51,12 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUs
 
     switch(dev)
     {
-    case NUSDEV_USB01:
-    case NUSDEV_USB02:
-    case NUSDEV_MLC:
-        keepFiles = false;
-    default:
-        break;
+        case NUSDEV_USB01:
+        case NUSDEV_USB02:
+        case NUSDEV_MLC:
+            keepFiles = false;
+        default:
+            break;
     }
 
     if(!keepFiles)
@@ -121,25 +121,25 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
     {
         switch(data.err)
         {
-        case 0xfffbf3e2:
-            sprintf(toScreen, "%s \"%s\"", gettext("No title.tmd found at"), path);
-            break;
-        case 0xfffbfc17:
-            sprintf(toScreen,
-                "%s \"%s\""
+            case 0xfffbf3e2:
+                sprintf(toScreen, "%s \"%s\"", gettext("No title.tmd found at"), path);
+                break;
+            case 0xfffbfc17:
+                sprintf(toScreen,
+                    "%s \"%s\""
 #ifdef NUSSPLI_HBL
-                "\n%s"
+                    "\n%s"
 #endif
-                ,
-                gettext("Internal error installing"), path
+                    ,
+                    gettext("Internal error installing"), path
 #ifdef NUSSPLI_HBL
-                ,
-                gettext("We're supporting HBL on Tiramisu and HBLC v2.1 fix by Gary only!")
+                    ,
+                    gettext("We're supporting HBL on Tiramisu and HBLC v2.1 fix by Gary only!")
 #endif
-            );
-            break;
-        default:
-            sprintf(toScreen, "%s \"%s\" %s: %#010x", gettext("Error getting info for"), path, gettext("from MCP"), data.err);
+                );
+                break;
+            default:
+                sprintf(toScreen, "%s \"%s\" %s: %#010x", gettext("Error getting info for"), path, gettext("from MCP"), data.err);
         }
 
         debugPrintf(toScreen);
@@ -240,50 +240,50 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
         strcat(toScreen, "\n\n");
         switch(data.err)
         {
-        case CUSTOM_MCP_ERROR_CANCELLED:
-            cleanupCancelledInstallation(dev, path, toUsb, keepFiles);
-        case CUSTOM_MCP_ERROR_EOM:
-            return true;
-        case 0xFFFCFFE9:
-            if(hasDeps)
-            {
-                strcat(toScreen, "Install the main game to the same storage medium first");
-                if(toUsb)
+            case CUSTOM_MCP_ERROR_CANCELLED:
+                cleanupCancelledInstallation(dev, path, toUsb, keepFiles);
+            case CUSTOM_MCP_ERROR_EOM:
+                return true;
+            case 0xFFFCFFE9:
+                if(hasDeps)
                 {
-                    strcat(toScreen, "\n");
-                    strcat(toScreen, gettext("Also make sure there is no error with the USB drive"));
+                    strcat(toScreen, "Install the main game to the same storage medium first");
+                    if(toUsb)
+                    {
+                        strcat(toScreen, "\n");
+                        strcat(toScreen, gettext("Also make sure there is no error with the USB drive"));
+                    }
                 }
-            }
-            else if(toUsb)
-                strcat(toScreen, gettext("Possible USB error"));
-            break;
-        case 0xFFFBF446:
-        case 0xFFFBF43F:
-            strcat(toScreen, gettext("Possible missing or bad title.tik file"));
-            break;
-        case 0xFFFBF441:
-            strcat(toScreen, gettext("Possible incorrect console for DLC title.tik file"));
-            break;
-        case 0xFFFCFFE4:
-            strcat(toScreen, gettext("Not enough free space on target device"));
-            break;
-        case 0xFFFFF825:
-        case 0xFFFFF82E:
-            strcat(toScreen, gettext("Files might be corrupt or bad storage medium.\nTry redownloading files or reformat/replace target device"));
-            break;
-        default:
-            if((data.err & 0xFFFF0000) == 0xFFFB0000)
-            {
-                if(dev & NUSDEV_USB)
+                else if(toUsb)
+                    strcat(toScreen, gettext("Possible USB error"));
+                break;
+            case 0xFFFBF446:
+            case 0xFFFBF43F:
+                strcat(toScreen, gettext("Possible missing or bad title.tik file"));
+                break;
+            case 0xFFFBF441:
+                strcat(toScreen, gettext("Possible incorrect console for DLC title.tik file"));
+                break;
+            case 0xFFFCFFE4:
+                strcat(toScreen, gettext("Not enough free space on target device"));
+                break;
+            case 0xFFFFF825:
+            case 0xFFFFF82E:
+                strcat(toScreen, gettext("Files might be corrupt or bad storage medium.\nTry redownloading files or reformat/replace target device"));
+                break;
+            default:
+                if((data.err & 0xFFFF0000) == 0xFFFB0000)
                 {
-                    strcat(toScreen, gettext("Possible USB failure. Check your drives power source."));
-                    strcat(toScreen, "\n");
-                }
+                    if(dev & NUSDEV_USB)
+                    {
+                        strcat(toScreen, gettext("Possible USB failure. Check your drives power source."));
+                        strcat(toScreen, "\n");
+                    }
 
-                strcat(toScreen, gettext("Files might be corrupt"));
-            }
-            else
-                sprintf(toScreen + strlen(toScreen), "%s: %#010x", gettext("Unknown Error"), data.err);
+                    strcat(toScreen, gettext("Files might be corrupt"));
+                }
+                else
+                    sprintf(toScreen + strlen(toScreen), "%s: %#010x", gettext("Unknown Error"), data.err);
         }
 
         addToScreenLog("Installation failed!");

@@ -120,15 +120,15 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
     strcpy(toFrame, "Press " BUTTON_MINUS " to download to ");
     switch((int)dlDev)
     {
-    case NUSDEV_USB01:
-    case NUSDEV_USB02:
-        strcat(toFrame, "SD");
-        break;
-    case NUSDEV_SD:
-        strcat(toFrame, "NAND");
-        break;
-    case NUSDEV_MLC:
-        strcat(toFrame, usbMounted ? "USB" : "SD");
+        case NUSDEV_USB01:
+        case NUSDEV_USB02:
+            strcat(toFrame, "SD");
+            break;
+        case NUSDEV_SD:
+            strcat(toFrame, "NAND");
+            break;
+        case NUSDEV_MLC:
+            strcat(toFrame, usbMounted ? "USB" : "SD");
     }
     textToFrame(line--, 0, gettext(toFrame));
 
@@ -308,29 +308,29 @@ naNedNa:
         {
             switch((int)dlDev)
             {
-            case NUSDEV_USB01:
-            case NUSDEV_USB02:
-                dlDev = NUSDEV_SD;
-                keepFiles = true;
-                setDlToUSB(false);
-                break;
-            case NUSDEV_SD:
-                dlDev = NUSDEV_MLC;
-                keepFiles = false;
-                break;
-            case NUSDEV_MLC:
-                if(usbMounted)
-                {
-                    dlDev = usbMounted;
-                    keepFiles = false;
-                    setDlToUSB(true);
-                }
-                else
-                {
+                case NUSDEV_USB01:
+                case NUSDEV_USB02:
                     dlDev = NUSDEV_SD;
                     keepFiles = true;
                     setDlToUSB(false);
-                }
+                    break;
+                case NUSDEV_SD:
+                    dlDev = NUSDEV_MLC;
+                    keepFiles = false;
+                    break;
+                case NUSDEV_MLC:
+                    if(usbMounted)
+                    {
+                        dlDev = usbMounted;
+                        keepFiles = false;
+                        setDlToUSB(true);
+                    }
+                    else
+                    {
+                        dlDev = NUSDEV_SD;
+                        keepFiles = true;
+                        setDlToUSB(false);
+                    }
             }
             redraw = true;
         }

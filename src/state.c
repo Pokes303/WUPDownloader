@@ -160,18 +160,18 @@ bool AppRunning()
     {
         switch(ProcUIProcessMessages(true))
         {
-        case PROCUI_STATUS_EXITING:
-            // Real exit request from CafeOS
-            app = APP_STATE_STOPPED;
-            break;
-        case PROCUI_STATUS_RELEASE_FOREGROUND:
-            // Exit with power button
-            shutdownRenderer();
-            app = APP_STATE_STOPPING;
-            break;
-        default:
-            // Normal loop execution
-            break;
+            case PROCUI_STATUS_EXITING:
+                // Real exit request from CafeOS
+                app = APP_STATE_STOPPED;
+                break;
+            case PROCUI_STATUS_RELEASE_FOREGROUND:
+                // Exit with power button
+                shutdownRenderer();
+                app = APP_STATE_STOPPING;
+                break;
+            default:
+                // Normal loop execution
+                break;
         }
     }
 

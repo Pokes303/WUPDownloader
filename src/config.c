@@ -83,18 +83,18 @@ const char *menuLangToString(MENU_LANGUAGE lang)
 {
     switch(lang)
     {
-    case MENU_LANGUAGE_ENGLISH:
-        return LANG_ENG;
-    case MENU_LANGUAGE_GERMAN:
-        return LANG_GER;
-    case MENU_LANGUAGE_SPANISH:
-        return LANG_SPA;
-    case MENU_LANGUAGE_ITALIAN:
-        return LANG_ITA;
-    case MENU_LANGUAGE_RUSSIAN:
-        return LANG_RUS;
-    default:
-        return LANG_SYS;
+        case MENU_LANGUAGE_ENGLISH:
+            return LANG_ENG;
+        case MENU_LANGUAGE_GERMAN:
+            return LANG_GER;
+        case MENU_LANGUAGE_SPANISH:
+            return LANG_SPA;
+        case MENU_LANGUAGE_ITALIAN:
+            return LANG_ITA;
+        case MENU_LANGUAGE_RUSSIAN:
+            return LANG_RUS;
+        default:
+            return LANG_SYS;
     }
 }
 
@@ -102,17 +102,17 @@ static inline MENU_LANGUAGE sysLangToMenuLang(Swkbd_LanguageType lang)
 {
     switch(lang)
     {
-    case Swkbd_LanguageType__German:
-        return MENU_LANGUAGE_GERMAN;
-    case Swkbd_LanguageType__Spanish:
-        return MENU_LANGUAGE_SPANISH;
-    case Swkbd_LanguageType__Italian:
-        return MENU_LANGUAGE_ITALIAN;
-    case Swkbd_LanguageType__Russian:
-        return MENU_LANGUAGE_RUSSIAN;
-        //		case Swkbd_LanguageType__English:
-    default:
-        return MENU_LANGUAGE_ENGLISH;
+        case Swkbd_LanguageType__German:
+            return MENU_LANGUAGE_GERMAN;
+        case Swkbd_LanguageType__Spanish:
+            return MENU_LANGUAGE_SPANISH;
+        case Swkbd_LanguageType__Italian:
+            return MENU_LANGUAGE_ITALIAN;
+        case Swkbd_LanguageType__Russian:
+            return MENU_LANGUAGE_RUSSIAN;
+            //		case Swkbd_LanguageType__English:
+        default:
+            return MENU_LANGUAGE_ENGLISH;
     }
 }
 
@@ -373,32 +373,32 @@ const char *getLanguageString(Swkbd_LanguageType language)
 {
     switch(language)
     {
-    case Swkbd_LanguageType__Japanese:
-        return LANG_JAP;
-    case Swkbd_LanguageType__English:
-        return LANG_ENG;
-    case Swkbd_LanguageType__French:
-        return LANG_FRE;
-    case Swkbd_LanguageType__German:
-        return LANG_GER;
-    case Swkbd_LanguageType__Italian:
-        return LANG_ITA;
-    case Swkbd_LanguageType__Spanish:
-        return LANG_SPA;
-    case Swkbd_LanguageType__Chinese1:
-        return LANG_CHI;
-    case Swkbd_LanguageType__Korean:
-        return LANG_KOR;
-    case Swkbd_LanguageType__Dutch:
-        return LANG_DUT;
-    case Swkbd_LanguageType__Potuguese:
-        return LANG_POR;
-    case Swkbd_LanguageType__Russian:
-        return LANG_RUS;
-    case Swkbd_LanguageType__Chinese2:
-        return LANG_TCH;
-    default:
-        return LANG_SYS;
+        case Swkbd_LanguageType__Japanese:
+            return LANG_JAP;
+        case Swkbd_LanguageType__English:
+            return LANG_ENG;
+        case Swkbd_LanguageType__French:
+            return LANG_FRE;
+        case Swkbd_LanguageType__German:
+            return LANG_GER;
+        case Swkbd_LanguageType__Italian:
+            return LANG_ITA;
+        case Swkbd_LanguageType__Spanish:
+            return LANG_SPA;
+        case Swkbd_LanguageType__Chinese1:
+            return LANG_CHI;
+        case Swkbd_LanguageType__Korean:
+            return LANG_KOR;
+        case Swkbd_LanguageType__Dutch:
+            return LANG_DUT;
+        case Swkbd_LanguageType__Potuguese:
+            return LANG_POR;
+        case Swkbd_LanguageType__Russian:
+            return LANG_RUS;
+        case Swkbd_LanguageType__Chinese2:
+            return LANG_TCH;
+        default:
+            return LANG_SYS;
     }
 }
 
@@ -406,14 +406,14 @@ const char *getNotificationString(NOTIF_METHOD method)
 {
     switch((int)method)
     {
-    case NOTIF_METHOD_RUMBLE:
-        return NOTIF_RUMBLE;
-    case NOTIF_METHOD_LED:
-        return NOTIF_LED;
-    case NOTIF_METHOD_NONE:
-        return NOTIF_NONE;
-    default:
-        return NOTIF_BOTH;
+        case NOTIF_METHOD_RUMBLE:
+            return NOTIF_RUMBLE;
+        case NOTIF_METHOD_LED:
+            return NOTIF_LED;
+        case NOTIF_METHOD_NONE:
+            return NOTIF_NONE;
+        default:
+            return NOTIF_BOTH;
     }
 }
 
@@ -590,14 +590,14 @@ const char *getFormattedRegion(MCPRegion region)
 {
     switch(region)
     {
-    case MCP_REGION_EUROPE:
-        return SET_EUR;
-    case MCP_REGION_USA:
-        return SET_USA;
-    case MCP_REGION_JAPAN:
-        return SET_JPN;
-    default:
-        return SET_ALL;
+        case MCP_REGION_EUROPE:
+            return SET_EUR;
+        case MCP_REGION_USA:
+            return SET_USA;
+        case MCP_REGION_JAPAN:
+            return SET_JPN;
+        default:
+            return SET_ALL;
     }
 }
 
