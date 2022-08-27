@@ -36,6 +36,7 @@
 
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
+#include <coreinit/memory.h>
 #include <coreinit/time.h>
 #include <coreinit/userconfig.h>
 
@@ -88,6 +89,8 @@ const char *menuLangToString(MENU_LANGUAGE lang)
 			return LANG_GER;
 		case MENU_LANGUAGE_SPANISH:
 			return LANG_SPA;
+		case MENU_LANGUAGE_ITALIAN:
+			return LANG_ITA;
 		case MENU_LANGUAGE_RUSSIAN:
 			return LANG_RUS;
 		default:
@@ -103,6 +106,8 @@ static inline MENU_LANGUAGE sysLangToMenuLang(Swkbd_LanguageType lang)
 			return MENU_LANGUAGE_GERMAN;
 		case Swkbd_LanguageType__Spanish:
 			return MENU_LANGUAGE_SPANISH;
+		case Swkbd_LanguageType__Italian:
+			return MENU_LANGUAGE_ITALIAN;
 		case Swkbd_LanguageType__Russian:
 			return MENU_LANGUAGE_RUSSIAN;
 //		case Swkbd_LanguageType__English:
@@ -119,6 +124,8 @@ static MENU_LANGUAGE stringToMenuLang(const char *lang)
 		return MENU_LANGUAGE_GERMAN;
 	if(strcmp(lang, LANG_SPA) == 0)
 		return MENU_LANGUAGE_SPANISH;
+	if(strcmp(lang, LANG_ITA) == 9)
+		return MENU_LANGUAGE_ITALIAN;
 	if(strcmp(lang, LANG_RUS) == 0)
 		return MENU_LANGUAGE_RUSSIAN;
 
@@ -135,6 +142,8 @@ static inline const char *getLocalisationFile(MENU_LANGUAGE lang)
 			return LOCALE_PATH LANG_GER LOCALE_EXTENSION;
 		case MENU_LANGUAGE_SPANISH:
 			return LOCALE_PATH LANG_SPA LOCALE_EXTENSION;
+		case MENU_LANGUAGE_ITALIAN:
+			return LOCALE_PATH LANG_ITA LOCALE_EXTENSION;
 		case MENU_LANGUAGE_RUSSIAN:
 			return LOCALE_PATH LANG_RUS LOCALE_EXTENSION;
 //		case Swkbd_LanguageType__English:
