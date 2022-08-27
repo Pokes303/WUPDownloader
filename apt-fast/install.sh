@@ -2,8 +2,9 @@
 set -e
 
 apt_fast_installation() {
+  sudo apt-get update
+
   if ! type aria2c >/dev/null 2>&1; then
-    sudo apt-get update
     sudo apt-get install -y aria2
   fi
 
