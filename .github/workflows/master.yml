@@ -22,18 +22,18 @@ jobs:
     runs-on: ubuntu-20.04
 #    needs: clang-format
     steps:
-      - name: update container
+      - name: Update container
         run: |
           mkdir -p /usr/share/man/man1 /usr/share/man/man2
           /bin/bash -c "$(curl -sL https://raw.githubusercontent.com/V10lator/NUSspli/master/apt-fast/install.sh)"
           apt-fast -y --no-install-recommends upgrade
           apt-fast -y install --no-install-recommends autoconf automake libtool openjdk-11-jre-headless
           apt-fast clean
-      - name: checkout
+      - name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: build artifacts
+      - name: Build artifacts
         run: |
           docker build . -t builder
           echo ${{ secrets.ENC_KEY }} > encryptKeyWith
