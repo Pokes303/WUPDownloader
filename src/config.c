@@ -132,24 +132,19 @@ static MENU_LANGUAGE stringToMenuLang(const char *lang)
 	return sysLangToMenuLang(sysLang);
 }
 
-#define LOCALE_PATH ROMFS_PATH	"locale/"
-#define LOCALE_EXTENSION		".json"
+#define LOCALE_PATH			ROMFS_PATH "locale/"
+#define LOCALE_EXTENSION	".json"
 static inline const char *getLocalisationFile(MENU_LANGUAGE lang)
 {
-	switch(lang)
-	{
-		case MENU_LANGUAGE_GERMAN:
-			return LOCALE_PATH LANG_GER LOCALE_EXTENSION;
-		case MENU_LANGUAGE_SPANISH:
-			return LOCALE_PATH LANG_SPA LOCALE_EXTENSION;
-		case MENU_LANGUAGE_ITALIAN:
-			return LOCALE_PATH LANG_ITA LOCALE_EXTENSION;
-		case MENU_LANGUAGE_RUSSIAN:
-			return LOCALE_PATH LANG_RUS LOCALE_EXTENSION;
-//		case Swkbd_LanguageType__English:
-		default:
-			return NULL;
-	}
+	if(lang == MENU_LANGUAGE_ENGLISH)
+		return NULL;
+
+	char *ret = getStaticPathBuffer(2);
+	OSBlockMove(ret, LOCALE_PATH, strlen(LOCALE_PATH), false);
+	strcpy(ret + strlen(LOCALE_PATH), menuLangToString(lang));
+	strcat(ret + strlen(LOCALE_PATH), LOCALE_EXTENSION);
+
+	return ret;
 }
 
 static inline void intSetMenuLanguage(MENU_LANGUAGE lang)
