@@ -108,9 +108,9 @@ static inline MENU_LANGUAGE sysLangToMenuLang(Swkbd_LanguageType lang)
             return MENU_LANGUAGE_SPANISH;
         case Swkbd_LanguageType__Italian:
             return MENU_LANGUAGE_ITALIAN;
-//        case Swkbd_LanguageType__Russian:
-//            return MENU_LANGUAGE_RUSSIAN;
-            //		case Swkbd_LanguageType__English:
+            //        case Swkbd_LanguageType__Russian:
+            //            return MENU_LANGUAGE_RUSSIAN;
+            //        case Swkbd_LanguageType__English:
         default:
             return MENU_LANGUAGE_ENGLISH;
     }
