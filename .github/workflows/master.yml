@@ -34,7 +34,6 @@ jobs:
       - name: Get version number
         if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') }}
         run: |
-          /bin/bash -c "$(curl -sL https://raw.githubusercontent.com/V10lator/NUSspli/master/apt-fast/install.sh)"
           apt-fast update
           apt-fast upgrade
           apt-fast -y install --no-install-recommends libxml2-utils
