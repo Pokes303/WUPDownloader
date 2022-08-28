@@ -19,10 +19,10 @@
 #pragma once
 
 #include <coreinit/filesystem.h>
+#include <deque>
 #include <filesystem.h>
 #include <titles.h>
 #include <tmd.h>
-#include <deque>
 #include <wut-fixups.h>
 
 #ifdef __cplusplus
@@ -45,7 +45,7 @@ extern "C"
 
     void addToQueue(TitleData data);
     void proccessQueue();
-    std::deque<TitleData>* getTitleQueue();
+    std::deque<TitleData> *getTitleQueue();
 
 #ifdef __cplusplus
 }

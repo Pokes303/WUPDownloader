@@ -25,8 +25,8 @@
 #include <localisation.h>
 #include <menu/download.h>
 #include <menu/predownload.h>
-#include <menu/titlebrowser.h>
 #include <menu/queueMenu.h>
+#include <menu/titlebrowser.h>
 #include <menu/utils.h>
 #include <renderer.h>
 #include <state.h>

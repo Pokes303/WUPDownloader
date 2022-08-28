@@ -16,22 +16,22 @@
  * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#include <menu/queueMenu.h>
-#include <queue.h>
-#include <menu/main.h>
-#include <menu/utils.h>
-#include <renderer.h>
-#include <deque>
-#include <cstring>
-#include <localisation.h>
-#include <input.h>
-#include <state.h>
 #include <algorithm>
+#include <cstring>
+#include <deque>
+#include <input.h>
+#include <localisation.h>
+#include <menu/main.h>
+#include <menu/queueMenu.h>
+#include <menu/utils.h>
+#include <queue.h>
+#include <renderer.h>
+#include <state.h>
 
 #define MAX_ENTRIES 10
 
 static int cursorPos = 0;
-std::deque<TitleData>* titleQueue = getTitleQueue();
+std::deque<TitleData> *titleQueue = getTitleQueue();
 
 static void drawQueueMenu()
 {
