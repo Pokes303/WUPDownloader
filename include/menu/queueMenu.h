@@ -15,25 +15,16 @@
  * You should have received a copy of the GNU General Public License along *
  * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <queue.h>
-#include <downloader.h>
-#include <iostream>
 
-static std::deque<TitleData> titleQueue;
+#pragma once
 
-void addToQueue(TitleData data)
+#include <wut-fixups.h>
+
+#ifdef __cplusplus
+extern "C"
 {
-    titleQueue.push_front(data);
+#endif
+    void queueMenu();
+#ifdef __cplusplus
 }
-
-void proccessQueue()
-{
-    for(auto title : titleQueue)
-        downloadTitle(title.tmd, title.ramBufSize, title.entry, title.titleVer, title.folderName, title.inst, title.dlDev, title.toUSB, title.keepFiles);
-    titleQueue.clear();
-}
-
-std::deque<TitleData>* getTitleQueue()
-{
-    return &titleQueue;
-}
+#endif

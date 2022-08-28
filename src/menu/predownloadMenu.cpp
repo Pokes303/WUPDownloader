@@ -222,7 +222,7 @@ downloadTMD:
         strcat(downloadUrl, titleVer);
     }
 
-    if(downloadFile(downloadUrl, "title.tmd", NULL, FILE_TYPE_TMD | FILE_TYPE_TORAM, false))
+    if(downloadFile(downloadUrl, "title.tmd", NULL, (FileType)(FILE_TYPE_TMD | FILE_TYPE_TORAM), false))
     {
         clearRamBuf();
         debugPrintf("Error downloading TMD");
@@ -432,8 +432,8 @@ naNedNa:
     }
 
     uint64_t freeSpace;
-    char *nd = dlDev == NUSDEV_USB01 ? NUSDIR_USB1 : (dlDev == NUSDEV_USB02 ? NUSDIR_USB2 : (dlDev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC)); // TODO: Make const
-    if(FSGetFreeSpaceSize(__wut_devoptab_fs_client, getCmdBlk(), nd, &freeSpace, FS_ERROR_FLAG_ALL) == FS_STATUS_OK && dls > freeSpace)
+    const char *nd = dlDev == NUSDEV_USB01 ? NUSDIR_USB1 : (dlDev == NUSDEV_USB02 ? NUSDIR_USB2 : (dlDev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC)); // TODO: Make const
+    if(FSGetFreeSpaceSize(__wut_devoptab_fs_client, getCmdBlk(), (char *)nd, &freeSpace, FS_ERROR_FLAG_ALL) == FS_STATUS_OK && dls > freeSpace)
     {
         char *toFrame = getToFrameBuffer();
         const char *i10n = gettext("Not enough free space on");
@@ -462,7 +462,7 @@ naNedNa:
     if(toQueue)
         addToQueue(titleInfo);
 
-    if(checkSystemTitleFromEntry(entry) && !addToQueue)
+    if(checkSystemTitleFromEntry(entry) && !toQueue)
         downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, inst, dlDev, toUSB, keepFiles);
 
     clearRamBuf();

@@ -26,8 +26,8 @@
 #include <menu/download.h>
 #include <menu/predownload.h>
 #include <menu/titlebrowser.h>
+#include <menu/queueMenu.h>
 #include <menu/utils.h>
-#include <queue.h>
 #include <renderer.h>
 #include <state.h>
 #include <titles.h>
@@ -346,7 +346,7 @@ void titleBrowserMenu()
         }
 
         if(vpad.trigger & VPAD_BUTTON_PLUS)
-            proccessQueue();
+            queueMenu();
 
         if(vpad.trigger & VPAD_BUTTON_Y)
         {
