@@ -27,6 +27,7 @@
 #include <menu/predownload.h>
 #include <menu/titlebrowser.h>
 #include <menu/utils.h>
+#include <queue.h>
 #include <renderer.h>
 #include <state.h>
 #include <titles.h>
@@ -343,6 +344,10 @@ void titleBrowserMenu()
                 titleBrowserMenu();
             return;
         }
+
+        if(vpad.trigger & VPAD_BUTTON_PLUS)
+            proccessQueue();
+
         if(vpad.trigger & VPAD_BUTTON_Y)
         {
             char oldSearch[sizeof(search)];

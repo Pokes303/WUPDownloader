@@ -27,6 +27,7 @@
 #include <input.h>
 #include <menu/predownload.h>
 #include <menu/utils.h>
+#include <queue.h>
 #include <renderer.h>
 #include <state.h>
 #include <titles.h>
@@ -162,6 +163,7 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 
     if(installed)
         textToFrame(line--, 0, gettext("Press \uE079 to uninstall"));
+    textToFrame(line--, 0, gettext("Press " BUTTON_PLUS " to add to the queue (USB)"));
 
     lineToFrame(line, SCREEN_COLOR_WHITE);
 
@@ -201,6 +203,8 @@ void predownloadMenu(const TitleEntry *entry)
     bool loop = true;
     bool inst, toUSB;
     bool redraw = false;
+
+    bool toQueue = false;
 
     char tid[17];
     char downloadUrl[256];
@@ -277,6 +281,13 @@ naNedNa:
             return;
         }
 
+        if(vpad.trigger & VPAD_BUTTON_PLUS)
+        {
+            toQueue = true;
+            inst = toUSB = true;
+            loop = false;
+        }
+            
         if(usbMounted && vpad.trigger & VPAD_BUTTON_A)
         {
             inst = toUSB = true;
@@ -446,7 +457,12 @@ naNedNa:
         removeErrorOverlay(ovl);
     }
 
-    if(checkSystemTitleFromEntry(entry))
+    TitleData titleInfo = {.tmd = tmd, .ramBufSize = getRamBufSize(), .entry = entry, .folderName = folderName, .inst = inst, .dlDev = dlDev, .toUSB = toUSB, .keepFiles = keepFiles};
+
+    if(toQueue)
+        addToQueue(titleInfo);
+
+    if(checkSystemTitleFromEntry(entry) && !addToQueue)
         downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, inst, dlDev, toUSB, keepFiles);
 
     clearRamBuf();
