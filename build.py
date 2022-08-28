@@ -29,6 +29,9 @@ if ForceRelease or version.find("BETA") != -1 or version.find("ALPHA") != -1:
 if len(wuhbtool) == 0:
     wuhbtool = "wuhbtool"
 
+checkAndDeleteFile("src/gtitles.c")
+os.system(f"wget -U NUSspliBuilder/2.0 -O src/gtitles.c https://napi.nbg01.v10lator.de/db")
+
 checkAndDeleteDir("NUStmp")
 checkAndDeleteDir("out")
 
