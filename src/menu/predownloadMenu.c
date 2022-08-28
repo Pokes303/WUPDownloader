@@ -287,7 +287,7 @@ naNedNa:
             inst = toUSB = true;
             loop = false;
         }
-            
+
         if(usbMounted && vpad.trigger & VPAD_BUTTON_A)
         {
             inst = toUSB = true;
@@ -457,7 +457,7 @@ naNedNa:
         removeErrorOverlay(ovl);
     }
 
-    TitleData titleInfo = {.tmd = tmd, .ramBufSize = getRamBufSize(), .entry = entry, .folderName = folderName, .inst = inst, .dlDev = dlDev, .toUSB = toUSB, .keepFiles = keepFiles};
+    TitleData titleInfo = { .tmd = tmd, .ramBufSize = getRamBufSize(), .entry = entry, .folderName = folderName, .inst = inst, .dlDev = dlDev, .toUSB = toUSB, .keepFiles = keepFiles };
 
     if(toQueue)
         addToQueue(titleInfo);

@@ -18,10 +18,10 @@
 
 #pragma once
 
+#include <coreinit/filesystem.h>
+#include <filesystem.h>
 #include <titles.h>
 #include <tmd.h>
-#include <filesystem.h>
-#include <coreinit/filesystem.h>
 #include <wut-fixups.h>
 
 #ifdef __cplusplus
@@ -29,20 +29,21 @@ extern "C"
 {
 #endif
 
-typedef struct TitleData {
-    TMD *tmd;
-    size_t ramBufSize;
-    const TitleEntry *entry;
-    const char titleVer[33];
-    char *folderName;
-    bool inst;
-    NUSDEV dlDev;
-    bool toUSB;
-    bool keepFiles;
-} TitleData;
+    typedef struct TitleData
+    {
+        TMD *tmd;
+        size_t ramBufSize;
+        const TitleEntry *entry;
+        const char titleVer[33];
+        char *folderName;
+        bool inst;
+        NUSDEV dlDev;
+        bool toUSB;
+        bool keepFiles;
+    } TitleData;
 
-void addToQueue(TitleData data);
-void proccessQueue();
+    void addToQueue(TitleData data);
+    void proccessQueue();
 
 #ifdef __cplusplus
 }
