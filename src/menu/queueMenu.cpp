@@ -100,7 +100,7 @@ void queueMenu()
 
         if(vpad.trigger & VPAD_BUTTON_MINUS)
         {
-            titleQueue->erase(titleQueue->begin() + cursorPos);
+            titleQueue->erase(titleQueue->begin() + cursorPos - 1);
             redraw = true;
         }
 
