@@ -1002,22 +1002,10 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
     return 0;
 }
 
-#define showPrepScreen(x)                                        \
-    {                                                            \
-        startNewFrame();                                         \
-        textToFrame(0, 0, gettext("Preparing the download of")); \
-        textToFrame(1, 3, x == NULL ? "NULL" : x);               \
-        writeScreenLog(2);                                       \
-        drawFrame();                                             \
-        showFrame();                                             \
-    }
-
 bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, NUSDEV dlDev, bool toUSB, bool keepFiles)
 {
     char tid[17];
     hex(tmd->tid, 16, tid);
-
-    showPrepScreen(titleEntry->name);
     debugPrintf("Downloading title... tID: %s, tVer: %s, name: %s, folder: %s", tid, titleVer, titleEntry->name, folderName);
 
     char downloadUrl[256];

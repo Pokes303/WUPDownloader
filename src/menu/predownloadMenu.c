@@ -360,6 +360,13 @@ naNedNa:
         return;
     }
 
+    startNewFrame();
+    textToFrame(0, 0, gettext("Preparing the download of"));
+    textToFrame(1, 3, entry->name == NULL ? "NULL" : entry->name);
+    writeScreenLog(2);
+    drawFrame();
+    showFrame();
+
     saveConfig(false);
 
     if(isDemo(entry))
