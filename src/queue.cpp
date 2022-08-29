@@ -29,7 +29,11 @@ void addToQueue(TitleData *data)
 
 void proccessQueue()
 {
-    std::unique(titleQueue.begin(), titleQueue.end());
+    auto last = std::unique(titleQueue.begin(), titleQueue.end());
+    titleQueue.erase(last, titleQueue.end());
+    std::sort(titleQueue.begin(), titleQueue.end());
+    last = std::unique(titleQueue.begin(), titleQueue.end());
+    titleQueue.erase(last, titleQueue.end());
     for(auto title : titleQueue)
         downloadTitle(title->tmd, title->ramBufSize, title->entry, title->titleVer, title->folderName, title->inst, title->dlDev, title->toUSB, title->keepFiles, true);
     titleQueue.clear();
