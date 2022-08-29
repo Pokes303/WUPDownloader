@@ -461,7 +461,16 @@ naNedNa:
     TMD *titleTMD = MEMAllocFromDefaultHeap(getRamBufSize());
     OSBlockMove(titleTMD, tmd, getRamBufSize(), false);
 
-    TitleData titleInfo = { .tmd = titleTMD, .ramBufSize = getRamBufSize(), .entry = entry, .folderName = folderName, .inst = inst, .dlDev = dlDev, .toUSB = toUSB, .keepFiles = keepFiles };
+    TitleData *titleInfo = MEMAllocFromDefaultHeap(sizeof(TitleData));
+    titleInfo->tmd = titleTMD;
+    titleInfo->ramBufSize = getRamBufSize();
+    titleInfo->entry = entry;
+    strcpy(titleInfo->titleVer, titleVer);
+    strcpy(titleInfo->folderName, folderName);
+    titleInfo->inst = inst;
+    titleInfo->dlDev = dlDev;
+    titleInfo->toUSB = toUSB;
+    titleInfo->keepFiles = keepFiles;
 
     if(toQueue)
         addToQueue(titleInfo);

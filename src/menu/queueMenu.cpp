@@ -31,7 +31,7 @@
 #define MAX_ENTRIES 10
 
 static int cursorPos = 0;
-std::deque<TitleData> *titleQueue = getTitleQueue();
+static std::deque<TitleData *> *titleQueue = getTitleQueue();
 
 static void drawQueueMenu()
 {
@@ -40,7 +40,7 @@ static void drawQueueMenu()
 
     for(int i = 0; i < MAX_ENTRIES && i < titleQueue->size(); ++i)
     {
-        strcpy(toScreen, titleQueue->at(i).entry->name);
+        strcpy(toScreen, titleQueue->at(i)->entry->name);
         textToFrame(i, 4, toScreen);
     }
 

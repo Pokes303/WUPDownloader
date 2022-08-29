@@ -19,9 +19,9 @@
 #include <iostream>
 #include <queue.h>
 
-static std::deque<TitleData> titleQueue;
+static std::deque<TitleData *> titleQueue;
 
-void addToQueue(TitleData data)
+void addToQueue(TitleData *data)
 {
     titleQueue.push_front(data);
 }
@@ -29,11 +29,11 @@ void addToQueue(TitleData data)
 void proccessQueue()
 {
     for(auto title : titleQueue)
-        downloadTitle(title.tmd, title.ramBufSize, title.entry, title.titleVer, title.folderName, title.inst, title.dlDev, title.toUSB, title.keepFiles);
+        downloadTitle(title->tmd, title->ramBufSize, title->entry, title->titleVer, title->folderName, title->inst, title->dlDev, title->toUSB, title->keepFiles);
     titleQueue.clear();
 }
 
-std::deque<TitleData> *getTitleQueue()
+std::deque<TitleData *> *getTitleQueue()
 {
     return &titleQueue;
 }

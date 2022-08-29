@@ -36,16 +36,16 @@ extern "C"
         size_t ramBufSize;
         TitleEntry *entry;
         char titleVer[33];
-        char *folderName;
+        char folderName[FS_MAX_PATH - 11];
         bool inst;
         NUSDEV dlDev;
         bool toUSB;
         bool keepFiles;
     } TitleData;
 
-    void addToQueue(TitleData data);
+    void addToQueue(TitleData *data);
     void proccessQueue();
-    std::deque<TitleData> *getTitleQueue();
+    std::deque<TitleData *> *getTitleQueue();
 
 #ifdef __cplusplus
 }
