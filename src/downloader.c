@@ -1009,6 +1009,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
         textToFrame(1, 3, x == NULL ? "NULL" : x);               \
         writeScreenLog(2);                                       \
         drawFrame();                                             \
+        showFrame();                                             \
     }
 
 bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, NUSDEV dlDev, bool toUSB, bool keepFiles)
