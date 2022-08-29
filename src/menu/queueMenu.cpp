@@ -30,24 +30,31 @@
 
 #define MAX_ENTRIES 10
 
-static int cursorPos = 0;
+static int cursorPos = 1;
 static std::deque<TitleData *> *titleQueue = getTitleQueue();
 
 static void drawQueueMenu()
 {
     startNewFrame();
+    boxToFrame(0, MAX_LINES - 2);
     char *toScreen = getToFrameBuffer();
 
     for(int i = 0; i < MAX_ENTRIES && i < titleQueue->size(); ++i)
     {
+        if(isDLC(titleQueue->at(i)->entry))
+            strcpy(toScreen, "[DLC] ");
+        else if(isUpdate(titleQueue->at(i)->entry))
+            strcpy(toScreen, "[UPD] ");
         strcpy(toScreen, titleQueue->at(i)->entry->name);
-        textToFrame(i, 4, toScreen);
+        flagToFrame(i + 1, 7, titleQueue->at(i)->entry->region);
+        deviceToFrame(i + 1, 4, titleQueue->at(i)->toUSB ? DEVICE_TYPE_USB : DEVICE_TYPE_NAND);
+        textToFrame(i + 1, 10, toScreen);
     }
 
     lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
     textToFrame(MAX_LINES - 1, 0, gettext("Press " BUTTON_B " to return || " BUTTON_PLUS " to start downloading || " BUTTON_MINUS " to delete an item"));
-
-    arrowToFrame(cursorPos, 0);
+    if(titleQueue->size() != 0)
+        arrowToFrame(cursorPos, 1);
 
     drawFrame();
 }
@@ -73,15 +80,15 @@ void queueMenu()
         else if(vpad.trigger & VPAD_BUTTON_UP)
         {
             --cursorPos;
-            if(cursorPos < 0)
-                cursorPos = titleQueue->size() - 1;
+            if(cursorPos < 1)
+                cursorPos = titleQueue->size();
             redraw = true;
         }
         else if(vpad.trigger & VPAD_BUTTON_DOWN)
         {
             ++cursorPos;
-            if(cursorPos > titleQueue->size() - 1)
-                cursorPos = 0;
+            if(cursorPos > titleQueue->size())
+                cursorPos = 1;
             redraw = true;
         }
 
@@ -94,6 +101,7 @@ void queueMenu()
         if(vpad.trigger & VPAD_BUTTON_MINUS)
         {
             titleQueue->erase(titleQueue->begin() + cursorPos);
+            redraw = true;
         }
 
         if(redraw)
