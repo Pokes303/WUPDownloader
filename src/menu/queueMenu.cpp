@@ -28,7 +28,7 @@
 #include <renderer.h>
 #include <state.h>
 
-#define MAX_ENTRIES 10
+#define MAX_ENTRIES (MAX_LINES - 3)
 
 static int cursorPos = 1;
 static std::deque<TitleData *> *titleQueue = getTitleQueue();
