@@ -41,6 +41,7 @@
 #include <coreinit/filesystem.h>
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
+#include <coreinit/memory.h>
 
 static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
 {
@@ -457,7 +458,10 @@ naNedNa:
         removeErrorOverlay(ovl);
     }
 
-    TitleData titleInfo = { .tmd = tmd, .ramBufSize = getRamBufSize(), .entry = entry, .folderName = folderName, .inst = inst, .dlDev = dlDev, .toUSB = toUSB, .keepFiles = keepFiles };
+    TMD *titleTMD = MEMAllocFromDefaultHeap(getRamBufSize());
+    OSBlockMove(titleTMD, tmd, getRamBufSize(), false);
+
+    TitleData titleInfo = { .tmd = titleTMD, .ramBufSize = getRamBufSize(), .entry = entry, .folderName = folderName, .inst = inst, .dlDev = dlDev, .toUSB = toUSB, .keepFiles = keepFiles };
 
     if(toQueue)
         addToQueue(titleInfo);
