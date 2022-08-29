@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License along *
  * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
+#include <algorithm>
 #include <downloader.h>
 #include <iostream>
 #include <queue.h>
@@ -28,6 +29,7 @@ void addToQueue(TitleData *data)
 
 void proccessQueue()
 {
+    std::unique(titleQueue.begin(), titleQueue.end());
     for(auto title : titleQueue)
         downloadTitle(title->tmd, title->ramBufSize, title->entry, title->titleVer, title->folderName, title->inst, title->dlDev, title->toUSB, title->keepFiles, true);
     titleQueue.clear();
