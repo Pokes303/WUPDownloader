@@ -177,9 +177,12 @@ FSStatus moveDirectory(const char *src, const char *dest)
 
     char *inSrc = newSrc + --len;
     if(*--inSrc != '/')
+    {
         *++inSrc = '/';
-
-    ++inSrc;
+        *++inSrc = '\0';
+    }
+    else
+        ++inSrc;
 
     OSTime t = OSGetTime();
     FSDirectoryHandle dir;
@@ -228,6 +231,8 @@ FSStatus moveDirectory(const char *src, const char *dest)
         t = OSGetTime() - t;
         addEntropy(&t, sizeof(OSTime));
     }
+    else
+        debugPrintf("Error opening %s", newSrc);
 
     return ret;
 }
