@@ -117,7 +117,7 @@ void installerMenu(const char *dir)
             if(tmd != NULL)
             {
                 if(checkSystemTitleFromTid(tmd->tid))
-                    install(nd, false, dev, dir, vpad.trigger & VPAD_BUTTON_A, keepFiles, tmd->tid);
+                    install(nd, false, dev, dir, vpad.trigger & VPAD_BUTTON_A, keepFiles, tmd->tid, false);
 
                 MEMFreeToDefaultHeap(tmd);
             }

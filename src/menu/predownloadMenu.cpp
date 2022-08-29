@@ -476,7 +476,7 @@ naNedNa:
         addToQueue(titleInfo);
 
     if(checkSystemTitleFromEntry(entry) && !toQueue)
-        downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, inst, dlDev, toUSB, keepFiles);
+        downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, inst, dlDev, toUSB, keepFiles, false);
 
     clearRamBuf();
 }

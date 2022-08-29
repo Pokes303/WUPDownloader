@@ -1011,7 +1011,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
         drawFrame();                                             \
     }
 
-bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, NUSDEV dlDev, bool toUSB, bool keepFiles)
+bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, NUSDEV dlDev, bool toUSB, bool keepFiles, bool unattended)
 {
     char tid[17];
     hex(tmd->tid, 16, tid);
@@ -1300,7 +1300,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
     if(inst)
     {
         *idp = '\0';
-        return install(titleEntry->name, hasDependencies, dlDev, installDir, toUSB, keepFiles, tmd->tid);
+        return install(titleEntry->name, hasDependencies, dlDev, installDir, toUSB, keepFiles, tmd->tid, unattended);
     }
 
     colorStartNewFrame(SCREEN_COLOR_D_GREEN);
@@ -1327,7 +1327,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 
         showFrame();
 
-        if(vpad.trigger)
+        if(vpad.trigger || unattended)
             break;
     }
 

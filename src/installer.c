@@ -84,7 +84,7 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUs
     }
 }
 
-bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool toUsb, bool keepFiles, uint64_t tid)
+bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool toUsb, bool keepFiles, uint64_t tid, bool unattended)
 {
     if(tid != 0)
     {
@@ -335,7 +335,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 
         showFrame();
 
-        if(vpad.trigger)
+        if(vpad.trigger || unattended)
             break;
     }
 

@@ -74,13 +74,13 @@ void queueMenu()
         {
             --cursorPos;
             if(cursorPos < 0)
-                cursorPos = MAX_ENTRIES;
+                cursorPos = titleQueue->size() - 1;
             redraw = true;
         }
         else if(vpad.trigger & VPAD_BUTTON_DOWN)
         {
             ++cursorPos;
-            if(cursorPos > MAX_ENTRIES)
+            if(cursorPos > titleQueue->size() - 1)
                 cursorPos = 0;
             redraw = true;
         }
@@ -94,7 +94,6 @@ void queueMenu()
         if(vpad.trigger & VPAD_BUTTON_MINUS)
         {
             titleQueue->erase(titleQueue->begin() + cursorPos);
-            return;
         }
 
         if(redraw)

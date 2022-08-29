@@ -29,7 +29,7 @@ void addToQueue(TitleData *data)
 void proccessQueue()
 {
     for(auto title : titleQueue)
-        downloadTitle(title->tmd, title->ramBufSize, title->entry, title->titleVer, title->folderName, title->inst, title->dlDev, title->toUSB, title->keepFiles);
+        downloadTitle(title->tmd, title->ramBufSize, title->entry, title->titleVer, title->folderName, title->inst, title->dlDev, title->toUSB, title->keepFiles, true);
     titleQueue.clear();
 }
 
