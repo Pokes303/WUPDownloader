@@ -179,6 +179,23 @@ void textToFrameCut(int line, int column, const char *str, int maxWidth)
     FC_DrawBox(font, renderer, text, str);
 }
 
+void textToFrameColored(int line, int column, const char *str, SCREEN_COLOR color, uint8_t alpha)
+{
+    if(font == NULL)
+        return;
+
+    ++line;
+    line *= FONT_SIZE;
+    line -= 7;
+    column *= spaceWidth;
+    column += FONT_SIZE;
+    const SDL_Rect text = { .w = FC_GetWidth(font, str), .h = FONT_SIZE, .x = column, .y = line };
+
+    SDL_Color co = screenColorToSDLcolor(color);
+    co.a = alpha;
+    FC_DrawBoxColor(font, renderer, text, co, str);
+}
+
 int textToFrameMultiline(int x, int y, const char *text, size_t len)
 {
     if(len < 1)
@@ -235,7 +252,7 @@ int textToFrameMultiline(int x, int y, const char *text, size_t len)
     return ++lines;
 }
 
-void lineToFrame(int column, uint32_t color)
+void lineToFrame(int column, SCREEN_COLOR color)
 {
     if(font == NULL)
         return;
@@ -912,7 +929,7 @@ void shutdownRenderer()
     quitSDL();
 }
 
-void colorStartNewFrame(uint32_t color)
+void colorStartNewFrame(SCREEN_COLOR color)
 {
     if(font == NULL)
         return;
