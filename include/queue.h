@@ -19,7 +19,6 @@
 #pragma once
 
 #include <coreinit/filesystem.h>
-#include <deque>
 #include <filesystem.h>
 #include <titles.h>
 #include <tmd.h>
@@ -45,7 +44,7 @@ extern "C"
 
     void addToQueue(TitleData *data);
     void proccessQueue();
-    std::deque<TitleData *> *getTitleQueue();
+    void *getTitleQueue();
 
 #ifdef __cplusplus
 }

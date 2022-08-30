@@ -16,6 +16,7 @@
  * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <algorithm>
+#include <deque>
 #include <downloader.h>
 #include <iostream>
 #include <queue.h>
@@ -39,7 +40,7 @@ void proccessQueue()
     titleQueue.clear();
 }
 
-std::deque<TitleData *> *getTitleQueue()
+void *getTitleQueue()
 {
     return &titleQueue;
 }
