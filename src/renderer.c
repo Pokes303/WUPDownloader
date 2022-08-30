@@ -41,6 +41,7 @@
 #include <crypto.h>
 #include <file.h>
 #include <input.h>
+#include <list.h>
 #include <menu/utils.h>
 #include <osdefs.h>
 #include <renderer.h>
@@ -58,14 +59,6 @@ typedef struct
     SDL_Texture *tex;
     SDL_Rect rect[2];
 } ErrorOverlay;
-
-struct SDL_Rect_Entry;
-typedef struct SDL_Rect_Entry SDL_Rect_Entry;
-struct SDL_Rect_Entry
-{
-    SDL_Rect rect;
-    SDL_Rect_Entry *next;
-};
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
@@ -93,31 +86,19 @@ static SDL_Texture *barTex;
 static SDL_Texture *bgTex;
 static SDL_Texture *byeTex;
 
-static SDL_Rect_Entry *rectList = NULL;
+static LIST *rectList;
 
 #define screenColorToSDLcolor(color) \
     (SDL_Color) { .a = color & 0xFFu, .b = (color & 0x0000FF00u) >> 8, .g = (color & 0x00FF0000u) >> 16, .r = (color & 0xFF000000u) >> 24 }
 
 static inline SDL_Rect *createRect()
 {
-    SDL_Rect_Entry *ret = MEMAllocFromDefaultHeap(sizeof(SDL_Rect_Entry));
+    SDL_Rect *ret = MEMAllocFromDefaultHeap(sizeof(SDL_Rect));
     if(!ret)
         return NULL;
 
-    ret->next = NULL;
-
-    if(rectList == NULL)
-        rectList = ret;
-    else
-    {
-        SDL_Rect_Entry *cur = rectList;
-        while(cur->next != NULL)
-            cur = cur->next;
-
-        cur->next = ret;
-    }
-
-    return &(ret->rect);
+    addToListEnd(rectList, ret);
+    return ret;
 }
 
 void textToFrameCut(int line, int column, const char *str, int maxWidth)
@@ -790,6 +771,10 @@ bool initRenderer()
     if(font)
         return true;
 
+    rectList = createList();
+    if(rectList == NULL)
+        return false;
+
     for(int i = 0; i < MAX_OVERLAYS; ++i)
         errorOverlay[i].tex = NULL;
 
@@ -927,6 +912,7 @@ void shutdownRenderer()
     SDL_DestroyWindow(window);
 
     quitSDL();
+    destroyList(rectList, true);
 }
 
 void colorStartNewFrame(SCREEN_COLOR color)
@@ -936,20 +922,6 @@ void colorStartNewFrame(SCREEN_COLOR color)
 
     clearFrame();
 
-    if(rectList != NULL)
-    {
-        SDL_Rect_Entry *current = rectList;
-        SDL_Rect_Entry *next;
-        do
-        {
-            next = current->next;
-            MEMFreeToDefaultHeap(current);
-            current = next;
-        } while(current != NULL);
-
-        rectList = NULL;
-    }
-
     if(color == SCREEN_COLOR_BLUE)
         SDL_RenderCopy(renderer, bgTex, NULL, NULL);
     else
@@ -958,6 +930,8 @@ void colorStartNewFrame(SCREEN_COLOR color)
         SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
         SDL_RenderClear(renderer);
     }
+
+    clearList(rectList, true);
 }
 
 void showFrame()
