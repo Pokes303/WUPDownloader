@@ -30,15 +30,15 @@
 
 #include <coreinit/mcp.h>
 
-#define SCREEN_WIDTH         1280
-#define SCREEN_HEIGHT        720
+#define SCREEN_WIDTH     1280
+#define SCREEN_HEIGHT    720
 
-#define FONT_SIZE            28
+#define FONT_SIZE        28
 
-#define SCREEN_COLOR_BG1     0x911EFFFF
-#define SCREEN_COLOR_BG2     0x8318FFFF
-#define SCREEN_COLOR_BG3     0x610AFFFF
-#define SCREEN_COLOR_BG4     0x5205FFFF
+#define SCREEN_COLOR_BG1 0x911EFFFF
+#define SCREEN_COLOR_BG2 0x8318FFFF
+#define SCREEN_COLOR_BG3 0x610AFFFF
+#define SCREEN_COLOR_BG4 0x5205FFFF
 
 // These are with Nintendo font at size 24:
 #define MAX_CHARS            124 // TODO: This is here for historical reasons and only valid for spaces now
@@ -59,17 +59,17 @@ extern "C"
 
     typedef enum
     {
-        SCREEN_COLOR_BLACK =   0x000000FF,
-        SCREEN_COLOR_WHITE =   0xFFFFFFFF,
-        SCREEN_COLOR_D_RED =   0x800000FF,
-        SCREEN_COLOR_RED =     0xFF0000FF,
+        SCREEN_COLOR_BLACK = 0x000000FF,
+        SCREEN_COLOR_WHITE = 0xFFFFFFFF,
+        SCREEN_COLOR_D_RED = 0x800000FF,
+        SCREEN_COLOR_RED = 0xFF0000FF,
         SCREEN_COLOR_D_GREEN = 0x008000FF,
-        SCREEN_COLOR_GREEN =   0x00FF00FF,
-        SCREEN_COLOR_D_BLUE =  0x005780FF,
-        SCREEN_COLOR_BLUE =    0x00D6FFFF,
-        SCREEN_COLOR_LILA =    0xFF00FFFF,
-        SCREEN_COLOR_BROWN =   0x361C0AFF,
-        SCREEN_COLOR_GRAY =    0x6A6A6AFF,
+        SCREEN_COLOR_GREEN = 0x00FF00FF,
+        SCREEN_COLOR_D_BLUE = 0x005780FF,
+        SCREEN_COLOR_BLUE = 0x00D6FFFF,
+        SCREEN_COLOR_LILA = 0xFF00FFFF,
+        SCREEN_COLOR_BROWN = 0x361C0AFF,
+        SCREEN_COLOR_GRAY = 0x6A6A6AFF,
     } SCREEN_COLOR;
 
     typedef enum
