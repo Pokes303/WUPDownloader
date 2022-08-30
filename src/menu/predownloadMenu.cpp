@@ -52,7 +52,7 @@ typedef enum
     OPERATION_INSTALL,
 } OPERATION;
 
-static int cursorPos = 0;
+static int cursorPos = 17;
 
 static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
 {
@@ -129,15 +129,15 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
     textToFrame(++line, 0, toFrame);
     textToFrame(++line, 3, folderName);
 
-    line = MAX_LINES - 1;
+    line = MAX_LINES;
 
     arrowToFrame(cursorPos, 0);
 
-    textToFrame(--line, 1, gettext("Press " BUTTON_B " to return || " BUTTON_PLUS " to start || " BUTTON_MINUS " to add to the queue"));
+    textToFrame(--line, 0, gettext("Press " BUTTON_B " to return || " BUTTON_PLUS " to start || " BUTTON_MINUS " to add to the queue"));
     lineToFrame(--line, SCREEN_COLOR_WHITE);
 
-    textToFrame(--line, 1, gettext("Set custom name to the download folder"));
-    textToFrame(--line, 1, gettext("Set title version"));
+    textToFrame(--line, 5, gettext("Set custom name to the download folder"));
+    textToFrame(--line, 5, gettext("Set title version"));
 
     strcpy(toFrame, gettext("Download to:"));
     strcat(toFrame, " ");
@@ -153,7 +153,7 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
         case NUSDEV_MLC:
             strcat(toFrame, usbMounted ? " USB" : " SD");
     }
-    textToFrame(line--, 1, gettext(toFrame));
+    textToFrame(--line, 5, gettext(toFrame));
 
     strcpy(toFrame, gettext("Operation:"));
     strcat(toFrame, " ");
@@ -166,7 +166,7 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
             strcat(toFrame, " Install");
             break;
     }
-    textToFrame(line--, 1, gettext(toFrame));
+    textToFrame(--line, 5, gettext(toFrame));
 
     strcpy(toFrame, gettext("Install to:"));
     strcat(toFrame, " ");
@@ -180,9 +180,9 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
             strcat(toFrame, " NAND");
             break;
     }
-    textToFrame(line--, 1, gettext(toFrame));
+    textToFrame(--line, 5, gettext(toFrame));
 
-    lineToFrame(line, SCREEN_COLOR_WHITE);
+    lineToFrame(--line, SCREEN_COLOR_WHITE);
 
     drawFrame();
 }
@@ -220,12 +220,12 @@ static inline void switchInstallDevice(NUSDEV *dev)
     {
         case NUSDEV_USB01:
         case NUSDEV_USB02:
-            *dev = NUSDEV_SD;
+            *dev = NUSDEV_MLC;
             break;
-        case NUSDEV_SD:
+        case NUSDEV_MLC:
             *dev = getUSB();
             if(!*dev)
-                *dev = NUSDEV_SD;
+                *dev = NUSDEV_MLC;
             break;
     }
 }
@@ -384,20 +384,20 @@ naNedNa:
         {
             switch(cursorPos)
             {
-                case 0:
-                    changeTitleVersion(titleVer);
-                    goto downloadTMD;
-                case 1:
-                    changeFolderName(folderName);
-                    break;
-                case 2:
+                case 17: // TODO: Change hardcoded numbers to something prettier
                     switchInstallDevice(&instDev);
                     break;
-                case 3:
+                case 18:
                     switchOperation(&operation);
                     break;
-                case 4:
+                case 19:
                     switchDownloadDevice(&dlDev);
+                    break;
+                case 20:
+                    changeTitleVersion(titleVer);
+                    goto downloadTMD;
+                case 21:
+                    changeFolderName(folderName);
                     break;
             }
 
@@ -405,17 +405,32 @@ naNedNa:
         }
         else if(vpad.trigger & VPAD_BUTTON_DOWN)
         {
-            if(++cursorPos == PD_MENU_ENTRIES)
-                cursorPos = 0;
+            if(++cursorPos == 22) // TODO: Change hardcoded numbers to something prettier
+                cursorPos = 17;
 
             redraw = true;
         }
         else if(vpad.trigger & VPAD_BUTTON_UP)
         {
-            if(--cursorPos == -1)
-                cursorPos = PD_MENU_ENTRIES - 1;
+            if(--cursorPos == 16) // TODO: Change hardcoded numbers to something prettier
+                cursorPos = 21;
 
             redraw = true;
+        }
+
+        if(vpad.trigger & VPAD_BUTTON_PLUS)
+        {
+            inst = operation == OPERATION_INSTALL;
+            toUSB = instDev == NUSDEV_USB01 || NUSDEV_USB02;
+            loop = false;
+        }
+
+        if(vpad.trigger & VPAD_BUTTON_MINUS)
+        {
+            inst = operation == OPERATION_INSTALL;
+            toUSB = instDev == NUSDEV_USB01 || NUSDEV_USB02;
+            toQueue = true;
+            loop = false;
         }
 
         if(redraw)
