@@ -34,6 +34,7 @@
 #include <tmd.h>
 #include <utils.h>
 
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -42,6 +43,16 @@
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
+
+#define PD_MENU_ENTRIES 5
+
+typedef enum
+{
+    OPERATION_DOWNLOAD,
+    OPERATION_INSTALL,
+} OPERATION;
+
+static int cursorPos = 0;
 
 static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
 {
@@ -53,7 +64,7 @@ static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
     return MCP_GetTitleInfo(mcpHandle, entry->tid, out) == 0;
 }
 
-static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t size, bool installed, const char *folderName, bool usbMounted, NUSDEV dlDev, bool keepFiles)
+static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t size, bool installed, const char *folderName, bool usbMounted, NUSDEV dlDev, bool keepFiles, OPERATION operation, NUSDEV instDev)
 {
     startNewFrame();
 
@@ -119,52 +130,57 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
     textToFrame(++line, 3, folderName);
 
     line = MAX_LINES - 1;
-    strcpy(toFrame, "Press " BUTTON_MINUS " to download to ");
+
+    arrowToFrame(cursorPos, 0);
+
+    textToFrame(--line, 1, gettext("Press " BUTTON_B " to return || " BUTTON_PLUS " to start || " BUTTON_MINUS " to add to the queue"));
+    lineToFrame(--line, SCREEN_COLOR_WHITE);
+
+    textToFrame(--line, 1, gettext("Set custom name to the download folder"));
+    textToFrame(--line, 1, gettext("Set title version"));
+
+    strcpy(toFrame, gettext("Download to:"));
+    strcat(toFrame, " ");
     switch((int)dlDev)
     {
         case NUSDEV_USB01:
         case NUSDEV_USB02:
-            strcat(toFrame, "SD");
+            strcat(toFrame, " SD");
             break;
         case NUSDEV_SD:
-            strcat(toFrame, "NAND");
+            strcat(toFrame, " NAND");
             break;
         case NUSDEV_MLC:
-            strcat(toFrame, usbMounted ? "USB" : "SD");
+            strcat(toFrame, usbMounted ? " USB" : " SD");
     }
-    textToFrame(line--, 0, gettext(toFrame));
+    textToFrame(line--, 1, gettext(toFrame));
 
-    if(dlDev != NUSDEV_SD)
-        textToFrame(line--, 0, gettext("WARNING: Files on USB/NAND will always be deleted after installing!"));
-    else
+    strcpy(toFrame, gettext("Operation:"));
+    strcat(toFrame, " ");
+    switch((int)operation)
     {
-        strcpy(toFrame, "Press " BUTTON_LEFT " to ");
-        strcat(toFrame, keepFiles ? "delete" : "keep");
-        strcat(toFrame, " downloaded files after the installation");
-        textToFrame(line--, 0, toFrame);
+        case OPERATION_DOWNLOAD:
+            strcat(toFrame, " Download only");
+            break;
+        case OPERATION_INSTALL:
+            strcat(toFrame, " Install");
+            break;
     }
+    textToFrame(line--, 1, gettext(toFrame));
 
-    lineToFrame(line--, SCREEN_COLOR_WHITE);
-
-    textToFrame(line--, 0, gettext("Press " BUTTON_DOWN " to set a custom name to the download folder"));
-    textToFrame(line--, 0, gettext("Press " BUTTON_RIGHT " to set the title version"));
-    lineToFrame(line--, SCREEN_COLOR_WHITE);
-
-    textToFrame(line--, 0, gettext("Press " BUTTON_B " to return"));
-
-    strcpy(toFrame, "Press " BUTTON_Y " to download to ");
-    strcat(toFrame, (dlDev & NUSDEV_USB) ? "USB" : dlDev == NUSDEV_SD ? "SD"
-                                                                      : "NAND");
-    strcat(toFrame, " only");
-    textToFrame(line--, 0, gettext(toFrame));
-
-    textToFrame(line--, 0, gettext("Press " BUTTON_X " to install to NAND"));
-    if(usbMounted)
-        textToFrame(line--, 0, gettext("Press " BUTTON_A " to install to USB"));
-
-    if(installed)
-        textToFrame(line--, 0, gettext("Press \uE079 to uninstall"));
-    textToFrame(line--, 0, gettext("Press " BUTTON_PLUS " to add to the queue (USB)"));
+    strcpy(toFrame, gettext("Install to:"));
+    strcat(toFrame, " ");
+    switch((int)instDev)
+    {
+        case NUSDEV_USB01:
+        case NUSDEV_USB02:
+            strcat(toFrame, " USB");
+            break;
+        case NUSDEV_MLC:
+            strcat(toFrame, " NAND");
+            break;
+    }
+    textToFrame(line--, 1, gettext(toFrame));
 
     lineToFrame(line, SCREEN_COLOR_WHITE);
 
@@ -186,7 +202,86 @@ static int drawPDDemoFrame(const TitleEntry *entry, bool inst)
     return addErrorOverlay(toFrame);
 }
 
-#include <inttypes.h>
+static inline void changeTitleVersion(char *buf)
+{
+    if(!showKeyboard(KEYBOARD_LAYOUT_TID, KEYBOARD_TYPE_RESTRICTED, buf, CHECK_NUMERICAL, 5, false, buf, NULL))
+        buf[0] = '\0';
+}
+
+static inline void changeFolderName(char *buf)
+{
+    if(!showKeyboard(KEYBOARD_LAYOUT_TID, KEYBOARD_TYPE_NORMAL, buf, CHECK_ALPHANUMERICAL, FS_MAX_PATH - 11, false, buf, NULL))
+        buf[0] = '\0';
+}
+
+static inline void switchInstallDevice(NUSDEV *dev)
+{
+    switch((int)*dev)
+    {
+        case NUSDEV_USB01:
+        case NUSDEV_USB02:
+            *dev = NUSDEV_SD;
+            break;
+        case NUSDEV_SD:
+            *dev = getUSB();
+            if(!*dev)
+                *dev = NUSDEV_SD;
+            break;
+    }
+}
+
+static inline void switchOperation(OPERATION *op)
+{
+    switch(*op)
+    {
+        case OPERATION_INSTALL:
+            *op = OPERATION_DOWNLOAD;
+            break;
+        case OPERATION_DOWNLOAD:
+            *op = OPERATION_INSTALL;
+            break;
+    }
+}
+
+static inline void switchDownloadDevice(NUSDEV *dev)
+{
+    if(vpad.trigger & VPAD_BUTTON_LEFT)
+    {
+        switch((int)*dev)
+        {
+            case NUSDEV_USB01:
+            case NUSDEV_USB02:
+                *dev = NUSDEV_MLC;
+                break;
+            case NUSDEV_MLC:
+                *dev = NUSDEV_SD;
+                break;
+            case NUSDEV_SD:
+                *dev = getUSB();
+                if(!*dev)
+                    *dev = NUSDEV_MLC;
+                break;
+        }
+    }
+    else
+    {
+        switch((int)*dev)
+        {
+            case NUSDEV_USB01:
+            case NUSDEV_USB02:
+                *dev = NUSDEV_SD;
+                break;
+            case NUSDEV_SD:
+                *dev = NUSDEV_MLC;
+                break;
+            case NUSDEV_MLC:
+                *dev = getUSB();
+                if(!*dev)
+                    *dev = NUSDEV_SD;
+                break;
+        }
+    }
+}
 
 void predownloadMenu(const TitleEntry *entry)
 {
@@ -194,6 +289,8 @@ void predownloadMenu(const TitleEntry *entry)
     bool installed = isInstalled(entry, &titleList);
     NUSDEV usbMounted = getUSB();
     NUSDEV dlDev = usbMounted && dlToUSBenabled() ? usbMounted : NUSDEV_SD;
+    NUSDEV instDev = NUSDEV_MLC;
+    OPERATION operation = OPERATION_INSTALL;
     bool keepFiles = true;
     char folderName[FS_MAX_PATH - 11];
     char titleVer[33];
@@ -210,6 +307,7 @@ void predownloadMenu(const TitleEntry *entry)
     char tid[17];
     char downloadUrl[256];
 downloadTMD:
+    clearRamBuf();
     hex(entry->tid, 16, tid);
 
     debugPrintf("Downloading TMD...");
@@ -264,14 +362,14 @@ downloadTMD:
     }
 
 naNedNa:
-    drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, keepFiles);
+    drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, keepFiles, operation, instDev);
 
     while(loop && AppRunning())
     {
         if(app == APP_STATE_BACKGROUND)
             continue;
         if(app == APP_STATE_RETURNING)
-            drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, keepFiles);
+            drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, keepFiles, operation, instDev);
 
         showFrame();
 
@@ -282,86 +380,47 @@ naNedNa:
             return;
         }
 
-        if(vpad.trigger & VPAD_BUTTON_PLUS)
+        if(vpad.trigger & (VPAD_BUTTON_RIGHT | VPAD_BUTTON_LEFT | VPAD_BUTTON_A))
         {
-            toQueue = true;
-            inst = toUSB = true;
-            loop = false;
-        }
-
-        if(usbMounted && vpad.trigger & VPAD_BUTTON_A)
-        {
-            inst = toUSB = true;
-            loop = false;
-        }
-        else if(vpad.trigger & VPAD_BUTTON_Y)
-            inst = toUSB = loop = false;
-        else if(vpad.trigger & VPAD_BUTTON_X)
-        {
-            inst = true;
-            toUSB = loop = false;
-        }
-
-        if(vpad.trigger & VPAD_BUTTON_RIGHT)
-        {
-            if(!showKeyboard(KEYBOARD_LAYOUT_TID, KEYBOARD_TYPE_RESTRICTED, titleVer, CHECK_NUMERICAL, 5, false, titleVer, NULL))
-                titleVer[0] = '\0';
-            clearRamBuf();
-            goto downloadTMD;
-        }
-        if(vpad.trigger & VPAD_BUTTON_DOWN)
-        {
-            if(!showKeyboard(KEYBOARD_LAYOUT_TID, KEYBOARD_TYPE_NORMAL, folderName, CHECK_ALPHANUMERICAL, FS_MAX_PATH - 11, false, folderName, NULL))
-                folderName[0] = '\0';
-            redraw = true;
-        }
-
-        if(vpad.trigger & VPAD_BUTTON_MINUS)
-        {
-            switch((int)dlDev)
+            switch(cursorPos)
             {
-                case NUSDEV_USB01:
-                case NUSDEV_USB02:
-                    dlDev = NUSDEV_SD;
-                    keepFiles = true;
-                    setDlToUSB(false);
+                case 0:
+                    changeTitleVersion(titleVer);
+                    goto downloadTMD;
+                case 1:
+                    changeFolderName(folderName);
                     break;
-                case NUSDEV_SD:
-                    dlDev = NUSDEV_MLC;
-                    keepFiles = false;
+                case 2:
+                    switchInstallDevice(&instDev);
                     break;
-                case NUSDEV_MLC:
-                    if(usbMounted)
-                    {
-                        dlDev = usbMounted;
-                        keepFiles = false;
-                        setDlToUSB(true);
-                    }
-                    else
-                    {
-                        dlDev = NUSDEV_SD;
-                        keepFiles = true;
-                        setDlToUSB(false);
-                    }
+                case 3:
+                    switchOperation(&operation);
+                    break;
+                case 4:
+                    switchDownloadDevice(&dlDev);
+                    break;
             }
+
             redraw = true;
         }
-        if(vpad.trigger & VPAD_BUTTON_LEFT && dlDev == NUSDEV_SD)
+        else if(vpad.trigger & VPAD_BUTTON_DOWN)
         {
-            keepFiles = !keepFiles;
+            if(++cursorPos == PD_MENU_ENTRIES)
+                cursorPos = 0;
+
             redraw = true;
         }
-        if(installed && vpad.trigger & VPAD_BUTTON_UP)
+        else if(vpad.trigger & VPAD_BUTTON_UP)
         {
-            clearRamBuf();
-            saveConfig(false);
-            deinstall(&titleList, entry->name, false, false);
-            return;
+            if(--cursorPos == -1)
+                cursorPos = PD_MENU_ENTRIES - 1;
+
+            redraw = true;
         }
 
         if(redraw)
         {
-            drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, keepFiles);
+            drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, keepFiles, operation, instDev);
             redraw = false;
         }
     }
