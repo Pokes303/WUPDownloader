@@ -58,13 +58,15 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
     boxToFrame(1, MAX_LINES - 2);
 
     char *toFrame = getToFrameBuffer();
-    strcpy(toFrame, gettext("Press " BUTTON_A " to select"));
+    strcpy(toFrame, gettext(BUTTON_A " to select"));
     strcat(toFrame, " || ");
     strcat(toFrame, gettext(BUTTON_B " to return"));
     strcat(toFrame, " || ");
     strcat(toFrame, gettext(BUTTON_X " to enter a title ID"));
     strcat(toFrame, " || ");
     strcat(toFrame, gettext(BUTTON_Y " to search"));
+    strcat(toFrame, " || ");
+    strcat(toFrame, gettext(BUTTON_MINUS " to open the queue"));
     textToFrame(MAX_LINES - 1, ALIGNED_CENTER, toFrame);
 
     size_t j;
@@ -345,7 +347,7 @@ void titleBrowserMenu()
             return;
         }
 
-        if(vpad.trigger & VPAD_BUTTON_PLUS)
+        if(vpad.trigger & VPAD_BUTTON_MINUS)
             queueMenu();
 
         if(vpad.trigger & VPAD_BUTTON_Y)

@@ -16,6 +16,7 @@
  * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 #include <algorithm>
+#include <coreinit/memdefaultheap.h>
 #include <deque>
 #include <downloader.h>
 #include <iostream>
@@ -36,7 +37,10 @@ void proccessQueue()
     last = std::unique(titleQueue.begin(), titleQueue.end());
     titleQueue.erase(last, titleQueue.end());
     for(auto title : titleQueue)
+    {
         downloadTitle(title->tmd, title->ramBufSize, title->entry, title->titleVer, title->folderName, title->inst, title->dlDev, title->toUSB, title->keepFiles, true);
+        MEMFreeToDefaultHeap(title);
+    }
     titleQueue.clear();
 }
 

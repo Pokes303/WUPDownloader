@@ -17,6 +17,7 @@
  ***************************************************************************/
 
 #include <algorithm>
+#include <coreinit/memdefaultheap.h>
 #include <cstring>
 #include <deque>
 #include <input.h>
@@ -52,7 +53,7 @@ static void drawQueueMenu()
     }
 
     lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
-    textToFrame(MAX_LINES - 1, 0, gettext("Press " BUTTON_B " to return || " BUTTON_PLUS " to start downloading || " BUTTON_MINUS " to delete an item"));
+    textToFrame(MAX_LINES - 1, ALIGNED_CENTER, gettext("Press " BUTTON_B " to return || " BUTTON_PLUS " to start downloading || " BUTTON_MINUS " to delete an item"));
     if(titleQueue->size() != 0)
         arrowToFrame(cursorPos, 1);
 
@@ -100,6 +101,7 @@ void queueMenu()
 
         if(vpad.trigger & VPAD_BUTTON_MINUS)
         {
+            MEMFreeToDefaultHeap(titleQueue->at(cursorPos - 1));
             titleQueue->erase(titleQueue->begin() + cursorPos - 1);
             --cursorPos;
             redraw = true;
