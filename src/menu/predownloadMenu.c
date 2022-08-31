@@ -482,7 +482,7 @@ naNedNa:
             clearRamBuf();
             saveConfig(false);
             deinstall(&titleList, entry->name, false, false);
-            return;
+            return false;
         }
 
         if(redraw)
