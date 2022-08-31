@@ -29,7 +29,7 @@
 #include <renderer.h>
 #include <state.h>
 
-#include <cstring>
+#include <string.h>
 
 #define MAX_ENTRIES (MAX_LINES - 3)
 
