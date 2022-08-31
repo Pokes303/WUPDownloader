@@ -64,7 +64,13 @@ static void drawQueueMenu()
     }
 
     lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
-    textToFrame(MAX_LINES - 1, ALIGNED_CENTER, gettext("Press " BUTTON_B " to return || " BUTTON_PLUS " to start downloading || " BUTTON_MINUS " to delete an item"));
+
+    strcpy(toScreen, gettext("Press " BUTTON_B " to return"));
+    strcat(toScreen, " || ");
+    strcat(toScreen, gettext(BUTTON_PLUS " to start downloading"));
+    strcat(toScreen, " || ");
+    strcat(toScreen, gettext(BUTTON_MINUS " to delete an item"));
+    textToFrame(MAX_LINES - 1, toScreen);
     if(titleQueue->size() != 0)
         arrowToFrame(cursorPos, 1);
 
