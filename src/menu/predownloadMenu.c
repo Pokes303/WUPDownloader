@@ -539,22 +539,24 @@ naNedNa:
         removeErrorOverlay(ovl);
     }
 
-    TMD *titleTMD = MEMAllocFromDefaultHeap(getRamBufSize());
-    OSBlockMove(titleTMD, tmd, getRamBufSize(), false);
-
-    TitleData *titleInfo = MEMAllocFromDefaultHeap(sizeof(TitleData));
-    titleInfo->tmd = titleTMD;
-    titleInfo->ramBufSize = getRamBufSize();
-    titleInfo->entry = entry;
-    strcpy(titleInfo->titleVer, titleVer);
-    strcpy(titleInfo->folderName, folderName);
-    titleInfo->inst = inst;
-    titleInfo->dlDev = dlDev;
-    titleInfo->toUSB = toUSB;
-    titleInfo->keepFiles = keepFiles;
-
     if(toQueue)
+    {
+        TMD *titleTMD = MEMAllocFromDefaultHeap(getRamBufSize());
+        OSBlockMove(titleTMD, tmd, getRamBufSize(), false);
+
+        TitleData *titleInfo = MEMAllocFromDefaultHeap(sizeof(TitleData));
+        titleInfo->tmd = titleTMD;
+        titleInfo->ramBufSize = getRamBufSize();
+        titleInfo->entry = entry;
+        strcpy(titleInfo->titleVer, titleVer);
+        strcpy(titleInfo->folderName, folderName);
+        titleInfo->inst = inst;
+        titleInfo->dlDev = dlDev;
+        titleInfo->toUSB = toUSB;
+        titleInfo->keepFiles = keepFiles;
+
         addToQueue(titleInfo);
+    }
     else if(checkSystemTitleFromEntry(entry))
         downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, inst, dlDev, toUSB, keepFiles, false);
 
