@@ -152,6 +152,14 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
     textToFrame(--line, 5, gettext("Set custom name to the download folder"));
     textToFrame(--line, 5, gettext("Set title version"));
 
+    switch((int)dlDev)
+    {
+        case NUSDEV_USB01:
+        case NUSDEV_USB02:
+        case NUSDEV_MLC:
+            keepFiles = false;
+    }
+
     strcpy(toFrame, gettext("Keep downloaded files:"));
     strcat(toFrame, " ");
     strcat(toFrame, gettext(keepFiles ? "Yes" : "No"));
