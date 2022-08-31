@@ -88,9 +88,6 @@ static SDL_Texture *byeTex;
 
 static LIST *rectList;
 
-#define screenColorToSDLcolor(color) \
-    (SDL_Color) { .a = color & 0xFFu, .b = (color & 0x0000FF00u) >> 8, .g = (color & 0x00FF0000u) >> 16, .r = (color & 0xFF000000u) >> 24 }
-
 static inline SDL_Rect *createRect()
 {
     SDL_Rect *ret = MEMAllocFromDefaultHeap(sizeof(SDL_Rect));
@@ -171,7 +168,7 @@ void textToFrameColoredCut(int line, int column, const char *str, SCREEN_COLOR c
 {
     SDL_Rect text;
     internalTextToFrame();
-    FC_DrawBoxColor(font, renderer, text, screenColorToSDLcolor(color), str);
+    FC_DrawBoxColor(font, renderer, text, color, str);
 }
 
 int textToFrameMultiline(int x, int y, const char *text, size_t len)
@@ -247,8 +244,7 @@ void lineToFrame(int column, SCREEN_COLOR color)
     rect->w = SCREEN_WIDTH - (FONT_SIZE << 1);
     rect->h = 3;
 
-    SDL_Color co = screenColorToSDLcolor(color);
-    SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
     SDL_RenderFillRect(renderer, rect);
 }
 
@@ -270,7 +266,7 @@ void boxToFrame(int lineStart, int lineEnd)
     rect[0]->w = SCREEN_WIDTH - (FONT_SIZE << 1);
     rect[0]->h = 3;
 
-    SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_GRAY);
+    SDL_Color co = SCREEN_COLOR_GRAY;
     SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
 
     // Horizontal lines
@@ -301,7 +297,7 @@ void boxToFrame(int lineStart, int lineEnd)
     rect[4]->y = rect[0]->y + 2;
     rect[4]->w = rect[0]->w - 3;
     rect[4]->h = rect[2]->h - 3;
-    co = screenColorToSDLcolor(SCREEN_COLOR_BLACK);
+    co = SCREEN_COLOR_BLACK;
     SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, 64);
     SDL_RenderFillRect(renderer, rect[4]);
 }
@@ -324,7 +320,7 @@ void barToFrame(int line, int column, uint32_t width, double progress)
     rect[0]->w = ((int)width) * spaceWidth;
     rect[0]->h = FONT_SIZE;
 
-    SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_GRAY);
+    SDL_Color co = SCREEN_COLOR_GRAY;
     SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
     SDL_RenderFillRect(renderer, rect[0]);
 
@@ -347,7 +343,7 @@ void barToFrame(int line, int column, uint32_t width, double progress)
     rect[2]->w -= rect[1]->w;
     rect[2]->h = FONT_SIZE - 4;
 
-    co = screenColorToSDLcolor(SCREEN_COLOR_BLACK);
+    co = SCREEN_COLOR_BLACK;
     SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, 64);
     SDL_RenderFillRect(renderer, rect[2]);
 
@@ -488,9 +484,7 @@ void tabToFrame(int line, int column, const char *label, bool active)
         return;
     }
 
-    SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_WHITE);
-    co.a = 159;
-    FC_DrawBoxColor(font, renderer, rect, co, label);
+    FC_DrawBoxColor(font, renderer, rect, SCREEN_COLOR_WHITE_TRANSP, label);
 }
 
 int addErrorOverlay(const char *err)
@@ -520,7 +514,7 @@ int addErrorOverlay(const char *err)
     SDL_SetTextureBlendMode(errorOverlay[i].tex, SDL_BLENDMODE_BLEND);
     SDL_SetRenderTarget(renderer, errorOverlay[i].tex);
 
-    SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_BLACK);
+    SDL_Color co = SCREEN_COLOR_BLACK;
     SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, 0xC0);
     SDL_RenderClear(renderer);
 
@@ -533,7 +527,7 @@ int addErrorOverlay(const char *err)
     rect->y = rec.y - (FONT_SIZE >> 1);
     rect->w = rec.w + FONT_SIZE;
     rect->h = rec.h + FONT_SIZE;
-    co = screenColorToSDLcolor(SCREEN_COLOR_RED);
+    co = SCREEN_COLOR_RED;
     SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
     SDL_RenderFillRect(renderer, rect);
 
@@ -543,7 +537,7 @@ int addErrorOverlay(const char *err)
     rect->y = or->y + 2;
     rect->w = rec.w + (FONT_SIZE - 4);
     rect->h = rec.h + (FONT_SIZE - 4);
-    co = screenColorToSDLcolor(SCREEN_COLOR_D_RED);
+    co = SCREEN_COLOR_D_RED;
     SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
     SDL_RenderFillRect(renderer, rect);
 
@@ -610,7 +604,7 @@ void resumeRenderer()
     if(font != NULL)
     {
         SDL_RWops *rw = SDL_RWFromConstMem(ttf, size);
-        if(FC_LoadFont_RW(font, renderer, rw, 1, FONT_SIZE, screenColorToSDLcolor(SCREEN_COLOR_WHITE), TTF_STYLE_NORMAL))
+        if(FC_LoadFont_RW(font, renderer, rw, 1, FONT_SIZE, SCREEN_COLOR_WHITE, TTF_STYLE_NORMAL))
         {
             FC_GlyphData spaceGlyph;
             FC_GetGlyphData(font, &spaceGlyph, ' ');
@@ -623,10 +617,10 @@ void resumeRenderer()
 
             barTex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, 2, 1);
             SDL_SetRenderTarget(renderer, barTex);
-            SDL_Color co = screenColorToSDLcolor(SCREEN_COLOR_GREEN);
+            SDL_Color co = SCREEN_COLOR_GREEN;
             SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
             SDL_RenderClear(renderer);
-            co = screenColorToSDLcolor(SCREEN_COLOR_D_GREEN);
+            co = SCREEN_COLOR_D_GREEN;
             SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
             SDL_RenderFillRect(renderer, &barRect);
             // TODO: This doesn't work for some SDL bug reason
@@ -919,11 +913,11 @@ void colorStartNewFrame(SCREEN_COLOR color)
 
     clearFrame();
 
-    if(color == SCREEN_COLOR_BLUE)
+    if(*(uint32_t *)&(color.r) == *(uint32_t *)&(SCREEN_COLOR_BLUE.r))
         SDL_RenderCopy(renderer, bgTex, NULL, NULL);
     else
     {
-        SDL_Color co = screenColorToSDLcolor(color);
+        SDL_Color co = color;
         SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
         SDL_RenderClear(renderer);
     }
