@@ -139,6 +139,14 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
     textToFrame(--line, 5, gettext("Set custom name to the download folder"));
     textToFrame(--line, 5, gettext("Set title version"));
 
+    strcpy(toFrame, gettext("Keep files:"));
+    strcat(toFrame, " ");
+    strcat(toFrame, keepFiles ? "yes" : "no");
+    if(dlDev == NUSDEV_SD)
+        textToFrame(--line, 5, gettext(toFrame));
+    else
+        textToFrameColored(--line, 5, gettext(toFrame), SCREEN_COLOR_WHITE_TRANSP);
+
     strcpy(toFrame, gettext("Download to:"));
     strcat(toFrame, " ");
     switch((int)dlDev)
@@ -183,9 +191,7 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
     if(operation == OPERATION_INSTALL)
         textToFrame(--line, 5, gettext(toFrame));
     else
-    {
         textToFrameColored(--line, 5, gettext(toFrame), SCREEN_COLOR_WHITE_TRANSP);
-    }
 
     lineToFrame(--line, SCREEN_COLOR_WHITE);
 
@@ -397,14 +403,18 @@ naNedNa:
         {
             switch(cursorPos)
             {
-                case 17: // TODO: Change hardcoded numbers to something prettier
+                case 16: // TODO: Change hardcoded numbers to something prettier
                     switchInstallDevice(&instDev);
                     break;
-                case 18:
+                case 17:
                     switchOperation(&operation);
                     break;
-                case 19:
+                case 18:
                     switchDownloadDevice(&dlDev);
+                    break;
+                case 19:
+                    keepFiles = !keepFiles;
+                    redraw = true;
                     break;
                 case 20:
                     changeTitleVersion(titleVer);
@@ -418,14 +428,16 @@ naNedNa:
         }
         else if(vpad.trigger & VPAD_BUTTON_DOWN)
         {
+            debugPrintf("cursorPos: %i", cursorPos);
             if(++cursorPos == 22) // TODO: Change hardcoded numbers to something prettier
-                cursorPos = 17;
+                cursorPos = 16;
 
             redraw = true;
         }
         else if(vpad.trigger & VPAD_BUTTON_UP)
         {
-            if(--cursorPos == 16) // TODO: Change hardcoded numbers to something prettier
+            debugPrintf("cursorPos: %i", cursorPos);
+            if(--cursorPos == 15) // TODO: Change hardcoded numbers to something prettier
                 cursorPos = 21;
 
             redraw = true;
@@ -444,6 +456,14 @@ naNedNa:
             toUSB = instDev == NUSDEV_USB01 || instDev == NUSDEV_USB02;
             toQueue = true;
             loop = false;
+        }
+
+        if(installed && vpad.trigger & VPAD_BUTTON_Y)
+        {
+            clearRamBuf();
+            saveConfig(false);
+            deinstall(&titleList, entry->name, false, false);
+            return;
         }
 
         if(redraw)
