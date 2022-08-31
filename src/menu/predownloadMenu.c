@@ -145,13 +145,13 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
     {
         case NUSDEV_USB01:
         case NUSDEV_USB02:
-            strcat(toFrame, " SD");
+            strcat(toFrame, " USB");
             break;
         case NUSDEV_SD:
-            strcat(toFrame, " NAND");
+            strcat(toFrame, " SD");
             break;
         case NUSDEV_MLC:
-            strcat(toFrame, usbMounted ? " USB" : " SD");
+            strcat(toFrame, " NAND");
     }
     textToFrame(--line, 5, gettext(toFrame));
 
