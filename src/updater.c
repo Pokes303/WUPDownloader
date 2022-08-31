@@ -54,10 +54,10 @@
 
 #define UPDATE_CHECK_URL    NAPI_URL "s?t="
 #define UPDATE_DOWNLOAD_URL "https://github.com/V10lator/NUSspli/releases/download/v"
-#define UPDATE_TEMP_FOLDER  NUSDIR_SD "/NUSspli_temp/"
-#define UPDATE_AROMA_FOLDER NUSDIR_SD "/wiiu/apps/"
+#define UPDATE_TEMP_FOLDER  NUSDIR_SD "NUSspli_temp/"
+#define UPDATE_AROMA_FOLDER NUSDIR_SD "wiiu/apps/"
 #define UPDATE_AROMA_FILE   "NUSspli.wuhb"
-#define UPDATE_HBL_FOLDER   NUSDIR_SD "/wiiu/apps/NUSspli"
+#define UPDATE_HBL_FOLDER   NUSDIR_SD "wiiu/apps/NUSspli"
 
 #ifdef NUSSPLI_DEBUG
 #define NUSSPLI_DLVER "-DEBUG"
@@ -362,6 +362,15 @@ static bool unzipUpdate()
     return ret;
 }
 
+static inline void showUpdateFrame()
+{
+    startNewFrame();
+    textToFrame(0, 0, gettext("Updating, please wait..."));
+    writeScreenLog(1);
+    drawFrame();
+    showFrame();
+}
+
 void update(const char *newVersion, NUSSPLI_TYPE type)
 {
 #ifndef NUSSPLI_HBL
@@ -385,6 +394,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 #endif
 
     disableShutdown();
+    showUpdateFrame();
     removeDirectory(UPDATE_TEMP_FOLDER);
     FSStatus err = createDirectory(UPDATE_TEMP_FOLDER);
     if(err != FS_STATUS_OK)
@@ -429,11 +439,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
         goto updateError;
     }
 
-    startNewFrame();
-    textToFrame(0, 0, gettext("Updating, please wait..."));
-    writeScreenLog(1);
-    drawFrame();
-    showFrame();
+    showUpdateFrame();
 
     if(!unzipUpdate())
     {
