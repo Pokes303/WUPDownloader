@@ -41,7 +41,7 @@
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
 
-#define MAX_TITLEBROWSER_LINES (MAX_LINES - 4)
+#define MAX_TITLEBROWSER_LINES (MAX_LINES - 5)
 
 static TitleEntry **filteredTitleEntries;
 static size_t filteredTitleEntrySize;
@@ -56,7 +56,7 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
     for(int i = 0; i < 5; ++i)
         tabToFrame(0, i, tabLabels[i], i == tab);
 
-    boxToFrame(1, MAX_LINES - 2);
+    boxToFrame(1, MAX_LINES - 3);
 
     char *toFrame = getToFrameBuffer();
     strcpy(toFrame, gettext(BUTTON_A " to select"));
@@ -64,8 +64,9 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
     strcat(toFrame, gettext(BUTTON_B " to return"));
     strcat(toFrame, " || ");
     strcat(toFrame, gettext(BUTTON_X " to enter a title ID"));
-    strcat(toFrame, " || ");
-    strcat(toFrame, gettext(BUTTON_Y " to search"));
+    textToFrame(MAX_LINES - 2, ALIGNED_CENTER, toFrame);
+
+    strcpy(toFrame, gettext(BUTTON_Y " to search"));
     strcat(toFrame, " || ");
     strcat(toFrame, gettext(BUTTON_MINUS " to open the queue"));
     textToFrame(MAX_LINES - 1, ALIGNED_CENTER, toFrame);
