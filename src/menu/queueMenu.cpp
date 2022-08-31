@@ -90,22 +90,19 @@ void queueMenu()
             drawQueueMenu();
 
         showFrame();
-        if(vpad.trigger & VPAD_BUTTON_B)
-        {
-            return;
-        }
 
-        else if(vpad.trigger & VPAD_BUTTON_UP)
+        if(vpad.trigger & VPAD_BUTTON_B)
+            return;
+
+        if(vpad.trigger & VPAD_BUTTON_UP)
         {
-            --cursorPos;
-            if(cursorPos < 1)
+            if(--cursorPos < 1)
                 cursorPos = titleQueue->size();
             redraw = true;
         }
         else if(vpad.trigger & VPAD_BUTTON_DOWN)
         {
-            ++cursorPos;
-            if(cursorPos > titleQueue->size())
+            if(++cursorPos > titleQueue->size())
                 cursorPos = 1;
             redraw = true;
         }
