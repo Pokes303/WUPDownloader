@@ -187,8 +187,6 @@ void titleBrowserMenu()
     char search[129];
     search[0] = u'\0';
     oldPos = 99;
-
-    bool mov = filteredTitleEntrySize >= MAX_TITLEBROWSER_LINES;
     bool redraw = false;
     const TitleEntry *entry;
     uint32_t oldHold = 0;
@@ -196,6 +194,8 @@ void titleBrowserMenu()
     bool dpadAction;
 loop:
     drawTBMenuFrame(tab, pos, cursor, search);
+    bool mov = filteredTitleEntrySize >= MAX_TITLEBROWSER_LINES;
+
     while(AppRunning())
     {
         if(app == APP_STATE_BACKGROUND)
@@ -375,7 +375,7 @@ loop:
             cursor = pos = 0;
             redraw = true;
         }
-        else if(vpad.trigger & VPAD_BUTTON_L || vpad.trigger & VPAD_BUTTON_ZL || vpad.trigger)
+        else if(vpad.trigger & VPAD_BUTTON_L || vpad.trigger & VPAD_BUTTON_ZL)
         {
             if(tab == TITLE_CATEGORY_GAME)
                 tab = TITLE_CATEGORY_ALL;
