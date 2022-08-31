@@ -133,7 +133,18 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 
     arrowToFrame(cursorPos, 0);
 
-    textToFrame(--line, 0, gettext("Press " BUTTON_B " to return || " BUTTON_PLUS " to start || " BUTTON_MINUS " to add to the queue"));
+    strcpy(toFrame, gettext("Press " BUTTON_B " to return"));
+    strcat(toFrame, " || ");
+    strcat(toFrame, gettext(BUTTON_PLUS " to start"));
+    strcat(toFrame, " || ");
+    strcat(toFrame, gettext(BUTTON_MINUS " to add to the queue"));
+    if(installed)
+    {
+        strcat(toFrame, " || ");
+        strcat(toFrame, gettext(BUTTON_Y " to uninstall"));
+    }
+    textToFrame(--line, 0, toFrame);
+
     lineToFrame(--line, SCREEN_COLOR_WHITE);
 
     textToFrame(--line, 5, gettext("Set custom name to the download folder"));
