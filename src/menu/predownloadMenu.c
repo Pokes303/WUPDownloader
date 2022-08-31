@@ -133,7 +133,6 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 
     arrowToFrame(cursorPos, 0);
 
-
     strcpy(toFrame, gettext(BUTTON_MINUS " to add to the queue"));
     if(installed)
     {
@@ -143,7 +142,7 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
     textToFrame(--line, ALIGNED_CENTER, toFrame);
 
     strcpy(toFrame, gettext("Press " BUTTON_B " to return"));
-    strcat(toFrame, " || "),
+    strcat(toFrame, " || ");
     strcat(toFrame, gettext(BUTTON_PLUS " to start"));
     textToFrame(--line, ALIGNED_CENTER, toFrame);
 
