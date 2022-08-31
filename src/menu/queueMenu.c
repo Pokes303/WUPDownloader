@@ -101,7 +101,11 @@ void queueMenu()
         if(vpad.trigger & VPAD_BUTTON_UP)
         {
             if(--cursorPos < 1)
+            {
                 cursorPos = getListSize(titleQueue);
+                if(cursorPos == 0)
+                    cursorPos = 1;
+            }
             redraw = true;
         }
         else if(vpad.trigger & VPAD_BUTTON_DOWN)
@@ -120,6 +124,12 @@ void queueMenu()
         if(vpad.trigger & VPAD_BUTTON_MINUS)
         {
             removeContent(titleQueue, --cursorPos, true);
+            if(--cursorPos < 1)
+            {
+                cursorPos = getListSize(titleQueue);
+                if(cursorPos == 0)
+                    cursorPos = 1;
+            }
             redraw = true;
         }
 
