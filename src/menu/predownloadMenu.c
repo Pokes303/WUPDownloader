@@ -245,6 +245,8 @@ static inline void switchOperation(OPERATION *op)
 
 static inline void switchDownloadDevice(NUSDEV *dev)
 {
+    bool toUSB = false;
+
     if(vpad.trigger & VPAD_BUTTON_LEFT)
     {
         switch((int)*dev)
@@ -260,6 +262,8 @@ static inline void switchDownloadDevice(NUSDEV *dev)
                 *dev = getUSB();
                 if(!*dev)
                     *dev = NUSDEV_MLC;
+                else
+                    toUSB = true;
                 break;
         }
     }
@@ -278,9 +282,13 @@ static inline void switchDownloadDevice(NUSDEV *dev)
                 *dev = getUSB();
                 if(!*dev)
                     *dev = NUSDEV_SD;
+                else
+                    toUSB = true;
                 break;
         }
     }
+
+    setDlToUSB(toUSB);
 }
 
 void predownloadMenu(const TitleEntry *entry)
