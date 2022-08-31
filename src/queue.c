@@ -1,6 +1,7 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
- * Copyright (c) 2020-2021 V10lator <v10lator@myway.de>                    *
+ * Copyright (c) 2022 Xpl0itU <DaThinkingChair@protonmail.com>             *
+ * Copyright (c) 2022 V10lator <v10lator@myway.de>                         *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
@@ -16,21 +17,40 @@
  * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#pragma once
-
 #include <wut-fixups.h>
 
-#include <file.h>
+#include <downloader.h>
+#include <list.h>
+#include <queue.h>
 
-#include <stdbool.h>
+static LIST *titleQueue;
 
-#ifdef __cplusplus
-extern "C"
+bool initQueue()
 {
-#endif
-
-    bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool toUsb, bool keepFiles, uint64_t tid, bool unattended);
-
-#ifdef __cplusplus
+    titleQueue = createList();
+    return titleQueue != NULL;
 }
-#endif
+
+void shutdownQueue()
+{
+    destroyList(titleQueue, true);
+}
+
+void addToQueue(TitleData *data)
+{
+    addToListBeginning(titleQueue, data);
+}
+
+void proccessQueue()
+{
+    TitleData *title;
+    forEachListEntry(titleQueue, title)
+        downloadTitle(title->tmd, title->ramBufSize, title->entry, title->titleVer, title->folderName, title->inst, title->dlDev, title->toUSB, title->keepFiles, true);
+
+    clearList(titleQueue, true);
+}
+
+LIST *getTitleQueue()
+{
+    return titleQueue;
+}

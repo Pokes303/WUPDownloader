@@ -1,6 +1,6 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
- * Copyright (c) 2020-2021 V10lator <v10lator@myway.de>                    *
+ * Copyright (c) 2022 Xpl0itU <DaThinkingChair@protonmail.com>             *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
@@ -20,17 +20,11 @@
 
 #include <wut-fixups.h>
 
-#include <file.h>
-
-#include <stdbool.h>
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-
-    bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool toUsb, bool keepFiles, uint64_t tid, bool unattended);
-
+    void queueMenu();
 #ifdef __cplusplus
 }
 #endif

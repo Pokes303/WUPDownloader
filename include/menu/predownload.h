@@ -28,7 +28,7 @@ extern "C"
 {
 #endif
 
-    void predownloadMenu(const TitleEntry *entry);
+    bool predownloadMenu(const TitleEntry *entry);
 
 #ifdef __cplusplus
 }

@@ -34,6 +34,7 @@
 #include <notifications.h>
 #include <osdefs.h>
 #include <otp.h>
+#include <queue.h>
 #include <renderer.h>
 #include <romfs-wiiu.h>
 #include <sanity.h>
@@ -150,14 +151,21 @@ static void innerMain(bool validCfw)
                                                 if(SWKBD_Init())
                                                 {
                                                     drawLoadingScreen("SWKBD initialized!", "Loading menu...");
-                                                    checkStacks("main()");
-                                                    if(!updateCheck())
+                                                    if(initQueue())
                                                     {
-                                                        checkStacks("main");
-                                                        mainMenu(); // main loop
-                                                        checkStacks("main");
-                                                        debugPrintf("Deinitializing libraries...");
+                                                        checkStacks("main()");
+                                                        if(!updateCheck())
+                                                        {
+                                                            checkStacks("main");
+                                                            mainMenu(); // main loop
+                                                            checkStacks("main");
+                                                            debugPrintf("Deinitializing libraries...");
+                                                        }
+
+                                                        shutdownQueue();
                                                     }
+                                                    else
+                                                        lerr = "Couldn't initialize queue!";
 
                                                     SWKBD_Shutdown();
                                                     debugPrintf("SWKBD closed");

@@ -25,6 +25,7 @@
 #include <localisation.h>
 #include <menu/download.h>
 #include <menu/predownload.h>
+#include <menu/queueMenu.h>
 #include <menu/titlebrowser.h>
 #include <menu/utils.h>
 #include <renderer.h>
@@ -57,13 +58,15 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
     boxToFrame(1, MAX_LINES - 2);
 
     char *toFrame = getToFrameBuffer();
-    strcpy(toFrame, gettext("Press " BUTTON_A " to select"));
+    strcpy(toFrame, gettext(BUTTON_A " to select"));
     strcat(toFrame, " || ");
     strcat(toFrame, gettext(BUTTON_B " to return"));
     strcat(toFrame, " || ");
     strcat(toFrame, gettext(BUTTON_X " to enter a title ID"));
     strcat(toFrame, " || ");
     strcat(toFrame, gettext(BUTTON_Y " to search"));
+    strcat(toFrame, " || ");
+    strcat(toFrame, gettext(BUTTON_MINUS " to open the queue"));
     textToFrame(MAX_LINES - 1, ALIGNED_CENTER, toFrame);
 
     size_t j;
@@ -184,15 +187,15 @@ void titleBrowserMenu()
     char search[129];
     search[0] = u'\0';
     oldPos = 99;
-
-    drawTBMenuFrame(tab, pos, cursor, search);
-
-    bool mov = filteredTitleEntrySize >= MAX_TITLEBROWSER_LINES;
     bool redraw = false;
     const TitleEntry *entry;
     uint32_t oldHold = 0;
     size_t frameCount = 0;
     bool dpadAction;
+loop:
+    drawTBMenuFrame(tab, pos, cursor, search);
+    bool mov = filteredTitleEntrySize >= MAX_TITLEBROWSER_LINES;
+
     while(AppRunning())
     {
         if(app == APP_STATE_BACKGROUND)
@@ -343,6 +346,13 @@ void titleBrowserMenu()
                 titleBrowserMenu();
             return;
         }
+
+        if(vpad.trigger & VPAD_BUTTON_MINUS)
+        {
+            queueMenu();
+            redraw = true;
+        }
+
         if(vpad.trigger & VPAD_BUTTON_Y)
         {
             char oldSearch[sizeof(search)];
@@ -365,7 +375,7 @@ void titleBrowserMenu()
             cursor = pos = 0;
             redraw = true;
         }
-        else if(vpad.trigger & VPAD_BUTTON_L || vpad.trigger & VPAD_BUTTON_ZL || vpad.trigger & VPAD_BUTTON_MINUS)
+        else if(vpad.trigger & VPAD_BUTTON_L || vpad.trigger & VPAD_BUTTON_ZL)
         {
             if(tab == TITLE_CATEGORY_GAME)
                 tab = TITLE_CATEGORY_ALL;
@@ -396,6 +406,8 @@ void titleBrowserMenu()
         return;
     }
 
-    predownloadMenu(entry);
+    if(predownloadMenu(entry))
+        goto loop;
+
     MEMFreeToDefaultHeap(filteredTitleEntries);
 }

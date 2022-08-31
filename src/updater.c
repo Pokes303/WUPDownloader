@@ -505,7 +505,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
             strcpy(path, UPDATE_TEMP_FOLDER);
             strcpy(path + strlen(UPDATE_TEMP_FOLDER), "NUSspli");
 
-            install("Update", false, NUSDEV_SD, path, toUSB, true, 0);
+            install("Update", false, NUSDEV_SD, path, toUSB, true, 0, false);
             break;
         case NUSSPLI_TYPE_HBL:
 #ifdef NUSSPLI_DEBUG
