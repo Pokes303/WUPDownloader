@@ -297,7 +297,7 @@ void predownloadMenu(const TitleEntry *entry)
     bool installed = isInstalled(entry, &titleList);
     NUSDEV usbMounted = getUSB();
     NUSDEV dlDev = usbMounted && dlToUSBenabled() ? usbMounted : NUSDEV_SD;
-    NUSDEV instDev = NUSDEV_MLC;
+    NUSDEV instDev = usbMounted ? usbMounted : NUSDEV_MLC;
     OPERATION operation = OPERATION_INSTALL;
     bool keepFiles = true;
     char folderName[FS_MAX_PATH - 11];
