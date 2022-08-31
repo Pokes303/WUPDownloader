@@ -61,6 +61,7 @@ extern "C"
     {
         SCREEN_COLOR_BLACK = 0x000000FF,
         SCREEN_COLOR_WHITE = 0xFFFFFFFF,
+        SCREEN_COLOR_WHITE_TRANSP = 0xFFFFFF7F,
         SCREEN_COLOR_D_RED = 0x800000FF,
         SCREEN_COLOR_RED = 0xFF0000FF,
         SCREEN_COLOR_D_GREEN = 0x008000FF,
@@ -70,6 +71,7 @@ extern "C"
         SCREEN_COLOR_LILA = 0xFF00FFFF,
         SCREEN_COLOR_BROWN = 0x361C0AFF,
         SCREEN_COLOR_GRAY = 0x6A6A6AFF,
+        SCREEN_COLOR_YELLOW = 0xFFFF00FF,
     } SCREEN_COLOR;
 
     typedef enum
@@ -88,7 +90,7 @@ extern "C"
     void drawFrame();
     void drawKeyboard(bool tv);
     void textToFrameCut(int line, int column, const char *str, int maxWidth) __attribute__((__hot__));
-    void textToFrameColored(int line, int column, const char *str, SCREEN_COLOR color, uint8_t alpha);
+    void textToFrameColoredCut(int line, int column, const char *str, SCREEN_COLOR color, int maxWidth);
     int textToFrameMultiline(int x, int y, const char *text, size_t len);
     void lineToFrame(int column, SCREEN_COLOR color);
     void boxToFrame(int lineStart, int lineEnd);
@@ -108,4 +110,5 @@ extern "C"
 
 #define startNewFrame()                colorStartNewFrame(SCREEN_COLOR_BLUE)
 #define textToFrame(line, column, str) textToFrameCut(line, column, str, column == 0 ? SCREEN_WIDTH - (FONT_SIZE * 2) : 0)
+#define textToFrameColored(line, column, str, color) textToFrameColoredCut(line, column, str, color, column == 0 ? SCREEN_WIDTH - (FONT_SIZE * 2) : 0)
 #define getToFrameBuffer()             getStaticScreenBuffer()

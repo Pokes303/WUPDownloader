@@ -180,7 +180,12 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
             strcat(toFrame, " NAND");
             break;
     }
-    textToFrame(--line, 5, gettext(toFrame));
+    if(operation == OPERATION_INSTALL)
+        textToFrame(--line, 5, gettext(toFrame));
+    else
+    {
+        textToFrameColored(--line, 5, gettext(toFrame), SCREEN_COLOR_WHITE_TRANSP);
+    }
 
     lineToFrame(--line, SCREEN_COLOR_WHITE);
 

@@ -28,6 +28,7 @@
 #include <menu/queueMenu.h>
 #include <menu/titlebrowser.h>
 #include <menu/utils.h>
+#include <queue.h>
 #include <renderer.h>
 #include <state.h>
 #include <titles.h>
@@ -138,6 +139,8 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
     j = filteredTitleEntrySize - pos;
     max = j < MAX_TITLEBROWSER_LINES ? j : MAX_TITLEBROWSER_LINES;
     MCPTitleListType titleList;
+    TitleData *title;
+    bool inQueue;
     for(size_t i = 0; i < max; ++i)
     {
         l = i + 2;
@@ -157,16 +160,27 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
             else if(isUpdate(filteredTitleEntries[j]))
                 strcpy(toFrame, "[UPD] ");
             else
-            {
-                textToFrameCut(l, 10, filteredTitleEntries[j]->name, (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
-                continue;
-            }
+                toFrame[0] = '\0';
 
             strcat(toFrame, filteredTitleEntries[j]->name);
-            textToFrameCut(l, 10, toFrame, (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
         }
         else
-            textToFrameCut(l, 10, filteredTitleEntries[j]->name, (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
+            strcpy(toFrame, filteredTitleEntries[j]->name);
+
+        inQueue = false;
+        forEachListEntry(getTitleQueue(), title)
+        {
+            if(title->entry == filteredTitleEntries[j])
+            {
+                inQueue = true;
+                break;
+            }
+        }
+
+        if(inQueue)
+            textToFrameColoredCut(l, 10, toFrame, SCREEN_COLOR_YELLOW, (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
+        else
+            textToFrameCut(l, 10, toFrame, (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
     }
     drawFrame();
 }
