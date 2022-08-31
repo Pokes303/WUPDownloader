@@ -1,6 +1,7 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
  * Copyright (c) 2022 Xpl0itU <DaThinkingChair@protonmail.com>             *
+ * Copyright (c) 2022 V10lator <v10lator@myway.de>                         *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
@@ -39,14 +40,24 @@ static void drawQueueMenu()
     startNewFrame();
     boxToFrame(0, MAX_LINES - 2);
     char *toScreen = getToFrameBuffer();
+    int p;
 
     for(int i = 0; i < MAX_ENTRIES && i < titleQueue->size(); ++i)
     {
         if(isDLC(titleQueue->at(i)->entry))
+        {
             strcpy(toScreen, "[DLC] ");
+            p = strlen("[DLC] ");
+        }
         else if(isUpdate(titleQueue->at(i)->entry))
+        {
             strcpy(toScreen, "[UPD] ");
-        strcpy(toScreen, titleQueue->at(i)->entry->name);
+            p = strlen("[UPD] ";
+        }
+        else
+            p = 0;
+
+        strcpy(toScreen + p, titleQueue->at(i)->entry->name);
         flagToFrame(i + 1, 7, titleQueue->at(i)->entry->region);
         deviceToFrame(i + 1, 4, titleQueue->at(i)->toUSB ? DEVICE_TYPE_USB : DEVICE_TYPE_NAND);
         textToFrame(i + 1, 10, toScreen);
