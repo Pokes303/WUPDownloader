@@ -421,14 +421,14 @@ naNedNa:
         if(vpad.trigger & VPAD_BUTTON_PLUS)
         {
             inst = operation == OPERATION_INSTALL;
-            toUSB = instDev == NUSDEV_USB01 || NUSDEV_USB02;
+            toUSB = instDev == NUSDEV_USB01 || instDev == NUSDEV_USB02;
             loop = false;
         }
 
         if(vpad.trigger & VPAD_BUTTON_MINUS)
         {
             inst = operation == OPERATION_INSTALL;
-            toUSB = instDev == NUSDEV_USB01 || NUSDEV_USB02;
+            toUSB = instDev == NUSDEV_USB01 || instDev == NUSDEV_USB02;
             toQueue = true;
             loop = false;
         }
