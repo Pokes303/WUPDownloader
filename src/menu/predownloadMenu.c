@@ -52,7 +52,7 @@ typedef enum
     OPERATION_INSTALL,
 } OPERATION;
 
-static int cursorPos = 17;
+static int cursorPos = 16;
 
 static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
 {
@@ -133,26 +133,28 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 
     arrowToFrame(cursorPos, 0);
 
-    strcpy(toFrame, gettext("Press " BUTTON_B " to return"));
-    strcat(toFrame, " || ");
-    strcat(toFrame, gettext(BUTTON_PLUS " to start"));
-    strcat(toFrame, " || ");
-    strcat(toFrame, gettext(BUTTON_MINUS " to add to the queue"));
+
+    strcpy(toFrame, gettext(BUTTON_MINUS " to add to the queue"));
     if(installed)
     {
         strcat(toFrame, " || ");
         strcat(toFrame, gettext(BUTTON_Y " to uninstall"));
     }
-    textToFrame(--line, 0, toFrame);
+    textToFrame(--line, ALIGNED_CENTER, toFrame);
+
+    strcpy(toFrame, gettext("Press " BUTTON_B " to return"));
+    strcat(toFrame, " || "),
+    strcat(toFrame, gettext(BUTTON_PLUS " to start"));
+    textToFrame(--line, ALIGNED_CENTER, toFrame);
 
     lineToFrame(--line, SCREEN_COLOR_WHITE);
 
     textToFrame(--line, 5, gettext("Set custom name to the download folder"));
     textToFrame(--line, 5, gettext("Set title version"));
 
-    strcpy(toFrame, gettext("Keep files:"));
+    strcpy(toFrame, gettext("Keep downloaded files:"));
     strcat(toFrame, " ");
-    strcat(toFrame, keepFiles ? "yes" : "no");
+    strcat(toFrame, gettext(keepFiles ? "Yes" : "No"));
     if(dlDev == NUSDEV_SD)
         textToFrame(--line, 5, gettext(toFrame));
     else
@@ -414,23 +416,23 @@ naNedNa:
         {
             switch(cursorPos)
             {
-                case 16: // TODO: Change hardcoded numbers to something prettier
+                case 15: // TODO: Change hardcoded numbers to something prettier
                     switchInstallDevice(&instDev);
                     break;
-                case 17:
+                case 16:
                     switchOperation(&operation);
                     break;
-                case 18:
+                case 17:
                     switchDownloadDevice(&dlDev);
                     break;
-                case 19:
+                case 18:
                     keepFiles = !keepFiles;
                     redraw = true;
                     break;
-                case 20:
+                case 19:
                     changeTitleVersion(titleVer);
                     goto downloadTMD;
-                case 21:
+                case 20:
                     changeFolderName(folderName);
                     break;
             }
@@ -439,17 +441,15 @@ naNedNa:
         }
         else if(vpad.trigger & VPAD_BUTTON_DOWN)
         {
-            debugPrintf("cursorPos: %i", cursorPos);
-            if(++cursorPos == 22) // TODO: Change hardcoded numbers to something prettier
-                cursorPos = 16;
+            if(++cursorPos == 21) // TODO: Change hardcoded numbers to something prettier
+                cursorPos = 15;
 
             redraw = true;
         }
         else if(vpad.trigger & VPAD_BUTTON_UP)
         {
-            debugPrintf("cursorPos: %i", cursorPos);
-            if(--cursorPos == 15) // TODO: Change hardcoded numbers to something prettier
-                cursorPos = 21;
+            if(--cursorPos == 14) // TODO: Change hardcoded numbers to something prettier
+                cursorPos = 20;
 
             redraw = true;
         }
