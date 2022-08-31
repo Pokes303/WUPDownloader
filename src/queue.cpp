@@ -1,6 +1,7 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
  * Copyright (c) 2022 Xpl0itU <DaThinkingChair@protonmail.com>             *
+ * Copyright (c) 2022 V10lator <v10lator@myway.de>                         *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
@@ -15,36 +16,41 @@
  * You should have received a copy of the GNU General Public License along *
  * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#include <algorithm>
-#include <coreinit/memdefaultheap.h>
-#include <deque>
+
+#include <wut-fixups.h>
+
 #include <downloader.h>
-#include <iostream>
+#include <list.h>
 #include <queue.h>
 
-static std::deque<TitleData *> titleQueue;
+static LIST *titleQueue;
+
+bool initQueue()
+{
+    titleQueue = createList();
+    return titleQueue != NULL;
+}
+
+void shutdownQueue()
+{
+    destroyList(titleQueue, true);
+}
 
 void addToQueue(TitleData *data)
 {
-    titleQueue.push_front(data);
+    addToListBeginning(titleQueue, data);
 }
 
 void proccessQueue()
 {
-    auto last = std::unique(titleQueue.begin(), titleQueue.end());
-    titleQueue.erase(last, titleQueue.end());
-    std::sort(titleQueue.begin(), titleQueue.end());
-    last = std::unique(titleQueue.begin(), titleQueue.end());
-    titleQueue.erase(last, titleQueue.end());
-    for(auto title : titleQueue)
-    {
+    TitleData *title;
+    forEachListEntry(titleQueue, title)
         downloadTitle(title->tmd, title->ramBufSize, title->entry, title->titleVer, title->folderName, title->inst, title->dlDev, title->toUSB, title->keepFiles, true);
-        MEMFreeToDefaultHeap(title);
-    }
-    titleQueue.clear();
+
+    clearList(titleQueue, true);
 }
 
-void *getTitleQueue()
+LIST *getTitleQueue()
 {
-    return &titleQueue;
+    return titleQueue;
 }

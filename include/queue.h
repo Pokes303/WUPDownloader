@@ -1,6 +1,7 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
  * Copyright (c) 2022 Xpl0itU <DaThinkingChair@protonmail.com>             *
+ * Copyright (c) 2022 V10lator <v10lator@myway.de>                         *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
@@ -18,22 +19,23 @@
 
 #pragma once
 
-#include <coreinit/filesystem.h>
+#include <wut-fixups.h>
+
 #include <filesystem.h>
+#include <list.h>
 #include <titles.h>
 #include <tmd.h>
-#include <wut-fixups.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-    typedef struct TitleData
+    typedef struct
     {
         TMD *tmd;
         size_t ramBufSize;
-        TitleEntry *entry;
+        const TitleEntry *entry;
         char titleVer[33];
         char folderName[FS_MAX_PATH - 11];
         bool inst;
@@ -42,9 +44,11 @@ extern "C"
         bool keepFiles;
     } TitleData;
 
+    bool initQueue();
+    void shutdownQueue();
     void addToQueue(TitleData *data);
     void proccessQueue();
-    void *getTitleQueue();
+    LIST *getTitleQueue();
 
 #ifdef __cplusplus
 }

@@ -23,6 +23,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <coreinit/memdefaultheap.h>
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -39,12 +41,14 @@ typedef struct
 {
     ELEMENT *first;
     ELEMENT *last;
+    size_t size;
 } LIST;
 
 static inline LIST *createList()
 {
     LIST *ret = MEMAllocFromDefaultHeap(sizeof(LIST));
     ret->first = ret->last = NULL;
+    ret->size = 0;
     return ret;
 }
 
@@ -62,6 +66,7 @@ static inline void clearList(LIST *list, bool freeContents)
     }
 
     list->last = NULL;
+    list->size = 0;
 }
 
 static inline void destroyList(LIST *list, bool freeContents)
@@ -82,6 +87,8 @@ static inline void addToListBeginning(LIST *list, void *content)
 
     if(list->last == NULL)
         list->last = newElement;
+
+    list->size++;
 }
 
 static inline void addToListEnd(LIST *list, void *content)
@@ -92,6 +99,8 @@ static inline void addToListEnd(LIST *list, void *content)
 
     newElement->content = content;
     newElement->next = NULL;
+    list->size++;
+
     if(list->last == NULL)
     {
         list->last = list->first = newElement;
@@ -101,7 +110,7 @@ static inline void addToListEnd(LIST *list, void *content)
     list->last->next = newElement;
 }
 
-#define forEachListEntry(x) for(ELEMENT *cur = x->first, void *content; cur != NULL && (content = cur->content); cur = cur->next)
+#define forEachListEntry(x, y) for(ELEMENT *cur = x->first; cur != NULL && (y = cur->content); cur = cur->next)
 
 static inline void removeFromList(LIST *list, void *content, bool freeContent)
 {
@@ -117,7 +126,8 @@ static inline void removeFromList(LIST *list, void *content, bool freeContent)
 
         MEMFreeToDefaultHeap(tmp);
 
-        if(list->first == NULL)
+        list->size--;
+        if(list->size == 0)
             list->last = NULL;
 
         return;
@@ -129,6 +139,7 @@ static inline void removeFromList(LIST *list, void *content, bool freeContent)
         if(cur->content == content)
         {
             last->next = cur->next;
+            list->size--;
             MEMFreeToDefaultHeap(cur);
             return;
         }
@@ -142,6 +153,34 @@ static inline void *getContent(LIST *list, uint32_t index)
         entry = entry->next;
 
     return entry == NULL ? NULL : entry->content;
+}
+
+static inline void removeContent(LIST *list, uint32_t index, bool freeContent)
+{
+    ELEMENT *last = list->first;
+    ELEMENT *entry = last;
+    for(uint32_t i = 0; i < index && entry != NULL; ++i)
+    {
+        last = entry;
+        entry = entry->next;
+    }
+
+    if(entry == NULL)
+        return;
+
+    if(last == entry)
+        list->first = entry->next;
+    else
+        last->next = entry->next;
+
+    if(freeContent)
+        MEMFreeToDefaultHeap(entry->content);
+
+    MEMFreeToDefaultHeap(entry);
+
+    list->size--;
+    if(list->size == 0)
+        list->last = NULL;
 }
 
 static inline void *getAndRemoveFromList(LIST *list, uint32_t index)
@@ -165,7 +204,8 @@ static inline void *getAndRemoveFromList(LIST *list, uint32_t index)
     void *ret = entry->content;
     MEMFreeToDefaultHeap(entry);
 
-    if(list->first == NULL)
+    list->size--;
+    if(list->size == 0)
         list->last = NULL;
     return ret;
 }
@@ -175,6 +215,8 @@ static inline void *wrapLastEntry(LIST *list)
     //TODO
     return NULL;
 }
+
+#define getListSize(x) (x->size)
 
 #ifdef __cplusplus
 }

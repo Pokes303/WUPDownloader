@@ -17,11 +17,10 @@
  * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#include <algorithm>
-#include <coreinit/memdefaultheap.h>
-#include <cstring>
-#include <deque>
+#include <wut-fixups.h>
+
 #include <input.h>
+#include <list.h>
 #include <localisation.h>
 #include <menu/main.h>
 #include <menu/queueMenu.h>
@@ -30,36 +29,40 @@
 #include <renderer.h>
 #include <state.h>
 
+#include <cstring>
+
 #define MAX_ENTRIES (MAX_LINES - 3)
 
 static int cursorPos = 1;
-static std::deque<TitleData *> *titleQueue = getTitleQueue();
 
-static void drawQueueMenu()
+static void drawQueueMenu(LIST *titleQueue)
 {
     startNewFrame();
     boxToFrame(0, MAX_LINES - 2);
     char *toScreen = getToFrameBuffer();
     int p;
+    TitleData *data;
 
-    for(int i = 0; i < MAX_ENTRIES && i < titleQueue->size(); ++i)
+    for(int i = 0; i < MAX_ENTRIES && i < getListSize(titleQueue); ++i)
     {
-        if(isDLC(titleQueue->at(i)->entry))
+        data = getContent(titleQueue, i);
+
+        if(isDLC(data->entry))
         {
             strcpy(toScreen, "[DLC] ");
             p = strlen("[DLC] ");
         }
-        else if(isUpdate(titleQueue->at(i)->entry))
+        else if(isUpdate(data->entry))
         {
             strcpy(toScreen, "[UPD] ");
-            p = strlen("[UPD] ";
+            p = strlen("[UPD] ");
         }
         else
             p = 0;
 
-        strcpy(toScreen + p, titleQueue->at(i)->entry->name);
-        flagToFrame(i + 1, 7, titleQueue->at(i)->entry->region);
-        deviceToFrame(i + 1, 4, titleQueue->at(i)->toUSB ? DEVICE_TYPE_USB : DEVICE_TYPE_NAND);
+        strcpy(toScreen + p, data->entry->name);
+        flagToFrame(i + 1, 7, data->entry->region);
+        deviceToFrame(i + 1, 4, data->toUSB ? DEVICE_TYPE_USB : DEVICE_TYPE_NAND);
         textToFrame(i + 1, 10, toScreen);
     }
 
@@ -70,8 +73,8 @@ static void drawQueueMenu()
     strcat(toScreen, gettext(BUTTON_PLUS " to start downloading"));
     strcat(toScreen, " || ");
     strcat(toScreen, gettext(BUTTON_MINUS " to delete an item"));
-    textToFrame(MAX_LINES - 1, toScreen);
-    if(titleQueue->size() != 0)
+    textToFrame(MAX_LINES - 1, ALIGNED_CENTER, toScreen);
+    if(getListSize(titleQueue) != 0)
         arrowToFrame(cursorPos, 1);
 
     drawFrame();
@@ -79,7 +82,8 @@ static void drawQueueMenu()
 
 void queueMenu()
 {
-    drawQueueMenu();
+    LIST *titleQueue = getTitleQueue();
+    drawQueueMenu(titleQueue);
 
     bool redraw = false;
     while(AppRunning())
@@ -87,7 +91,7 @@ void queueMenu()
         if(app == APP_STATE_BACKGROUND)
             continue;
         if(app == APP_STATE_RETURNING)
-            drawQueueMenu();
+            drawQueueMenu(titleQueue);
 
         showFrame();
 
@@ -97,12 +101,12 @@ void queueMenu()
         if(vpad.trigger & VPAD_BUTTON_UP)
         {
             if(--cursorPos < 1)
-                cursorPos = titleQueue->size();
+                cursorPos = getListSize(titleQueue);
             redraw = true;
         }
         else if(vpad.trigger & VPAD_BUTTON_DOWN)
         {
-            if(++cursorPos > titleQueue->size())
+            if(++cursorPos > getListSize(titleQueue))
                 cursorPos = 1;
             redraw = true;
         }
@@ -115,15 +119,13 @@ void queueMenu()
 
         if(vpad.trigger & VPAD_BUTTON_MINUS)
         {
-            MEMFreeToDefaultHeap(titleQueue->at(cursorPos - 1));
-            titleQueue->erase(titleQueue->begin() + cursorPos - 1);
-            --cursorPos;
+            removeContent(titleQueue, --cursorPos, true);
             redraw = true;
         }
 
         if(redraw)
         {
-            drawQueueMenu();
+            drawQueueMenu(titleQueue);
             redraw = false;
         }
     }
