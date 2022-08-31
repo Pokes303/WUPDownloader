@@ -291,7 +291,7 @@ static inline void switchDownloadDevice(NUSDEV *dev)
     setDlToUSB(toUSB);
 }
 
-void predownloadMenu(const TitleEntry *entry)
+bool predownloadMenu(const TitleEntry *entry)
 {
     MCPTitleListType titleList;
     bool installed = isInstalled(entry, &titleList);
@@ -334,7 +334,7 @@ downloadTMD:
         clearRamBuf();
         debugPrintf("Error downloading TMD");
         saveConfig(false);
-        return;
+        return true;
     }
 
     tmd = (TMD *)getRamBuf();
@@ -357,7 +357,7 @@ downloadTMD:
                 break;
         }
 
-        return;
+        return true;
     }
 
     dls = 0;
@@ -385,7 +385,7 @@ naNedNa:
         {
             clearRamBuf();
             saveConfig(false);
-            return;
+            return true;
         }
 
         if(vpad.trigger & (VPAD_BUTTON_RIGHT | VPAD_BUTTON_LEFT | VPAD_BUTTON_A))
@@ -451,7 +451,7 @@ naNedNa:
     if(!AppRunning())
     {
         clearRamBuf();
-        return;
+        return false;
     }
 
     startNewFrame();
@@ -547,6 +547,8 @@ naNedNa:
         removeErrorOverlay(ovl);
     }
 
+    bool ret;
+
     if(toQueue)
     {
         TMD *titleTMD = MEMAllocFromDefaultHeap(getRamBufSize());
@@ -564,9 +566,13 @@ naNedNa:
         titleInfo->keepFiles = keepFiles;
 
         addToQueue(titleInfo);
+        ret = true;
     }
     else if(checkSystemTitleFromEntry(entry))
-        downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, inst, dlDev, toUSB, keepFiles, false);
+        ret = !downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, inst, dlDev, toUSB, keepFiles, false);
+    else
+        ret = true;
 
     clearRamBuf();
+    return ret;
 }

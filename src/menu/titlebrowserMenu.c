@@ -188,14 +188,14 @@ void titleBrowserMenu()
     search[0] = u'\0';
     oldPos = 99;
 
-    drawTBMenuFrame(tab, pos, cursor, search);
-
     bool mov = filteredTitleEntrySize >= MAX_TITLEBROWSER_LINES;
     bool redraw = false;
     const TitleEntry *entry;
     uint32_t oldHold = 0;
     size_t frameCount = 0;
     bool dpadAction;
+loop:
+    drawTBMenuFrame(tab, pos, cursor, search);
     while(AppRunning())
     {
         if(app == APP_STATE_BACKGROUND)
@@ -348,7 +348,10 @@ void titleBrowserMenu()
         }
 
         if(vpad.trigger & VPAD_BUTTON_MINUS)
+        {
             queueMenu();
+            redraw = true;
+        }
 
         if(vpad.trigger & VPAD_BUTTON_Y)
         {
@@ -372,7 +375,7 @@ void titleBrowserMenu()
             cursor = pos = 0;
             redraw = true;
         }
-        else if(vpad.trigger & VPAD_BUTTON_L || vpad.trigger & VPAD_BUTTON_ZL || vpad.trigger & VPAD_BUTTON_MINUS)
+        else if(vpad.trigger & VPAD_BUTTON_L || vpad.trigger & VPAD_BUTTON_ZL || vpad.trigger)
         {
             if(tab == TITLE_CATEGORY_GAME)
                 tab = TITLE_CATEGORY_ALL;
@@ -403,6 +406,8 @@ void titleBrowserMenu()
         return;
     }
 
-    predownloadMenu(entry);
+    if(predownloadMenu(entry))
+        goto loop;
+
     MEMFreeToDefaultHeap(filteredTitleEntries);
 }
