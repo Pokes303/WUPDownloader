@@ -173,13 +173,13 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
     {
         case NUSDEV_USB01:
         case NUSDEV_USB02:
-            strcat(toFrame, " USB");
+            strcat(toFrame, "USB");
             break;
         case NUSDEV_SD:
-            strcat(toFrame, " SD");
+            strcat(toFrame, "SD");
             break;
         case NUSDEV_MLC:
-            strcat(toFrame, " NAND");
+            strcat(toFrame, "NAND");
     }
     textToFrame(--line, 5, gettext(toFrame));
 
@@ -188,13 +188,13 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
     switch((int)operation)
     {
         case OPERATION_DOWNLOAD:
-            strcat(toFrame, " Download only");
+            strcat(toFrame, gettext("Download only"));
             break;
         case OPERATION_INSTALL:
-            strcat(toFrame, " Install");
+            strcat(toFrame, gettext("Install"));
             break;
     }
-    textToFrame(--line, 5, gettext(toFrame));
+    textToFrame(--line, 5, toFrame);
 
     strcpy(toFrame, gettext("Install to:"));
     strcat(toFrame, " ");
@@ -202,16 +202,16 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
     {
         case NUSDEV_USB01:
         case NUSDEV_USB02:
-            strcat(toFrame, " USB");
+            strcat(toFrame, "USB");
             break;
         case NUSDEV_MLC:
-            strcat(toFrame, " NAND");
+            strcat(toFrame, "NAND");
             break;
     }
     if(operation == OPERATION_INSTALL)
-        textToFrame(--line, 5, gettext(toFrame));
+        textToFrame(--line, 5, toFrame);
     else
-        textToFrameColored(--line, 5, gettext(toFrame), SCREEN_COLOR_WHITE_TRANSP);
+        textToFrameColored(--line, 5, toFrame, SCREEN_COLOR_WHITE_TRANSP);
 
     lineToFrame(--line, SCREEN_COLOR_WHITE);
 

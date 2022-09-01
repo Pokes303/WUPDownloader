@@ -81,6 +81,9 @@
     "Continue": "Continuar",
 
     "Install to:": "Instalar a:",
+    "Operation:": "Operación:",
+    "Install": "Instalar",
+    "Download only": "Sólo descargar",
     "Download to:": "Descargar a:",
     "Keep downloaded files:": "Mantener archivos descargados:",
     "Set title version": "Establecer la versión del título",
@@ -95,6 +98,9 @@
     "Press \uE003 to download to USB only": "\uE003 para sólo descargar a USB",
     "Press \uE003 to download to SD only": "\uE003 para sólo descargar a la tarjeta SD",
     "Press \uE003 to download to NAND only": "\uE003 para sólo descargar a NAND",
+
+    "\uE045 to start downloading": "\uE045 para empezar a descargar",
+    "\uE046 to delete an item": "\uE046 para eliminar un elemento",
 
     "Press \uE07C to set the title version": "\uE07C para establecer la versión del título",
     "Press \uE07A to set a custom name to the download folder": "\uE07A para establecer un nombre personalizado a la carpeta donde se descargará",
