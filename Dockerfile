@@ -2,7 +2,7 @@
 FROM wiiuenv/devkitppc:20220806 AS final
 
 ENV openssl_ver=3.0.5 \
- curl_ver=7.84.0 \
+ curl_ver=7.85.0 \
  DEBIAN_FRONTEND=noninteractive \
  PATH=$DEVKITPPC/bin:$PATH \
  WUT_ROOT=$DEVKITPRO/wut
