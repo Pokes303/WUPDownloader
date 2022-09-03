@@ -47,8 +47,11 @@ extern "C"
     static inline LIST *createList()
     {
         LIST *ret = MEMAllocFromDefaultHeap(sizeof(LIST));
-        ret->first = ret->last = NULL;
-        ret->size = 0;
+        if(ret != NULL)
+        {
+            ret->first = ret->last = NULL;
+            ret->size = 0;
+        }
         return ret;
     }
 
@@ -101,13 +104,14 @@ extern "C"
         newElement->next = NULL;
         list->size++;
 
-        if(list->last == NULL)
+        if(list->first == NULL)
         {
             list->last = list->first = newElement;
             return;
         }
 
         list->last->next = newElement;
+        list->last = list->last->next;
     }
 
 #define forEachListEntry(x, y) for(ELEMENT *cur = x->first; cur != NULL && (y = cur->content); cur = cur->next)
@@ -211,6 +215,22 @@ extern "C"
     {
         // TODO
         return NULL;
+
+    }
+
+    static inline void *wrapFirstEntry(LIST *list)
+    {
+        if(list->first == NULL)
+            return NULL;
+
+        if(list->first == list->last)
+            return list->first->content;
+
+        list->last->next = list->first;
+        list->first = list->first->next;
+        list->last = list->last->next;
+        list->last->next = NULL;
+        return list->last->content;
     }
 
 #define getListSize(x) (x->size)

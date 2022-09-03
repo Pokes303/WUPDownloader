@@ -31,6 +31,7 @@
 
 #include <file.h>
 #include <input.h>
+#include <list.h>
 #include <localisation.h>
 #include <menu/utils.h>
 #include <notifications.h>
@@ -41,77 +42,58 @@
 #include <tmd.h>
 #include <utils.h>
 
-struct LogList;
-typedef struct LogList LogList;
-struct LogList
-{
-    char line[MAX_CHARS + 2];
-    LogList *nextEntry;
-};
-
-static LogList *logList = NULL;
+static LIST *logList = NULL;
 
 void addToScreenLog(const char *str, ...)
 {
-    LogList *last;
-    LogList *newEntry;
-    int i = 0;
-    for(newEntry = logList; newEntry != NULL; newEntry = newEntry->nextEntry)
+    if(logList == NULL)
     {
-
-        ++i;
-        last = newEntry;
+        logList = createList();
+        if(logList == NULL)
+            return;
     }
 
-    if(i == MAX_LINES - 2)
-    {
-        newEntry = logList;
-        logList = newEntry->nextEntry;
-    }
+    char *line;
+    if(getListSize(logList) == MAX_LINES - 2)
+        line = wrapFirstEntry(logList);
     else
     {
-        newEntry = MEMAllocFromDefaultHeap(sizeof(LogList));
-        if(newEntry == NULL)
+        line = MEMAllocFromDefaultHeap(MAX_CHARS + 2);
+        if(line == NULL)
             return;
+
+        addToListEnd(logList, line);
     }
 
     va_list va;
     va_start(va, str);
-    vsnprintf(newEntry->line, MAX_CHARS + 2, str, va);
+    vsnprintf(line, MAX_CHARS + 2, str, va);
     va_end(va);
-    debugPrintf(newEntry->line);
-    newEntry->nextEntry = NULL;
 
-    if(i != 0)
-    {
-        last->nextEntry = newEntry;
-        return;
-    }
-
-    logList = newEntry;
+    debugPrintf(line);
 }
 
 void clearScreenLog()
 {
-    LogList *tmpList;
-    while(logList != NULL)
-    {
-        tmpList = logList;
-        logList = tmpList->nextEntry;
-        MEMFreeToDefaultHeap(tmpList);
-    }
+    destroyList(logList, true);
+    logList = NULL;
 }
 
 void writeScreenLog(int line)
 {
     lineToFrame(line, SCREEN_COLOR_WHITE);
+    if(logList == NULL)
+        return;
 
-    LogList *entry = logList;
-    for(int i = line; i != 1 && entry != NULL; --i, entry = entry->nextEntry)
-        ;
-
-    for(; entry != NULL; entry = entry->nextEntry)
-        textToFrame(++line, 0, entry->line);
+    char *text;
+    int i = line;
+    forEachListEntry(logList, text)
+    {
+        if(i == 1)
+            textToFrame(++line, 0, text);
+        else
+            --i;
+    }
 }
 
 void drawErrorFrame(const char *text, ErrorOptions option)
