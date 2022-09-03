@@ -37,7 +37,6 @@
 #include <ioQueue.h>
 #include <localisation.h>
 #include <menu/utils.h>
-#include <notifications.h>
 #include <osdefs.h>
 #include <renderer.h>
 #include <romfs.h>
@@ -1002,7 +1001,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
     return 0;
 }
 
-bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, NUSDEV dlDev, bool toUSB, bool keepFiles, bool unattended)
+bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, NUSDEV dlDev, bool toUSB, bool keepFiles)
 {
     char tid[17];
     hex(tmd->tid, 16, tid);
@@ -1196,7 +1195,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 
                 break;
             case 1:
-                return true;
+                return false;
             default:
                 break;
         }
@@ -1205,7 +1204,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
         addToScreenLog("title.tik skipped!");
 
     if(!AppRunning())
-        return true;
+        return false;
 
     strcpy(idp, "title.cert");
     if(!fileExists(installDir))
@@ -1222,7 +1221,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
             return false;
 
         if(!AppRunning())
-            return true;
+            return false;
     }
     else
         addToScreenLog("Cert skipped!");
@@ -1259,7 +1258,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
         if(downloadFile(downloadUrl, installDir, &data, FILE_TYPE_APP, true) == 1)
         {
             enableApd();
-            return true;
+            return false;
         }
         ++data.dcontent;
 
@@ -1271,7 +1270,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
             if(downloadFile(downloadUrl, installDir, &data, FILE_TYPE_H3, true) == 1)
             {
                 enableApd();
-                return true;
+                return false;
             }
             ++data.dcontent;
         }
@@ -1283,46 +1282,13 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
     if(!AppRunning())
     {
         enableApd();
-        return true;
+        return false;
     }
 
     if(inst)
     {
         *idp = '\0';
-        return install(titleEntry->name, hasDependencies, dlDev, installDir, toUSB, keepFiles, tmd->tid, unattended);
-    }
-
-    if(!unattended)
-    {
-        colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-        textToFrame(0, 0, titleEntry->name);
-        textToFrame(1, 0, gettext("Downloaded successfully!"));
-        writeScreenLog(2);
-        drawFrame();
-
-        startNotification();
-        enableApd();
-
-        while(AppRunning())
-        {
-            if(app == APP_STATE_BACKGROUND)
-                continue;
-            if(app == APP_STATE_RETURNING)
-            {
-                colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-                textToFrame(0, 0, titleEntry->name);
-                textToFrame(1, 0, gettext("Downloaded successfully!"));
-                writeScreenLog(2);
-                drawFrame();
-            }
-
-            showFrame();
-
-            if(vpad.trigger)
-                break;
-        }
-
-        stopNotification();
+        return install(titleEntry->name, hasDependencies, dlDev, installDir, toUSB, keepFiles, tmd->tid);
     }
 
     return true;

@@ -49,6 +49,7 @@ extern "C"
     bool checkSystemTitleFromTid(uint64_t tid);
     bool checkSystemTitleFromListType(MCPTitleListType *entry);
     const char *prettyDir(const char *dir);
+    void showFinishedScreen(const char *titleName, bool inst);
 
 #ifdef __cplusplus
 }

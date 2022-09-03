@@ -499,7 +499,7 @@ naNedNa:
 
     startNewFrame();
     textToFrame(0, 0, gettext("Preparing the download of"));
-    textToFrame(1, 3, entry->name == NULL ? "NULL" : entry->name);
+    textToFrame(1, 3, entry->name);
     writeScreenLog(2);
     drawFrame();
     showFrame();
@@ -612,7 +612,11 @@ naNedNa:
         ret = true;
     }
     else if(checkSystemTitleFromEntry(entry))
-        ret = !downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, inst, dlDev, toUSB, keepFiles, false);
+    {
+        ret = !downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, inst, dlDev, toUSB, keepFiles);
+        if(!ret)
+            showFinishedScreen(entry->name, false);
+    }
     else
         ret = true;
 

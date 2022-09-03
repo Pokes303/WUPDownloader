@@ -39,7 +39,6 @@
 #include <ioQueue.h>
 #include <localisation.h>
 #include <menu/utils.h>
-#include <notifications.h>
 #include <renderer.h>
 #include <state.h>
 #include <staticMem.h>
@@ -84,7 +83,7 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUs
     }
 }
 
-bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool toUsb, bool keepFiles, uint64_t tid, bool unattended)
+bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool toUsb, bool keepFiles, uint64_t tid)
 {
     if(tid != 0)
     {
@@ -310,38 +309,6 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
     {
         debugPrintf("Removing installation files...");
         removeDirectory(path);
-    }
-
-    if(!unattended)
-    {
-        colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-        textToFrame(0, 0, game);
-        textToFrame(1, 0, gettext("Installed successfully!"));
-        writeScreenLog(2);
-        drawFrame();
-
-        startNotification();
-
-        while(AppRunning())
-        {
-            if(app == APP_STATE_BACKGROUND)
-                continue;
-            if(app == APP_STATE_RETURNING)
-            {
-                colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-                textToFrame(0, 0, game);
-                textToFrame(1, 0, gettext("Installed successfully!"));
-                writeScreenLog(2);
-                drawFrame();
-            }
-
-            showFrame();
-
-            if(vpad.trigger)
-                break;
-        }
-
-        stopNotification();
     }
 
     return true;

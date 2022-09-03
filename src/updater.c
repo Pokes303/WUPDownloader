@@ -505,7 +505,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
             strcpy(path, UPDATE_TEMP_FOLDER);
             strcpy(path + strlen(UPDATE_TEMP_FOLDER), "NUSspli");
 
-            install("Update", false, NUSDEV_SD, path, toUSB, true, 0, false);
+            install("Update", false, NUSDEV_SD, path, toUSB, true, 0);
             break;
         case NUSSPLI_TYPE_HBL:
 #ifdef NUSSPLI_DEBUG
@@ -521,34 +521,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 
     removeDirectory(UPDATE_TEMP_FOLDER);
     enableShutdown();
-    startNotification();
-    colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-    textToFrame(0, 0, gettext("Update"));
-    textToFrame(1, 0, gettext("Installed successfully!"));
-    writeScreenLog(2);
-    drawFrame();
-
-    while(AppRunning())
-    {
-        if(app == APP_STATE_BACKGROUND)
-            continue;
-        if(app == APP_STATE_RETURNING)
-        {
-            colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-            textToFrame(0, 0, gettext("Update"));
-            textToFrame(1, 0, gettext("Installed successfully!"));
-            writeScreenLog(2);
-            drawFrame();
-        }
-
-        showFrame();
-
-        if(vpad.trigger)
-            break;
-        ;
-    }
-
-    stopNotification();
+    showFinishedScreen("Update", true);
     return;
 
 updateError:

@@ -33,6 +33,7 @@
 #include <input.h>
 #include <localisation.h>
 #include <menu/utils.h>
+#include <notifications.h>
 #include <renderer.h>
 #include <state.h>
 #include <stdio.h>
@@ -329,4 +330,35 @@ const char *prettyDir(const char *dir)
 
     strcat(ret, dir);
     return ret;
+}
+
+void showFinishedScreen(const char *titleName, bool inst)
+{
+    colorStartNewFrame(SCREEN_COLOR_D_GREEN);
+    textToFrame(0, 0, titleName);
+    textToFrame(1, 0, gettext(inst ? "Installed successfully!" : "Downloaded successfully!"));
+    writeScreenLog(2);
+    drawFrame();
+
+    startNotification();
+    enableApd();
+
+    while(AppRunning())
+    {
+        if(app == APP_STATE_BACKGROUND)
+            continue;
+        if(app == APP_STATE_RETURNING)
+        {
+            colorStartNewFrame(SCREEN_COLOR_D_GREEN);
+            textToFrame(0, 0, titleName);
+            textToFrame(1, 0, gettext(inst ? "Installed successfully!" : "Downloaded successfully!"));
+            writeScreenLog(2);
+            drawFrame();
+        }
+
+        showFrame();
+
+        if(vpad.trigger)
+            break;
+    }
 }

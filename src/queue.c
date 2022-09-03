@@ -49,7 +49,7 @@ bool proccessQueue()
     TitleData *last = NULL;
     forEachListEntry(titleQueue, title)
     {
-        if(!downloadTitle(title->tmd, title->tmdSize, title->entry, title->titleVer, title->folderName, title->inst, title->dlDev, title->toUSB, title->keepFiles, true))
+        if(!downloadTitle(title->tmd, title->tmdSize, title->entry, title->titleVer, title->folderName, title->inst, title->dlDev, title->toUSB, title->keepFiles))
             return false;
 
         if(last != NULL)
