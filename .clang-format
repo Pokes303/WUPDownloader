@@ -6,3 +6,6 @@ DerivePointerAlignment: false
 PointerAlignment: Right
 SpaceBeforeParens: Never
 IndentCaseLabels: true
+ForEachMacros:
+  - foreach
+  - forEachListEntry
