@@ -46,7 +46,6 @@
     "Press \uE001 to cancel": "Drücke \uE001 um abzubrechen",
     "Parsing JSON": "Parse JSON",
     "Updating, please wait...": "Update. Bitte warten...",
-    "Installed successfully!": "Erfolgreich installiert!",
     "Internal server error!": "Interner Serverfehler",
     "Invalid state value": "Invalide Serverantwort",
     "Error creating directory": "Fehler beim erstellen des Ordners",
@@ -75,7 +74,12 @@
     "Download main game": "Downloade das Hauptspiel",
     "Continue": "Fortsetzen",
 
+    "\uE045 to start downloading": "\uE045 zum starten",
+    "\uE046 to delete an item": "\uE046 zum löschen",
+
     "Install to:": "Installiere nach:",
+    "Install": "Installieren",
+    "Download only": "Nur herunterladen",
     "Download to:": "Downloade nach:",
     "Keep downloaded files:": "Behalte heruntergeladene Dateien:",
     "Set title version": "Setze die Titelversion",
@@ -97,7 +101,6 @@
     "Preparing the download of": "Vorbereitung des Downloads von",
     "Creating fake title.tik": "Erstelle fake title.tik Datei",
     "Creating CERT": "Erstelle CERT",
-    "Downloaded successfully!": "Erfolgreich heruntergeladen!",
 
     "Installing": "Installiere",
     "Preparing. This might take some time. Please be patient.": "Vorbereitung. Dies kann dauern, bitte habe Gedult.",
@@ -110,7 +113,10 @@
 
     "Uninstalling": "Deinstalliere",
     "Preparing...": "Vorbereitung...",
+    "Downloaded successfully!": "Erfolgreich heruntergeladen!",
+    "Installed successfully!": "Erfolgreich installiert!",
     "Uninstalled successfully!": "Deinstallation erfolgreich!",
+    "Queue finished successfully!": "Warteschlange erfolgreich abgearbeitet!",
 
     "Could not open path": "Konnte Pfad nicht öffnen:",
     "Invalid title.tmd file!": "Fehlerhafte title.tmd Datei!",
