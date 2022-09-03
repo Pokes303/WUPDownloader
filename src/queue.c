@@ -40,7 +40,7 @@ void shutdownQueue()
 
 void addToQueue(TitleData *data)
 {
-    addToListBeginning(titleQueue, data);
+    addToListEnd(titleQueue, data);
 }
 
 bool proccessQueue()
