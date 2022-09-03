@@ -1285,13 +1285,17 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
         return false;
     }
 
+    bool ret;
     if(inst)
     {
         *idp = '\0';
-        return install(titleEntry->name, hasDependencies, dlDev, installDir, toUSB, keepFiles, tmd->tid);
+        ret = install(titleEntry->name, hasDependencies, dlDev, installDir, toUSB, keepFiles, tmd->tid);
     }
+    else
+        ret = true;
 
-    return true;
+    enableApd();
+    return ret;
 }
 
 char *getRamBuf()

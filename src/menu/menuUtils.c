@@ -332,16 +332,35 @@ const char *prettyDir(const char *dir)
     return ret;
 }
 
-void showFinishedScreen(const char *titleName, bool inst)
+void showFinishedScreen(const char *titleName, FINISHING_OPERATION op)
 {
+    const char *text;
+    switch(op)
+    {
+        case FINISHING_OPERATION_INSTALL:
+            text = gettext("Installed successfully!");
+            break;
+        case FINISHING_OPERATION_DEINSTALL:
+            text = gettext("Uninstalled successfully!");
+            break;
+        case FINISHING_OPERATION_DOWNLOAD:
+            text = gettext("Downloaded successfully!");
+            break;
+        case FINISHING_OPERATION_QUEUE:
+            text = gettext("Queue finished successfully!");
+            break;
+    }
+
     colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-    textToFrame(0, 0, titleName);
-    textToFrame(1, 0, gettext(inst ? "Installed successfully!" : "Downloaded successfully!"));
-    writeScreenLog(2);
+    int i = 0;
+    if(op != FINISHING_OPERATION_QUEUE)
+        textToFrame(i++, 0, titleName);
+
+    textToFrame(i++, 0, text);
+    writeScreenLog(i++);
     drawFrame();
 
     startNotification();
-    enableApd();
 
     while(AppRunning())
     {
@@ -350,9 +369,12 @@ void showFinishedScreen(const char *titleName, bool inst)
         if(app == APP_STATE_RETURNING)
         {
             colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-            textToFrame(0, 0, titleName);
-            textToFrame(1, 0, gettext(inst ? "Installed successfully!" : "Downloaded successfully!"));
-            writeScreenLog(2);
+            i = 0;
+            if(op != FINISHING_OPERATION_QUEUE)
+                textToFrame(i++, 0, titleName);
+
+            textToFrame(i++, 0, text);
+            writeScreenLog(i++);
             drawFrame();
         }
 
@@ -361,4 +383,6 @@ void showFinishedScreen(const char *titleName, bool inst)
         if(vpad.trigger)
             break;
     }
+
+    stopNotification();
 }

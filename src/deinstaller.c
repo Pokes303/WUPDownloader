@@ -35,7 +35,6 @@
 #include <input.h>
 #include <localisation.h>
 #include <menu/utils.h>
-#include <notifications.h>
 #include <osdefs.h>
 #include <renderer.h>
 #include <state.h>
@@ -92,35 +91,7 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool
     addToScreenLog("Deinstallation finished!");
 
     if(!skipEnd)
-    {
-        startNotification();
+        showFinishedScreen(name, FINISHING_OPERATION_DEINSTALL);
 
-        colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-        textToFrame(0, 0, name);
-        textToFrame(1, 0, gettext("Uninstalled successfully!"));
-        writeScreenLog(2);
-        drawFrame();
-
-        while(AppRunning())
-        {
-            if(app == APP_STATE_BACKGROUND)
-                continue;
-            if(app == APP_STATE_RETURNING)
-            {
-                colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-                textToFrame(0, 0, name);
-                textToFrame(1, 0, gettext("Uninstalled successfully!"));
-                writeScreenLog(2);
-                drawFrame();
-            }
-
-            showFrame();
-
-            if(vpad.trigger)
-                break;
-        }
-
-        stopNotification();
-    }
     return true;
 }

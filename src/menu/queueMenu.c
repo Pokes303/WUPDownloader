@@ -25,7 +25,6 @@
 #include <menu/main.h>
 #include <menu/queueMenu.h>
 #include <menu/utils.h>
-#include <notifications.h>
 #include <queue.h>
 #include <renderer.h>
 #include <state.h>
@@ -81,36 +80,6 @@ static void drawQueueMenu(LIST *titleQueue)
     drawFrame();
 }
 
-static void showFisishedScreen()
-{
-    colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-    textToFrame(0, 0, gettext("Queue finished successfully!"));
-    writeScreenLog(1);
-    drawFrame();
-
-    startNotification();
-
-    while(AppRunning())
-    {
-        if(app == APP_STATE_BACKGROUND)
-            continue;
-        if(app == APP_STATE_RETURNING)
-        {
-            colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-            textToFrame(0, 0, gettext("Queue finished successfully!"));
-            writeScreenLog(1);
-            drawFrame();
-        }
-
-        showFrame();
-
-        if(vpad.trigger)
-            break;
-    }
-
-    stopNotification();
-}
-
 void queueMenu()
 {
     LIST *titleQueue = getTitleQueue();
@@ -149,7 +118,7 @@ void queueMenu()
         if(vpad.trigger & VPAD_BUTTON_PLUS)
         {
             if(proccessQueue())
-                showFisishedScreen();
+                showFinishedScreen(NULL, FINISHING_OPERATION_QUEUE);
 
             return;
         }

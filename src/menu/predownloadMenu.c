@@ -615,7 +615,7 @@ naNedNa:
     {
         ret = !downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, inst, dlDev, toUSB, keepFiles);
         if(!ret)
-            showFinishedScreen(entry->name, false);
+            showFinishedScreen(entry->name, inst ? FINISHING_OPERATION_INSTALL : FINISHING_OPERATION_DOWNLOAD);
     }
     else
         ret = true;

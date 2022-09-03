@@ -40,6 +40,14 @@ extern "C"
         Y_RETRY = 1 << 2,
     } ErrorOptions;
 
+    typedef enum
+    {
+        FINISHING_OPERATION_INSTALL,
+        FINISHING_OPERATION_DEINSTALL,
+        FINISHING_OPERATION_DOWNLOAD,
+        FINISHING_OPERATION_QUEUE
+    } FINISHING_OPERATION;
+
     void addToScreenLog(const char *str, ...);
     void clearScreenLog();
     void writeScreenLog(int line);
@@ -49,7 +57,7 @@ extern "C"
     bool checkSystemTitleFromTid(uint64_t tid);
     bool checkSystemTitleFromListType(MCPTitleListType *entry);
     const char *prettyDir(const char *dir);
-    void showFinishedScreen(const char *titleName, bool inst);
+    void showFinishedScreen(const char *titleName, FINISHING_OPERATION op);
 
 #ifdef __cplusplus
 }

@@ -521,7 +521,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 
     removeDirectory(UPDATE_TEMP_FOLDER);
     enableShutdown();
-    showFinishedScreen("Update", true);
+    showFinishedScreen("Update", FINISHING_OPERATION_INSTALL);
     return;
 
 updateError:
