@@ -45,7 +45,7 @@ void proccessQueue()
 {
     TitleData *title;
     forEachListEntry(titleQueue, title)
-        downloadTitle(title->tmd, title->ramBufSize, title->entry, title->titleVer, title->folderName, title->inst, title->dlDev, title->toUSB, title->keepFiles, true);
+        downloadTitle(title->tmd, title->tmdSize, title->entry, title->titleVer, title->folderName, title->inst, title->dlDev, title->toUSB, title->keepFiles, true);
 
     clearList(titleQueue, true);
 }

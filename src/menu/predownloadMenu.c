@@ -599,7 +599,7 @@ naNedNa:
 
         TitleData *titleInfo = MEMAllocFromDefaultHeap(sizeof(TitleData));
         titleInfo->tmd = titleTMD;
-        titleInfo->ramBufSize = getRamBufSize();
+        titleInfo->tmdSize = getRamBufSize();
         titleInfo->entry = entry;
         strcpy(titleInfo->titleVer, titleVer);
         strcpy(titleInfo->folderName, folderName);

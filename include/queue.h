@@ -34,7 +34,7 @@ extern "C"
     typedef struct
     {
         TMD *tmd;
-        size_t ramBufSize;
+        size_t tmdSize;
         const TitleEntry *entry;
         char titleVer[33];
         char folderName[FS_MAX_PATH - 11];
