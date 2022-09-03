@@ -215,7 +215,6 @@ extern "C"
     {
         // TODO
         return NULL;
-
     }
 
     static inline void *wrapFirstEntry(LIST *list)
