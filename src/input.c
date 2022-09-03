@@ -471,9 +471,9 @@ void readInput()
                 vpad.trigger |= VPAD_BUTTON_LEFT;
             if(tv & WPAD_BUTTON_RIGHT)
                 vpad.trigger |= VPAD_BUTTON_RIGHT;
-            if(tv & WPAD_BUTTON_PLUS || tv & WPAD_BUTTON_1)
+            if(tv & WPAD_BUTTON_PLUS)
                 vpad.trigger |= VPAD_BUTTON_PLUS;
-            if(tv & WPAD_BUTTON_MINUS || tv & WPAD_BUTTON_2)
+            if(tv & WPAD_BUTTON_MINUS)
                 vpad.trigger |= VPAD_BUTTON_MINUS;
             if(tv & WPAD_BUTTON_HOME)
                 vpad.trigger |= VPAD_BUTTON_HOME;
