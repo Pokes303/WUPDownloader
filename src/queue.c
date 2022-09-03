@@ -23,7 +23,6 @@
 #include <list.h>
 #include <queue.h>
 
-
 #include <coreinit/memdefaultheap.h>
 
 static LIST *titleQueue;
