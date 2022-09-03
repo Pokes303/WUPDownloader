@@ -134,6 +134,7 @@
     "Uninstalling": "Desinstalando",
     "Preparing...": "Preparando...",
     "Uninstalled successfully!": "¡Desinstalado exitosamente!",
+    "Queue finished successfully!": "¡La cola ha finalizado exitosamente!",
 
     "Could not open path": "No se ha podido abrir la ruta:",
     "Invalid title.tmd file!": "¡Archivo title.tmd inválido!",
