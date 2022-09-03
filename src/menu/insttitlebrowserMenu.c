@@ -491,7 +491,7 @@ loopEntry:
 
         removeErrorOverlay(r);
 
-        if(checkSystemTitle(entry->titleId, im->region) && AppRunning())
+        if(checkSystemTitle(entry->titleId, MCP_REGION_UNKNOWN) && AppRunning())
             deinstall(entry, (const char *)im->name, false, false);
         else
             goto loopEntry;
