@@ -23,6 +23,9 @@
 #include <list.h>
 #include <queue.h>
 
+
+#include <coreinit/memdefaultheap.h>
+
 static LIST *titleQueue;
 
 bool initQueue()
@@ -41,13 +44,26 @@ void addToQueue(TitleData *data)
     addToListBeginning(titleQueue, data);
 }
 
-void proccessQueue()
+bool proccessQueue()
 {
     TitleData *title;
+    TitleData *last = NULL;
     forEachListEntry(titleQueue, title)
-        downloadTitle(title->tmd, title->tmdSize, title->entry, title->titleVer, title->folderName, title->inst, title->dlDev, title->toUSB, title->keepFiles, true);
+    {
+        if(!downloadTitle(title->tmd, title->tmdSize, title->entry, title->titleVer, title->folderName, title->inst, title->dlDev, title->toUSB, title->keepFiles, true))
+            return false;
+
+        if(last != NULL)
+        {
+            removeFromList(titleQueue, last);
+            MEMFreeToDefaultHeap(last);
+        }
+
+        last = title;
+    }
 
     clearList(titleQueue, true);
+    return true;
 }
 
 LIST *getTitleQueue()

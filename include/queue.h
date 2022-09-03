@@ -47,7 +47,7 @@ extern "C"
     bool initQueue();
     void shutdownQueue();
     void addToQueue(TitleData *data);
-    void proccessQueue();
+    bool proccessQueue();
     LIST *getTitleQueue();
 
 #ifdef __cplusplus

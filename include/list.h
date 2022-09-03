@@ -112,7 +112,7 @@ extern "C"
 
 #define forEachListEntry(x, y) for(ELEMENT *cur = x->first; cur != NULL && (y = cur->content); cur = cur->next)
 
-    static inline void removeFromList(LIST *list, void *content, bool freeContent)
+    static inline void removeFromList(LIST *list, void *content)
     {
         if(list->first == NULL)
             return;
@@ -121,9 +121,6 @@ extern "C"
         {
             ELEMENT *tmp = list->first;
             list->first = tmp->next;
-            if(freeContent)
-                MEMFreeToDefaultHeap(tmp->content);
-
             MEMFreeToDefaultHeap(tmp);
 
             list->size--;
