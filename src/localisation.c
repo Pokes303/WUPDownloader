@@ -25,6 +25,7 @@
 #include <localisation.h>
 
 #include <file.h>
+#include <list.h>
 #include <utils.h>
 
 #include <jansson.h>
@@ -32,16 +33,13 @@
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 
-struct MSG;
-typedef struct MSG MSG;
-struct MSG
+typedef struct
 {
     uint32_t hash;
     const char *msgstr;
-    MSG *next;
-};
+} hashMsg;
 
-static MSG *baseMSG = NULL;
+static LIST *baseMSG = NULL;
 
 #define HASHMULTIPLIER 31 // or 37
 
@@ -70,38 +68,35 @@ static void addMSG(const char *msgid, const char *msgstr)
     if(!msgstr)
         return;
 
-    MSG *msg = (MSG *)MEMAllocFromDefaultHeap(sizeof(MSG));
+    hashMsg *msg = MEMAllocFromDefaultHeap(sizeof(hashMsg));
+    if(msg == NULL)
+        return;
+
     msg->hash = hash_string((unsigned char *)msgid);
     msg->msgstr = strdup(msgstr);
-    msg->next = NULL;
-
-    if(baseMSG == NULL)
-        baseMSG = msg;
-    else
-    {
-        MSG *last = baseMSG;
-        while(last->next != NULL)
-            last = last->next;
-
-        last->next = msg;
-    }
-
-    return;
+    addToListEnd(baseMSG, msg);
 }
 
 void gettextCleanUp()
 {
-    while(baseMSG)
+    if(baseMSG != NULL)
     {
-        MSG *nextMsg = baseMSG->next;
-        MEMFreeToDefaultHeap((void *)(baseMSG->msgstr));
-        MEMFreeToDefaultHeap(baseMSG);
-        baseMSG = nextMsg;
+        destroyList(baseMSG, true);
+        baseMSG = NULL;
     }
 }
 
 bool gettextLoadLanguage(const char *langFile)
 {
+    if(baseMSG == NULL)
+    {
+        baseMSG = createList();
+        if(baseMSG == NULL)
+            return false;
+    }
+    else
+        clearList(baseMSG, true);
+
     debugPrintf("Loading language file: %s", langFile);
 
     void *buffer;
@@ -151,9 +146,13 @@ bool gettextLoadLanguage(const char *langFile)
 
 const char *gettext(const char *msgid)
 {
+    if(baseMSG == NULL)
+        return msgid;
+
+    hashMsg *msg;
     uint32_t hash = hash_string((unsigned char *)msgid);
 
-    for(MSG *msg = baseMSG; msg != NULL; msg = msg->next)
+    forEachListEntry(baseMSG, msg)
         if(msg->hash == hash)
             return msg->msgstr;
 
