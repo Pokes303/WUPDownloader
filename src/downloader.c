@@ -1292,35 +1292,39 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
         return install(titleEntry->name, hasDependencies, dlDev, installDir, toUSB, keepFiles, tmd->tid, unattended);
     }
 
-    colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-    textToFrame(0, 0, titleEntry->name);
-    textToFrame(1, 0, gettext("Downloaded successfully!"));
-    writeScreenLog(2);
-    drawFrame();
-
-    startNotification();
-    enableApd();
-
-    while(AppRunning())
+    if(!unattended)
     {
-        if(app == APP_STATE_BACKGROUND)
-            continue;
-        if(app == APP_STATE_RETURNING)
+        colorStartNewFrame(SCREEN_COLOR_D_GREEN);
+        textToFrame(0, 0, titleEntry->name);
+        textToFrame(1, 0, gettext("Downloaded successfully!"));
+        writeScreenLog(2);
+        drawFrame();
+
+        startNotification();
+        enableApd();
+
+        while(AppRunning())
         {
-            colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-            textToFrame(0, 0, titleEntry->name);
-            textToFrame(1, 0, gettext("Downloaded successfully!"));
-            writeScreenLog(2);
-            drawFrame();
+            if(app == APP_STATE_BACKGROUND)
+                continue;
+            if(app == APP_STATE_RETURNING)
+            {
+                colorStartNewFrame(SCREEN_COLOR_D_GREEN);
+                textToFrame(0, 0, titleEntry->name);
+                textToFrame(1, 0, gettext("Downloaded successfully!"));
+                writeScreenLog(2);
+                drawFrame();
+            }
+
+            showFrame();
+
+            if(vpad.trigger)
+                break;
         }
 
-        showFrame();
-
-        if(vpad.trigger || unattended)
-            break;
+        stopNotification();
     }
 
-    stopNotification();
     return true;
 }
 

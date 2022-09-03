@@ -312,34 +312,38 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
         removeDirectory(path);
     }
 
-    colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-    textToFrame(0, 0, game);
-    textToFrame(1, 0, gettext("Installed successfully!"));
-    writeScreenLog(2);
-    drawFrame();
-
-    startNotification();
-
-    while(AppRunning())
+    if(!unattended)
     {
-        if(app == APP_STATE_BACKGROUND)
-            continue;
-        if(app == APP_STATE_RETURNING)
+        colorStartNewFrame(SCREEN_COLOR_D_GREEN);
+        textToFrame(0, 0, game);
+        textToFrame(1, 0, gettext("Installed successfully!"));
+        writeScreenLog(2);
+        drawFrame();
+
+        startNotification();
+
+        while(AppRunning())
         {
-            colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-            textToFrame(0, 0, game);
-            textToFrame(1, 0, gettext("Installed successfully!"));
-            writeScreenLog(2);
-            drawFrame();
+            if(app == APP_STATE_BACKGROUND)
+                continue;
+            if(app == APP_STATE_RETURNING)
+            {
+                colorStartNewFrame(SCREEN_COLOR_D_GREEN);
+                textToFrame(0, 0, game);
+                textToFrame(1, 0, gettext("Installed successfully!"));
+                writeScreenLog(2);
+                drawFrame();
+            }
+
+            showFrame();
+
+            if(vpad.trigger)
+                break;
         }
 
-        showFrame();
-
-        if(vpad.trigger || unattended)
-            break;
+        stopNotification();
     }
 
-    stopNotification();
     return true;
 
 installError:
