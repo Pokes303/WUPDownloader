@@ -878,7 +878,7 @@ void pauseRenderer()
         SDL_DestroyTexture(flagTex[i]);
 
     for(int i = 0; i < 4; i++)
-        SDL_DestroyRenderer(flagTex[i]);
+        SDL_DestroyTexture(deviceTex[i]);
 
     font = NULL;
 }
