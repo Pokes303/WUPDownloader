@@ -38,7 +38,7 @@ extern "C"
     bool getSHA256(const void *data, size_t data_len, void *hash);
     bool encryptAES(void *data, int data_len, const unsigned char *key, const unsigned char *iv, void *encrypted);
 
-#define  osslBytes(buf, num) custom_rand_generate(NULL, buf, num, 0, 0, NULL, 0)
+#define osslBytes(buf, num) custom_rand_generate(NULL, buf, num, 0, 0, NULL, 0)
 
 #ifdef __cplusplus
 }
