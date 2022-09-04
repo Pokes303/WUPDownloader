@@ -64,7 +64,7 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
         else if(isUpdate(data->entry))
         {
             p = strlen("[UPD] ");
-            OSBlockMove(toScreen, "[IPD] ", p, false);
+            OSBlockMove(toScreen, "[UPD] ", p, false);
         }
         else
             p = 0;
