@@ -131,7 +131,7 @@ void queueMenu()
             {
                 if(cursor)
                     --cursor;
-                else if(mov && pos)
+                else if(pos)
                     --pos;
 
                 redraw = true;
@@ -230,16 +230,12 @@ void queueMenu()
         if(vpad.trigger & VPAD_BUTTON_MINUS)
         {
             removeContent(titleQueue, cursor + pos, true);
-            if(cursor)
-                --cursor;
-            else
+            if(cursor + pos == getListSize(titleQueue))
             {
-                if(pos >= MAX_ENTRIES)
-                    pos -= MAX_ENTRIES;
-                else
-                    pos = 0;
-
-                cursor = 0;
+                if(cursor)
+                    --cursor;
+                else if(pos)
+                    --pos;
             }
 
             mov = getListSize(titleQueue) >= MAX_ENTRIES;
