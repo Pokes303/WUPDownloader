@@ -156,7 +156,7 @@ static const OSSL_PARAM *custom_rand_gettable_ctx_params(ossl_unused void *vrng,
     return known_gettable_ctx_params;
 }
 
-static const OSSL_DISPATCH fuzz_rand_functions[] = {
+static const OSSL_DISPATCH custom_rand_functions[] = {
     { OSSL_FUNC_RAND_NEWCTX, (void (*)(void))custom_rand_newctx },
     { OSSL_FUNC_RAND_FREECTX, (void (*)(void))custom_rand_freectx },
     { OSSL_FUNC_RAND_INSTANTIATE, (void (*)(void))custom_rand_instantiate },
@@ -169,12 +169,12 @@ static const OSSL_DISPATCH fuzz_rand_functions[] = {
     { 0, NULL }
 };
 
-static const OSSL_ALGORITHM fuzz_rand_rand[] = {
-    { "custom", "provider=custom-rand", fuzz_rand_functions },
+static const OSSL_ALGORITHM custom_rand_rand[] = {
+    { "custom", "provider=custom-rand", custom_rand_functions },
     { NULL, NULL, NULL }
 };
 
-static const OSSL_ALGORITHM *fuzz_rand_query(void *provctx,
+static const OSSL_ALGORITHM *custom_rand_query(void *provctx,
     int operation_id,
     int *no_cache)
 {
@@ -182,34 +182,34 @@ static const OSSL_ALGORITHM *fuzz_rand_query(void *provctx,
     switch(operation_id)
     {
         case OSSL_OP_RAND:
-            return fuzz_rand_rand;
+            return custom_rand_rand;
     }
     return NULL;
 }
 
 /* Functions we provide to the core */
-static const OSSL_DISPATCH fuzz_rand_method[] = {
+static const OSSL_DISPATCH custom_rand_method[] = {
     { OSSL_FUNC_PROVIDER_TEARDOWN, (void (*)(void))OSSL_LIB_CTX_free },
-    { OSSL_FUNC_PROVIDER_QUERY_OPERATION, (void (*)(void))fuzz_rand_query },
+    { OSSL_FUNC_PROVIDER_QUERY_OPERATION, (void (*)(void))custom_rand_query },
     { 0, NULL }
 };
 
-static int fuzz_rand_provider_init(const OSSL_CORE_HANDLE *handle,
+static int custom_rand_provider_init(const OSSL_CORE_HANDLE *handle,
     const OSSL_DISPATCH *in,
     const OSSL_DISPATCH **out, void **provctx)
 {
     *provctx = OSSL_LIB_CTX_new();
     if(*provctx == NULL)
         return 0;
-    *out = fuzz_rand_method;
+    *out = custom_rand_method;
     return 1;
 }
 
 static OSSL_PROVIDER *r_prov;
 
-bool FuzzerSetRand()
+bool CustomSetRand()
 {
-    if(!OSSL_PROVIDER_add_builtin(NULL, "custom-rand", fuzz_rand_provider_init)
+    if(!OSSL_PROVIDER_add_builtin(NULL, "custom-rand", custom_rand_provider_init)
         || !RAND_set_DRBG_type(NULL, "custom", NULL, NULL, NULL)
         || (r_prov = OSSL_PROVIDER_try_load(NULL, "custom-rand", 1)) == NULL)
         return false;
@@ -254,7 +254,7 @@ bool initCrypto()
 {
     reseed();
     spinCreateLock(rngLock, SPINLOCK_FREE);
-    return OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS, NULL) == 1 && FuzzerSetRand() == true;
+    return OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS, NULL) == 1 && CustomSetRand() == true;
 }
 
 int osslBytes(unsigned char *buf, int num)
