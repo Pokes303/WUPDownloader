@@ -49,8 +49,6 @@ extern "C"
         MENU_LANGUAGE_ENGLISH,
         MENU_LANGUAGE_GERMAN,
         MENU_LANGUAGE_SPANISH,
-        MENU_LANGUAGE_ITALIAN,
-        MENU_LANGUAGE_RUSSIAN,
     } MENU_LANGUAGE;
 
     bool initConfig();

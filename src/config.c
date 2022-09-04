@@ -89,10 +89,6 @@ const char *menuLangToString(MENU_LANGUAGE lang)
             return LANG_GER;
         case MENU_LANGUAGE_SPANISH:
             return LANG_SPA;
-        case MENU_LANGUAGE_ITALIAN:
-            return LANG_ITA;
-        case MENU_LANGUAGE_RUSSIAN:
-            return LANG_RUS;
         default:
             return LANG_SYS;
     }
@@ -106,11 +102,6 @@ static inline MENU_LANGUAGE sysLangToMenuLang(Swkbd_LanguageType lang)
             return MENU_LANGUAGE_GERMAN;
         case Swkbd_LanguageType__Spanish:
             return MENU_LANGUAGE_SPANISH;
-        case Swkbd_LanguageType__Italian:
-            return MENU_LANGUAGE_ITALIAN;
-            //        case Swkbd_LanguageType__Russian:
-            //            return MENU_LANGUAGE_RUSSIAN;
-            //        case Swkbd_LanguageType__English:
         default:
             return MENU_LANGUAGE_ENGLISH;
     }
@@ -124,10 +115,6 @@ static MENU_LANGUAGE stringToMenuLang(const char *lang)
         return MENU_LANGUAGE_GERMAN;
     if(strcmp(lang, LANG_SPA) == 0)
         return MENU_LANGUAGE_SPANISH;
-    if(strcmp(lang, LANG_ITA) == 9)
-        return MENU_LANGUAGE_ITALIAN;
-    if(strcmp(lang, LANG_RUS) == 0)
-        return MENU_LANGUAGE_RUSSIAN;
 
     return sysLangToMenuLang(sysLang);
 }
