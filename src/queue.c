@@ -44,6 +44,16 @@ void addToQueue(TitleData *data)
     addToListEnd(titleQueue, data);
 }
 
+static inline void removeFQ(TitleData *title)
+{
+    if(title != NULL)
+    {
+        removeFromList(titleQueue, title);
+        MEMFreeToDefaultHeap(title->tmd);
+        MEMFreeToDefaultHeap(title);
+    }
+}
+
 bool proccessQueue()
 {
     TitleData *title;
@@ -53,22 +63,11 @@ bool proccessQueue()
         if(!downloadTitle(title->tmd, title->tmdSize, title->entry, title->titleVer, title->folderName, title->inst, title->dlDev, title->toUSB, title->keepFiles))
             return false;
 
-        if(last != NULL)
-        {
-            removeFromList(titleQueue, last);
-            MEMFreeToDefaultHeap(last->tmd);
-            MEMFreeToDefaultHeap(last);
-        }
-
+        removeFQ(last);
         last = title;
     }
 
-    if(last != NULL)
-    {
-        removeFromList(titleQueue, last);
-        MEMFreeToDefaultHeap(last->tmd);
-        MEMFreeToDefaultHeap(last);
-    }
+    removeFQ(last);
     return true;
 }
 
@@ -89,22 +88,11 @@ void clearQueue()
     TitleData *last = NULL;
     forEachListEntry(titleQueue, title)
     {
-        if(last != NULL)
-        {
-            removeFromList(titleQueue, last);
-            MEMFreeToDefaultHeap(last->tmd);
-            MEMFreeToDefaultHeap(last);
-        }
-
+        removeFQ(last);
         last = title;
     }
 
-    if(last != NULL)
-    {
-        removeFromList(titleQueue, last);
-        MEMFreeToDefaultHeap(last->tmd);
-        MEMFreeToDefaultHeap(last);
-    }
+    removeFQ(last);
 }
 
 LIST *getTitleQueue()
