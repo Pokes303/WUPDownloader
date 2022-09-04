@@ -33,6 +33,7 @@
 #include <openssl/rand.h>
 #include <openssl/ssl.h>
 
+#include <coreinit/memdefaultheap.h>
 #include <coreinit/time.h>
 
 static spinlock rngLock;
@@ -66,44 +67,33 @@ static OSSL_FUNC_rand_gettable_ctx_params_fn custom_rand_gettable_ctx_params;
 static OSSL_FUNC_rand_get_ctx_params_fn custom_rand_get_ctx_params;
 static OSSL_FUNC_rand_enable_locking_fn custom_rand_enable_locking;
 
-static void *custom_rand_newctx(
-    void *provctx, void *parent, const OSSL_DISPATCH *parent_dispatch)
+static void *custom_rand_newctx(ossl_unused void *provctx, ossl_unused void *parent, ossl_unused const OSSL_DISPATCH *parent_dispatch)
 {
-    int *st = OPENSSL_malloc(sizeof(*st));
-
+    int *st = MEMAllocFromDefaultHeap(sizeof(*st));
     if(st != NULL)
         *st = EVP_RAND_STATE_UNINITIALISED;
+
     return st;
 }
 
-static void custom_rand_freectx(ossl_unused void *vrng)
+static void custom_rand_freectx(void *vrng)
 {
-    OPENSSL_free(vrng);
+    MEMFreeToDefaultHeap(vrng);
 }
 
-static int custom_rand_instantiate(ossl_unused void *vrng,
-    ossl_unused unsigned int strength,
-    ossl_unused int prediction_resistance,
-    ossl_unused const unsigned char *pstr,
-    ossl_unused size_t pstr_len,
-    ossl_unused const OSSL_PARAM params[])
+static int custom_rand_instantiate(void *vrng, ossl_unused unsigned int strength, ossl_unused int prediction_resistance, ossl_unused const unsigned char *pstr, ossl_unused size_t pstr_len, ossl_unused const OSSL_PARAM params[])
 {
     *(int *)vrng = EVP_RAND_STATE_READY;
     return 1;
 }
 
-static int custom_rand_uninstantiate(ossl_unused void *vrng)
+static int custom_rand_uninstantiate(void *vrng)
 {
     *(int *)vrng = EVP_RAND_STATE_UNINITIALISED;
     return 1;
 }
 
-static int custom_rand_generate(ossl_unused void *vdrbg,
-    unsigned char *out, size_t outlen,
-    ossl_unused unsigned int strength,
-    ossl_unused int prediction_resistance,
-    ossl_unused const unsigned char *adin,
-    ossl_unused size_t adinlen)
+int custom_rand_generate(ossl_unused void *vdrbg, unsigned char *out, size_t outlen, ossl_unused unsigned int strength, ossl_unused int prediction_resistance, ossl_unused const unsigned char *adin, ossl_unused size_t adinlen)
 {
     --out;
     ++outlen;
@@ -144,15 +134,15 @@ static int custom_rand_get_ctx_params(void *vrng, OSSL_PARAM params[])
     return 1;
 }
 
-static const OSSL_PARAM *custom_rand_gettable_ctx_params(ossl_unused void *vrng,
-    ossl_unused void *provctx)
+static const OSSL_PARAM known_gettable_ctx_params[] = {
+    OSSL_PARAM_int(OSSL_RAND_PARAM_STATE, NULL),
+    OSSL_PARAM_uint(OSSL_RAND_PARAM_STRENGTH, NULL),
+    OSSL_PARAM_size_t(OSSL_RAND_PARAM_MAX_REQUEST, NULL),
+    OSSL_PARAM_END
+};
+
+static const OSSL_PARAM *custom_rand_gettable_ctx_params(ossl_unused void *vrng, ossl_unused void *provctx)
 {
-    static const OSSL_PARAM known_gettable_ctx_params[] = {
-        OSSL_PARAM_int(OSSL_RAND_PARAM_STATE, NULL),
-        OSSL_PARAM_uint(OSSL_RAND_PARAM_STRENGTH, NULL),
-        OSSL_PARAM_size_t(OSSL_RAND_PARAM_MAX_REQUEST, NULL),
-        OSSL_PARAM_END
-    };
     return known_gettable_ctx_params;
 }
 
@@ -163,8 +153,7 @@ static const OSSL_DISPATCH custom_rand_functions[] = {
     { OSSL_FUNC_RAND_UNINSTANTIATE, (void (*)(void))custom_rand_uninstantiate },
     { OSSL_FUNC_RAND_GENERATE, (void (*)(void))custom_rand_generate },
     { OSSL_FUNC_RAND_ENABLE_LOCKING, (void (*)(void))custom_rand_enable_locking },
-    { OSSL_FUNC_RAND_GETTABLE_CTX_PARAMS,
-        (void (*)(void))custom_rand_gettable_ctx_params },
+    { OSSL_FUNC_RAND_GETTABLE_CTX_PARAMS, (void (*)(void))custom_rand_gettable_ctx_params },
     { OSSL_FUNC_RAND_GET_CTX_PARAMS, (void (*)(void))custom_rand_get_ctx_params },
     { 0, NULL }
 };
@@ -174,17 +163,10 @@ static const OSSL_ALGORITHM custom_rand_rand[] = {
     { NULL, NULL, NULL }
 };
 
-static const OSSL_ALGORITHM *custom_rand_query(void *provctx,
-    int operation_id,
-    int *no_cache)
+static const OSSL_ALGORITHM *custom_rand_query(ossl_unused void *provctx, int operation_id, int *no_cache)
 {
     *no_cache = 0;
-    switch(operation_id)
-    {
-        case OSSL_OP_RAND:
-            return custom_rand_rand;
-    }
-    return NULL;
+    return operation_id == OSSL_OP_RAND ? custom_rand_rand : NULL;
 }
 
 /* Functions we provide to the core */
@@ -194,26 +176,14 @@ static const OSSL_DISPATCH custom_rand_method[] = {
     { 0, NULL }
 };
 
-static int custom_rand_provider_init(const OSSL_CORE_HANDLE *handle,
-    const OSSL_DISPATCH *in,
-    const OSSL_DISPATCH **out, void **provctx)
+static int custom_rand_provider_init(ossl_unused const OSSL_CORE_HANDLE *handle,ossl_unused  const OSSL_DISPATCH *in, const OSSL_DISPATCH **out, void **provctx)
 {
     *provctx = OSSL_LIB_CTX_new();
     if(*provctx == NULL)
         return 0;
+
     *out = custom_rand_method;
     return 1;
-}
-
-static OSSL_PROVIDER *r_prov;
-
-bool CustomSetRand()
-{
-    if(!OSSL_PROVIDER_add_builtin(NULL, "custom-rand", custom_rand_provider_init)
-        || !RAND_set_DRBG_type(NULL, "custom", NULL, NULL, NULL)
-        || (r_prov = OSSL_PROVIDER_try_load(NULL, "custom-rand", 1)) == NULL)
-        return false;
-    return true;
 }
 
 void addEntropy(void *e, size_t l)
@@ -254,13 +224,7 @@ bool initCrypto()
 {
     reseed();
     spinCreateLock(rngLock, SPINLOCK_FREE);
-    return OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS, NULL) == 1 && CustomSetRand() == true;
-}
-
-int osslBytes(unsigned char *buf, int num)
-{
-    custom_rand_generate(NULL, buf, num, NULL, NULL, NULL, NULL);
-    return 1;
+    return OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS, NULL) == 1 && OSSL_PROVIDER_add_builtin(NULL, "custom-rand", custom_rand_provider_init) && RAND_set_DRBG_type(NULL, "custom", NULL, NULL, NULL) && OSSL_PROVIDER_try_load(NULL, "custom-rand", 1) != NULL;
 }
 
 static inline bool getHash(const void *data, size_t data_len, void *hash, const EVP_MD *type)
