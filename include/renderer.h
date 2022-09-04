@@ -77,7 +77,8 @@ extern "C"
     {
         DEVICE_TYPE_UNKNOWN = 0,
         DEVICE_TYPE_USB = 1,
-        DEVICE_TYPE_NAND = 2
+        DEVICE_TYPE_SD = 2,
+        DEVICE_TYPE_NAND = 3
     } DEVICE_TYPE;
 
     bool initRenderer();

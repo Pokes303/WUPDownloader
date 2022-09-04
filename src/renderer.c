@@ -81,7 +81,7 @@ static SDL_Texture *arrowTex;
 static SDL_Texture *checkmarkTex;
 static SDL_Texture *tabTex;
 static SDL_Texture *flagTex[8];
-static SDL_Texture *deviceTex[3];
+static SDL_Texture *deviceTex[4];
 static SDL_Texture *barTex;
 static SDL_Texture *bgTex;
 static SDL_Texture *byeTex;
@@ -700,7 +700,7 @@ void resumeRenderer()
                 loadTexture(tex, flagTex + i);
             }
 
-            for(int i = 0; i < 3; i++)
+            for(int i = 0; i < 4; i++)
             {
                 switch(i)
                 {
@@ -711,6 +711,9 @@ void resumeRenderer()
                         tex = ROMFS_PATH "textures/dev/usb.png";
                         break;
                     case 2:
+                        tex = ROMFS_PATH "textures/dev/sd.png";
+                        break;
+                    case 3:
                         tex = ROMFS_PATH "textures/dev/nand.png";
                         break;
                 }
@@ -873,6 +876,9 @@ void pauseRenderer()
 
     for(int i = 0; i < 8; ++i)
         SDL_DestroyTexture(flagTex[i]);
+
+    for(int i = 0; i < 4; i++)
+        SDL_DestroyRenderer(flagTex[i]);
 
     font = NULL;
 }
