@@ -62,7 +62,7 @@ static OSSL_FUNC_rand_newctx_fn custom_rand_newctx;
 static OSSL_FUNC_rand_freectx_fn custom_rand_freectx;
 static OSSL_FUNC_rand_instantiate_fn custom_rand_instantiate;
 static OSSL_FUNC_rand_uninstantiate_fn custom_rand_uninstantiate;
-static OSSL_FUNC_rand_generate_fn custom_rand_generate;
+OSSL_FUNC_rand_generate_fn custom_rand_generate;
 static OSSL_FUNC_rand_gettable_ctx_params_fn custom_rand_gettable_ctx_params;
 static OSSL_FUNC_rand_get_ctx_params_fn custom_rand_get_ctx_params;
 static OSSL_FUNC_rand_enable_locking_fn custom_rand_enable_locking;
@@ -176,7 +176,7 @@ static const OSSL_DISPATCH custom_rand_method[] = {
     { 0, NULL }
 };
 
-static int custom_rand_provider_init(ossl_unused const OSSL_CORE_HANDLE *handle,ossl_unused  const OSSL_DISPATCH *in, const OSSL_DISPATCH **out, void **provctx)
+static int custom_rand_provider_init(ossl_unused const OSSL_CORE_HANDLE *handle, ossl_unused const OSSL_DISPATCH *in, const OSSL_DISPATCH **out, void **provctx)
 {
     *provctx = OSSL_LIB_CTX_new();
     if(*provctx == NULL)
