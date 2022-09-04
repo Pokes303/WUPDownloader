@@ -83,7 +83,7 @@ void gettextCleanUp()
     {
         hashMsg *msg;
         forEachListEntry(baseMSG, msg)
-            MEMFreeToDefaultHeap(msg->msgstr);
+            MEMFreeToDefaultHeap((void *)(msg->msgstr));
 
         destroyList(baseMSG, true);
         baseMSG = NULL;
