@@ -59,7 +59,7 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
     boxToFrame(1, MAX_LINES - 3);
 
     char *toFrame = getToFrameBuffer();
-    strcpy(toFrame, gettext(BUTTON_A " to select"));
+    strcpy(toFrame, gettext("Press " BUTTON_A " to select"));
     strcat(toFrame, " || ");
     strcat(toFrame, gettext(BUTTON_B " to return"));
     strcat(toFrame, " || ");
