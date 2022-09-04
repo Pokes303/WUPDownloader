@@ -60,10 +60,10 @@ bool proccessQueue()
     TitleData *last = NULL;
     forEachListEntry(titleQueue, title)
     {
+        removeFQ(last);
         if(!downloadTitle(title->tmd, title->tmdSize, title->entry, title->titleVer, title->folderName, title->inst, title->dlDev, title->toUSB, title->keepFiles))
             return false;
 
-        removeFQ(last);
         last = title;
     }
 
