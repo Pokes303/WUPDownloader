@@ -40,13 +40,18 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
     char *toScreen = getToFrameBuffer();
     int p;
     TitleData *data;
+    size_t i = 0;
+    int j = 0;
 
-    for(int i = 0; i < MAX_ENTRIES && pos + i < getListSize(titleQueue); ++i)
+    forEachListEntry(titleQueue, data)
     {
-        if(cursor == i)
-            arrowToFrame(i + 1, 1);
+        if(i++ < pos)
+            continue;
 
-        data = getContent(titleQueue, i + pos);
+        if(cursor == j)
+            arrowToFrame(j + 1, 1);
+
+        data = getContent(titleQueue, j + pos);
 
         if(isDLC(data->entry))
         {
@@ -62,9 +67,12 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
             p = 0;
 
         strcpy(toScreen + p, data->entry->name);
-        flagToFrame(i + 1, 7, data->entry->region);
-        deviceToFrame(i + 1, 4, data->toUSB ? DEVICE_TYPE_USB : DEVICE_TYPE_NAND);
-        textToFrame(i + 1, 10, toScreen);
+        flagToFrame(++j , 7, data->entry->region);
+        deviceToFrame(j, 4, data->toUSB ? DEVICE_TYPE_USB : DEVICE_TYPE_NAND);
+        textToFrame(j, 10, toScreen);
+
+        if(j == MAX_ENTRIES)
+            break;
     }
 
     lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
