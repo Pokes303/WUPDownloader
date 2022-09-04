@@ -67,7 +67,7 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
             p = 0;
 
         strcpy(toScreen + p, data->entry->name);
-        flagToFrame(++j , 7, data->entry->region);
+        flagToFrame(++j, 7, data->entry->region);
         deviceToFrame(j, 4, data->toUSB ? DEVICE_TYPE_USB : DEVICE_TYPE_NAND);
         textToFrame(j, 10, toScreen);
 
