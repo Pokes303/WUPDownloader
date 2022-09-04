@@ -56,6 +56,11 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
         if(cursor == i++)
             arrowToFrame(i, 1);
 
+        if(data->inst)
+            deviceToFrame(i, 4, data->toUSB ? DEVICE_TYPE_USB : DEVICE_TYPE_NAND);
+
+        flagToFrame(i, 7, data->entry->region);
+
         if(isDLC(data->entry))
         {
             p = strlen("[DLC] ");
@@ -70,8 +75,6 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
             p = 0;
 
         strcpy(toScreen + p, data->entry->name);
-        flagToFrame(i, 7, data->entry->region);
-        deviceToFrame(i, 4, data->toUSB ? DEVICE_TYPE_USB : DEVICE_TYPE_NAND);
         textToFrameCut(i, 10, toScreen, (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
 
         if(i == MAX_ENTRIES)
