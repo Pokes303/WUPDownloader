@@ -33,9 +33,7 @@
 
 #define MAX_ENTRIES (MAX_LINES - 3)
 
-static int cursorPos = 1;
-
-static void drawQueueMenu(LIST *titleQueue)
+static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
 {
     startNewFrame();
     boxToFrame(0, MAX_LINES - 2);
@@ -43,9 +41,12 @@ static void drawQueueMenu(LIST *titleQueue)
     int p;
     TitleData *data;
 
-    for(int i = 0; i < MAX_ENTRIES && i < getListSize(titleQueue); ++i)
+    for(int i = 0; i < MAX_ENTRIES && pos + i < getListSize(titleQueue); ++i)
     {
-        data = getContent(titleQueue, i);
+       if(cursor == i)
+            arrowToFrame(i + 1, 1);
+
+        data = getContent(titleQueue, i + pos);
 
         if(isDLC(data->entry))
         {
@@ -74,45 +75,140 @@ static void drawQueueMenu(LIST *titleQueue)
     strcat(toScreen, " || ");
     strcat(toScreen, gettext(BUTTON_MINUS " to delete an item"));
     textToFrame(MAX_LINES - 1, ALIGNED_CENTER, toScreen);
-    if(getListSize(titleQueue) != 0)
-        arrowToFrame(cursorPos, 1);
 
     drawFrame();
 }
 
 void queueMenu()
 {
-    LIST *titleQueue = getTitleQueue();
-    drawQueueMenu(titleQueue);
-
+    uint32_t oldHold = 0;
+    bool dpadAction;
+    size_t frameCount = 0;
+    size_t cursor = 0;
+    size_t pos = 0;
     bool redraw = false;
+    LIST *titleQueue = getTitleQueue();
+    bool mov = getListSize(titleQueue) >= MAX_ENTRIES;
+    drawQueueMenu(titleQueue, cursor, pos);
+
     while(AppRunning())
     {
         if(app == APP_STATE_BACKGROUND)
             continue;
         if(app == APP_STATE_RETURNING)
-            drawQueueMenu(titleQueue);
+            drawQueueMenu(titleQueue, cursor, pos);
 
         showFrame();
 
         if(vpad.trigger & VPAD_BUTTON_B)
             return;
 
-        if(vpad.trigger & VPAD_BUTTON_UP)
+        if(vpad.hold & VPAD_BUTTON_UP)
         {
-            if(--cursorPos < 1)
+            if(oldHold != VPAD_BUTTON_UP)
             {
-                cursorPos = getListSize(titleQueue);
-                if(cursorPos == 0)
-                    cursorPos = 1;
+                oldHold = VPAD_BUTTON_UP;
+                frameCount = 30;
+                dpadAction = true;
             }
-            redraw = true;
+            else if(frameCount == 0)
+                dpadAction = true;
+            else
+            {
+                --frameCount;
+                dpadAction = false;
+            }
+
+            if(dpadAction)
+            {
+                if(cursor)
+                    --cursor;
+                else if(mov && pos)
+                    --pos;
+
+                redraw = true;
+            }
         }
-        else if(vpad.trigger & VPAD_BUTTON_DOWN)
+        else if(vpad.hold & VPAD_BUTTON_DOWN)
         {
-            if(++cursorPos > getListSize(titleQueue))
-                cursorPos = 1;
-            redraw = true;
+            if(oldHold != VPAD_BUTTON_DOWN)
+            {
+                oldHold = VPAD_BUTTON_DOWN;
+                frameCount = 30;
+                dpadAction = true;
+            }
+            else if(frameCount == 0)
+                dpadAction = true;
+            else
+            {
+                --frameCount;
+                dpadAction = false;
+            }
+
+            if(dpadAction)
+            {
+                if(cursor < getListSize(titleQueue) - pos - 1 && cursor < MAX_ENTRIES - 1)
+                    ++cursor;
+                else if(mov && cursor + ++pos == getListSize(titleQueue))
+                    --pos;
+
+                redraw = true;
+            }
+        }
+        else if(mov)
+        {
+            if(vpad.hold & VPAD_BUTTON_RIGHT)
+            {
+                if(oldHold != VPAD_BUTTON_RIGHT)
+                {
+                    oldHold = VPAD_BUTTON_RIGHT;
+                    frameCount = 30;
+                    dpadAction = true;
+                }
+                else if(frameCount == 0)
+                    dpadAction = true;
+                else
+                {
+                    --frameCount;
+                    dpadAction = false;
+                }
+
+                if(dpadAction)
+                {
+                    pos += MAX_ENTRIES;
+                    if(pos >= getListSize(titleQueue))
+                        pos = 0;
+
+                    cursor = 0;
+                    redraw = true;
+                }
+            }
+            else if(vpad.hold & VPAD_BUTTON_LEFT)
+            {
+                if(oldHold != VPAD_BUTTON_LEFT)
+                {
+                    oldHold = VPAD_BUTTON_LEFT;
+                    frameCount = 30;
+                    dpadAction = true;
+                }
+                else if(frameCount == 0)
+                    dpadAction = true;
+                else
+                {
+                    --frameCount;
+                    dpadAction = false;
+                }
+
+                if(dpadAction)
+                {
+                    if(pos >= MAX_ENTRIES)
+                        pos -= MAX_ENTRIES;
+                    else
+                        pos = getListSize(titleQueue) - MAX_ENTRIES;
+                    cursor = 0;
+                    redraw = true;
+                }
+            }
         }
 
         if(vpad.trigger & VPAD_BUTTON_PLUS)
@@ -125,19 +221,29 @@ void queueMenu()
 
         if(vpad.trigger & VPAD_BUTTON_MINUS)
         {
-            removeContent(titleQueue, --cursorPos, true);
-            if(--cursorPos < 1)
+            removeContent(titleQueue, cursor + pos, true);
+            if(cursor)
+                --cursor;
+            else
             {
-                cursorPos = getListSize(titleQueue);
-                if(cursorPos == 0)
-                    cursorPos = 1;
+                if(pos >= MAX_ENTRIES)
+                    pos -= MAX_ENTRIES;
+                else
+                    pos = 0;
+
+                cursor = 0;
             }
+
+            mov = getListSize(titleQueue) >= MAX_ENTRIES;
             redraw = true;
         }
 
+        if(oldHold && !(vpad.hold & (VPAD_BUTTON_UP | VPAD_BUTTON_DOWN | VPAD_BUTTON_LEFT | VPAD_BUTTON_RIGHT)))
+            oldHold = 0;
+
         if(redraw)
         {
-            drawQueueMenu(titleQueue);
+            drawQueueMenu(titleQueue, cursor, pos);
             redraw = false;
         }
     }
