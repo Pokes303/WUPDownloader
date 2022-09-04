@@ -35,7 +35,8 @@ bool initQueue()
 
 void shutdownQueue()
 {
-    destroyList(titleQueue, true);
+    clearQueue();
+    destroyList(titleQueue, false);
 }
 
 void addToQueue(TitleData *data)
@@ -55,14 +56,55 @@ bool proccessQueue()
         if(last != NULL)
         {
             removeFromList(titleQueue, last);
+            MEMFreeToDefaultHeap(last->tmd);
             MEMFreeToDefaultHeap(last);
         }
 
         last = title;
     }
 
-    clearList(titleQueue, true);
+    if(last != NULL)
+    {
+        removeFromList(titleQueue, last);
+        MEMFreeToDefaultHeap(last->tmd);
+        MEMFreeToDefaultHeap(last);
+    }
     return true;
+}
+
+bool removeFromQueue(uint32_t index)
+{
+    TitleData *title = getAndRemoveFromList(titleQueue, index);
+    if(title == NULL)
+        return false;
+
+    MEMFreeToDefaultHeap(title->tmd);
+    MEMFreeToDefaultHeap(title);
+    return true;
+}
+
+void clearQueue()
+{
+    TitleData *title;
+    TitleData *last = NULL;
+    forEachListEntry(titleQueue, title)
+    {
+        if(last != NULL)
+        {
+            removeFromList(titleQueue, last);
+            MEMFreeToDefaultHeap(last->tmd);
+            MEMFreeToDefaultHeap(last);
+        }
+
+        last = title;
+    }
+
+    if(last != NULL)
+    {
+        removeFromList(titleQueue, last);
+        MEMFreeToDefaultHeap(last->tmd);
+        MEMFreeToDefaultHeap(last);
+    }
 }
 
 LIST *getTitleQueue()

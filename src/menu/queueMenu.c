@@ -51,8 +51,6 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
         if(cursor == j)
             arrowToFrame(j + 1, 1);
 
-        data = getContent(titleQueue, j + pos);
-
         if(isDLC(data->entry))
         {
             strcpy(toScreen, "[DLC] ");
@@ -229,7 +227,7 @@ void queueMenu()
 
         if(vpad.trigger & VPAD_BUTTON_MINUS)
         {
-            removeContent(titleQueue, cursor + pos, true);
+            removeFromQueue(cursor + pos);
             if(cursor + pos == getListSize(titleQueue))
             {
                 if(cursor)
