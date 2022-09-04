@@ -43,7 +43,7 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
 
     for(int i = 0; i < MAX_ENTRIES && pos + i < getListSize(titleQueue); ++i)
     {
-       if(cursor == i)
+        if(cursor == i)
             arrowToFrame(i + 1, 1);
 
         data = getContent(titleQueue, i + pos);
