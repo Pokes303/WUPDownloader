@@ -94,8 +94,6 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
             break;
     }
 
-    lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
-
     strcpy(toScreen, gettext("Press " BUTTON_B " to return"));
     strcat(toScreen, " || ");
     strcat(toScreen, gettext(BUTTON_PLUS " to start downloading"));
