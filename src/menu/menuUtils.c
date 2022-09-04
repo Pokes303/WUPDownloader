@@ -62,7 +62,11 @@ void addToScreenLog(const char *str, ...)
         if(line == NULL)
             return;
 
-        addToListEnd(logList, line);
+        if(!addToListEnd(logList, line))
+        {
+            MEMFreeToDefaultHeap(line);
+            return;
+        }
     }
 
     va_list va;

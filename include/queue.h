@@ -46,7 +46,7 @@ extern "C"
 
     bool initQueue();
     void shutdownQueue();
-    void addToQueue(TitleData *data);
+    bool addToQueue(TitleData *data);
     bool removeFromQueue(uint32_t index);
     void clearQueue();
     bool proccessQueue();

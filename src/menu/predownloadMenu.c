@@ -595,20 +595,31 @@ naNedNa:
     if(toQueue)
     {
         TMD *titleTMD = MEMAllocFromDefaultHeap(getRamBufSize());
-        OSBlockMove(titleTMD, tmd, getRamBufSize(), false);
+        if(titleTMD != NULL)
+        {
+            OSBlockMove(titleTMD, tmd, getRamBufSize(), false);
 
-        TitleData *titleInfo = MEMAllocFromDefaultHeap(sizeof(TitleData));
-        titleInfo->tmd = titleTMD;
-        titleInfo->tmdSize = getRamBufSize();
-        titleInfo->entry = entry;
-        strcpy(titleInfo->titleVer, titleVer);
-        strcpy(titleInfo->folderName, folderName);
-        titleInfo->inst = inst;
-        titleInfo->dlDev = dlDev;
-        titleInfo->toUSB = toUSB;
-        titleInfo->keepFiles = keepFiles;
+            TitleData *titleInfo = MEMAllocFromDefaultHeap(sizeof(TitleData));
+            if(titleInfo != NULL)
+            {
+                titleInfo->tmd = titleTMD;
+                titleInfo->tmdSize = getRamBufSize();
+                titleInfo->entry = entry;
+                strcpy(titleInfo->titleVer, titleVer);
+                strcpy(titleInfo->folderName, folderName);
+                titleInfo->inst = inst;
+                titleInfo->dlDev = dlDev;
+                titleInfo->toUSB = toUSB;
+                titleInfo->keepFiles = keepFiles;
 
-        addToQueue(titleInfo);
+                if(!addToQueue(titleInfo))
+                {
+                    MEMFreeToDefaultHeap(titleTMD);
+                    MEMFreeToDefaultHeap(titleInfo);
+                }
+            }
+        }
+
         ret = true;
     }
     else if(checkSystemTitleFromEntry(entry))

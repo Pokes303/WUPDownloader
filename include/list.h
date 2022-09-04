@@ -78,11 +78,11 @@ extern "C"
         MEMFreeToDefaultHeap(list);
     }
 
-    static inline void addToListBeginning(LIST *list, void *content)
+    static inline bool addToListBeginning(LIST *list, void *content)
     {
         ELEMENT *newElement = MEMAllocFromDefaultHeap(sizeof(LIST));
         if(newElement == NULL)
-            return;
+            return false;
 
         newElement->content = content;
         newElement->next = list->first;
@@ -92,26 +92,28 @@ extern "C"
             list->last = newElement;
 
         list->size++;
+        return true;
     }
 
-    static inline void addToListEnd(LIST *list, void *content)
+    static inline bool addToListEnd(LIST *list, void *content)
     {
         ELEMENT *newElement = MEMAllocFromDefaultHeap(sizeof(LIST));
         if(newElement == NULL)
-            return;
+            return false;
 
         newElement->content = content;
         newElement->next = NULL;
-        list->size++;
 
         if(list->first == NULL)
-        {
             list->last = list->first = newElement;
-            return;
+        else
+        {
+            list->last->next = newElement;
+            list->last = list->last->next;
         }
 
-        list->last->next = newElement;
-        list->last = list->last->next;
+        list->size++;
+        return true;
     }
 
 #define forEachListEntry(x, y) for(ELEMENT *cur = x->first; cur != NULL && (y = cur->content); cur = cur->next)

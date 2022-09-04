@@ -94,7 +94,12 @@ static inline SDL_Rect *createRect()
     if(!ret)
         return NULL;
 
-    addToListEnd(rectList, ret);
+    if(!addToListEnd(rectList, ret))
+    {
+        MEMFreeToDefaultHeap(ret);
+        return NULL;
+    }
+
     return ret;
 }
 

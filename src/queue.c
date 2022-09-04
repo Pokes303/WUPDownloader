@@ -39,9 +39,9 @@ void shutdownQueue()
     destroyList(titleQueue, false);
 }
 
-void addToQueue(TitleData *data)
+bool addToQueue(TitleData *data)
 {
-    addToListEnd(titleQueue, data);
+    return addToListEnd(titleQueue, data);
 }
 
 static inline void removeFQ(TitleData *title)
