@@ -81,6 +81,10 @@ void gettextCleanUp()
 {
     if(baseMSG != NULL)
     {
+        hashMsg *msg;
+        forEachListEntry(baseMSG, msg)
+            MEMFreeToDefaultHeap(msg->msgstr);
+
         destroyList(baseMSG, true);
         baseMSG = NULL;
     }
@@ -88,14 +92,10 @@ void gettextCleanUp()
 
 bool gettextLoadLanguage(const char *langFile)
 {
+    gettextCleanUp();
+    baseMSG = createList();
     if(baseMSG == NULL)
-    {
-        baseMSG = createList();
-        if(baseMSG == NULL)
-            return false;
-    }
-    else
-        clearList(baseMSG, true);
+        return false;
 
     debugPrintf("Loading language file: %s", langFile);
 
