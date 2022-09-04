@@ -31,16 +31,19 @@
 
 #include <string.h>
 
+#include <coreinit/memory.h>
+
 #define MAX_ENTRIES (MAX_LINES - 3)
 
 static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
 {
     startNewFrame();
     boxToFrame(0, MAX_LINES - 2);
+
     char *toScreen = getToFrameBuffer();
+    int i = 0;
     int p;
     TitleData *data;
-    int i = 0;
 
     forEachListEntry(titleQueue, data)
     {
@@ -50,24 +53,24 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
             continue;
         }
 
-        if(cursor == i)
-            arrowToFrame(i + 1, 1);
+        if(cursor == i++)
+            arrowToFrame(i, 1);
 
         if(isDLC(data->entry))
         {
-            strcpy(toScreen, "[DLC] ");
             p = strlen("[DLC] ");
+            OSBlockMove(toScreen, "[DLC] ", p, false);
         }
         else if(isUpdate(data->entry))
         {
-            strcpy(toScreen, "[UPD] ");
             p = strlen("[UPD] ");
+            OSBlockMove(toScreen, "[IPD] ", p, false);
         }
         else
             p = 0;
 
         strcpy(toScreen + p, data->entry->name);
-        flagToFrame(++i, 7, data->entry->region);
+        flagToFrame(i, 7, data->entry->region);
         deviceToFrame(i, 4, data->toUSB ? DEVICE_TYPE_USB : DEVICE_TYPE_NAND);
         textToFrameCut(i, 10, toScreen, (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * 11));
 
