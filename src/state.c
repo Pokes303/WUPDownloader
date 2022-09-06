@@ -129,7 +129,6 @@ void initState()
     ProcUIRegisterCallback(PROCUI_CALLBACK_HOME_BUTTON_DENIED, &homeButtonCallback, NULL, 100);
     OSEnableHomeButtonMenu(false);
 
-
     aroma = RPXLoader_InitLibrary() == RPX_LOADER_RESULT_SUCCESS;
     if(aroma)
         RPXLoader_DeInitLibrary();

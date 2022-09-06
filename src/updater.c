@@ -478,7 +478,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
         showUpdateError(gettext("Aroma error!"));
         goto updateError;
 
-AromaUnmounted:
+    AromaUnmounted:
         strcpy(path, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
         FSRemove(__wut_devoptab_fs_client, getCmdBlk(), path, FS_ERROR_FLAG_ALL);
     }
