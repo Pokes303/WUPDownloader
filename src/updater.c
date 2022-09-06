@@ -468,7 +468,6 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
         {
             if(RPXLoader_UnmountCurrentRunningBundle() == RPX_LOADER_RESULT_SUCCESS)
             {
-                RL_UnmountCurrentRunningBundle();
                 RPXLoader_DeInitLibrary();
                 goto AromaUnmounted;
             }

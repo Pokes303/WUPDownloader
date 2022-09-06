@@ -26,7 +26,6 @@
 #include <utils.h>
 
 #include <coreinit/core.h>
-#include <coreinit/dynload.h>
 #include <coreinit/energysaver.h>
 #include <coreinit/foreground.h>
 #include <coreinit/ios.h>
@@ -34,6 +33,7 @@
 #include <coreinit/time.h>
 #include <coreinit/title.h>
 #include <proc_ui/procui.h>
+#include <rpxloader/rpxloader.h>
 
 #include <stdbool.h>
 
@@ -129,10 +129,10 @@ void initState()
     ProcUIRegisterCallback(PROCUI_CALLBACK_HOME_BUTTON_DENIED, &homeButtonCallback, NULL, 100);
     OSEnableHomeButtonMenu(false);
 
-    OSDynLoad_Module mod;
-    aroma = OSDynLoad_Acquire("homebrew_kernel", &mod) == OS_DYNLOAD_OK;
+
+    aroma = RPXLoader_InitLibrary() == RPX_LOADER_RESULT_SUCCESS;
     if(aroma)
-        OSDynLoad_Release(mod);
+        RPXLoader_DeInitLibrary();
 
 #ifndef NUSSPLI_HBL
     channel = OSGetTitleID() == 0x0005000010155373;
