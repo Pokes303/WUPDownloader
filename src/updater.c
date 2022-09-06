@@ -40,6 +40,7 @@
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
+#include <rpxloader/rpxloader.h>
 
 #include <ioapi.h>
 #include <unzip.h>
@@ -373,26 +374,6 @@ static inline void showUpdateFrame()
 
 void update(const char *newVersion, NUSSPLI_TYPE type)
 {
-#ifndef NUSSPLI_HBL
-    OSDynLoad_Module mod;
-    int (*RL_UnmountCurrentRunningBundle)();
-    if(!isChannel() && isAroma())
-    {
-        OSDynLoad_Error err = OSDynLoad_Acquire("homebrew_rpx_loader", &mod);
-        if(err == OS_DYNLOAD_OK)
-        {
-            err = OSDynLoad_FindExport(mod, false, "RL_UnmountCurrentRunningBundle", (void **)&RL_UnmountCurrentRunningBundle);
-            if(err != OS_DYNLOAD_OK)
-                OSDynLoad_Release(mod);
-        }
-        if(err != OS_DYNLOAD_OK)
-        {
-            showUpdateError(gettext("Aroma version too old to allow auto-updates"));
-            return;
-        }
-    }
-#endif
-
     disableShutdown();
     showUpdateFrame();
     removeDirectory(UPDATE_TEMP_FOLDER);
@@ -483,8 +464,22 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
             goto updateError;
         }
 
-        RL_UnmountCurrentRunningBundle();
-        OSDynLoad_Release(mod);
+        if(RPXLoader_InitLibrary() == RPX_LOADER_RESULT_SUCCESS)
+        {
+            if(RPXLoader_UnmountCurrentRunningBundle() == RPX_LOADER_RESULT_SUCCESS)
+            {
+                RL_UnmountCurrentRunningBundle();
+                RPXLoader_DeInitLibrary();
+                goto AromaUnmounted;
+            }
+
+            RPXLoader_DeInitLibrary();
+        }
+
+        showUpdateError(gettext("Aroma error!"));
+        goto updateError;
+
+AromaUnmounted:
         strcpy(path, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
         FSRemove(__wut_devoptab_fs_client, getCmdBlk(), path, FS_ERROR_FLAG_ALL);
     }
@@ -524,9 +519,5 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
     return;
 
 updateError:
-#ifndef NUSSPLI_HBL
-    if(!isChannel() && isAroma())
-        OSDynLoad_Release(mod);
-#endif
     removeDirectory(UPDATE_TEMP_FOLDER);
 }

@@ -7,6 +7,7 @@ ENV openssl_ver=3.0.5 \
  PATH=$DEVKITPPC/bin:$PATH \
  WUT_ROOT=$DEVKITPRO/wut
 WORKDIR /
+COPY --from=wiiuenv/librpxloader:20220903141341abbf92 /artifacts $DEVKITPRO
 
 RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
  /bin/bash -c "$(curl -sL https://raw.githubusercontent.com/V10lator/NUSspli/master/apt-fast/install.sh)" && \
