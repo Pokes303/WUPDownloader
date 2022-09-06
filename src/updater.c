@@ -474,7 +474,6 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
             toUSB = ownInfo.indexedDevice[0] == 'u';
 
         deinstall(&ownInfo, "NUSspli v" NUSSPLI_VERSION, true, false);
-        OSSleepTicks(OSSecondsToTicks(10)); // channelHaxx...
     }
     else if(isAroma())
     {
