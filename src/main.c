@@ -218,7 +218,7 @@ static void innerMain(bool validCfw)
                     lerr = "Couldn't initialize filesystem!";
             }
             else
-                lerr = "Unsupported environment.\nEither you're not using Tiramisu or your Tiramisu version is out of date.";
+                lerr = "Unsupported environment.\nEither you're not using Tiramisu/Aroma or your Tiramisu version is out of date.";
 
             if(lerr != NULL)
             {
