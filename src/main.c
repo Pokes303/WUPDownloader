@@ -84,7 +84,7 @@ static void innerMain(bool validCfw)
 {
     OSThread *mainThread = OSGetCurrentThread();
     OSSetThreadName(mainThread, "NUSspli");
-#ifdef NUSSPLI_HBL
+#ifdef NUSSPLI_DEBUG
     OSSetThreadStackUsage(mainThread);
 #endif
 
