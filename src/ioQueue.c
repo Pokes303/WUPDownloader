@@ -260,7 +260,7 @@ retryAddingToQueue:
 
 void flushIOQueue()
 {
-    if(checkForQueueErrors())
+    if(checkForQueueErrors() || queueEntries[activeWriteBuffer].file == NULL)
         return;
 
     int ovl = addErrorOverlay("Flushing queue, please wait...");
