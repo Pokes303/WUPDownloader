@@ -59,18 +59,16 @@ static volatile int fwriteOverlay = -1;
 static int ioThreadMain(int argc, const char **argv) __attribute__((__hot__));
 static int ioThreadMain(int argc, const char **argv)
 {
-    uint32_t asl;
-    WriteQueueEntry *entry;
     FSCmdBlock cmdBlk;
-    FSStatus err;
-
     FSInitCmdBlock(&cmdBlk);
     FSSetCmdPriority(&cmdBlk, 1);
 
-    while(ioRunning && fwriteErrno == FS_STATUS_OK)
+    FSStatus err;
+    uint32_t asl = activeWriteBuffer;
+    WriteQueueEntry *entry = queueEntries + asl;
+
+    while(ioRunning)
     {
-        asl = activeWriteBuffer;
-        entry = queueEntries + asl;
         if(entry->file == NULL)
         {
             OSSleepTicks(256);
@@ -81,7 +79,7 @@ static int ioThreadMain(int argc, const char **argv)
         {
             err = FSWriteFile(__wut_devoptab_fs_client, &cmdBlk, (uint8_t *)entry->buf, entry->size, 1, *entry->file, 0, FS_ERROR_FLAG_ALL);
             if(err != 1)
-                fwriteErrno = err;
+                goto ioError;
 
             entry->size = 0;
         }
@@ -90,7 +88,7 @@ static int ioThreadMain(int argc, const char **argv)
             OSTime t = OSGetTime();
             err = FSCloseFile(__wut_devoptab_fs_client, &cmdBlk, *entry->file, FS_ERROR_FLAG_ALL);
             if(err != FS_STATUS_OK)
-                fwriteErrno = err;
+                goto ioError;
 
             t = OSGetTime() - t;
             addEntropy(&t, sizeof(OSTime));
@@ -101,9 +99,14 @@ static int ioThreadMain(int argc, const char **argv)
 
         activeWriteBuffer = asl;
         entry->file = NULL;
+        entry = queueEntries + asl;
     }
 
     return 0;
+
+ioError:
+    fwriteErrno = err;
+    return 1;
 }
 
 bool initIOThread()
@@ -157,11 +160,9 @@ void shutdownIOThread()
     if(!ioRunning)
         return;
 
-    if(!checkForQueueErrors())
-    {
-        while(queueEntries[activeWriteBuffer].file != NULL)
-            ;
-    }
+    while(queueEntries[activeWriteBuffer].file != NULL)
+        if(checkForQueueErrors())
+            break;
 
     ioRunning = false;
 #ifdef NUSSPLI_DEBUG
@@ -196,6 +197,9 @@ retryAddingToQueue:
             queueStalled = true;
         }
 #endif
+        if(checkForQueueErrors())
+            return 0;
+
         goto retryAddingToQueue; // We use goto here instead of just calling addToIOQueue again to not overgrow the stack.
     }
 
@@ -263,14 +267,10 @@ void flushIOQueue()
     debugPrintf("Flushing...");
 
     while(queueEntries[activeWriteBuffer].file != NULL)
-    {
-        OSSleepTicks(1024);
         if(checkForQueueErrors())
             break;
-    }
 
     removeErrorOverlay(ovl);
-
     checkForQueueErrors();
 }
 
