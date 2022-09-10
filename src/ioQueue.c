@@ -70,7 +70,7 @@ static int ioThreadMain(int argc, const char **argv)
     {
         if(entry->file == NULL)
         {
-            OSSleepTicks(256);
+            OSSleepTicks(OSMillisecondsToTicks(20));
             continue;
         }
 
