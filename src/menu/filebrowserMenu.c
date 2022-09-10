@@ -75,7 +75,7 @@ static void drawFBMenuFrame(const char *path, LIST *folders, size_t pos, const s
             continue;
         }
 
-         if(cursor == i)
+        if(cursor == i)
             arrowToFrame(i + 2, 1);
 
         textToFrame(i + 2, 5, folder);
