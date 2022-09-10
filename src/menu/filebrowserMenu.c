@@ -25,6 +25,7 @@
 #include <input.h>
 #include <localisation.h>
 #include <menu/filebrowser.h>
+#include <menu/utils.h>
 #include <renderer.h>
 #include <state.h>
 
@@ -37,7 +38,7 @@
 
 #define MAX_FILEBROWSER_LINES (MAX_LINES - 5)
 
-static void drawFBMenuFrame(char **folders, size_t foldersSize, const size_t pos, const size_t cursor, const NUSDEV activeDevice, bool usbMounted)
+static void drawFBMenuFrame(const char *path, char **folders, size_t foldersSize, const size_t pos, const size_t cursor, const NUSDEV activeDevice, bool usbMounted)
 {
     startNewFrame();
     textToFrame(0, 6, gettext("Select a folder:"));
@@ -60,9 +61,7 @@ static void drawFBMenuFrame(char **folders, size_t foldersSize, const size_t pos
 
     strcpy(toWrite, gettext("Searching on"));
     strcat(toWrite, " => ");
-    strcat(toWrite, activeDevice == NUSDEV_USB ? "USB" : activeDevice == NUSDEV_SD ? "SD"
-                                                                                   : "NAND");
-    strcat(toWrite, ":/install/");
+    strcat(toWrite, prettyDir(path));
     textToFrame(MAX_LINES - 1, ALIGNED_CENTER, toWrite);
 
     foldersSize -= pos;
@@ -85,8 +84,8 @@ char *fileBrowserMenu()
     if(folders == NULL)
         return false;
 
-    const char sf[3] = "./";
-    folders[0] = (char *)sf;
+    static const char cd[4] = "../";
+    folders[0] = (char *)cd;
 
     size_t foldersSize = 1;
     size_t cursor, pos;
@@ -94,18 +93,19 @@ char *fileBrowserMenu()
     NUSDEV activeDevice = usbMounted ? NUSDEV_USB : NUSDEV_SD;
     bool mov;
     FSDirectoryHandle dir;
-    char *ret = NULL;
-    char *path;
+    bool ret = false;
+    char *path = getStaticPathBuffer(2);
 
+refreshVOlList:
+    strcpy(path, (activeDevice & NUSDEV_USB) ? (usbMounted == NUSDEV_USB01 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC));
 refreshDirList:
     OSTime t = OSGetTime();
     for(int i = 1; i < foldersSize; ++i)
         MEMFreeToDefaultHeap(folders[i]);
+
     foldersSize = 1;
     cursor = pos = 0;
 
-    path = getStaticPathBuffer(2);
-    strcpy(path, (activeDevice & NUSDEV_USB) ? (usbMounted == NUSDEV_USB01 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC));
     if(FSOpenDir(__wut_devoptab_fs_client, getCmdBlk(), path, &dir, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
     {
         size_t len;
@@ -154,7 +154,7 @@ refreshDirList:
     t = OSGetTime() - t;
     addEntropy(&t, sizeof(OSTime));
 
-    drawFBMenuFrame(folders, foldersSize, pos, cursor, activeDevice, usbMounted);
+    drawFBMenuFrame(path, folders, foldersSize, pos, cursor, activeDevice, usbMounted);
 
     mov = foldersSize >= MAX_FILEBROWSER_LINES;
     bool redraw = false;
@@ -166,19 +166,42 @@ refreshDirList:
         if(app == APP_STATE_BACKGROUND)
             continue;
         if(app == APP_STATE_RETURNING)
-            drawFBMenuFrame(folders, foldersSize, pos, cursor, activeDevice, usbMounted);
+            drawFBMenuFrame(path, folders, foldersSize, pos, cursor, activeDevice, usbMounted);
 
         showFrame();
         if(vpad.trigger & VPAD_BUTTON_B)
             goto exitFileBrowserMenu;
         if(vpad.trigger & VPAD_BUTTON_A)
         {
-            if(foldersSize != 1)
+            if(cursor + pos == 0)
             {
-                ret = getStaticPathBuffer(2);
-                strcpy(ret, (activeDevice & NUSDEV_USB) ? (usbMounted == NUSDEV_USB01 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC));
-                strcat(ret, folders[cursor + pos]);
-                goto exitFileBrowserMenu;
+                char *last = strstr(path + strlen("/vol/"), "/");
+                char *cur = strstr(last + 1, "/");
+                if(cur != NULL)
+                {
+                    char *next = strstr(cur + 1, "/");
+                    while(next != NULL)
+                    {
+                        last = cur;
+                        cur = next;
+                        next = strstr(cur + 1, "/");
+                    }
+
+                    *++last = '\0';
+                    goto refreshDirList;
+                }
+            }
+            else
+            {
+                strcat(path, folders[cursor + pos]);
+                size_t pos = strlen(path);
+                strcpy(path + pos, "title.tmd");
+                ret = fileExists(path);
+                path[pos] = '\0';
+                if(ret)
+                    goto exitFileBrowserMenu;
+
+                goto refreshDirList;
             }
         }
 
@@ -318,7 +341,7 @@ refreshDirList:
                 case NUSDEV_MLC:
                     activeDevice = usbMounted ? NUSDEV_USB : NUSDEV_SD;
             }
-            goto refreshDirList;
+            goto refreshVOlList;
         }
 
         if(oldHold && !(vpad.hold & (VPAD_BUTTON_UP | VPAD_BUTTON_DOWN | VPAD_BUTTON_LEFT | VPAD_BUTTON_RIGHT)))
@@ -326,7 +349,7 @@ refreshDirList:
 
         if(redraw)
         {
-            drawFBMenuFrame(folders, foldersSize, pos, cursor, activeDevice, usbMounted);
+            drawFBMenuFrame(path, folders, foldersSize, pos, cursor, activeDevice, usbMounted);
             redraw = false;
         }
     }
@@ -336,5 +359,5 @@ exitFileBrowserMenu:
         MEMFreeToDefaultHeap(folders[i]);
 
     MEMFreeToDefaultHeap(folders);
-    return ret;
+    return ret ? path : NULL;
 }
