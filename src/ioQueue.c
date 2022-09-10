@@ -37,7 +37,7 @@
 
 #define IOT_STACK_SIZE       0x1000
 #define IO_MAX_FILE_BUFFER   (1024 * 1024) // 1 MB
-#define MAX_IO_QUEUE_ENTRIES (32 * (IO_MAX_FILE_BUFFER / (1024 * 1024))) // 32 MB
+#define MAX_IO_QUEUE_ENTRIES (64 * (IO_MAX_FILE_BUFFER / (1024 * 1024))) // 64 MB
 
 typedef struct WUT_PACKED
 {
