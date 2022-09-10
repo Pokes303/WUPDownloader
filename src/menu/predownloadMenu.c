@@ -151,18 +151,23 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
     textToFrame(--line, 5, gettext("Set custom name to the download folder"));
     textToFrame(--line, 5, gettext("Set title version"));
 
-    switch((int)dlDev)
+    if(operation == OPERATION_DOWNLOAD)
+        keepFiles = true;
+    else
     {
-        case NUSDEV_USB01:
-        case NUSDEV_USB02:
-        case NUSDEV_MLC:
-            keepFiles = false;
+        switch((int)dlDev)
+        {
+            case NUSDEV_USB01:
+            case NUSDEV_USB02:
+            case NUSDEV_MLC:
+                keepFiles = false;
+        }
     }
 
     strcpy(toFrame, gettext("Keep downloaded files:"));
     strcat(toFrame, " ");
     strcat(toFrame, gettext(keepFiles ? "Yes" : "No"));
-    if(dlDev == NUSDEV_SD)
+    if(dlDev == NUSDEV_SD && operation == OPERATION_INSTALL)
         textToFrame(--line, 5, gettext(toFrame));
     else
         textToFrameColored(--line, 5, gettext(toFrame), SCREEN_COLOR_WHITE_TRANSP);
@@ -424,7 +429,8 @@ naNedNa:
             switch(cursorPos)
             {
                 case 15: // TODO: Change hardcoded numbers to something prettier
-                    switchInstallDevice(&instDev);
+                    if(operation == OPERATION_INSTALL)
+                        switchInstallDevice(&instDev);
                     break;
                 case 16:
                     switchOperation(&operation);
@@ -433,8 +439,8 @@ naNedNa:
                     switchDownloadDevice(&dlDev);
                     break;
                 case 18:
-                    keepFiles = !keepFiles;
-                    redraw = true;
+                    if(dlDev == NUSDEV_SD && operation == OPERATION_INSTALL)
+                        keepFiles = !keepFiles;
                     break;
                 case 19:
                     changeTitleVersion(titleVer);
