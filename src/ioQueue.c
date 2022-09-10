@@ -130,6 +130,7 @@ bool initIOThread()
             if(ioThread != NULL)
                 return true;
 
+            ioRunning = false;
             MEMFreeToDefaultHeap(buf);
         }
 
