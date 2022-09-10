@@ -740,7 +740,6 @@ void resumeRenderer()
     font = NULL;
 }
 
-static inline void quitSDL() __attribute__((__cold__));
 static inline void quitSDL()
 {
     if(backgroundMusic != NULL)
