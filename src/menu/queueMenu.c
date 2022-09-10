@@ -104,7 +104,7 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
     drawFrame();
 }
 
-void queueMenu()
+bool queueMenu()
 {
     uint32_t oldHold = 0;
     bool dpadAction;
@@ -126,7 +126,7 @@ void queueMenu()
         showFrame();
 
         if(vpad.trigger & VPAD_BUTTON_B)
-            return;
+            return false;
 
         if(vpad.hold & VPAD_BUTTON_UP)
         {
@@ -239,9 +239,12 @@ void queueMenu()
         if(vpad.trigger & VPAD_BUTTON_PLUS)
         {
             if(proccessQueue())
+            {
                 showFinishedScreen(NULL, FINISHING_OPERATION_QUEUE);
+                return true;
+            }
 
-            return;
+            return false;
         }
 
         if(vpad.trigger & VPAD_BUTTON_MINUS)
@@ -268,4 +271,6 @@ void queueMenu()
             redraw = false;
         }
     }
+
+    return true;
 }

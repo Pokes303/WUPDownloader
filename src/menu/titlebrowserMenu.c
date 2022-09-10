@@ -364,7 +364,9 @@ loop:
 
         if(vpad.trigger & VPAD_BUTTON_MINUS)
         {
-            queueMenu();
+            if(queueMenu())
+                return;
+
             redraw = true;
         }
 
