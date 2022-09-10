@@ -23,6 +23,7 @@
 #include <file.h>
 #include <filesystem.h>
 #include <input.h>
+#include <list.h>
 #include <localisation.h>
 #include <menu/filebrowser.h>
 #include <menu/utils.h>
@@ -38,7 +39,7 @@
 
 #define MAX_FILEBROWSER_LINES (MAX_LINES - 5)
 
-static void drawFBMenuFrame(const char *path, char **folders, size_t foldersSize, const size_t pos, const size_t cursor, const NUSDEV activeDevice, bool usbMounted)
+static void drawFBMenuFrame(const char *path, LIST *folders, size_t pos, const size_t cursor, const NUSDEV activeDevice, bool usbMounted)
 {
     startNewFrame();
     textToFrame(0, 6, gettext("Select a folder:"));
@@ -64,30 +65,34 @@ static void drawFBMenuFrame(const char *path, char **folders, size_t foldersSize
     strcat(toWrite, prettyDir(path));
     textToFrame(MAX_LINES - 1, ALIGNED_CENTER, toWrite);
 
-    foldersSize -= pos;
-    if(foldersSize > MAX_FILEBROWSER_LINES)
-        foldersSize = MAX_FILEBROWSER_LINES;
-
-    for(size_t i = 0; i < foldersSize; ++i)
+    char *folder;
+    int i = 0;
+    forEachListEntry(folders, folder)
     {
-        textToFrame(i + 2, 5, folders[i + pos]);
-        if(cursor == i)
+        if(pos)
+        {
+            --pos;
+            continue;
+        }
+
+         if(cursor == i)
             arrowToFrame(i + 2, 1);
+
+        textToFrame(i + 2, 5, folder);
+
+        if(++i == MAX_FILEBROWSER_LINES)
+            break;
     }
+
     drawFrame();
 }
 
 char *fileBrowserMenu()
 {
-    size_t max_folders = 64;
-    char **folders = MEMAllocFromDefaultHeap(sizeof(char *) * max_folders);
+    LIST *folders = createList();
     if(folders == NULL)
         return false;
 
-    static const char cd[4] = "../";
-    folders[0] = (char *)cd;
-
-    size_t foldersSize = 1;
     size_t cursor, pos;
     NUSDEV usbMounted = getUSB();
     NUSDEV activeDevice = usbMounted ? NUSDEV_USB : NUSDEV_SD;
@@ -100,10 +105,18 @@ refreshVOlList:
     strcpy(path, (activeDevice & NUSDEV_USB) ? (usbMounted == NUSDEV_USB01 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC));
 refreshDirList:
     OSTime t = OSGetTime();
-    for(int i = 1; i < foldersSize; ++i)
-        MEMFreeToDefaultHeap(folders[i]);
+    clearList(folders, true);
+    char *name = MEMAllocFromDefaultHeap(strlen("../") + 1);
+    if(name == NULL)
+        goto exitFileBrowserMenu;
 
-    foldersSize = 1;
+    OSBlockMove(name, "../", strlen("../") + 1, false);
+    if(!addToListEnd(folders, name))
+    {
+        MEMFreeToDefaultHeap(name);
+        goto exitFileBrowserMenu;
+    }
+
     cursor = pos = 0;
 
     if(FSOpenDir(__wut_devoptab_fs_client, getCmdBlk(), path, &dir, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
@@ -113,39 +126,24 @@ refreshDirList:
         while(FSReadDir(__wut_devoptab_fs_client, getCmdBlk(), dir, &entry, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
             if(entry.info.flags & FS_STAT_DIRECTORY) // Check if it's a directory
             {
-                if(foldersSize == max_folders)
-                {
-                    max_folders += 64;
-                    if(max_folders < foldersSize) // buffer overrun, shouldn't happen
-                    {
-                        FSCloseDir(__wut_devoptab_fs_client, getCmdBlk(), dir, FS_ERROR_FLAG_ALL);
-                        goto exitFileBrowserMenu;
-                    }
-
-                    char **tf = MEMAllocFromDefaultHeap(sizeof(char *) * max_folders);
-                    if(tf == NULL)
-                    {
-                        FSCloseDir(__wut_devoptab_fs_client, getCmdBlk(), dir, FS_ERROR_FLAG_ALL);
-                        goto exitFileBrowserMenu;
-                    }
-
-                    OSBlockMove(tf, folders, sizeof(char *) * foldersSize, false);
-                    MEMFreeToDefaultHeap(folders);
-                    folders = tf;
-                }
 
                 len = strlen(entry.name);
-                folders[foldersSize] = MEMAllocFromDefaultHeap(len + 2);
-                if(folders[foldersSize] == NULL)
+                name = MEMAllocFromDefaultHeap(len + 2);
+                if(name == NULL)
                 {
                     FSCloseDir(__wut_devoptab_fs_client, getCmdBlk(), dir, FS_ERROR_FLAG_ALL);
                     goto exitFileBrowserMenu;
                 }
 
-                OSBlockMove(folders[foldersSize], entry.name, len, false);
-                folders[foldersSize][len] = '/';
-                folders[foldersSize][++len] = '\0';
-                ++foldersSize;
+                OSBlockMove(name, entry.name, len, false);
+                name[len] = '/';
+                name[++len] = '\0';
+                if(!addToListEnd(folders, name))
+                {
+                    MEMFreeToDefaultHeap(name);
+                    FSCloseDir(__wut_devoptab_fs_client, getCmdBlk(), dir, FS_ERROR_FLAG_ALL);
+                    goto exitFileBrowserMenu;
+                }
             }
 
         FSCloseDir(__wut_devoptab_fs_client, getCmdBlk(), dir, FS_ERROR_FLAG_ALL);
@@ -154,9 +152,9 @@ refreshDirList:
     t = OSGetTime() - t;
     addEntropy(&t, sizeof(OSTime));
 
-    drawFBMenuFrame(path, folders, foldersSize, pos, cursor, activeDevice, usbMounted);
+    drawFBMenuFrame(path, folders, pos, cursor, activeDevice, usbMounted);
 
-    mov = foldersSize >= MAX_FILEBROWSER_LINES;
+    mov = getListSize(folders) >= MAX_FILEBROWSER_LINES;
     bool redraw = false;
     uint32_t oldHold = 0;
     size_t frameCount = 0;
@@ -166,7 +164,7 @@ refreshDirList:
         if(app == APP_STATE_BACKGROUND)
             continue;
         if(app == APP_STATE_RETURNING)
-            drawFBMenuFrame(path, folders, foldersSize, pos, cursor, activeDevice, usbMounted);
+            drawFBMenuFrame(path, folders, pos, cursor, activeDevice, usbMounted);
 
         showFrame();
         if(vpad.trigger & VPAD_BUTTON_B)
@@ -193,7 +191,7 @@ refreshDirList:
             }
             else
             {
-                strcat(path, folders[cursor + pos]);
+                strcat(path, getContent(folders, cursor + pos));
                 size_t pos = strlen(path);
                 strcpy(path + pos, "title.tmd");
                 ret = fileExists(path);
@@ -234,11 +232,11 @@ refreshDirList:
                         else
                         {
                             cursor = MAX_FILEBROWSER_LINES - 1;
-                            pos = foldersSize - MAX_FILEBROWSER_LINES;
+                            pos = getListSize(folders) - MAX_FILEBROWSER_LINES;
                         }
                     }
                     else
-                        cursor = foldersSize - 1;
+                        cursor = getListSize(folders) - 1;
                 }
 
                 redraw = true;
@@ -262,9 +260,9 @@ refreshDirList:
 
             if(dpadAction)
             {
-                if(cursor + pos >= foldersSize - 1 || cursor >= MAX_FILEBROWSER_LINES - 1)
+                if(cursor + pos >= getListSize(folders) - 1 || cursor >= MAX_FILEBROWSER_LINES - 1)
                 {
-                    if(!mov || ++pos + cursor >= foldersSize)
+                    if(!mov || ++pos + cursor >= getListSize(folders))
                         cursor = pos = 0;
                 }
                 else
@@ -294,7 +292,7 @@ refreshDirList:
                 if(dpadAction)
                 {
                     pos += MAX_FILEBROWSER_LINES;
-                    if(pos >= foldersSize)
+                    if(pos >= getListSize(folders))
                         pos = 0;
                     cursor = 0;
                     redraw = true;
@@ -321,7 +319,7 @@ refreshDirList:
                     if(pos >= MAX_FILEBROWSER_LINES)
                         pos -= MAX_FILEBROWSER_LINES;
                     else
-                        pos = foldersSize - MAX_FILEBROWSER_LINES;
+                        pos = getListSize(folders) - MAX_FILEBROWSER_LINES;
                     cursor = 0;
                     redraw = true;
                 }
@@ -349,15 +347,12 @@ refreshDirList:
 
         if(redraw)
         {
-            drawFBMenuFrame(path, folders, foldersSize, pos, cursor, activeDevice, usbMounted);
+            drawFBMenuFrame(path, folders, pos, cursor, activeDevice, usbMounted);
             redraw = false;
         }
     }
 
 exitFileBrowserMenu:
-    for(int i = 1; i < foldersSize; ++i)
-        MEMFreeToDefaultHeap(folders[i]);
-
-    MEMFreeToDefaultHeap(folders);
+    destroyList(folders, true);
     return ret ? path : NULL;
 }
