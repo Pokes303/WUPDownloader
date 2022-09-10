@@ -250,6 +250,9 @@ bool queueMenu()
         if(vpad.trigger & VPAD_BUTTON_MINUS)
         {
             removeFromQueue(cursor + pos);
+            if(getListSize(titleQueue) == 0)
+                return false;
+
             if(cursor + pos == getListSize(titleQueue))
             {
                 if(cursor)
