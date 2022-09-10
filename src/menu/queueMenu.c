@@ -244,7 +244,7 @@ bool queueMenu()
                 return true;
             }
 
-            return false;
+            redraw = true;
         }
 
         if(vpad.trigger & VPAD_BUTTON_MINUS)
