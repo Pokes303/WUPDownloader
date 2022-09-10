@@ -52,7 +52,7 @@ typedef enum
     OPERATION_INSTALL,
 } OPERATION;
 
-static int cursorPos = 16;
+static int cursorPos = 15;
 
 static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
 {
