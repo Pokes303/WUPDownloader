@@ -53,6 +53,8 @@ typedef enum
 } OPERATION;
 
 static int cursorPos = 15;
+static OPERATION operation = OPERATION_INSTALL;
+static bool keepFiles = true;
 
 static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
 {
@@ -64,7 +66,7 @@ static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
     return MCP_GetTitleInfo(mcpHandle, entry->tid, out) == 0;
 }
 
-static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t size, bool installed, const char *folderName, bool usbMounted, NUSDEV dlDev, bool keepFiles, OPERATION operation, NUSDEV instDev)
+static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t size, bool installed, const char *folderName, bool usbMounted, NUSDEV dlDev, NUSDEV instDev)
 {
     startNewFrame();
 
@@ -266,15 +268,15 @@ static inline void switchInstallDevice(NUSDEV *dev)
     }
 }
 
-static inline void switchOperation(OPERATION *op)
+static inline void switchOperation()
 {
-    switch(*op)
+    switch(operation)
     {
         case OPERATION_INSTALL:
-            *op = OPERATION_DOWNLOAD;
+            operation = OPERATION_DOWNLOAD;
             break;
         case OPERATION_DOWNLOAD:
-            *op = OPERATION_INSTALL;
+            operation = OPERATION_INSTALL;
             break;
     }
 }
@@ -334,22 +336,16 @@ bool predownloadMenu(const TitleEntry *entry)
     NUSDEV usbMounted = getUSB();
     NUSDEV dlDev = usbMounted && dlToUSBenabled() ? usbMounted : NUSDEV_SD;
     NUSDEV instDev = usbMounted ? usbMounted : NUSDEV_MLC;
-    OPERATION operation = OPERATION_INSTALL;
-    bool keepFiles = true;
     char folderName[FS_MAX_PATH - 11];
     char titleVer[33];
     folderName[0] = titleVer[0] = '\0';
     TMD *tmd;
     uint64_t dls;
-
-    bool loop = true;
-    bool inst, toUSB;
-    bool redraw = false;
-
-    bool toQueue = false;
-
+    bool redraw;
+    bool toQueue;
     char tid[17];
     char downloadUrl[256];
+
 downloadTMD:
     clearRamBuf();
     hex(entry->tid, 16, tid);
@@ -406,14 +402,15 @@ downloadTMD:
     }
 
 naNedNa:
-    drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, keepFiles, operation, instDev);
+    redraw = toQueue = false;
+    drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, instDev);
 
-    while(loop && AppRunning())
+    while(AppRunning())
     {
         if(app == APP_STATE_BACKGROUND)
             continue;
         if(app == APP_STATE_RETURNING)
-            drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, keepFiles, operation, instDev);
+            drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, instDev);
 
         showFrame();
 
@@ -433,7 +430,7 @@ naNedNa:
                         switchInstallDevice(&instDev);
                     break;
                 case 16:
-                    switchOperation(&operation);
+                    switchOperation();
                     break;
                 case 17:
                     switchDownloadDevice(&dlDev);
@@ -468,18 +465,12 @@ naNedNa:
         }
 
         if(vpad.trigger & VPAD_BUTTON_PLUS)
-        {
-            inst = operation == OPERATION_INSTALL;
-            toUSB = instDev == NUSDEV_USB01 || instDev == NUSDEV_USB02;
-            loop = false;
-        }
+            break;
 
         if(vpad.trigger & VPAD_BUTTON_MINUS)
         {
-            inst = operation == OPERATION_INSTALL;
-            toUSB = instDev == NUSDEV_USB01 || instDev == NUSDEV_USB02;
             toQueue = true;
-            loop = false;
+            break;
         }
 
         if(installed && vpad.trigger & VPAD_BUTTON_Y)
@@ -492,7 +483,7 @@ naNedNa:
 
         if(redraw)
         {
-            drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, keepFiles, operation, instDev);
+            drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, instDev);
             redraw = false;
         }
     }
@@ -519,14 +510,14 @@ naNedNa:
         const TitleEntry *te = getTitleEntryByTid(t);
         if(te != NULL)
         {
-            int ovl = drawPDDemoFrame(entry, inst);
+            int ovl = drawPDDemoFrame(entry, operation == OPERATION_INSTALL);
 
             while(AppRunning())
             {
                 if(app == APP_STATE_BACKGROUND)
                     continue;
                 if(app == APP_STATE_RETURNING)
-                    drawPDDemoFrame(entry, inst);
+                    drawPDDemoFrame(entry, operation == OPERATION_INSTALL);
 
                 showFrame();
 
@@ -560,7 +551,6 @@ naNedNa:
             if(vpad.trigger & VPAD_BUTTON_B)
             {
                 removeErrorOverlay(ovl);
-                loop = true;
                 goto naNedNa;
             }
             if(vpad.trigger & VPAD_BUTTON_A)
@@ -588,7 +578,6 @@ naNedNa:
             if(vpad.trigger)
             {
                 removeErrorOverlay(ovl);
-                loop = true;
                 goto naNedNa;
             }
         }
@@ -612,9 +601,9 @@ naNedNa:
                 titleInfo->entry = entry;
                 strcpy(titleInfo->titleVer, titleVer);
                 strcpy(titleInfo->folderName, folderName);
-                titleInfo->inst = inst;
+                titleInfo->inst = operation == OPERATION_INSTALL;
                 titleInfo->dlDev = dlDev;
-                titleInfo->toUSB = toUSB;
+                titleInfo->toUSB = instDev & NUSDEV_USB;
                 titleInfo->keepFiles = keepFiles;
 
                 ret = addToQueue(titleInfo);
@@ -635,9 +624,9 @@ naNedNa:
     }
     else if(checkSystemTitleFromEntry(entry))
     {
-        ret = !downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, inst, dlDev, toUSB, keepFiles);
+        ret = !downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, operation == OPERATION_INSTALL, dlDev, instDev & NUSDEV_USB, keepFiles);
         if(!ret)
-            showFinishedScreen(entry->name, inst ? FINISHING_OPERATION_INSTALL : FINISHING_OPERATION_DOWNLOAD);
+            showFinishedScreen(entry->name, operation == OPERATION_INSTALL ? FINISHING_OPERATION_INSTALL : FINISHING_OPERATION_DOWNLOAD);
     }
     else
         ret = true;
