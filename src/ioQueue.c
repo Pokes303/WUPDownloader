@@ -291,10 +291,11 @@ FSFileHandle *openFile(const char *path, const char *mode, size_t filesize)
 
     FSStatus s = FSOpenFileEx(__wut_devoptab_fs_client, getCmdBlk(), newPath, mode, 0x660, filesize == 0 ? FS_OPEN_FLAG_NONE : FS_OPEN_FLAG_PREALLOC_SIZE, filesize, ret, FS_ERROR_FLAG_ALL);
     if(s == FS_STATUS_OK)
+    {
+        t = OSGetTime() - t;
+        addEntropy(&t, sizeof(OSTime));
         return ret;
-
-    t = OSGetTime() - t;
-    addEntropy(&t, sizeof(OSTime));
+    }
 
     MEMFreeToDefaultHeap(ret);
     debugPrintf("Error opening %s: %s!", path, translateFSErr(s));
