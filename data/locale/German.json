@@ -64,7 +64,6 @@
     "Error creating temporary directory!": "Kann temporären Ordner nicht erstellen!",
     "Error downloading": "Fehler beim Download von",
     "Error getting own title info": "Konnte eigene Titel ID nicht abfragen",
-    "Couldn't find NUSspli file on the SD card": "Konnte NUSspli Datei nicht auf der SD Karte finden",
     "Error removing file": "Fehler beim löschen der Datei",
     "Error removing directory": "Fehler beim löschen des Ordners",
     "Error moving file": "Fehler beim verschieben der Datei",,
