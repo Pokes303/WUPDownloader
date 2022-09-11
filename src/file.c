@@ -135,7 +135,8 @@ FSStatus removeDirectory(const char *path)
 {
     size_t len = strlen(path);
     char *newPath = getStaticPathBuffer(0);
-    strcpy(newPath, path);
+    if(newPath != path)
+        OSBlockMove(newPath, path, len + 1, false);
 
     if(newPath[len - 1] != '/')
     {
