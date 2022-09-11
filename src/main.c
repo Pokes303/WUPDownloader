@@ -307,7 +307,7 @@ int main()
     }
 
     if(mochaReady)
-        Mocha_DeinitLibrary();
+        Mocha_DeInitLibrary();
 
 #ifdef NUSSPLI_DEBUG
     checkStacks("main");
