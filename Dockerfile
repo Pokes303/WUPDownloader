@@ -9,7 +9,6 @@ ENV openssl_ver=3.0.5 \
 WORKDIR /
 COPY --from=wiiuenv/libmocha:2022090322084275f31e /artifacts $DEVKITPRO
 COPY --from=wiiuenv/librpxloader:20220903141341abbf92 /artifacts $DEVKITPRO
-COPY --from=wiiuenv/libromfs_wiiu:202209041935166a8e5b /artifacts $DEVKITPRO
 
 RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
  /bin/bash -c "$(curl -sL https://raw.githubusercontent.com/V10lator/NUSspli/master/apt-fast/install.sh)" && \
@@ -101,6 +100,12 @@ PKG_CONFIG=$DEVKITPRO/portlibs/wiiu/bin/powerpc-eabi-pkg-config && \
  make -j$(nproc) install && \
  cd ../.. && \
  rm -rf curl && \
+ git clone --recursive https://github.com/yawut/libromfs-wiiu --single-branch && \
+ cd libromfs-wiiu && \
+ make -j$(nproc) && \
+ make install && \
+ cd .. && \
+ rm -rf libromfs-wiiu && \
  mkdir /nuspacker && \
  cd /nuspacker && \
  wget https://github.com/Maschell/nuspacker/raw/master/NUSPacker.jar
