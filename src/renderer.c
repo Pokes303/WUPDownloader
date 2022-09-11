@@ -909,6 +909,7 @@ void shutdownRenderer()
     pauseRenderer();
 
     SDL_DestroyTexture(frameBuffer);
+    SDL_DestroyTexture(byeTex);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
 
