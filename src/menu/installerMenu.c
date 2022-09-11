@@ -61,37 +61,16 @@ static void drawInstallerMenuFrame(const char *name, NUSDEV dev, bool keepFiles)
 
 static NUSDEV getDevFromPath(const char *path)
 {
-    NUSDEV ret = NUSDEV_NONE;
-    size_t s = strlen(path);
-    char *ptr = MEMAllocFromDefaultHeap(++s);
-    if(ptr)
-    {
-        OSBlockMove(ptr, path, s, false);
-        --s;
+    if(strncmp(NUSDIR_SD, path, strlen(NUSDIR_SD)) == 0)
+        return NUSDEV_SD;
+    if(strncmp(NUSDIR_USB1, path, strlen(NUSDIR_USB1)) == 0)
+        return NUSDEV_USB01;
+    if(strncmp(NUSDIR_USB2, path, strlen(NUSDIR_USB2)) == 0)
+        return NUSDEV_USB02;
+    if(strncmp(NUSDIR_MLC, path, strlen(NUSDIR_MLC)) == 0)
+        return NUSDEV_MLC;
 
-        if(s >= strlen(NUSDIR_SD))
-        {
-            char oc = ptr[strlen(NUSDIR_SD)];
-            ptr[strlen(NUSDIR_SD)] = '\0';
-            if(strcmp(ptr, NUSDIR_SD) == 0)
-                ret = NUSDEV_SD;
-            else if(s >= strlen(NUSDIR_MLC))
-            {
-                ptr[strlen(NUSDIR_SD)] = oc;
-                oc = ptr[strlen(NUSDIR_MLC)];
-                ptr[strlen(NUSDIR_MLC)] = '\0';
-
-                if(strcmp(ptr, NUSDIR_USB1) == 0)
-                    ret = NUSDEV_USB01;
-                else if(strcmp(ptr, NUSDIR_USB2) == 0)
-                    ret = NUSDEV_USB02;
-                else if(strcmp(ptr, NUSDIR_MLC) == 0)
-                    ret = NUSDEV_MLC;
-            }
-        }
-    }
-
-    return ret;
+    return NUSDEV_NONE;
 }
 
 void installerMenu(const char *dir)
