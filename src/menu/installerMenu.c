@@ -125,7 +125,7 @@ void installerMenu(const char *dir)
         if(vpad.trigger & VPAD_BUTTON_B)
             return;
 
-        if(vpad.trigger & VPAD_BUTTON_LEFT)
+        if(vpad.trigger & VPAD_BUTTON_LEFT && dev == NUSDEV_SD)
         {
             keepFiles = !keepFiles;
             drawInstallerMenuFrame(nd, dev, keepFiles);
