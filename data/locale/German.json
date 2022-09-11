@@ -23,6 +23,11 @@
     "\uE002 to switch to USB": "\uE002 um zu USB zu wechseln",
     "Searching on": "Suche in",
 
+    "Press \uE000 to install to USB": "Drücke \uE000 um zu USB zu installieren",
+    "Press \uE002 to install to NAND": "Drücke \uE002 um zu NAND zu installieren",
+    "Press \uE07B to delete files after the installation": "Drücke \uE07B um die Dateien nach der Installation zu löschen",
+    "Press \uE07B to keep files after the installation": "Drücke \uE07B um die Dateien nach der Installation zu behalten",
+
     "Press \uE000 to delete": "Drücke \uE000 um zu deinstallieren",
 
     "Press \uE000 to continue": "Drücke \uE000 um fortzufahren",
