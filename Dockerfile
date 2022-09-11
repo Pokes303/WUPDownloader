@@ -1,5 +1,5 @@
 # build wut
-FROM wiiuenv/devkitppc:20220806 AS final
+FROM wiiuenv/devkitppc:20220907 AS final
 
 ENV openssl_ver=3.0.5 \
  curl_ver=7.85.0 \
@@ -7,7 +7,9 @@ ENV openssl_ver=3.0.5 \
  PATH=$DEVKITPPC/bin:$PATH \
  WUT_ROOT=$DEVKITPRO/wut
 WORKDIR /
+COPY --from=wiiuenv/libmocha:2022090322084275f31e /artifacts $DEVKITPRO
 COPY --from=wiiuenv/librpxloader:20220903141341abbf92 /artifacts $DEVKITPRO
+COPY --from=wiiuenv/libromfs_wiiu:202209041935166a8e5b /artifacts $DEVKITPRO
 
 RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
  /bin/bash -c "$(curl -sL https://raw.githubusercontent.com/V10lator/NUSspli/master/apt-fast/install.sh)" && \
@@ -99,19 +101,6 @@ PKG_CONFIG=$DEVKITPRO/portlibs/wiiu/bin/powerpc-eabi-pkg-config && \
  make -j$(nproc) install && \
  cd ../.. && \
  rm -rf curl && \
- git clone --recursive https://github.com/wiiu-env/libmocha --single-branch && \
- cd libmocha && \
- git checkout 51c67f8c4f85fa9b0bfadf2fe895eab2638f3452 && \
- make -j$(nproc) && \
- make install && \
- cd .. && \
- rm -rf libmocha && \
- git clone --recursive https://github.com/yawut/libromfs-wiiu --single-branch && \
- cd libromfs-wiiu && \
- make -j$(nproc) && \
- make install && \
- cd .. && \
- rm -rf libromfs-wiiu && \
  mkdir /nuspacker && \
  cd /nuspacker && \
  wget https://github.com/Maschell/nuspacker/raw/master/NUSPacker.jar
