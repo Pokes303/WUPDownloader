@@ -130,9 +130,6 @@ void initState()
     OSEnableHomeButtonMenu(false);
 
     aroma = RPXLoader_InitLibrary() == RPX_LOADER_RESULT_SUCCESS;
-    if(aroma)
-        RPXLoader_DeInitLibrary();
-
 #ifndef NUSSPLI_HBL
     channel = OSGetTitleID() == 0x0005000010155373;
 #endif
@@ -148,6 +145,12 @@ void initState()
     debugPrintf("APD enabled by sys settings: %s (%d)", apdEnabled ? "true" : "false", (uint32_t)ime);
     t = OSGetTime() - t;
     addEntropy(&t, sizeof(OSTime));
+}
+
+void deinitState()
+{
+    if(aroma)
+        RPXLoader_DeInitLibrary();
 }
 
 bool AppRunning()

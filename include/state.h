@@ -43,6 +43,7 @@ extern "C"
     extern APP_STATE app;
 
     void initState() __attribute__((__cold__));
+    void deinitState() __attribute__((__cold__));
     void enableApd();
     void disableApd();
     void enableShutdown();

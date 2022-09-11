@@ -433,21 +433,19 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 
     // Uninstall currently running type/version
 #ifdef NUSSPLI_HBL
-    if(!dirExists(UPDATE_HBL_FOLDER))
+    if(removeDirectory(UPDATE_HBL_FOLDER) != FS_STATUS_OK)
     {
-        showUpdateError(gettext("Couldn't find NUSspli folder on the SD card"));
+        showUpdateErrorf("%s: %s", gettext("Error removing directory"), translateFSErr(err));
         goto updateError;
     }
-
-    removeDirectory(UPDATE_HBL_FOLDER);
 #else
     if(isChannel())
     {
         MCPTitleListType ownInfo;
-        MCPError err = MCP_GetOwnTitleInfo(mcpHandle, &ownInfo);
-        if(err != 0)
+        MCPError e = MCP_GetOwnTitleInfo(mcpHandle, &ownInfo);
+        if(e != 0)
         {
-            showUpdateErrorf("%s: %#010x", gettext("Error getting own title info"), err);
+            showUpdateErrorf("%s: %#010x", gettext("Error getting own title info"), e);
             goto updateError;
         }
 
@@ -458,29 +456,22 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
     }
     else if(isAroma())
     {
-        if(!fileExists(UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE))
+        RPXLoaderStatus rs = RPXLoader_UnmountCurrentRunningBundle();
+        if(rs == RPX_LOADER_RESULT_SUCCESS)
         {
-            showUpdateError(gettext("Couldn't find NUSspli file on the SD card"));
+            strcpy(path, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
+            err = FSRemove(__wut_devoptab_fs_client, getCmdBlk(), path, FS_ERROR_FLAG_ALL);
+            if(err != FS_STATUS_OK)
+            {
+                showUpdateErrorf("%s: %s", gettext("Error removing file"), translateFSErr(err));
+                goto updateError;
+            }
+        }
+        else
+        {
+            showUpdateErrorf("%s: 0x%08X", gettext("Aroma error"), rs);
             goto updateError;
         }
-
-        if(RPXLoader_InitLibrary() == RPX_LOADER_RESULT_SUCCESS)
-        {
-            if(RPXLoader_UnmountCurrentRunningBundle() == RPX_LOADER_RESULT_SUCCESS)
-            {
-                RPXLoader_DeInitLibrary();
-                goto AromaUnmounted;
-            }
-
-            RPXLoader_DeInitLibrary();
-        }
-
-        showUpdateError(gettext("Aroma error!"));
-        goto updateError;
-
-    AromaUnmounted:
-        strcpy(path, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
-        FSRemove(__wut_devoptab_fs_client, getCmdBlk(), path, FS_ERROR_FLAG_ALL);
     }
 #endif
 
@@ -492,7 +483,12 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
             strcpy(path, UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE);
             char *path2 = getStaticPathBuffer(0);
             strcpy(path2, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
-            FSRename(__wut_devoptab_fs_client, getCmdBlk(), path, path2, FS_ERROR_FLAG_ALL);
+            err = FSRename(__wut_devoptab_fs_client, getCmdBlk(), path, path2, FS_ERROR_FLAG_ALL);
+            if(err != FS_STATUS_OK)
+            {
+                showUpdateErrorf("%s: %s", gettext("Error moving file"), translateFSErr(err));
+                goto updateError;
+            }
             break;
         case NUSSPLI_TYPE_CHANNEL:
             strcpy(path, UPDATE_TEMP_FOLDER);
@@ -501,14 +497,12 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
             install("Update", false, NUSDEV_SD, path, toUSB, true, 0);
             break;
         case NUSSPLI_TYPE_HBL:
-#ifdef NUSSPLI_DEBUG
-            FSStatus err =
-#endif
-                moveDirectory(UPDATE_TEMP_FOLDER "NUSspli", UPDATE_HBL_FOLDER);
-#ifdef NUSSPLI_DEBUG
+            err = moveDirectory(UPDATE_TEMP_FOLDER "NUSspli", UPDATE_HBL_FOLDER);
             if(err != FS_STATUS_OK)
-                debugPrintf("Error moving directory: %s", translateFSErr(err));
-#endif
+            {
+                showUpdateErrorf("%s: %s", gettext("Error moving directory"), translateFSErr(err));
+                goto updateError;
+            }
             break;
     }
 
@@ -519,4 +513,5 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 
 updateError:
     removeDirectory(UPDATE_TEMP_FOLDER);
+    enableShutdown();
 }

@@ -131,7 +131,7 @@ bool dirExists(const char *path)
     return FSGetStat(__wut_devoptab_fs_client, &cmdBlk, path, &stat, FS_ERROR_FLAG_ALL) == FS_STATUS_OK && (stat.flags & FS_STAT_DIRECTORY);
 }
 
-void removeDirectory(const char *path)
+FSStatus removeDirectory(const char *path)
 {
     size_t len = strlen(path);
     char *newPath = getStaticPathBuffer(0);
@@ -146,26 +146,35 @@ void removeDirectory(const char *path)
     char *inSentence = newPath + len;
     FSDirectoryHandle dir;
     OSTime t = OSGetTime();
-    if(FSOpenDir(__wut_devoptab_fs_client, &cmdBlk, newPath, &dir, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
+    FSStatus ret = FSOpenDir(__wut_devoptab_fs_client, &cmdBlk, newPath, &dir, FS_ERROR_FLAG_ALL);
+    if(ret == FS_STATUS_OK)
     {
         FSDirectoryEntry entry;
         while(FSReadDir(__wut_devoptab_fs_client, &cmdBlk, dir, &entry, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
         {
             strcpy(inSentence, entry.name);
             if(entry.info.flags & FS_STAT_DIRECTORY)
-                removeDirectory(newPath);
+                ret = removeDirectory(newPath);
             else
-                FSRemove(__wut_devoptab_fs_client, &cmdBlk, newPath, FS_ERROR_FLAG_ALL);
+                ret = FSRemove(__wut_devoptab_fs_client, &cmdBlk, newPath, FS_ERROR_FLAG_ALL);
+
+            if(ret != FS_STATUS_OK)
+                break;
         }
+
         FSCloseDir(__wut_devoptab_fs_client, &cmdBlk, dir, FS_ERROR_FLAG_ALL);
-        newPath[len - 1] = '\0';
-        FSRemove(__wut_devoptab_fs_client, &cmdBlk, newPath, FS_ERROR_FLAG_ALL);
+        if(ret == FS_STATUS_OK)
+        {
+            newPath[--len] = '\0';
+            ret = FSRemove(__wut_devoptab_fs_client, &cmdBlk, newPath, FS_ERROR_FLAG_ALL);
+        }
     }
     else
         debugPrintf("Path \"%s\" not found!", newPath);
 
     t = OSGetTime() - t;
     addEntropy(&t, sizeof(OSTime));
+    return ret;
 }
 
 FSStatus moveDirectory(const char *src, const char *dest)
@@ -516,6 +525,8 @@ const char *translateFSErr(FSStatus err)
         case FS_STATUS_FILE_TOO_BIG:
         case FS_STATUS_STORAGE_FULL:
             return "Not enough free space";
+        case FS_STATUS_ALREADY_OPEN:
+            return "File held open by another process";
         default:
             break;
     }

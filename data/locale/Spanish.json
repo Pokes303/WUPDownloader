@@ -63,9 +63,7 @@
     "Aroma version too old to allow auto-updates": "Versión de Aroma muy antigua para permitir actualizaciones automáticas",
     "Error creating temporary directory!": "¡Error creando la carpeta temporal!",
     "Error downloading": "Error descargando",
-    "Couldn't find NUSspli folder on the SD card": "No se ha podido encontrar la carpeta de NUSspli en la tarjeta SD",
     "Error getting own title info": "Error al obtener la información del título propio",
-    "Couldn't find NUSspli file on the SD card": "No se ha podido encontrar el archivo de NUSspli en la tarjeta SD",
 
     "Name:": "Nombre:",
     "Size:": "Tamaño:",

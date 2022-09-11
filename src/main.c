@@ -347,6 +347,7 @@ int main()
         } while(ps != PROCUI_STATUS_EXITING);
     }
 
+    deinitState();
     ProcUIShutdown();
     return 0;
 }
