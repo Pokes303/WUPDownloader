@@ -15,6 +15,7 @@ RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
  apt-fast -y --no-install-recommends upgrade && \
  apt-fast -y install --no-install-recommends autoconf automake libtool openjdk-11-jre-headless && \
  apt-fast clean && \
+ find $DEVKITPRO \
  wget https://www.openssl.org/source/openssl-$openssl_ver.tar.gz && \
  mkdir /openssl && \
  tar xf openssl-$openssl_ver.tar.gz -C /openssl --strip-components=1 && \
