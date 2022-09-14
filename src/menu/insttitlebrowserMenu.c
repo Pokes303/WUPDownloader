@@ -240,7 +240,7 @@ static OSThread *initITBMenu()
     if(r > 0)
     {
         uint32_t s = sizeof(MCPTitleListType) * (uint32_t)r;
-        ititleEntries = (MCPTitleListType *)MEMAllocFromDefaultHeap(s);
+        ititleEntries = (MCPTitleListType *)MEMAllocFromDefaultHeapEx(s, 0x40);
         if(ititleEntries)
         {
             r = MCP_TitleList(mcpHandle, &s, ititleEntries, s);
