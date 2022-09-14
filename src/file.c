@@ -38,6 +38,8 @@
 #include <coreinit/memory.h>
 #include <coreinit/time.h>
 
+#include <mbedtls/sha256.h>
+
 static FSCmdBlock cmdBlk;
 
 FSCmdBlock *getCmdBlk()
@@ -370,60 +372,52 @@ bool verifyTmd(const TMD *tmd, size_t size)
                     // Validate TMD hash
                     uint32_t hash[8];
                     uint8_t *ptr = ((uint8_t *)tmd) + (sizeof(TMD) - (sizeof(TMD_CONTENT_INFO) * 64));
-                    if(getSHA256(ptr, sizeof(TMD_CONTENT_INFO) * 64, hash))
+                    mbedtls_sha256(ptr, sizeof(TMD_CONTENT_INFO) * 64, (unsigned char *)hash, 0);
+                    for(int i = 0; i < 8; ++i)
                     {
-                        for(int i = 0; i < 8; ++i)
+                        if(hash[i] != tmd->hash[i])
                         {
-                            if(hash[i] != tmd->hash[i])
-                            {
-                                debugPrintf("Invalid title.tmd file (tmd hash mismatch)");
-                                return false;
-                            }
+                            debugPrintf("Invalid title.tmd file (tmd hash mismatch)");
+                            return false;
                         }
-
-                        // Validate content hash
-                        ptr += sizeof(TMD_CONTENT_INFO) * 64;
-                        if(getSHA256(ptr, sizeof(TMD_CONTENT) * tmd->num_contents, hash))
-                        {
-                            for(int i = 0; i < 8; ++i)
-                            {
-                                if(hash[i] != tmd->content_infos[0].hash[i])
-                                {
-                                    debugPrintf("Invalid title.tmd file (content hash mismatch)");
-                                    return false;
-                                }
-                            }
-
-                            // Validate content
-                            for(int i = 0; i < tmd->num_contents; ++i)
-                            {
-                                // Validate content index
-                                if(tmd->contents[i].index != i)
-                                {
-                                    debugPrintf("Invalid title.tmd file (content: %d, index: %u)", i, tmd->contents[i].index);
-                                    return false;
-                                }
-                                // Validate content type
-                                if(!((tmd->contents[i].type & TMD_CONTENT_TYPE_CONTENT) && (tmd->contents[i].type & TMD_CONTENT_TYPE_ENCRYPTED)))
-                                {
-                                    debugPrintf("Invalid title.tmd file (content: %u, type: 0x%04X)", i, tmd->contents[i].type);
-                                    return false;
-                                }
-                                // Validate content size
-                                if(tmd->contents[i].size < 32 * 1024 || tmd->contents[i].size > (uint64_t)1024 * 1024 * 1024 * 4)
-                                {
-                                    debugPrintf("Invalid title.tmd file (content: %d, size: %llu)", i, tmd->contents[i].size);
-                                    return false;
-                                }
-                            }
-
-                            return true;
-                        }
-                        else
-                            debugPrintf("Error calculating content hash for title.tmd file!");
                     }
-                    else
-                        debugPrintf("Error calculating tmd hash for title.tmd file!");
+
+                    // Validate content hash
+                    ptr += sizeof(TMD_CONTENT_INFO) * 64;
+                    mbedtls_sha256(ptr, sizeof(TMD_CONTENT) * tmd->num_contents, (unsigned char *)hash, 0);
+                    for(int i = 0; i < 8; ++i)
+                    {
+                        if(hash[i] != tmd->content_infos[0].hash[i])
+                        {
+                            debugPrintf("Invalid title.tmd file (content hash mismatch)");
+                            return false;
+                        }
+                    }
+
+                    // Validate content
+                    for(int i = 0; i < tmd->num_contents; ++i)
+                    {
+                        // Validate content index
+                        if(tmd->contents[i].index != i)
+                        {
+                            debugPrintf("Invalid title.tmd file (content: %d, index: %u)", i, tmd->contents[i].index);
+                            return false;
+                        }
+                        // Validate content type
+                        if(!((tmd->contents[i].type & TMD_CONTENT_TYPE_CONTENT) && (tmd->contents[i].type & TMD_CONTENT_TYPE_ENCRYPTED)))
+                        {
+                            debugPrintf("Invalid title.tmd file (content: %u, type: 0x%04X)", i, tmd->contents[i].type);
+                            return false;
+                        }
+                        // Validate content size
+                        if(tmd->contents[i].size < 32 * 1024 || tmd->contents[i].size > (uint64_t)1024 * 1024 * 1024 * 4)
+                        {
+                            debugPrintf("Invalid title.tmd file (content: %d, size: %llu)", i, tmd->contents[i].size);
+                            return false;
+                        }
+                    }
+
+                    return true;
                 }
                 else
                     debugPrintf("Wrong title.tmd filesize (num_contents: %u, filesize: 0x%X)", tmd->num_contents, size);
