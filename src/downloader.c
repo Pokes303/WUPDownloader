@@ -419,44 +419,44 @@ static int dlThreadMain(int argc, const char **argv)
         x.dlnow = x.dltotal = 0.0D;              \
     }
 
-static const char *translateCurlError(CURLcode err, char *curlError)
+static const char *translateCurlError(CURLcode err, const char *curlError)
 {
     const char *ret;
     switch(err)
     {
         case CURLE_COULDNT_RESOLVE_HOST:
-            ret = gettext("Couldn't resolve hostname");
+            ret = "Couldn't resolve hostname";
             break;
         case CURLE_COULDNT_CONNECT:
-            ret = gettext("Couldn't connect to server");
+            ret = "Couldn't connect to server";
             break;
         case CURLE_OPERATION_TIMEDOUT:
-            ret = gettext("Operation timed out");
+            ret = "Operation timed out";
             break;
         case CURLE_GOT_NOTHING:
-            ret = gettext("The server didn't return any data");
+            ret = "The server didn't return any data";
             break;
         case CURLE_SEND_ERROR:
         case CURLE_RECV_ERROR:
         case CURLE_PARTIAL_FILE:
-            ret = gettext("I/O error");
+            ret = "I/O error";
             break;
         case CURLE_PEER_FAILED_VERIFICATION:
-            ret = gettext("Verification failed");
+            ret = "Verification failed";
             break;
         case CURLE_SSL_CONNECT_ERROR:
-            ret = gettext("Handshake failed");
+            ret = "Handshake failed";
             break;
 
         case CURLE_FAILED_INIT:
         case CURLE_READ_ERROR:
         case CURLE_OUT_OF_MEMORY:
-            return gettext("Internal error");
+            return "Internal error";
         default:
-            return gettext("Unknown libcurl error");
+            return curlError[0] == '\0' ? "Unknown libcurl error" : curlError;
     }
 
-    return curlError[0] == '\0' ? ret : curlError;
+    return ret;
 }
 
 int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume)
@@ -810,11 +810,11 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
             case CURLE_SEND_ERROR:
             case CURLE_RECV_ERROR:
             case CURLE_PARTIAL_FILE:
-                sprintf(toScreen, "%s:\n\t%s\n\n%s", gettext("Network error"), te, gettext("check the network settings and try again"));
+                sprintf(toScreen, "%s:\n\t%s\n\n%s", "Network error", te, "check the network settings and try again");
                 break;
             case CURLE_PEER_FAILED_VERIFICATION:
             case CURLE_SSL_CONNECT_ERROR:
-                sprintf(toScreen, "%s:\n\t%s!\n\n%s", gettext("SSL error"), te, gettext("check your Wii Us date and time settings"));
+                sprintf(toScreen, "%s:\n\t%s!\n\n%s", "SSL error", te, "check your Wii Us date and time settings");
                 break;
             default:
                 sprintf(toScreen, "%s:\n\t%d %s", te, ret, curlError);
