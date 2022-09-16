@@ -210,7 +210,7 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region)
     int ovl = addErrorOverlay(toFrame);
 
     bool ret = true;
-    while(AppRunning())
+    while(AppRunning(true))
     {
         showFrame();
 
@@ -233,7 +233,7 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region)
             gettext("No"));
         ovl = addErrorOverlay(toFrame);
 
-        while(AppRunning())
+        while(AppRunning(true))
         {
             showFrame();
 
@@ -257,7 +257,7 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region)
             gettext("No"));
         ovl = addErrorOverlay(toFrame);
 
-        while(AppRunning())
+        while(AppRunning(true))
         {
             showFrame();
 
@@ -348,7 +348,7 @@ void showFinishedScreen(const char *titleName, FINISHING_OPERATION op)
 
     startNotification();
 
-    while(AppRunning())
+    while(AppRunning(true))
     {
         if(app == APP_STATE_BACKGROUND)
             continue;

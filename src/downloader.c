@@ -96,7 +96,7 @@ typedef struct
 static int progressCallback(void *rawData, double dltotal, double dlnow, double ultotal, double ulnow)
 {
     curlProgressData *data = (curlProgressData *)rawData;
-    if(!AppRunning())
+    if(!AppRunning(false))
         data->error = CURLE_ABORTED_BY_CALLBACK;
 
     if(data->error != CURLE_OK)
@@ -737,7 +737,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
         showFrame();
 
-        if(!AppRunning())
+        if(!AppRunning(true))
             break;
 
         if(cancelOverlayId < 0)
@@ -843,7 +843,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
             drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
 
         int s;
-        while(AppRunning())
+        while(AppRunning(true))
         {
             if(app == APP_STATE_BACKGROUND)
                 continue;
@@ -905,7 +905,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
             strcat(toScreen, gettext("The title cannot be found on the NUS, maybe the provided title ID doesn't exists or\nthe TMD was deleted"));
             drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
 
-            while(AppRunning())
+            while(AppRunning(true))
             {
                 if(app == APP_STATE_BACKGROUND)
                     continue;
@@ -936,7 +936,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
             drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
 
-            while(AppRunning())
+            while(AppRunning(true))
             {
                 if(app == APP_STATE_BACKGROUND)
                     continue;
@@ -1007,7 +1007,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
             strcpy(toScreen, translateFSErr(err));
             drawErrorFrame(toScreen, ANY_RETURN);
 
-            while(AppRunning())
+            while(AppRunning(true))
             {
                 if(app == APP_STATE_BACKGROUND)
                     continue;
@@ -1041,7 +1041,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
             strcpy(toScreen, translateFSErr(err));
             drawErrorFrame(toScreen, ANY_RETURN);
 
-            while(AppRunning())
+            while(AppRunning(true))
             {
                 if(app == APP_STATE_BACKGROUND)
                     continue;
@@ -1067,7 +1067,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
     {
         drawErrorFrame("Can't save title.tmd file!", ANY_RETURN);
 
-        while(AppRunning())
+        while(AppRunning(true))
         {
             if(app == APP_STATE_BACKGROUND)
                 continue;
@@ -1169,7 +1169,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
     else
         addToScreenLog("title.tik skipped!");
 
-    if(!AppRunning())
+    if(!AppRunning(true))
         return false;
 
     strcpy(idp, "title.cert");
@@ -1186,7 +1186,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
         else
             return false;
 
-        if(!AppRunning())
+        if(!AppRunning(true))
             return false;
     }
     else
@@ -1213,7 +1213,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
     char *dupp = dup + 8;
     char *idpp = idp + 8;
     char cid[9];
-    for(int i = 0; i < tmd->num_contents && AppRunning(); ++i)
+    for(int i = 0; i < tmd->num_contents && AppRunning(true); ++i)
     {
         hex(tmd->contents[i].cid, 8, cid);
         strcpy(dup, cid);
@@ -1245,7 +1245,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
     if(cancelOverlayId >= 0)
         closeCancelOverlay();
 
-    if(!AppRunning())
+    if(!AppRunning(true))
     {
         enableApd();
         return false;

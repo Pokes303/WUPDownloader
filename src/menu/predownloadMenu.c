@@ -377,7 +377,7 @@ downloadTMD:
 
         drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
 
-        while(AppRunning())
+        while(AppRunning(true))
         {
             if(app == APP_STATE_BACKGROUND)
                 continue;
@@ -405,7 +405,7 @@ naNedNa:
     redraw = toQueue = false;
     drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, instDev);
 
-    while(AppRunning())
+    while(AppRunning(true))
     {
         if(app == APP_STATE_BACKGROUND)
             continue;
@@ -488,7 +488,7 @@ naNedNa:
         }
     }
 
-    if(!AppRunning())
+    if(!AppRunning(true))
     {
         clearRamBuf();
         return false;
@@ -512,7 +512,7 @@ naNedNa:
         {
             int ovl = drawPDDemoFrame(entry, operation == OPERATION_INSTALL);
 
-            while(AppRunning())
+            while(AppRunning(true))
             {
                 if(app == APP_STATE_BACKGROUND)
                     continue;
@@ -544,7 +544,7 @@ naNedNa:
 
             "Are you sure you want to do this?"));
 
-        while(AppRunning())
+        while(AppRunning(true))
         {
             showFrame();
 
@@ -571,7 +571,7 @@ naNedNa:
         strcat(toFrame, gettext("Press any key to return"));
         int ovl = addErrorOverlay(toFrame);
 
-        while(AppRunning())
+        while(AppRunning(true))
         {
             showFrame();
 

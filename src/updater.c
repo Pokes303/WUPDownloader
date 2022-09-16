@@ -70,7 +70,7 @@ static void showUpdateError(const char *msg)
 {
     enableShutdown();
     drawErrorFrame(msg, ANY_RETURN);
-    while(AppRunning())
+    while(AppRunning(true))
     {
         if(app == APP_STATE_BACKGROUND)
             continue;

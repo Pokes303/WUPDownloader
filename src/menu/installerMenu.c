@@ -81,7 +81,7 @@ void installerMenu(const char *dir)
 
     drawInstallerMenuFrame(nd, dev, keepFiles);
 
-    while(AppRunning())
+    while(AppRunning(true))
     {
         if(app == APP_STATE_BACKGROUND)
             continue;
@@ -107,7 +107,7 @@ void installerMenu(const char *dir)
             {
                 drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
 
-                while(AppRunning())
+                while(AppRunning(true))
                 {
                     if(app == APP_STATE_BACKGROUND)
                         continue;

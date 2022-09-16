@@ -145,7 +145,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
         addToScreenLog("Installation failed!");
         drawErrorFrame(toScreen, ANY_RETURN);
 
-        while(AppRunning())
+        while(AppRunning(true))
         {
             if(app == APP_STATE_BACKGROUND)
                 continue;
@@ -176,7 +176,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
         addToScreenLog("Installation failed!");
         drawErrorFrame(err, ANY_RETURN);
 
-        while(AppRunning())
+        while(AppRunning(true))
         {
             if(app == APP_STATE_BACKGROUND)
                 continue;
@@ -209,7 +209,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
         addToScreenLog("Installation failed!");
         drawErrorFrame(toScreen, ANY_RETURN);
 
-        while(AppRunning())
+        while(AppRunning(true))
         {
             if(app == APP_STATE_BACKGROUND)
                 continue;
@@ -288,7 +288,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
         addToScreenLog("Installation failed!");
         drawErrorFrame(toScreen, ANY_RETURN);
 
-        while(AppRunning())
+        while(AppRunning(true))
         {
             if(app == APP_STATE_BACKGROUND)
                 continue;
