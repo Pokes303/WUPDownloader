@@ -126,7 +126,6 @@ refreshDirList:
         while(FSReadDir(__wut_devoptab_fs_client, getCmdBlk(), dir, &entry, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
             if(entry.info.flags & FS_STAT_DIRECTORY) // Check if it's a directory
             {
-
                 len = strlen(entry.name);
                 name = MEMAllocFromDefaultHeap(len + 2);
                 if(name == NULL)
