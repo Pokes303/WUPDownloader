@@ -356,7 +356,6 @@ bool initDownloader()
                                     ret = curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, ssl_ctx_init);
                                     if(ret == CURLE_OK)
                                     {
-
                                         ret = curl_easy_setopt(curl, CURLOPT_CAINFO_BLOB, blob);
                                         if(ret == CURLE_OK)
                                         {
