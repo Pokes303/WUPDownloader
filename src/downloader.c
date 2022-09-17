@@ -360,10 +360,18 @@ bool initDownloader()
                                         ret = curl_easy_setopt(curl, CURLOPT_CAINFO_BLOB, blob);
                                         if(ret == CURLE_OK)
                                         {
-                                            if(blob.data != NULL)
-                                                MEMFreeToDefaultHeap(blob.data);
+                                            ret = curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1L);
+                                            if(ret == CURLE_OK)
+                                            {
+                                                ret = curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 30L);
+                                                if(ret == CURLE_OK)
+                                                {
+                                                    if(blob.data != NULL)
+                                                        MEMFreeToDefaultHeap(blob.data);
 
-                                            return true;
+                                                    return true;
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -581,7 +589,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
     OSTick lastTransfair = OSGetTick();
     OSTick ent;
     int frames = 1;
-    int ltframes = 0;
     uint32_t fileeta;
     uint32_t totaleta;
     while(cdata.running)
@@ -662,14 +669,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 }
 
                 lastTransfair = now;
-                if(dltotal < 0.01D)
-                {
-                    if(++ltframes == 30)
-                        cdata.error = CURLE_OPERATION_TIMEDOUT;
-                }
-                else
-                    ltframes = 0;
-
                 getSpeedString(dltotal, toScreen);
                 textToFrame(0, ALIGNED_RIGHT, toScreen);
             }
