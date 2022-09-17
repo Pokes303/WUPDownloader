@@ -72,7 +72,7 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUs
 
         while(FSReadDir(__wut_devoptab_fs_client, getCmdBlk(), dir, &entry, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
         {
-            if(!(entry.info.flags & FS_STAT_DIRECTORY) || strlen(entry.name) != 8)
+            if(entry.name[0] == '.' || !(entry.info.flags & FS_STAT_DIRECTORY) || strlen(entry.name) != 8)
                 continue;
 
             strcpy(ptr, entry.name);

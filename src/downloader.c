@@ -275,6 +275,9 @@ bool initDownloader()
         FSDirectoryEntry entry;
         while(FSReadDir(__wut_devoptab_fs_client, getCmdBlk(), dir, &entry, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
         {
+            if(entry.name[0] == '.')
+                continue;
+
             strcpy(ptr, entry.name);
 #else
         for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
