@@ -155,6 +155,9 @@ FSStatus removeDirectory(const char *path)
         FSDirectoryEntry entry;
         while(FSReadDir(__wut_devoptab_fs_client, &cmdBlk, dir, &entry, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
         {
+            if(entry.name[0] == '.')
+                continue;
+
             strcpy(inSentence, entry.name);
             if(entry.info.flags & FS_STAT_DIRECTORY)
                 ret = removeDirectory(newPath);
@@ -219,6 +222,9 @@ FSStatus moveDirectory(const char *src, const char *dest)
             FSDirectoryEntry entry;
             while(ret == FS_STATUS_OK && FSReadDir(__wut_devoptab_fs_client, &cmdBlk, dir, &entry, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
             {
+                if(entry.name[0] == '.')
+                    continue;
+
                 len = strlen(entry.name);
                 OSBlockMove(inSrc, entry.name, ++len, false);
                 OSBlockMove(inDest, entry.name, len, false);
