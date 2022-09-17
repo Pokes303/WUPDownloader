@@ -365,7 +365,7 @@ bool initDownloader()
                                             ret = curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1L);
                                             if(ret == CURLE_OK)
                                             {
-                                                ret = curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 30L);
+                                                ret = curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 60L);
                                                 if(ret == CURLE_OK)
                                                 {
                                                     if(blob.data != NULL)
