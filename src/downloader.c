@@ -1256,7 +1256,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
     if(inst)
     {
         *idp = '\0';
-        ret = install(titleEntry->name, hasDependencies, dlDev, installDir, toUSB, keepFiles, tmd->tid);
+        ret = install(titleEntry->name, hasDependencies, dlDev, installDir, toUSB, keepFiles, tmd);
     }
     else
         ret = true;

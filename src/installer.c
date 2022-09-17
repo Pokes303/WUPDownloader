@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <coreinit/filesystem.h>
 #include <coreinit/ios.h>
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
@@ -83,12 +84,12 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUs
     }
 }
 
-bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool toUsb, bool keepFiles, uint64_t tid)
+bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool toUsb, bool keepFiles, const TMD *tmd)
 {
-    if(tid != 0)
+    if(tmd != NULL)
     {
         MCPTitleListType titleEntry;
-        if(MCP_GetTitleInfo(mcpHandle, tid, &titleEntry) == 0)
+        if(MCP_GetTitleInfo(mcpHandle, tmd->tid, &titleEntry) == 0)
             deinstall(&titleEntry, game, false, true);
     }
 
@@ -103,6 +104,36 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
     writeScreenLog(2);
     drawFrame();
     showFrame();
+
+    if(tmd != NULL)
+    {
+        uint64_t size = 0;
+        for(uint16_t i = 0; i < tmd->num_contents; ++i)
+            size += tmd->contents[i].size;
+
+        uint64_t freeSpace;
+        const char *nd = toUsb ? (getUSB() == NUSDEV_USB01 ? NUSDIR_USB1 : NUSDIR_USB2) : NUSDIR_MLC;
+        if(FSGetFreeSpaceSize(__wut_devoptab_fs_client, getCmdBlk(), (char *)nd, &freeSpace, FS_ERROR_FLAG_ALL) == FS_STATUS_OK && size > freeSpace)
+        {
+            char *toFrame = getToFrameBuffer();
+            const char *i10n = gettext("Not enough free space on");
+            strcpy(toFrame, i10n);
+            sprintf(toFrame + strlen(i10n), "  %s\n\n", toUsb ? " USB" : "NAND");
+            strcat(toFrame, gettext("Press any key to return"));
+            int ovl = addErrorOverlay(toFrame);
+
+            while(AppRunning(true))
+            {
+                showFrame();
+
+                if(vpad.trigger)
+                    break;
+            }
+
+            removeErrorOverlay(ovl);
+            return false;
+        }
+    }
 
     MCPInstallTitleInfo *info = MEMAllocFromDefaultHeapEx(sizeof(MCPInstallTitleInfo), 0x40);
     if(info == NULL)
