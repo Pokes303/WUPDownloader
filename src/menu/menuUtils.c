@@ -372,3 +372,35 @@ void showFinishedScreen(const char *titleName, FINISHING_OPERATION op)
 
     stopNotification();
 }
+
+void showNoSpaceOverlay(NUSDEV dev)
+{
+    const char *nd;
+    switch((int)dev)
+    {
+        case NUSDEV_USB01:
+        case NUSDEV_USB02:
+        case NUSDEV_USB:
+            nd = "USB";
+            break;
+        case NUSDEV_SD:
+            nd = "SD";
+            break;
+        case NUSDEV_MLC:
+            nd = "MLC";
+    }
+
+    char *toFrame = getToFrameBuffer();
+    sprintf(toFrame, "%s  %s\n\n%s", gettext("Not enough free space on"), nd, gettext("Press any key to return"));
+
+    int ovl = addErrorOverlay(toFrame);
+    while(AppRunning(true))
+    {
+        showFrame();
+
+        if(vpad.trigger)
+            break;
+    }
+
+    removeErrorOverlay(ovl);
+}

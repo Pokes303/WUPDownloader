@@ -561,28 +561,12 @@ naNedNa:
     }
 
     uint64_t freeSpace;
-    const char *nd = dlDev == NUSDEV_USB01 ? NUSDIR_USB1 : (dlDev == NUSDEV_USB02 ? NUSDIR_USB2 : (dlDev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC)); // TODO: Make const
+    const char *nd = dlDev == NUSDEV_USB01 ? NUSDIR_USB1 : (dlDev == NUSDEV_USB02 ? NUSDIR_USB2 : (dlDev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC));
     if(FSGetFreeSpaceSize(__wut_devoptab_fs_client, getCmdBlk(), (char *)nd, &freeSpace, FS_ERROR_FLAG_ALL) == FS_STATUS_OK && dls > freeSpace)
     {
-        char *toFrame = getToFrameBuffer();
-        const char *i10n = gettext("Not enough free space on");
-        strcpy(toFrame, i10n);
-        sprintf(toFrame + strlen(i10n), "  %s\n\n", prettyDir(nd));
-        strcat(toFrame, gettext("Press any key to return"));
-        int ovl = addErrorOverlay(toFrame);
-
-        while(AppRunning(true))
-        {
-            showFrame();
-
-            if(vpad.trigger)
-            {
-                removeErrorOverlay(ovl);
-                goto naNedNa;
-            }
-        }
-
-        removeErrorOverlay(ovl);
+        showNoSpaceOverlay(dlDev);
+        if(AppRunning(true))
+            goto naNedNa;
     }
 
     bool ret;

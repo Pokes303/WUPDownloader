@@ -115,23 +115,8 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
         const char *nd = toUsb ? (getUSB() == NUSDEV_USB01 ? NUSDIR_USB1 : NUSDIR_USB2) : NUSDIR_MLC;
         if(FSGetFreeSpaceSize(__wut_devoptab_fs_client, getCmdBlk(), (char *)nd, &freeSpace, FS_ERROR_FLAG_ALL) == FS_STATUS_OK && size > freeSpace)
         {
-            char *toFrame = getToFrameBuffer();
-            const char *i10n = gettext("Not enough free space on");
-            strcpy(toFrame, i10n);
-            sprintf(toFrame + strlen(i10n), "  %s\n\n", toUsb ? " USB" : "NAND");
-            strcat(toFrame, gettext("Press any key to return"));
-            int ovl = addErrorOverlay(toFrame);
-
-            while(AppRunning(true))
-            {
-                showFrame();
-
-                if(vpad.trigger)
-                    break;
-            }
-
-            removeErrorOverlay(ovl);
-            return false;
+            showNoSpaceOverlay(toUsb ? NUSDEV_USB : NUSDEV_MLC);
+            return !(AppRunning(true));
         }
     }
 
