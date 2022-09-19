@@ -562,14 +562,18 @@ naNedNa:
 
     uint64_t freeSpace;
     const char *nd = dlDev == NUSDEV_USB01 ? NUSDIR_USB1 : (dlDev == NUSDEV_USB02 ? NUSDIR_USB2 : (dlDev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC));
+    bool ret;
     if(FSGetFreeSpaceSize(__wut_devoptab_fs_client, getCmdBlk(), (char *)nd, &freeSpace, FS_ERROR_FLAG_ALL) == FS_STATUS_OK && dls > freeSpace)
     {
         showNoSpaceOverlay(dlDev);
         if(AppRunning(true))
             goto naNedNa;
+        else
+        {
+            ret = false;
+            goto exitPDM;
+        }
     }
-
-    bool ret;
 
     if(toQueue)
     {
@@ -615,6 +619,7 @@ naNedNa:
     else
         ret = true;
 
+exitPDM:
     clearRamBuf();
     return ret;
 }
