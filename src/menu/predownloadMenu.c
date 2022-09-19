@@ -568,11 +568,9 @@ naNedNa:
         showNoSpaceOverlay(dlDev);
         if(AppRunning(true))
             goto naNedNa;
-        else
-        {
-            ret = false;
-            goto exitPDM;
-        }
+
+        ret = false;
+        goto exitPDM;
     }
 
     if(toQueue)
