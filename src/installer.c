@@ -149,7 +149,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
                     gettext("Internal error installing"), path
 #ifdef NUSSPLI_HBL
                     ,
-                    gettext("We're supporting HBL on Tiramisu and HBLC v2.1 fix by Gary only!")
+                    gettext("We're supporting HBL on Tiramisu only!")
 #endif
                 );
                 break;
