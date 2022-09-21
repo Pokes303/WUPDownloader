@@ -113,6 +113,9 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 
         uint64_t freeSpace;
         const char *nd = toUsb ? (getUSB() == NUSDEV_USB01 ? NUSDIR_USB1 : NUSDIR_USB2) : NUSDIR_MLC;
+        if(toUsb ? dev & NUSDEV_USB : dev == NUSDEV_MLC)
+            flushIOQueue();
+
         if(FSGetFreeSpaceSize(__wut_devoptab_fs_client, getCmdBlk(), (char *)nd, &freeSpace, FS_ERROR_FLAG_ALL) == FS_STATUS_OK && size > freeSpace)
         {
             showNoSpaceOverlay(toUsb ? NUSDEV_USB : NUSDEV_MLC);
