@@ -98,16 +98,6 @@ static int calcThreadMain(int argc, const char **argv)
     return 0;
 }
 
-static bool isH(char c)
-{
-    return isHexa(c);
-}
-
-static bool isA(char c)
-{
-    return isAllowedInFilename(c);
-}
-
 static void SWKBD_Render(SWKBD_Args *args, KeyboardChecks check)
 {
     if(args->globalMaxlength != -1)
@@ -122,10 +112,10 @@ static void SWKBD_Render(SWKBD_Args *args, KeyboardChecks check)
                 switch(check)
                 {
                     case CHECK_HEXADECIMAL:
-                        cf = &isH;
+                        cf = &isHexa;
                         break;
                     case CHECK_ALPHANUMERICAL:
-                        cf = &isA;
+                        cf = &isAllowedInFilename;
                         break;
                     case CHECK_URL:
                         cf = &isUrl;
