@@ -79,7 +79,7 @@ bool isUppercaseHexa(char c)
 
 bool isHexa(char c)
 {
-   return  isLowercaseHexa(c) || isUppercaseHexa(c);
+    return isLowercaseHexa(c) || isUppercaseHexa(c);
 }
 
 void hex(uint64_t i, int digits, char *out)
