@@ -164,6 +164,9 @@ static inline SDL_Rect *createRect()
 
 void textToFrameCut(int line, int column, const char *str, int maxWidth)
 {
+    if(font == NULL)
+        return;
+
     SDL_Rect text;
     internalTextToFrame();
     FC_DrawBox(font, renderer, text, str);
@@ -171,6 +174,9 @@ void textToFrameCut(int line, int column, const char *str, int maxWidth)
 
 void textToFrameColoredCut(int line, int column, const char *str, SCREEN_COLOR color, int maxWidth)
 {
+    if(font == NULL)
+        return;
+
     SDL_Rect text;
     internalTextToFrame();
     FC_DrawBoxColor(font, renderer, text, color, str);
@@ -178,7 +184,7 @@ void textToFrameColoredCut(int line, int column, const char *str, SCREEN_COLOR c
 
 int textToFrameMultiline(int x, int y, const char *text, size_t len)
 {
-    if(len < 1)
+    if(font == NULL || len < 1)
         return 0;
 
     uint16_t fl = FC_GetWidth(font, text) / spaceWidth;
@@ -938,6 +944,9 @@ void colorStartNewFrame(SCREEN_COLOR color)
 
 void showFrame()
 {
+    if(font == NULL)
+        return;
+
     // Contrary to VSync enabled SDL we use GX2WaitForVsync() directly instead of
     // WHBGFX WHBGfxBeginRender() for VSync as WHBGfxBeginRender() produces frames
     // way shorter than 16 ms sometimes, confusing frame counting timers
@@ -963,6 +972,9 @@ void showFrame()
 // We need to draw the DRC before the TV, else the DRC is always one frame behind
 void drawFrame()
 {
+    if(font == NULL)
+        return;
+
     predrawFrame();
     postdrawFrame();
 }
