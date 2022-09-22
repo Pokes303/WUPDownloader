@@ -126,10 +126,10 @@ static void innerMain(bool validCfw)
 
                 if(initFS())
                 {
-                    drawLoadingScreen("Filesystem initialized!", "Loading OpenSSL..");
+                    drawLoadingScreen("Filesystem initialized!", "Loading Crypto..");
                     if(initCrypto())
                     {
-                        drawLoadingScreen("OpenSSL initialized!", "Loading MCP...");
+                        drawLoadingScreen("Crypto initialized!", "Loading MCP...");
                         mcpHandle = MCP_Open();
                         if(mcpHandle != 0)
                         {
@@ -208,10 +208,10 @@ static void innerMain(bool validCfw)
                             lerr = "Couldn't initialize MCP!";
 
                         deinitCrypto();
-                        debugPrintf("OpenSSL closed");
+                        debugPrintf("Crypto closed");
                     }
                     else
-                        lerr = "Couldn't initialize OpenSSL!";
+                        lerr = "Couldn't initialize Crypto!";
 
                     deinitFS();
                     debugPrintf("Filesystem closed");
