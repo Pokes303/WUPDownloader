@@ -916,7 +916,6 @@ void shutdownRenderer()
     for(int i = 0; i < MAX_OVERLAYS; ++i)
         removeErrorOverlay(i);
 
-    drawByeFrame();
     pauseRenderer();
 
     SDL_DestroyTexture(frameBuffer);

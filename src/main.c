@@ -162,6 +162,8 @@ static void innerMain(bool validCfw)
                                                             checkStacks("main");
                                                             debugPrintf("Deinitializing libraries...");
                                                         }
+                                                        else
+                                                            drawByeFrame();
 
                                                         shutdownQueue();
                                                     }
@@ -227,6 +229,8 @@ static void innerMain(bool validCfw)
 
                 while(!(vpad.trigger))
                     showFrame();
+
+                drawByeFrame();
             }
 
             shutdownRenderer();
