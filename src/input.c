@@ -267,7 +267,6 @@ bool SWKBD_Init()
     if(createArg.workMemory == NULL)
         return false;
 
-
     OSBlockSet(swkbd_msg, 0, sizeof(OSMessage) * SWKBD_QUEUE_SIZE);
     OSInitMessageQueueEx(&swkbd_queue, swkbd_msg, SWKBD_QUEUE_SIZE, "NUSspli SWKBD calc queue");
 
