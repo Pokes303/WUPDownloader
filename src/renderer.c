@@ -68,6 +68,7 @@ static Mix_Chunk *backgroundMusic = NULL;
 
 static int32_t spaceWidth;
 
+static SDL_Rect byeRect;
 static const SDL_Rect barRect = {
     .x = 1,
     .y = 0,
@@ -841,6 +842,10 @@ bool initRenderer()
                         resumeRenderer();
                         if(font != NULL)
                         {
+                            SDL_QueryTexture(byeTex, NULL, NULL, &(byeRect.w), &(byeRect.h));
+                            byeRect.x = (SCREEN_WIDTH >> 1) - (byeRect.w >> 1);
+                            byeRect.y = (SCREEN_HEIGHT >> 1) - (byeRect.h >> 1);
+
                             addToScreenLog("SDL initialized!");
                             startNewFrame();
                             textToFrame(0, 0, "Loading...");
@@ -898,13 +903,9 @@ void drawByeFrame()
         return;
 
     startNewFrame();
-    SDL_Rect bye;
-    SDL_QueryTexture(byeTex, NULL, NULL, &(bye.w), &(bye.h));
-    bye.x = (SCREEN_WIDTH >> 1) - (bye.w >> 1);
-    bye.y = (SCREEN_HEIGHT >> 1) - (bye.h >> 1);
-
-    SDL_RenderCopy(renderer, byeTex, NULL, &bye);
-    drawFrame();
+    SDL_RenderCopy(renderer, byeTex, NULL, &byeRect);
+    if(!Swkbd_IsReady() || Swkbd_IsHidden())
+        drawFrame();
 }
 
 void shutdownRenderer()
