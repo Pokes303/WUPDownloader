@@ -561,6 +561,9 @@ int addErrorOverlay(const char *err)
 
 void removeErrorOverlay(int id)
 {
+    if(font == NULL)
+        return;
+
     OSTick t = OSGetTick();
     addEntropy(&t, sizeof(OSTick));
     if(id < 0 || id >= MAX_OVERLAYS || errorOverlay[id].tex == NULL)
