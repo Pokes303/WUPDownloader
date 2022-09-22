@@ -973,9 +973,6 @@ void showFrame()
 // We need to draw the DRC before the TV, else the DRC is always one frame behind
 void drawFrame()
 {
-    if(font == NULL)
-        return;
-
     predrawFrame();
     postdrawFrame();
 }
