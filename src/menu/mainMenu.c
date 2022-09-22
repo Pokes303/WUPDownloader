@@ -122,6 +122,9 @@ void mainMenu()
             redraw = true;
         }
         else if(vpad.trigger & VPAD_BUTTON_B)
+        {
+            drawByeFrame();
             return;
+        }
     }
 }
