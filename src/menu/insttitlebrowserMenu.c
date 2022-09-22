@@ -289,10 +289,8 @@ void ititleBrowserMenu()
     size_t cursor = 0;
     size_t pos = 0;
 
-    drawITBMenuFrame(pos, cursor);
-
-    bool mov = ititleEntrySize >= MAX_ITITLEBROWSER_LINES;
-    bool redraw = false;
+    bool mov;
+    bool redraw = true;
     MCPTitleListType *entry;
     uint32_t oldHold = VPAD_BUTTON_RIGHT;
     size_t frameCount = DPAD_COOLDOWN_FRAMES;
@@ -304,9 +302,16 @@ loopEntry:
         if(app == APP_STATE_BACKGROUND)
             continue;
         if(app == APP_STATE_RETURNING)
-            drawITBMenuFrame(pos, cursor);
+            redraw = true;
 
+        if(redraw)
+        {
+            drawITBMenuFrame(pos, cursor);
+            mov = ititleEntrySize > MAX_ITITLEBROWSER_LINES;
+            redraw = false;
+        }
         showFrame();
+
         if(vpad.trigger & VPAD_BUTTON_A)
         {
             entry = ititleEntries + cursor + pos;
@@ -447,13 +452,6 @@ loopEntry:
 
         if(oldHold && !(vpad.hold & (VPAD_BUTTON_UP | VPAD_BUTTON_DOWN | VPAD_BUTTON_LEFT | VPAD_BUTTON_RIGHT)))
             oldHold = 0;
-
-        if(redraw)
-        {
-            drawITBMenuFrame(pos, cursor);
-            mov = ititleEntrySize > MAX_ITITLEBROWSER_LINES;
-            redraw = false;
-        }
     }
 
     if(AppRunning(true))

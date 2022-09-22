@@ -402,16 +402,21 @@ downloadTMD:
     }
 
 naNedNa:
-    redraw = toQueue = false;
-    drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, instDev);
+    redraw = true;
+    toQueue = false;
 
     while(AppRunning(true))
     {
         if(app == APP_STATE_BACKGROUND)
             continue;
         if(app == APP_STATE_RETURNING)
-            drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, instDev);
+            redraw = true;
 
+        if(redraw)
+        {
+            drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, instDev);
+            redraw = false;
+        }
         showFrame();
 
         if(vpad.trigger & VPAD_BUTTON_B)
@@ -479,12 +484,6 @@ naNedNa:
             saveConfig(false);
             deinstall(&titleList, entry->name, false, false);
             return false;
-        }
-
-        if(redraw)
-        {
-            drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, instDev);
-            redraw = false;
         }
     }
 

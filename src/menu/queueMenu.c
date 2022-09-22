@@ -111,18 +111,22 @@ bool queueMenu()
     size_t frameCount = 0;
     size_t cursor = 0;
     size_t pos = 0;
-    bool redraw = false;
+    bool redraw = true;
     LIST *titleQueue = getTitleQueue();
     bool mov = getListSize(titleQueue) >= MAX_ENTRIES;
-    drawQueueMenu(titleQueue, cursor, pos);
 
     while(AppRunning(true))
     {
         if(app == APP_STATE_BACKGROUND)
             continue;
         if(app == APP_STATE_RETURNING)
-            drawQueueMenu(titleQueue, cursor, pos);
+            redraw = true;
 
+        if(redraw)
+        {
+            drawQueueMenu(titleQueue, cursor, pos);
+            redraw = false;
+        }
         showFrame();
 
         if(vpad.trigger & VPAD_BUTTON_B)
@@ -267,12 +271,6 @@ bool queueMenu()
 
         if(oldHold && !(vpad.hold & (VPAD_BUTTON_UP | VPAD_BUTTON_DOWN | VPAD_BUTTON_LEFT | VPAD_BUTTON_RIGHT)))
             oldHold = 0;
-
-        if(redraw)
-        {
-            drawQueueMenu(titleQueue, cursor, pos);
-            redraw = false;
-        }
     }
 
     return true;

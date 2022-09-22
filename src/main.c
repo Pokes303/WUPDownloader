@@ -159,7 +159,7 @@ static void innerMain(bool validCfw)
                                                         {
                                                             checkStacks("main");
                                                             mainMenu(); // main loop
-                                                            shutdownRenderer();
+                                                            drawByeFrame();
                                                             checkStacks("main");
                                                             debugPrintf("Deinitializing libraries...");
                                                         }

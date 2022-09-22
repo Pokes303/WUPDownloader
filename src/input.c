@@ -574,7 +574,7 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
     addEntropy(&t, sizeof(OSTime));
 
     if(!AppRunning(true))
-        shutdownRenderer();
+        drawByeFrame();
 
     return close;
 }

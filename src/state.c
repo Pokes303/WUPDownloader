@@ -113,7 +113,7 @@ uint32_t homeButtonCallback(void *dummy)
         shutdownEnabled = false;
         app = APP_STATE_HOME;
         if(!Swkbd_IsReady() || Swkbd_IsHidden())
-            shutdownRenderer();
+            drawByeFrame();
     }
 
     return 0;
@@ -171,7 +171,7 @@ bool AppRunning(bool mainthread)
                 break;
             case PROCUI_STATUS_RELEASE_FOREGROUND:
                 // Exit with power button
-                shutdownRenderer();
+                drawByeFrame();
                 app = APP_STATE_STOPPING;
                 break;
             default:

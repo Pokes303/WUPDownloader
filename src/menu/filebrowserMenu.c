@@ -151,10 +151,8 @@ refreshDirList:
     t = OSGetTime() - t;
     addEntropy(&t, sizeof(OSTime));
 
-    drawFBMenuFrame(path, folders, pos, cursor, activeDevice, usbMounted);
-
     mov = getListSize(folders) >= MAX_FILEBROWSER_LINES;
-    bool redraw = false;
+    bool redraw = true;
     uint32_t oldHold = 0;
     size_t frameCount = 0;
     bool dpadAction;
@@ -163,9 +161,15 @@ refreshDirList:
         if(app == APP_STATE_BACKGROUND)
             continue;
         if(app == APP_STATE_RETURNING)
-            drawFBMenuFrame(path, folders, pos, cursor, activeDevice, usbMounted);
+            redraw = true;
 
+        if(redraw)
+        {
+            drawFBMenuFrame(path, folders, pos, cursor, activeDevice, usbMounted);
+            redraw = false;
+        }
         showFrame();
+
         if(vpad.trigger & VPAD_BUTTON_B)
             goto exitFileBrowserMenu;
         if(vpad.trigger & VPAD_BUTTON_A)
@@ -343,12 +347,6 @@ refreshDirList:
 
         if(oldHold && !(vpad.hold & (VPAD_BUTTON_UP | VPAD_BUTTON_DOWN | VPAD_BUTTON_LEFT | VPAD_BUTTON_RIGHT)))
             oldHold = 0;
-
-        if(redraw)
-        {
-            drawFBMenuFrame(path, folders, pos, cursor, activeDevice, usbMounted);
-            redraw = false;
-        }
     }
 
 exitFileBrowserMenu:

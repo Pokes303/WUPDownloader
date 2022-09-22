@@ -896,6 +896,21 @@ void pauseRenderer()
     font = NULL;
 }
 
+void drawByeFrame()
+{
+    if(font == NULL)
+        return;
+
+    startNewFrame();
+    SDL_Rect bye;
+    SDL_QueryTexture(byeTex, NULL, NULL, &(bye.w), &(bye.h));
+    bye.x = (SCREEN_WIDTH >> 1) - (bye.w >> 1);
+    bye.y = (SCREEN_HEIGHT >> 1) - (bye.h >> 1);
+
+    SDL_RenderCopy(renderer, byeTex, NULL, &bye);
+    drawFrame();
+}
+
 void shutdownRenderer()
 {
     if(font == NULL)
@@ -904,16 +919,7 @@ void shutdownRenderer()
     for(int i = 0; i < MAX_OVERLAYS; ++i)
         removeErrorOverlay(i);
 
-    SDL_SetRenderTarget(renderer, NULL);
-    colorStartNewFrame(SCREEN_COLOR_BLUE);
-
-    SDL_Rect bye;
-    SDL_QueryTexture(byeTex, NULL, NULL, &(bye.w), &(bye.h));
-    bye.x = (SCREEN_WIDTH >> 1) - (bye.w >> 1);
-    bye.y = (SCREEN_HEIGHT >> 1) - (bye.h >> 1);
-
-    SDL_RenderCopy(renderer, byeTex, NULL, &bye);
-    SDL_RenderPresent(renderer);
+    drawByeFrame();
     clearFrame();
     pauseRenderer();
 
