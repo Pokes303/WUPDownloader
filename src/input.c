@@ -572,5 +572,9 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
     SWKBD_Hide(&args);
     t = OSGetSystemTime() - t;
     addEntropy(&t, sizeof(OSTime));
+
+    if(!AppRunning(true))
+        shutdownRenderer();
+
     return close;
 }

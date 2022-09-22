@@ -23,6 +23,7 @@
 #include <ioQueue.h>
 #include <renderer.h>
 #include <state.h>
+#include <swkbd_wrapper.h>
 #include <utils.h>
 
 #include <coreinit/core.h>
@@ -111,6 +112,8 @@ uint32_t homeButtonCallback(void *dummy)
     {
         shutdownEnabled = false;
         app = APP_STATE_HOME;
+        if(!Swkbd_IsReady() || Swkbd_IsHidden())
+            shutdownRenderer();
     }
 
     return 0;
