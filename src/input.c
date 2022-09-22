@@ -296,11 +296,7 @@ bool SWKBD_Init()
     }
 
     createArg.fsClient = __wut_devoptab_fs_client;
-    OSDynLoadAllocFn oAlloc;
-    OSDynLoadFreeFn oFree;
-    OSDynLoad_GetAllocator(&oAlloc, &oFree);
     bool ret = Swkbd_Create(&createArg);
-    OSDynLoad_SetAllocator(oAlloc, oFree);
 
     OSBlockSet(&appearArg, 0, sizeof(Swkbd_AppearArg));
     appearArg.keyboardArg.configArg.accessFlags = 0xFFFFFFFF;
