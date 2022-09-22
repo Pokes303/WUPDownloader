@@ -871,14 +871,10 @@ bool initRenderer()
     return false;
 }
 
-#define clearFrame()
-
 void pauseRenderer()
 {
     if(font == NULL)
         return;
-
-    clearFrame();
 
     FC_FreeFont(font);
     SDL_DestroyTexture(arrowTex);
@@ -920,7 +916,6 @@ void shutdownRenderer()
         removeErrorOverlay(i);
 
     drawByeFrame();
-    clearFrame();
     pauseRenderer();
 
     SDL_DestroyTexture(frameBuffer);
@@ -936,8 +931,6 @@ void colorStartNewFrame(SCREEN_COLOR color)
 {
     if(font == NULL)
         return;
-
-    clearFrame();
 
     if(*(uint32_t *)&(color.r) == *(uint32_t *)&(SCREEN_COLOR_BLUE.r))
         SDL_RenderCopy(renderer, bgTex, NULL, NULL);
