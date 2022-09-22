@@ -32,7 +32,7 @@
 #include <thread.h>
 #include <utils.h>
 
-#define RUMBLE_STACK_SIZE 0x400
+#define RUMBLE_STACK_SIZE 0x200
 #define RUMBLE_QUEUE_SIZE 2
 #define LED_ON            1
 #define LED_OFF           0
