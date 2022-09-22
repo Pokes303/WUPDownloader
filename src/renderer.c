@@ -943,8 +943,7 @@ void colorStartNewFrame(SCREEN_COLOR color)
         SDL_RenderCopy(renderer, bgTex, NULL, NULL);
     else
     {
-        SDL_Color co = color;
-        SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
+        SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
         SDL_RenderClear(renderer);
     }
 
