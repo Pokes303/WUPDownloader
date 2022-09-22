@@ -520,39 +520,38 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
     {
         drawErrorFrame("Error showing SWKBD:\nnn::swkbd::AppearInputForm failed", ANY_RETURN);
 
-        while(true)
+        while(AppRunning(true))
         {
             showFrame();
             if(vpad.trigger)
-                return false;
+                break;
         }
+
+        return false;
     }
     debugPrintf("SWKBD initialised successfully");
 
     if(input != NULL)
         Swkbd_SetInputFormString(input);
 
-    bool dummy;
+    bool close = false;
     OSTime t = OSGetSystemTime();
-    while(true)
+    while(AppRunning(true))
     {
         VPADGetTPCalibratedPoint(VPAD_CHAN_0, &vpad.tpFiltered1, &vpad.tpNormal);
         vpad.tpFiltered2 = vpad.tpNormal = vpad.tpFiltered1;
         SWKBD_Render(&args, check);
         //		sleepTillFrameEnd();
 
-        if(args.okButtonEnabled && (Swkbd_IsDecideOkButton(&dummy) || vpad.trigger & VPAD_BUTTON_PLUS))
+        if(args.okButtonEnabled && (Swkbd_IsDecideOkButton(&close) || vpad.trigger & VPAD_BUTTON_PLUS))
         {
             debugPrintf("SWKBD Ok button pressed");
-            char *outputStr = Swkbd_GetInputFormString();
-            strcpy(output, outputStr);
-            SWKBD_Hide(&args);
-            t = OSGetSystemTime() - t;
-            addEntropy(&t, sizeof(OSTime));
-            return true;
+            strcpy(output, Swkbd_GetInputFormString());
+            close = true;
+            break;
         }
 
-        bool close = vpad.trigger & VPAD_BUTTON_B || vpad.trigger & VPAD_BUTTON_MINUS;
+        close = vpad.trigger & VPAD_BUTTON_B || vpad.trigger & VPAD_BUTTON_MINUS;
         if(close)
         {
             char *inputFormString = Swkbd_GetInputFormString();
@@ -560,13 +559,18 @@ bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, Keyboa
                 close = strlen(inputFormString) == 0;
         }
 
-        if(close || Swkbd_IsDecideCancelButton(&dummy))
+        if(close || Swkbd_IsDecideCancelButton(&close))
         {
             debugPrintf("SWKBD Cancel button pressed");
-            SWKBD_Hide(&args);
-            t = OSGetSystemTime() - t;
-            addEntropy(&t, sizeof(OSTime));
-            return false;
+            close = false;
+            break;
         }
+
+        close = false;
     }
+
+    SWKBD_Hide(&args);
+    t = OSGetSystemTime() - t;
+    addEntropy(&t, sizeof(OSTime));
+    return close;
 }
