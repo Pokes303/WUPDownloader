@@ -487,11 +487,9 @@ naNedNa:
         }
     }
 
+    bool ret = false;
     if(!AppRunning(true))
-    {
-        clearRamBuf();
-        return false;
-    }
+        goto exitPDM;
 
     if(isDemo(entry))
     {
@@ -523,6 +521,8 @@ naNedNa:
             }
 
             removeErrorOverlay(ovl);
+            if(!AppRunning(true))
+                goto exitPDM;
         }
     }
 
@@ -548,6 +548,8 @@ naNedNa:
         }
 
         removeErrorOverlay(ovl);
+        if(!AppRunning(true))
+            goto exitPDM;
     }
 
     startNewFrame();
@@ -561,16 +563,17 @@ naNedNa:
 
     uint64_t freeSpace;
     const char *nd = dlDev == NUSDEV_USB01 ? NUSDIR_USB1 : (dlDev == NUSDEV_USB02 ? NUSDIR_USB2 : (dlDev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC));
-    bool ret;
     if(FSGetFreeSpaceSize(__wut_devoptab_fs_client, getCmdBlk(), (char *)nd, &freeSpace, FS_ERROR_FLAG_ALL) == FS_STATUS_OK && dls > freeSpace)
     {
         showNoSpaceOverlay(dlDev);
         if(AppRunning(true))
             goto naNedNa;
 
-        ret = false;
         goto exitPDM;
     }
+
+    if(!AppRunning(true))
+        goto exitPDM;
 
     if(toQueue)
     {
