@@ -337,7 +337,7 @@ void readInput()
         OSBlockSet(&vpad, 0, sizeof(VPADStatus));
     else if(vpad.trigger)
     {
-        vpad.trigger &= ~(VPAD_STICK_R_EMULATION_LEFT | VPAD_STICK_R_EMULATION_RIGHT | VPAD_STICK_R_EMULATION_UP | VPAD_STICK_R_EMULATION_DOWN);
+        vpad.trigger &= ~(VPAD_STICK_R_EMULATION_LEFT | VPAD_STICK_R_EMULATION_RIGHT | VPAD_STICK_R_EMULATION_UP | VPAD_STICK_R_EMULATION_DOWN | VPAD_BUTTON_HOME);
 
         if(vpad.trigger && kbdHidden)
             lastUsedController = CT_VPAD_0;
@@ -396,8 +396,6 @@ void readInput()
                     vpad.trigger |= VPAD_BUTTON_PLUS;
                 if(tv & WPAD_CLASSIC_BUTTON_MINUS)
                     vpad.trigger |= VPAD_BUTTON_MINUS;
-                if(tv & WPAD_CLASSIC_BUTTON_HOME)
-                    vpad.trigger |= VPAD_BUTTON_HOME;
                 if(tv & WPAD_CLASSIC_BUTTON_R)
                     vpad.trigger |= VPAD_BUTTON_R;
                 if(tv & WPAD_CLASSIC_BUTTON_L)
@@ -458,8 +456,6 @@ void readInput()
                 vpad.trigger |= VPAD_BUTTON_PLUS;
             if(tv & WPAD_BUTTON_MINUS)
                 vpad.trigger |= VPAD_BUTTON_MINUS;
-            if(tv & WPAD_BUTTON_HOME)
-                vpad.trigger |= VPAD_BUTTON_HOME;
             if(tv & WPAD_BUTTON_Z)
                 vpad.trigger |= VPAD_BUTTON_ZR;
             if(tv & WPAD_BUTTON_C)
