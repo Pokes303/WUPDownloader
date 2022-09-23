@@ -593,7 +593,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
     int frames = 1;
     uint32_t fileeta;
     uint32_t totaleta;
-    while(cdata.running)
+    while(cdata.running && AppRunning(true))
     {
         if(--frames == 0)
         {
@@ -738,9 +738,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
         showFrame();
 
-        if(!AppRunning(true))
-            break;
-
         if(cancelOverlayId < 0)
         {
             if(vpad.trigger & VPAD_BUTTON_B)
@@ -779,6 +776,9 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
         fclose((FILE *)fp);
     else
         addToIOQueue(NULL, 0, 0, (FSFileHandle *)fp);
+
+    if(!AppRunning(true))
+        return 1;
 
     if(ret != CURLE_OK)
     {
