@@ -318,6 +318,18 @@ const char *prettyDir(const char *dir)
     return ret;
 }
 
+static inline void drawFinishedScreen(const char *titleName, const char *text, FINISHING_OPERATION op)
+{
+    colorStartNewFrame(SCREEN_COLOR_D_GREEN);
+    int i = 0;
+    if(op != FINISHING_OPERATION_QUEUE)
+        textToFrame(i++, 0, titleName);
+
+    textToFrame(i++, 0, text);
+    writeScreenLog(i++);
+    drawFrame();
+}
+
 void showFinishedScreen(const char *titleName, FINISHING_OPERATION op)
 {
     const char *text;
@@ -337,15 +349,7 @@ void showFinishedScreen(const char *titleName, FINISHING_OPERATION op)
             break;
     }
 
-    colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-    int i = 0;
-    if(op != FINISHING_OPERATION_QUEUE)
-        textToFrame(i++, 0, titleName);
-
-    textToFrame(i++, 0, text);
-    writeScreenLog(i++);
-    drawFrame();
-
+    drawFinishedScreen(titleName, text, op);
     startNotification();
 
     while(AppRunning(true))
@@ -353,16 +357,7 @@ void showFinishedScreen(const char *titleName, FINISHING_OPERATION op)
         if(app == APP_STATE_BACKGROUND)
             continue;
         if(app == APP_STATE_RETURNING)
-        {
-            colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-            i = 0;
-            if(op != FINISHING_OPERATION_QUEUE)
-                textToFrame(i++, 0, titleName);
-
-            textToFrame(i++, 0, text);
-            writeScreenLog(i++);
-            drawFrame();
-        }
+            drawFinishedScreen(titleName, text, op);
 
         showFrame();
 
