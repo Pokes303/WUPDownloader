@@ -75,7 +75,7 @@ static char curlError[CURL_ERROR_SIZE];
 static bool curlReuseConnection = true;
 static OSThread *dlbgThread = NULL;
 
-static int cancelOverlayId = -1;
+static void *cancelOverlay = NULL;
 
 typedef struct
 {
@@ -87,10 +87,10 @@ typedef struct
     double dlnow;
 } curlProgressData;
 
-#define closeCancelOverlay()                 \
-    {                                        \
-        removeErrorOverlay(cancelOverlayId); \
-        cancelOverlayId = -1;                \
+#define closeCancelOverlay()                \
+    {                                       \
+        removeErrorOverlay(cancelOverlay);  \
+        cancelOverlay = NULL;               \
     }
 
 static int progressCallback(void *rawData, double dltotal, double dlnow, double ultotal, double ulnow)
@@ -738,7 +738,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
         showFrame();
 
-        if(cancelOverlayId < 0)
+        if(cancelOverlay == NULL)
         {
             if(vpad.trigger & VPAD_BUTTON_B)
             {
@@ -747,7 +747,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 strcat(toScreen, gettext("Yes"));
                 strcat(toScreen, " || " BUTTON_B " ");
                 strcat(toScreen, gettext("No"));
-                cancelOverlayId = addErrorOverlay(toScreen);
+                cancelOverlay = addErrorOverlay(toScreen);
             }
         }
         else
@@ -767,7 +767,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
     t = OSGetSystemTime() - t;
     addEntropy(&t, sizeof(OSTime));
-    if(data == NULL && cancelOverlayId >= 0)
+    if(data == NULL && cancelOverlay != NULL)
         closeCancelOverlay();
 
     debugPrintf("curl_easy_perform() returned: %d", ret);
@@ -822,7 +822,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 break;
         }
 
-        if(data != NULL && cancelOverlayId >= 0)
+        if(data != NULL && cancelOverlay != NULL)
             closeCancelOverlay();
 
         int os;
@@ -1243,7 +1243,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
         }
     }
 
-    if(cancelOverlayId >= 0)
+    if(cancelOverlay != NULL)
         closeCancelOverlay();
 
     if(!AppRunning(true))

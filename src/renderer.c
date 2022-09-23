@@ -499,18 +499,17 @@ void tabToFrame(int line, int column, const char *label, bool active)
     FC_DrawBoxColor(font, renderer, rect, SCREEN_COLOR_WHITE_TRANSP, label);
 }
 
-int addErrorOverlay(const char *err)
+void *addErrorOverlay(const char *err)
 {
     OSTick t = OSGetTick();
     addEntropy(&t, sizeof(OSTick));
     if(font == NULL)
-        return -1;
+        return NULL;
 
     ErrorOverlay *overlay = MEMAllocFromDefaultHeap(sizeof(ErrorOverlay));
     if(overlay == NULL)
-        return -2;
+        return NULL;
 
-    int ret;
     SDL_Rect rec = { .w = FC_GetWidth(font, err) };
     rec.h = FC_GetColumnHeight(font, rec.w, err);
     if(rec.w != 0 && rec.h != 0)
@@ -518,7 +517,6 @@ int addErrorOverlay(const char *err)
         overlay->tex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_WIDTH, SCREEN_HEIGHT);
         if(overlay->tex != NULL)
         {
-            ret = getListSize(errorOverlayList);
             if(addToListEnd(errorOverlayList, overlay))
             {
                 SDL_SetTextureBlendMode(overlay->tex, SDL_BLENDMODE_BLEND);
@@ -556,33 +554,28 @@ int addErrorOverlay(const char *err)
                 SDL_SetRenderTarget(renderer, frameBuffer);
 
                 drawFrame();
-                return ret;
+                return overlay;
             }
 
             SDL_DestroyTexture(overlay->tex);
-            ret = -5;
         }
-        else
-            ret = -4;
     }
-    else
-        ret = -3;
 
     MEMFreeToDefaultHeap(overlay);
-    return ret;
+    return NULL;
 }
 
-void removeErrorOverlay(int id)
+void removeErrorOverlay(void *overlay)
 {
-    if(font == NULL || id < 0)
+    if(font == NULL || overlay == NULL)
         return;
 
     OSTick t = OSGetTick();
     addEntropy(&t, sizeof(OSTick));
 
-    ErrorOverlay *overlay = getAndRemoveFromList(errorOverlayList, (uint32_t)id);
+    removeFromList(errorOverlayList, overlay);
     drawFrame();
-    SDL_DestroyTexture(overlay->tex);
+    SDL_DestroyTexture(((ErrorOverlay *)overlay)->tex);
     MEMFreeToDefaultHeap(overlay);
 }
 

@@ -54,7 +54,7 @@ static volatile uint32_t activeReadBuffer;
 static volatile uint32_t activeWriteBuffer;
 
 static volatile FSStatus fwriteErrno = FS_STATUS_OK;
-static volatile int fwriteOverlay = -1;
+static volatile void *fwriteOverlay = NULL;
 
 static int ioThreadMain(int argc, const char **argv)
 {
@@ -144,7 +144,7 @@ bool checkForQueueErrors()
 {
     if(fwriteErrno != FS_STATUS_OK)
     {
-        if(fwriteOverlay == -1 && OSIsMainCore())
+        if(fwriteOverlay == NULL && OSIsMainCore())
         {
             char errMsg[1024];
             sprintf(errMsg, "Write error:\n%s\n\nThis is an unrecoverable error!", translateFSErr(fwriteErrno));
@@ -261,14 +261,16 @@ void flushIOQueue()
     if(checkForQueueErrors() || queueEntries[activeWriteBuffer].file == NULL)
         return;
 
-    int ovl = addErrorOverlay("Flushing queue, please wait...");
+    void *ovl = addErrorOverlay("Flushing queue, please wait...");
     debugPrintf("Flushing...");
 
     while(queueEntries[activeWriteBuffer].file != NULL)
         if(checkForQueueErrors())
             break;
 
-    removeErrorOverlay(ovl);
+    if(ovl != NULL)
+        removeErrorOverlay(ovl);
+
     checkForQueueErrors();
 }
 

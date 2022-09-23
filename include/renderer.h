@@ -100,8 +100,8 @@ extern "C"
     void tabToFrame(int line, int column, const char *label, bool active);
     void flagToFrame(int line, int column, MCPRegion flag);
     void deviceToFrame(int line, int column, DEVICE_TYPE dev);
-    int addErrorOverlay(const char *err);
-    void removeErrorOverlay(int id);
+    void *addErrorOverlay(const char *err);
+    void removeErrorOverlay(void *overlay);
     uint32_t getSpaceWidth();
     void drawByeFrame();
 

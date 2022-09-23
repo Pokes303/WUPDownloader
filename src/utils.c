@@ -171,7 +171,7 @@ void glueMcpData(MCPInstallTitleInfo *info, McpData *data)
     *++ptr = (uint32_t)data;
 }
 
-void showMcpProgress(McpData *data, const char *game, const bool inst)
+void showMcpProgress(McpData *data, const char *game, bool inst)
 {
     MCPInstallProgress *progress = MEMAllocFromDefaultHeapEx(sizeof(MCPInstallProgress), 0x40);
     if(progress == NULL)
@@ -191,7 +191,7 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
     uint64_t lsp = 0;
     char speedBuf[32];
     speedBuf[0] = '\0';
-    int ovl = -1;
+    void *ovl = NULL;
 
     while(data->processing)
     {
@@ -256,7 +256,7 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
 
         if(inst)
         {
-            if(ovl == -1)
+            if(ovl == NULL)
             {
                 if(vpad.trigger & VPAD_BUTTON_B)
                 {
@@ -264,12 +264,13 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
                     ovl = addErrorOverlay(toScreen);
                 }
             }
-            else if(ovl >= 0)
+            else
             {
                 if(vpad.trigger & VPAD_BUTTON_A)
                 {
                     removeErrorOverlay(ovl);
-                    ovl = -2;
+                    ovl = NULL;
+                    inst = false;
 
                     startNewFrame();
                     textToFrame(0, 0, gettext("Cancelling installation."));
@@ -284,13 +285,13 @@ void showMcpProgress(McpData *data, const char *game, const bool inst)
                 else if(vpad.trigger & VPAD_BUTTON_B)
                 {
                     removeErrorOverlay(ovl);
-                    ovl = -1;
+                    ovl = NULL;
                 }
             }
         }
     }
 
-    if(ovl >= 0)
+    if(ovl != NULL)
         removeErrorOverlay(ovl);
 
     MEMFreeToDefaultHeap(progress);

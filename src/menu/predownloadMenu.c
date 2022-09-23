@@ -225,7 +225,7 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
     drawFrame();
 }
 
-static int drawPDDemoFrame(const TitleEntry *entry, bool inst)
+static void *drawPDDemoFrame(const TitleEntry *entry, bool inst)
 {
     char *toFrame = getToFrameBuffer();
     strcpy(toFrame, entry->name);
@@ -498,7 +498,9 @@ naNedNa:
         const TitleEntry *te = getTitleEntryByTid(t);
         if(te != NULL)
         {
-            int ovl = drawPDDemoFrame(entry, operation == OPERATION_INSTALL);
+            void *ovl = drawPDDemoFrame(entry, operation == OPERATION_INSTALL);
+            if(ovl == NULL)
+                goto exitPDM;
 
             while(AppRunning(true))
             {
@@ -528,11 +530,14 @@ naNedNa:
 
     if(dlDev == NUSDEV_MLC)
     {
-        int ovl = addErrorOverlay(gettext(
+        void *ovl = addErrorOverlay(gettext(
             "Downloading to NAND is dangerous,\n"
             "it could brick your Wii U!\n\n"
 
             "Are you sure you want to do this?"));
+
+        if(ovl == NULL)
+            goto exitPDM;
 
         while(AppRunning(true))
         {

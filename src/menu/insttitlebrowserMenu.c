@@ -472,7 +472,10 @@ loopEntry:
         strcat(toFrame, gettext("Yes"));
         strcat(toFrame, " || " BUTTON_B " ");
         strcat(toFrame, gettext("No"));
-        int r = addErrorOverlay(toFrame);
+
+        void *r = addErrorOverlay(toFrame);
+        if(r == NULL)
+            goto instExit;
 
         while(AppRunning(true))
         {

@@ -207,7 +207,10 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region)
         gettext("This is a reliable way to brick your console!\nAre you sure you want to do that?"),
         gettext("Yes"),
         gettext("No"));
-    int ovl = addErrorOverlay(toFrame);
+
+    void *ovl = addErrorOverlay(toFrame);
+    if(ovl == NULL)
+        return false;
 
     bool ret = true;
     while(AppRunning(true))
@@ -231,7 +234,10 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region)
             gettext("Are you really sure you want to brick your Wii U?"),
             gettext("Yes"),
             gettext("No"));
+
         ovl = addErrorOverlay(toFrame);
+        if(ovl == NULL)
+            return false;
 
         while(AppRunning(true))
         {
@@ -255,7 +261,10 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region)
             gettext("You're on your own doing this,\ndo you understand the consequences?"),
             gettext("Yes"),
             gettext("No"));
+
         ovl = addErrorOverlay(toFrame);
+        if(ovl == NULL)
+            return false;
 
         while(AppRunning(true))
         {
@@ -388,14 +397,17 @@ void showNoSpaceOverlay(NUSDEV dev)
     char *toFrame = getToFrameBuffer();
     sprintf(toFrame, "%s  %s\n\n%s", gettext("Not enough free space on"), nd, gettext("Press any key to return"));
 
-    int ovl = addErrorOverlay(toFrame);
-    while(AppRunning(true))
+    void *ovl = addErrorOverlay(toFrame);
+    if(ovl != NULL)
     {
-        showFrame();
+        while(AppRunning(true))
+        {
+            showFrame();
 
-        if(vpad.trigger)
-            break;
+            if(vpad.trigger)
+                break;
+        }
+
+        removeErrorOverlay(ovl);
     }
-
-    removeErrorOverlay(ovl);
 }

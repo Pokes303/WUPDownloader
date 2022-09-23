@@ -60,7 +60,7 @@ static const Swkbd_ControllerInfo controllerInfo = {
 
 static ControllerType lastUsedController;
 
-static int io = -1;
+static void *io = NULL;
 
 static Swkbd_CreateArg createArg = { .workMemory = NULL, .unk_0x08 = 0 };
 static Swkbd_AppearArg appearArg;
@@ -496,13 +496,13 @@ void readInput()
 
     if(!altCon && vError == VPAD_READ_INVALID_CONTROLLER)
     {
-        if(io < 0)
+        if(io == NULL)
             io = addErrorOverlay("No Controller connected!");
     }
-    else if(io >= 0)
+    else if(io != NULL)
     {
         removeErrorOverlay(io);
-        io = -1;
+        io = NULL;
     };
 }
 
