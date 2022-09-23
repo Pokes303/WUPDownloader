@@ -25,7 +25,7 @@ extern "C"
 {
 #endif
 
-    void installerMenu(const char *dir);
+    void installerMenu();
 
 #ifdef __cplusplus
 }

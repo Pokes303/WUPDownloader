@@ -24,7 +24,6 @@
 #include <installer.h>
 #include <localisation.h>
 #include <menu/config.h>
-#include <menu/filebrowser.h>
 #include <menu/installer.h>
 #include <menu/insttitlebrowser.h>
 #include <menu/main.h>
@@ -97,13 +96,7 @@ void mainMenu()
         }
         else if(vpad.trigger & VPAD_BUTTON_X)
         {
-            char *dir = fileBrowserMenu();
-            if(!AppRunning(true))
-                return;
-
-            if(dir != NULL)
-                installerMenu(dir);
-
+            installerMenu();
             redraw = true;
         }
         else if(vpad.trigger & VPAD_BUTTON_LEFT)

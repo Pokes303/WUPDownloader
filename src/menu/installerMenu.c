@@ -22,6 +22,7 @@
 #include <input.h>
 #include <installer.h>
 #include <localisation.h>
+#include <menu/filebrowser.h>
 #include <menu/utils.h>
 #include <renderer.h>
 #include <state.h>
@@ -73,21 +74,29 @@ static NUSDEV getDevFromPath(const char *path)
     return NUSDEV_NONE;
 }
 
-void installerMenu(const char *dir)
+void installerMenu()
 {
+    const char *dir = fileBrowserMenu();
+    if(dir == NULL || !AppRunning(true))
+        return;
+
     NUSDEV dev = getDevFromPath(dir);
     bool keepFiles = dev == NUSDEV_SD;
     const char *nd = prettyDir(dir);
-
-    drawInstallerMenuFrame(nd, dev, keepFiles);
+    bool redraw = true;
 
     while(AppRunning(true))
     {
         if(app == APP_STATE_BACKGROUND)
             continue;
         if(app == APP_STATE_RETURNING)
-            drawInstallerMenuFrame(nd, dev, keepFiles);
+            redraw = true;
 
+        if(redraw)
+        {
+            drawInstallerMenuFrame(nd, dev, keepFiles);
+            redraw = false;
+        }
         showFrame();
 
         if((vpad.trigger & VPAD_BUTTON_A) || (vpad.trigger & VPAD_BUTTON_X))
@@ -123,12 +132,18 @@ void installerMenu(const char *dir)
             return;
         }
         if(vpad.trigger & VPAD_BUTTON_B)
-            return;
+        {
+            dir = fileBrowserMenu();
+            if(dir == NULL)
+                return;
+
+            redraw = true;
+        }
 
         if(vpad.trigger & VPAD_BUTTON_LEFT && dev == NUSDEV_SD)
         {
             keepFiles = !keepFiles;
-            drawInstallerMenuFrame(nd, dev, keepFiles);
+            redraw = true;
         }
     }
 }

@@ -56,13 +56,12 @@ bool generateTik(const char *path, const TitleEntry *titleEntry)
 
         while(AppRunning(true))
         {
-            showFrame();
-
             if(app == APP_STATE_BACKGROUND)
                 continue;
             if(app == APP_STATE_RETURNING)
                 drawErrorFrame(err, ANY_RETURN);
 
+            showFrame();
             if(vpad.trigger)
                 break;
         }
@@ -124,13 +123,12 @@ bool generateCert(const char *path)
 
         while(AppRunning(true))
         {
-            showFrame();
-
             if(app == APP_STATE_BACKGROUND)
                 continue;
             if(app == APP_STATE_RETURNING)
                 drawErrorFrame(err, ANY_RETURN);
 
+            showFrame();
             if(vpad.trigger)
                 break;
         }
@@ -193,26 +191,37 @@ static void drawTicketFrame(uint64_t titleID)
     drawFrame();
 }
 
+static void drawTicketGenFrame(const char *dir)
+{
+    colorStartNewFrame(SCREEN_COLOR_D_GREEN);
+    textToFrame(0, 0, gettext("Fake ticket generated on:"));
+    textToFrame(1, 0, prettyDir(dir));
+
+    textToFrame(3, 0, gettext("Press any key to return"));
+    drawFrame();
+}
 void generateFakeTicket()
 {
-    char *dir = fileBrowserMenu();
-    if(dir == NULL)
+    char *dir;
+    TMD *tmd;
+gftEntry:
+    dir = fileBrowserMenu();
+    if(dir == NULL || !AppRunning(true))
         return;
 
-    TMD *tmd = getTmd(dir);
+    tmd = getTmd(dir);
     if(tmd == NULL)
     {
         drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
 
         while(AppRunning(true))
         {
-            showFrame();
-
             if(app == APP_STATE_BACKGROUND)
                 continue;
             if(app == APP_STATE_RETURNING)
                 drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
 
+            showFrame();
             if(vpad.trigger)
                 break;
         }
@@ -223,12 +232,12 @@ void generateFakeTicket()
 
     while(AppRunning(true))
     {
-        showFrame();
-
         if(app == APP_STATE_BACKGROUND)
             continue;
         if(app == APP_STATE_RETURNING)
             drawTicketFrame(tmd->tid);
+
+        showFrame();
 
         if(vpad.trigger & VPAD_BUTTON_A)
         {
@@ -252,28 +261,26 @@ void generateFakeTicket()
             if(!generateTik(dir, entry))
                 break;
 
-            colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-            textToFrame(0, 0, gettext("Fake ticket generated on:"));
-            textToFrame(1, 0, prettyDir(dir));
-
-            textToFrame(3, 0, gettext("Press any key to return"));
-            drawFrame();
+            drawTicketGenFrame(dir);
 
             while(AppRunning(true))
             {
-                showFrame();
-
                 if(app == APP_STATE_BACKGROUND)
                     continue;
-                // TODO: APP_STATE_RETURNING
+                if(app == APP_STATE_RETURNING)
+                    drawTicketGenFrame(dir);
 
+                showFrame();
                 if(vpad.trigger)
                     break;
             }
             break;
         }
         if(vpad.trigger & VPAD_BUTTON_B)
-            break;
+        {
+            MEMFreeToDefaultHeap(tmd);
+            goto gftEntry;
+        }
     }
 
     MEMFreeToDefaultHeap(tmd);
