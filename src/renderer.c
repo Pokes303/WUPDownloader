@@ -77,7 +77,6 @@ static const SDL_Rect barRect = {
 };
 
 static SDL_Texture *frameBuffer;
-static ErrorOverlay errorOverlay[MAX_OVERLAYS];
 static SDL_Texture *arrowTex;
 static SDL_Texture *checkmarkTex;
 static SDL_Texture *tabTex;
@@ -88,6 +87,7 @@ static SDL_Texture *bgTex;
 static SDL_Texture *byeTex;
 
 static LIST *rectList;
+static LIST *errorOverlayList;
 
 static inline SDL_Rect *createRect()
 {
@@ -506,73 +506,80 @@ int addErrorOverlay(const char *err)
     if(font == NULL)
         return -1;
 
-    int i = 0;
-    for(; i < MAX_OVERLAYS + 1; ++i)
-        if(i < MAX_OVERLAYS && errorOverlay[i].tex == NULL)
-            break;
-
-    if(i == MAX_OVERLAYS)
+    ErrorOverlay *overlay = MEMAllocFromDefaultHeap(sizeof(ErrorOverlay));
+    if(overlay == NULL)
         return -2;
 
+    int ret;
     SDL_Rect rec = { .w = FC_GetWidth(font, err) };
     rec.h = FC_GetColumnHeight(font, rec.w, err);
-    if(rec.w == 0 || rec.h == 0)
-        return -4;
+    if(rec.w != 0 && rec.h != 0)
+    {
+        overlay->tex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_WIDTH, SCREEN_HEIGHT);
+        if(overlay->tex != NULL)
+        {
+            SDL_SetTextureBlendMode(overlay->tex, SDL_BLENDMODE_BLEND);
+            SDL_SetRenderTarget(renderer, overlay->tex);
 
-    errorOverlay[i].tex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_WIDTH, SCREEN_HEIGHT);
-    if(errorOverlay[i].tex == NULL)
-        return -5;
+            SDL_Color co = SCREEN_COLOR_BLACK;
+            SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, 0xC0);
+            SDL_RenderClear(renderer);
 
-    SDL_SetTextureBlendMode(errorOverlay[i].tex, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderTarget(renderer, errorOverlay[i].tex);
+            rec.x = (SCREEN_WIDTH >> 1) - (rec.w >> 1);
+            rec.y = (SCREEN_HEIGHT >> 1) - (rec.h >> 1);
 
-    SDL_Color co = SCREEN_COLOR_BLACK;
-    SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, 0xC0);
-    SDL_RenderClear(renderer);
+            SDL_Rect *rect = overlay->rect;
 
-    rec.x = (SCREEN_WIDTH >> 1) - (rec.w >> 1);
-    rec.y = (SCREEN_HEIGHT >> 1) - (rec.h >> 1);
+            rect->x = rec.x - (FONT_SIZE >> 1);
+            rect->y = rec.y - (FONT_SIZE >> 1);
+            rect->w = rec.w + FONT_SIZE;
+            rect->h = rec.h + FONT_SIZE;
+            co = SCREEN_COLOR_RED;
+            SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
+            SDL_RenderFillRect(renderer, rect);
 
-    SDL_Rect *rect = errorOverlay[i].rect;
+            SDL_Rect * or = rect;
+            ++rect;
+            rect->x = or->x + 2;
+            rect->y = or->y + 2;
+            rect->w = rec.w + (FONT_SIZE - 4);
+            rect->h = rec.h + (FONT_SIZE - 4);
+            co = SCREEN_COLOR_D_RED;
+            SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
+            SDL_RenderFillRect(renderer, rect);
 
-    rect->x = rec.x - (FONT_SIZE >> 1);
-    rect->y = rec.y - (FONT_SIZE >> 1);
-    rect->w = rec.w + FONT_SIZE;
-    rect->h = rec.h + FONT_SIZE;
-    co = SCREEN_COLOR_RED;
-    SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
-    SDL_RenderFillRect(renderer, rect);
+            FC_DrawBox(font, renderer, rec, err);
 
-    SDL_Rect * or = rect;
-    ++rect;
-    rect->x = or->x + 2;
-    rect->y = or->y + 2;
-    rect->w = rec.w + (FONT_SIZE - 4);
-    rect->h = rec.h + (FONT_SIZE - 4);
-    co = SCREEN_COLOR_D_RED;
-    SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
-    SDL_RenderFillRect(renderer, rect);
+            SDL_SetRenderTarget(renderer, frameBuffer);
 
-    FC_DrawBox(font, renderer, rec, err);
+            ret = getListSize(errorOverlayList);
+            addToListEnd(errorOverlayList, overlay);
 
-    SDL_SetRenderTarget(renderer, frameBuffer);
-    drawFrame();
-    return i;
+            drawFrame();
+            return ret;
+        }
+
+        ret = -4;
+    }
+    else
+        ret = -3;
+
+    MEMFreeToDefaultHeap(overlay);
+    return ret;
 }
 
 void removeErrorOverlay(int id)
 {
-    if(font == NULL)
+    if(font == NULL || id < 0)
         return;
 
     OSTick t = OSGetTick();
     addEntropy(&t, sizeof(OSTick));
-    if(id < 0 || id >= MAX_OVERLAYS || errorOverlay[id].tex == NULL)
-        return;
 
-    SDL_DestroyTexture(errorOverlay[id].tex);
-    errorOverlay[id].tex = NULL;
+    ErrorOverlay *overlay = getAndRemoveFromList(errorOverlayList, (uint32_t)id);
     drawFrame();
+    SDL_DestroyTexture(overlay->tex);
+    MEMFreeToDefaultHeap(overlay);
 }
 
 static bool loadTexture(const char *path, SDL_Texture **out)
@@ -783,96 +790,100 @@ bool initRenderer()
     if(rectList == NULL)
         return false;
 
-    for(int i = 0; i < MAX_OVERLAYS; ++i)
-        errorOverlay[i].tex = NULL;
-
-    if(SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO) == 0)
+    errorOverlayList = createList();
+    if(errorOverlayList != NULL)
     {
-        window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
-        if(window)
+        if(SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO) == 0)
         {
-            renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-            if(renderer)
+            window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+            if(window)
             {
-                frameBuffer = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_WIDTH, SCREEN_HEIGHT);
-                if(frameBuffer != NULL)
+                renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+                if(renderer)
                 {
-                    SDL_SetRenderTarget(renderer, frameBuffer);
-
-                    OSTime t = OSGetSystemTime();
-                    if(Mix_Init(MIX_INIT_MP3))
+                    frameBuffer = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_WIDTH, SCREEN_HEIGHT);
+                    if(frameBuffer != NULL)
                     {
-                        size_t fs = readFile(ROMFS_PATH "audio/bg.mp3", &bgmBuffer);
-                        if(bgmBuffer != NULL)
-                        {
-                            if(Mix_OpenAudio(22050, AUDIO_S16MSB, 2, 4096) == 0)
-                            {
-                                SDL_RWops *rw = SDL_RWFromMem(bgmBuffer, fs);
-                                backgroundMusic = Mix_LoadWAV_RW(rw, true);
-                                if(backgroundMusic != NULL)
-                                {
-                                    Mix_VolumeChunk(backgroundMusic, 15);
-                                    if(Mix_PlayChannel(0, backgroundMusic, -1) == 0)
-                                        goto audioRunning;
+                        SDL_SetRenderTarget(renderer, frameBuffer);
 
-                                    Mix_FreeChunk(backgroundMusic);
-                                    backgroundMusic = NULL;
+                        OSTime t = OSGetSystemTime();
+                        if(Mix_Init(MIX_INIT_MP3))
+                        {
+                            size_t fs = readFile(ROMFS_PATH "audio/bg.mp3", &bgmBuffer);
+                            if(bgmBuffer != NULL)
+                            {
+                                if(Mix_OpenAudio(22050, AUDIO_S16MSB, 2, 4096) == 0)
+                                {
+                                    SDL_RWops *rw = SDL_RWFromMem(bgmBuffer, fs);
+                                    backgroundMusic = Mix_LoadWAV_RW(rw, true);
+                                    if(backgroundMusic != NULL)
+                                    {
+                                        Mix_VolumeChunk(backgroundMusic, 15);
+                                        if(Mix_PlayChannel(0, backgroundMusic, -1) == 0)
+                                            goto audioRunning;
+
+                                        Mix_FreeChunk(backgroundMusic);
+                                        backgroundMusic = NULL;
+                                    }
+
+                                    Mix_CloseAudio();
                                 }
 
-                                Mix_CloseAudio();
+                                MEMFreeToDefaultHeap(bgmBuffer);
+                                bgmBuffer = NULL;
+                            }
+                        }
+                    audioRunning:
+                        SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+                        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
+                        GX2SetTVGamma(2.0f);
+                        GX2SetDRCGamma(1.0f);
+
+                        if(loadTexture(ROMFS_PATH "textures/goodbye.png", &byeTex))
+                        {
+                            t = OSGetSystemTime() - t;
+                            addEntropy(&t, sizeof(OSTime));
+
+                            TTF_Init();
+                            resumeRenderer();
+                            if(font != NULL)
+                            {
+                                SDL_QueryTexture(byeTex, NULL, NULL, &(byeRect.w), &(byeRect.h));
+                                byeRect.x = (SCREEN_WIDTH >> 1) - (byeRect.w >> 1);
+                                byeRect.y = (SCREEN_HEIGHT >> 1) - (byeRect.h >> 1);
+
+                                addToScreenLog("SDL initialized!");
+                                startNewFrame();
+                                textToFrame(0, 0, "Loading...");
+                                writeScreenLog(1);
+                                drawFrame();
+                                return true;
                             }
 
-                            MEMFreeToDefaultHeap(bgmBuffer);
-                            bgmBuffer = NULL;
+                            pauseRenderer();
                         }
+                        else
+                            debugPrintf("Can't find goodbye texture!");
+
+                        SDL_DestroyTexture(frameBuffer);
                     }
-                audioRunning:
-                    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
-                    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-                    GX2SetTVGamma(2.0f);
-                    GX2SetDRCGamma(1.0f);
-
-                    if(loadTexture(ROMFS_PATH "textures/goodbye.png", &byeTex))
-                    {
-                        t = OSGetSystemTime() - t;
-                        addEntropy(&t, sizeof(OSTime));
-
-                        TTF_Init();
-                        resumeRenderer();
-                        if(font != NULL)
-                        {
-                            SDL_QueryTexture(byeTex, NULL, NULL, &(byeRect.w), &(byeRect.h));
-                            byeRect.x = (SCREEN_WIDTH >> 1) - (byeRect.w >> 1);
-                            byeRect.y = (SCREEN_HEIGHT >> 1) - (byeRect.h >> 1);
-
-                            addToScreenLog("SDL initialized!");
-                            startNewFrame();
-                            textToFrame(0, 0, "Loading...");
-                            writeScreenLog(1);
-                            drawFrame();
-                            return true;
-                        }
-
-                        pauseRenderer();
-                    }
-                    else
-                        debugPrintf("Can't find goodbye texture!");
-
-                    SDL_DestroyTexture(frameBuffer);
+                    SDL_DestroyRenderer(renderer);
                 }
 
-                SDL_DestroyRenderer(renderer);
+                SDL_DestroyWindow(window);
             }
 
-            SDL_DestroyWindow(window);
+            quitSDL();
         }
+        else
+            debugPrintf("SDL init error: %s", SDL_GetError());
 
-        quitSDL();
+        destroyList(errorOverlayList, true);
     }
-    else
-        debugPrintf("SDL init error: %s", SDL_GetError());
 
+    destroyList(rectList, true);
     return false;
 }
 
@@ -913,8 +924,11 @@ void shutdownRenderer()
     if(font == NULL)
         return;
 
-    for(int i = 0; i < MAX_OVERLAYS; ++i)
-        removeErrorOverlay(i);
+    ErrorOverlay *overlay;
+    forEachListEntry(errorOverlayList, overlay)
+        SDL_DestroyTexture(overlay->tex);
+
+    destroyList(errorOverlayList, true);
 
     pauseRenderer();
 
@@ -963,9 +977,9 @@ void showFrame()
     SDL_RenderCopy(renderer, frameBuffer, NULL, NULL);
 
 #define postdrawFrame()                                                \
-    for(int i = 0; i < MAX_OVERLAYS; ++i)                              \
-        if(errorOverlay[i].tex != NULL)                                \
-            SDL_RenderCopy(renderer, errorOverlay[i].tex, NULL, NULL); \
+    ErrorOverlay *overlay;                                             \
+    forEachListEntry(errorOverlayList, overlay)                        \
+        SDL_RenderCopy(renderer, overlay->tex, NULL, NULL);            \
                                                                        \
     SDL_RenderPresent(renderer);                                       \
     SDL_SetRenderTarget(renderer, frameBuffer);
