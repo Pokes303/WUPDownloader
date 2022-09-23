@@ -493,15 +493,6 @@ naNedNa:
         return false;
     }
 
-    startNewFrame();
-    textToFrame(0, 0, gettext("Preparing the download of"));
-    textToFrame(1, 3, entry->name);
-    writeScreenLog(2);
-    drawFrame();
-    showFrame();
-
-    saveConfig(false);
-
     if(isDemo(entry))
     {
         uint64_t t = entry->tid;
@@ -558,6 +549,15 @@ naNedNa:
 
         removeErrorOverlay(ovl);
     }
+
+    startNewFrame();
+    textToFrame(0, 0, gettext("Preparing the download of"));
+    textToFrame(1, 3, entry->name);
+    writeScreenLog(2);
+    drawFrame();
+    showFrame();
+
+    saveConfig(false);
 
     uint64_t freeSpace;
     const char *nd = dlDev == NUSDEV_USB01 ? NUSDIR_USB1 : (dlDev == NUSDEV_USB02 ? NUSDIR_USB2 : (dlDev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC));
