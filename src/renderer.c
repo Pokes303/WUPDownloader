@@ -518,48 +518,52 @@ int addErrorOverlay(const char *err)
         overlay->tex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_WIDTH, SCREEN_HEIGHT);
         if(overlay->tex != NULL)
         {
-            SDL_SetTextureBlendMode(overlay->tex, SDL_BLENDMODE_BLEND);
-            SDL_SetRenderTarget(renderer, overlay->tex);
-
-            SDL_Color co = SCREEN_COLOR_BLACK;
-            SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, 0xC0);
-            SDL_RenderClear(renderer);
-
-            rec.x = (SCREEN_WIDTH >> 1) - (rec.w >> 1);
-            rec.y = (SCREEN_HEIGHT >> 1) - (rec.h >> 1);
-
-            SDL_Rect *rect = overlay->rect;
-
-            rect->x = rec.x - (FONT_SIZE >> 1);
-            rect->y = rec.y - (FONT_SIZE >> 1);
-            rect->w = rec.w + FONT_SIZE;
-            rect->h = rec.h + FONT_SIZE;
-            co = SCREEN_COLOR_RED;
-            SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
-            SDL_RenderFillRect(renderer, rect);
-
-            SDL_Rect * or = rect;
-            ++rect;
-            rect->x = or->x + 2;
-            rect->y = or->y + 2;
-            rect->w = rec.w + (FONT_SIZE - 4);
-            rect->h = rec.h + (FONT_SIZE - 4);
-            co = SCREEN_COLOR_D_RED;
-            SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
-            SDL_RenderFillRect(renderer, rect);
-
-            FC_DrawBox(font, renderer, rec, err);
-
-            SDL_SetRenderTarget(renderer, frameBuffer);
-
             ret = getListSize(errorOverlayList);
-            addToListEnd(errorOverlayList, overlay);
+            if(addToListEnd(errorOverlayList, overlay))
+            {
+                SDL_SetTextureBlendMode(overlay->tex, SDL_BLENDMODE_BLEND);
+                SDL_SetRenderTarget(renderer, overlay->tex);
 
-            drawFrame();
-            return ret;
+                SDL_Color co = SCREEN_COLOR_BLACK;
+                SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, 0xC0);
+                SDL_RenderClear(renderer);
+
+                rec.x = (SCREEN_WIDTH >> 1) - (rec.w >> 1);
+                rec.y = (SCREEN_HEIGHT >> 1) - (rec.h >> 1);
+
+                SDL_Rect *rect = overlay->rect;
+
+                rect->x = rec.x - (FONT_SIZE >> 1);
+                rect->y = rec.y - (FONT_SIZE >> 1);
+                rect->w = rec.w + FONT_SIZE;
+                rect->h = rec.h + FONT_SIZE;
+                co = SCREEN_COLOR_RED;
+                SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
+                SDL_RenderFillRect(renderer, rect);
+
+                SDL_Rect * or = rect;
+                ++rect;
+                rect->x = or->x + 2;
+                rect->y = or->y + 2;
+                rect->w = rec.w + (FONT_SIZE - 4);
+                rect->h = rec.h + (FONT_SIZE - 4);
+                co = SCREEN_COLOR_D_RED;
+                SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
+                SDL_RenderFillRect(renderer, rect);
+
+                FC_DrawBox(font, renderer, rec, err);
+
+                SDL_SetRenderTarget(renderer, frameBuffer);
+
+                drawFrame();
+                return ret;
+            }
+
+            SDL_DestroyTexture(overlay->tex);
+            ret = -5;
         }
-
-        ret = -4;
+        else
+            ret = -4;
     }
     else
         ret = -3;
