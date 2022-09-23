@@ -87,10 +87,10 @@ typedef struct
     double dlnow;
 } curlProgressData;
 
-#define closeCancelOverlay()                \
-    {                                       \
-        removeErrorOverlay(cancelOverlay);  \
-        cancelOverlay = NULL;               \
+#define closeCancelOverlay()               \
+    {                                      \
+        removeErrorOverlay(cancelOverlay); \
+        cancelOverlay = NULL;              \
     }
 
 static int progressCallback(void *rawData, double dltotal, double dlnow, double ultotal, double ulnow)
