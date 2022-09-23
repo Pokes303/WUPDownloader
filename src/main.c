@@ -126,7 +126,7 @@ static void innerMain(bool validCfw)
 
                 if(initFS())
                 {
-                    drawLoadingScreen("Filesystem initialized!", "Loading Crypto..");
+                    drawLoadingScreen("Filesystem initialized!", "Loading Crypto...");
                     if(initCrypto())
                     {
                         drawLoadingScreen("Crypto initialized!", "Loading MCP...");
