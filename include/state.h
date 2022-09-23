@@ -40,7 +40,7 @@ extern "C"
 
     } APP_STATE;
 
-    extern APP_STATE app;
+    extern volatile APP_STATE app;
 
     void initState() __attribute__((__cold__));
     void deinitState() __attribute__((__cold__));

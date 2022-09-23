@@ -37,7 +37,7 @@
 
 #include <stdbool.h>
 
-APP_STATE app;
+volatile APP_STATE app;
 static bool shutdownEnabled = true;
 #ifndef NUSSPLI_HBL
 static bool channel;
@@ -169,8 +169,8 @@ bool AppRunning(bool mainthread)
                 break;
             case PROCUI_STATUS_RELEASE_FOREGROUND:
                 // Exit with power button
-                drawByeFrame();
                 app = APP_STATE_STOPPING;
+                drawByeFrame();
                 break;
             default:
                 // Normal loop execution
