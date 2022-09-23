@@ -976,12 +976,12 @@ void showFrame()
     SDL_SetRenderTarget(renderer, NULL); \
     SDL_RenderCopy(renderer, frameBuffer, NULL, NULL);
 
-#define postdrawFrame()                                                \
-    ErrorOverlay *overlay;                                             \
-    forEachListEntry(errorOverlayList, overlay)                        \
-        SDL_RenderCopy(renderer, overlay->tex, NULL, NULL);            \
-                                                                       \
-    SDL_RenderPresent(renderer);                                       \
+#define postdrawFrame()                                     \
+    ErrorOverlay *overlay;                                  \
+    forEachListEntry(errorOverlayList, overlay)             \
+        SDL_RenderCopy(renderer, overlay->tex, NULL, NULL); \
+                                                            \
+    SDL_RenderPresent(renderer);                            \
     SDL_SetRenderTarget(renderer, frameBuffer);
 
 // We need to draw the DRC before the TV, else the DRC is always one frame behind
