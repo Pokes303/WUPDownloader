@@ -166,12 +166,12 @@ bool AppRunning(bool mainthread)
             case PROCUI_STATUS_EXITING:
                 // Real exit request from CafeOS
                 app = APP_STATE_STOPPED;
-                break;
+                return false;
             case PROCUI_STATUS_RELEASE_FOREGROUND:
                 // Exit with power button
                 app = APP_STATE_STOPPING;
                 drawByeFrame();
-                break;
+                return false;
             default:
                 // Normal loop execution
                 break;
