@@ -112,47 +112,27 @@ void getSpeedString(double bytePerSecond, char *out)
 
 void secsToTime(uint32_t seconds, char *out)
 {
-    uint32_t minute, hour;
-
-    hour = seconds / 3600;
-    hour = hour % 3600;
-    minute = seconds / 60;
-    minute = minute % 60;
-    seconds = seconds % 60;
+    uint32_t hour = seconds / 3600 % 3600;
+    uint32_t minute = seconds / 60 % 60;
+    seconds %= 60;
 
     bool visible = false;
-    const char *i10n;
 
     if(hour)
     {
-        sprintf(out, "%u ", hour);
+        sprintf(out, "%u %s ", hour, gettext("hours"));
         out += strlen(out);
-        i10n = gettext("hours");
-        strcpy(out, i10n);
-        out += strlen(i10n);
-        strcpy(out++, " ");
         visible = true;
     }
     if(minute || visible)
     {
-        sprintf(out, "%02u ", minute);
-        out += 3;
-        i10n = gettext("minutes");
-        strcpy(out, i10n);
-        out += strlen(i10n);
-        strcpy(out++, " ");
+        sprintf(out, "%02u %s ", minute, gettext("minutes"));
+        out += strlen(out);
         visible = true;
     }
 
     if(seconds || visible)
-    {
-        sprintf(out, "%02u ", seconds);
-        out += 3;
-        i10n = gettext("seconds");
-        strcpy(out, i10n);
-        out += strlen(i10n);
-        strcpy(out, " ");
-    }
+        sprintf(out, "%02u %s", seconds, gettext("seconds"));
     else
         strcpy(out, "N/A");
 }
