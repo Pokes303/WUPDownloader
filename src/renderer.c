@@ -77,6 +77,7 @@ static const SDL_Rect barRect = {
 };
 
 static SDL_Texture *frameBuffer;
+static SDL_Texture *defaultTex = NULL;
 static SDL_Texture *arrowTex;
 static SDL_Texture *checkmarkTex;
 static SDL_Texture *tabTex;
@@ -579,11 +580,53 @@ void removeErrorOverlay(void *overlay)
     MEMFreeToDefaultHeap(overlay);
 }
 
+static inline void loadDefaultTexture()
+{
+    if(defaultTex != NULL)
+        return;
+
+    defaultTex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, 7, 11);
+    if(defaultTex == NULL)
+    {
+        debugPrintf("Couldn't load default texture!");
+        return;
+    }
+
+    SDL_SetRenderTarget(renderer, defaultTex);
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0xFF, 0xFF);
+    SDL_RenderClear(renderer);
+
+    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+    SDL_RenderDrawPoint(renderer, 2, 2);
+    SDL_RenderDrawPoint(renderer, 2, 3);
+    SDL_RenderDrawPoint(renderer, 3, 4);
+    SDL_RenderDrawPoint(renderer, 3, 5);
+
+    SDL_RenderDrawPoint(renderer, 4, 6);
+
+    SDL_RenderDrawPoint(renderer, 5, 7);
+    SDL_RenderDrawPoint(renderer, 5, 8);
+    SDL_RenderDrawPoint(renderer, 6, 9);
+    SDL_RenderDrawPoint(renderer, 6, 10);
+
+    SDL_RenderDrawPoint(renderer, 6, 2);
+    SDL_RenderDrawPoint(renderer, 6, 3);
+    SDL_RenderDrawPoint(renderer, 5, 4);
+    SDL_RenderDrawPoint(renderer, 5, 5);
+
+    SDL_RenderDrawPoint(renderer, 3, 7);
+    SDL_RenderDrawPoint(renderer, 3, 8);
+    SDL_RenderDrawPoint(renderer, 2, 9);
+    SDL_RenderDrawPoint(renderer, 2, 10);
+
+    SDL_SetRenderTarget(renderer, frameBuffer);
+}
+
 static bool loadTexture(const char *path, SDL_Texture **out)
 {
-    bool ret = false;
     void *buffer;
     size_t fs = readFile(path, &buffer);
+    *out = defaultTex;
     if(buffer != NULL)
     {
         SDL_RWops *rw = SDL_RWFromMem(buffer, fs);
@@ -594,10 +637,11 @@ static bool loadTexture(const char *path, SDL_Texture **out)
             {
                 *out = SDL_CreateTextureFromSurface(renderer, surface);
                 SDL_FreeSurface(surface);
-                if(*out != NULL)
-                    ret = true;
-                else
+                if(*out == NULL)
+                {
+                    *out = defaultTex;
                     debugPrintf("Error creating texture!");
+                }
             }
             else
                 debugPrintf("Error creating surface!");
@@ -608,13 +652,15 @@ static bool loadTexture(const char *path, SDL_Texture **out)
         MEMFreeToDefaultHeap(buffer);
     }
 
-    return ret;
+    return *out != defaultTex;
 }
 
 void resumeRenderer()
 {
     if(font != NULL)
         return;
+
+    loadDefaultTexture();
 
     void *ttf;
     size_t size;
@@ -630,7 +676,12 @@ void resumeRenderer()
             spaceWidth = spaceGlyph.rect.w;
 
             OSTime t = OSGetSystemTime();
-            loadTexture(ROMFS_PATH "textures/arrow.png", &arrowTex); // TODO: Error handling...
+            loadTexture(ROMFS_PATH "textures/goodbye.png", &byeTex);
+            SDL_QueryTexture(byeTex, NULL, NULL, &(byeRect.w), &(byeRect.h));
+            byeRect.x = (SCREEN_WIDTH >> 1) - (byeRect.w >> 1);
+            byeRect.y = (SCREEN_HEIGHT >> 1) - (byeRect.h >> 1);
+
+            loadTexture(ROMFS_PATH "textures/arrow.png", &arrowTex);
             loadTexture(ROMFS_PATH "textures/checkmark.png", &checkmarkTex);
             loadTexture(ROMFS_PATH "textures/tab.png", &tabTex);
 
@@ -837,31 +888,20 @@ bool initRenderer()
                         GX2SetTVGamma(2.0f);
                         GX2SetDRCGamma(1.0f);
 
-                        if(loadTexture(ROMFS_PATH "textures/goodbye.png", &byeTex))
+                        t = OSGetSystemTime() - t;
+                        addEntropy(&t, sizeof(OSTime));
+
+                        TTF_Init();
+                        resumeRenderer();
+                        if(font != NULL)
                         {
-                            t = OSGetSystemTime() - t;
-                            addEntropy(&t, sizeof(OSTime));
-
-                            TTF_Init();
-                            resumeRenderer();
-                            if(font != NULL)
-                            {
-                                SDL_QueryTexture(byeTex, NULL, NULL, &(byeRect.w), &(byeRect.h));
-                                byeRect.x = (SCREEN_WIDTH >> 1) - (byeRect.w >> 1);
-                                byeRect.y = (SCREEN_HEIGHT >> 1) - (byeRect.h >> 1);
-
-                                addToScreenLog("SDL initialized!");
-                                startNewFrame();
-                                textToFrame(0, 0, "Loading...");
-                                writeScreenLog(1);
-                                drawFrame();
-                                return true;
-                            }
-
-                            pauseRenderer();
+                            addToScreenLog("SDL initialized!");
+                            startNewFrame();
+                            textToFrame(0, 0, "Loading...");
+                            writeScreenLog(1);
+                            drawFrame();
+                            return true;
                         }
-                        else
-                            debugPrintf("Can't find goodbye texture!");
 
                         SDL_DestroyTexture(frameBuffer);
                     }
@@ -884,23 +924,37 @@ bool initRenderer()
     return false;
 }
 
+static inline void destroyTex(SDL_Texture *tex)
+{
+    if(tex != defaultTex)
+        SDL_DestroyTexture(tex);
+}
+
 void pauseRenderer()
 {
     if(font == NULL)
         return;
 
     FC_FreeFont(font);
-    SDL_DestroyTexture(arrowTex);
-    SDL_DestroyTexture(checkmarkTex);
-    SDL_DestroyTexture(tabTex);
-    SDL_DestroyTexture(barTex);
-    SDL_DestroyTexture(bgTex);
+
+    destroyTex(arrowTex);
+    destroyTex(checkmarkTex);
+    destroyTex(tabTex);
+    destroyTex(barTex);
+    destroyTex(bgTex);
+    destroyTex(byeTex);
 
     for(int i = 0; i < 8; ++i)
-        SDL_DestroyTexture(flagTex[i]);
+        destroyTex(flagTex[i]);
 
     for(int i = 0; i < 4; i++)
-        SDL_DestroyTexture(deviceTex[i]);
+        destroyTex(deviceTex[i]);
+
+    if(defaultTex != NULL)
+    {
+        SDL_DestroyTexture(defaultTex);
+        defaultTex = NULL;
+    }
 
     font = NULL;
 }
@@ -930,7 +984,6 @@ void shutdownRenderer()
     pauseRenderer();
 
     SDL_DestroyTexture(frameBuffer);
-    SDL_DestroyTexture(byeTex);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
 
