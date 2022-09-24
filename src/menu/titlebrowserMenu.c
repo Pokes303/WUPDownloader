@@ -143,7 +143,7 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
 
     j = filteredTitleEntrySize - pos;
     max = j < MAX_TITLEBROWSER_LINES ? j : MAX_TITLEBROWSER_LINES;
-    MCPTitleListType titleList __attribute__ ((__aligned__(0x40)));
+    MCPTitleListType titleList __attribute__((__aligned__(0x40)));
     TitleData *title;
     bool inQueue;
     for(size_t i = 0; i < max; ++i)

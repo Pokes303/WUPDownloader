@@ -441,7 +441,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 #else
     if(isChannel())
     {
-        MCPTitleListType ownInfo __attribute__ ((__aligned__(0x40)));
+        MCPTitleListType ownInfo __attribute__((__aligned__(0x40)));
         MCPError e = MCP_GetOwnTitleInfo(mcpHandle, &ownInfo);
         if(e != 0)
         {

@@ -88,7 +88,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 {
     if(tmd != NULL)
     {
-        MCPTitleListType titleEntry __attribute__ ((__aligned__(0x40)));
+        MCPTitleListType titleEntry __attribute__((__aligned__(0x40)));
         if(MCP_GetTitleInfo(mcpHandle, tmd->tid, &titleEntry) == 0)
             deinstall(&titleEntry, game, false, true);
     }
