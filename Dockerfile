@@ -17,9 +17,5 @@ RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
  cd libromfs-wiiu && \
  make -j$(nproc) && \
  make install && \
- cd .. && \
- mkdir /nuspacker && \
- cd /nuspacker && \
- wget https://github.com/Maschell/nuspacker/raw/master/NUSPacker.jar
 
 WORKDIR /project
