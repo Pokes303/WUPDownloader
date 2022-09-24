@@ -1,12 +1,13 @@
 #!/bin/env python
 
-import xml.etree.cElementTree as ET
 import os
 import shutil
+import urllib.request
+import xml.etree.cElementTree as ET
 
-nuspacker = "../nuspacker/NUSPacker.jar"    # Set path to NUSPacker.jar here. will be downloaded if empty
+nuspacker = "../nuspacker/NUSPacker.jar"    # Set path to NUSPacker.jar here. will be downloaded if empty or not found
 wuhbtool = ""                               # Set path to wuhbtool. Will use the one from PATH if empty
-ForceRelease = False                        # set to True to force release builds even if we'e building ALPHA/BETA
+ForceRelease = False                        # set to True to force release builds even if we're building ALPHA/BETA
 
 # Don't edit below this line
 
@@ -21,6 +22,10 @@ def checkAndDeleteDir(dir):
         shutil.rmtree(dir)
 
 version = ET.ElementTree(file="meta/hbl/meta.xml").getroot().findtext("version")
+
+if len(nuspacker) == 0 or not os.path.exists(nuspacker):
+    urllib.request.urlretrieve("https://github.com/Maschell/nuspacker/raw/master/NUSPacker.jar", "nuspacker.jar")
+    nuspacker = "nuspacker.jar"
 
 isBeta = False
 if ForceRelease or version.find("BETA") != -1 or version.find("ALPHA") != -1:
