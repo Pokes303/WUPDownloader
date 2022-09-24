@@ -60,7 +60,7 @@ static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
 {
     if(out == NULL)
     {
-        MCPTitleListType titleList;
+        MCPTitleListType titleList __attribute__ ((__aligned__(0x40)));
         return MCP_GetTitleInfo(mcpHandle, entry->tid, &titleList) == 0;
     }
     return MCP_GetTitleInfo(mcpHandle, entry->tid, out) == 0;
@@ -397,7 +397,7 @@ static bool checkFreeSpace(NUSDEV dlDev, uint64_t size)
 
 bool predownloadMenu(const TitleEntry *entry)
 {
-    MCPTitleListType titleList;
+    MCPTitleListType titleList __attribute__ ((__aligned__(0x40)));
     bool installed = isInstalled(entry, &titleList);
     NUSDEV usbMounted = getUSB();
     NUSDEV dlDev = usbMounted && dlToUSBenabled() ? usbMounted : NUSDEV_SD;
@@ -632,13 +632,13 @@ naNedNa:
         }
         else if(isDLC(entry) || isUpdate(entry))
         {
-            MCPTitleListType titleList __attribute__ ((__aligned__(0x40)));
+            MCPTitleListType tl __attribute__ ((__aligned__(0x40)));
             uint64_t t = entry->tid & 0xFFFFFFF0FFFFFFFF;
-            if(MCP_GetTitleInfo(mcpHandle, t, &titleList) == 0)
+            if(MCP_GetTitleInfo(mcpHandle, t, &tl) == 0)
             {
                 if(operation == OPERATION_INSTALL)
                 {
-                    NUSDEV toDev = titleList.indexedDevice[0] == 'u' ? NUSDEV_USB : NUSDEV_MLC;
+                    NUSDEV toDev = tl.indexedDevice[0] == 'u' ? NUSDEV_USB : NUSDEV_MLC;
                     if(!(toDev & instDev))
                     {
                         void *ovl = drawPDWrongDeviceFrame(toDev);
