@@ -68,14 +68,6 @@ static Mix_Chunk *backgroundMusic = NULL;
 
 static int32_t spaceWidth;
 
-static SDL_Rect byeRect;
-static const SDL_Rect barRect = {
-    .x = 1,
-    .y = 0,
-    .w = 1,
-    .h = 1,
-};
-
 static SDL_Texture *frameBuffer;
 static SDL_Texture *defaultTex = NULL;
 static SDL_Texture *arrowTex;
@@ -86,6 +78,7 @@ static SDL_Texture *deviceTex[4];
 static SDL_Texture *barTex;
 static SDL_Texture *bgTex;
 static SDL_Texture *byeTex;
+static SDL_Rect byeRect;
 
 static LIST *rectList;
 static LIST *errorOverlayList;
@@ -692,10 +685,7 @@ void resumeRenderer()
             SDL_RenderClear(renderer);
             co = SCREEN_COLOR_D_GREEN;
             SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
-            SDL_RenderFillRect(renderer, &barRect);
-            // TODO: This doesn't work for some SDL bug reason
-            //			SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
-            //			SDL_RenderDrawPoint(renderer, 1, 0);
+            SDL_RenderDrawPoint(renderer, 2, 1);
 
             SDL_Texture *tt = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, 2, 2);
             SDL_SetRenderTarget(renderer, tt);
