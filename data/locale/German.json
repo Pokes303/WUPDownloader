@@ -75,9 +75,13 @@
     "LATEST": "LETZTE",
     "Custom folder name": "Benutzerdefinierter Ordner",
     "ASCII only": "Nur ASCII",
+    "is DLC.": "ist DLC.",
+    "is a update.": "ist ein Update.",
     "is a demo.": "ist eine Demo.",
     "Install main game": "Installiere das Hauptspiel",
     "Download main game": "Downloade das Hauptspiel",
+    "The main game is installed to": "Das main game ist installert auf",
+    "Do you want to change the target device to this?": "Willst du lieber dorthin installieren?",
     "Continue": "Fortsetzen",
 
     "\uE045 to start downloading": "\uE045 zum starten",

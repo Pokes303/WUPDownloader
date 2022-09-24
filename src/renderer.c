@@ -590,6 +590,7 @@ static inline void loadDefaultTexture()
     SDL_RenderClear(renderer);
 
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+
     SDL_RenderDrawPoint(renderer, 2, 2);
     SDL_RenderDrawPoint(renderer, 2, 3);
     SDL_RenderDrawPoint(renderer, 3, 4);
