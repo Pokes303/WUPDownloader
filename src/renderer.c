@@ -694,31 +694,13 @@ void resumeRenderer()
             SDL_RenderClear(renderer);
             // Top right
             SDL_SetRenderDrawColor(renderer, 0x52, 0x05, 0xFF, 0xFF);
-            const SDL_Rect r1 = {
-                .x = 1,
-                .y = 0,
-                .w = 1,
-                .h = 1,
-            };
-            SDL_RenderFillRect(renderer, &r1);
+            SDL_RenderDrawPoint(renderer, 2, 1);
             // Bottom right
             SDL_SetRenderDrawColor(renderer, 0x61, 0x0a, 0xFF, 0xFF);
-            const SDL_Rect r2 = {
-                .x = 1,
-                .y = 1,
-                .w = 1,
-                .h = 1,
-            };
-            SDL_RenderFillRect(renderer, &r2);
+            SDL_RenderDrawPoint(renderer, 2, 2);
             // Bottom left
             SDL_SetRenderDrawColor(renderer, 0x83, 0x18, 0xFF, 0xFF);
-            const SDL_Rect r3 = {
-                .x = 0,
-                .y = 1,
-                .w = 1,
-                .h = 1,
-            };
-            SDL_RenderFillRect(renderer, &r3);
+            SDL_RenderDrawPoint(renderer, 1, 2);
 
             bgTex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_WIDTH, SCREEN_HEIGHT);
             SDL_SetRenderTarget(renderer, bgTex);
