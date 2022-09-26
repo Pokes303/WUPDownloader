@@ -294,8 +294,6 @@ FSFileHandle *openFile(const char *path, const char *mode, size_t filesize)
     {
         t = OSGetTime() - t;
         addEntropy(&t, sizeof(OSTime));
-
-
         return ret;
     }
 
