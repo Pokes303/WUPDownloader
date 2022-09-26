@@ -79,8 +79,6 @@ static int ioThreadMain(int argc, const char **argv)
             err = FSWriteFile(__wut_devoptab_fs_client, &cmdBlk, (uint8_t *)entry->buf, entry->size, 1, *entry->file, 0, FS_ERROR_FLAG_ALL);
             if(err != 1)
                 goto ioError;
-
-            entry->size = 0;
         }
         else // Close command
         {
@@ -97,6 +95,7 @@ static int ioThreadMain(int argc, const char **argv)
             asl = 0;
 
         activeWriteBuffer = asl;
+        entry->size = 0;
         entry->file = NULL;
         entry = queueEntries + asl;
     }
@@ -295,6 +294,8 @@ FSFileHandle *openFile(const char *path, const char *mode, size_t filesize)
     {
         t = OSGetTime() - t;
         addEntropy(&t, sizeof(OSTime));
+
+
         return ret;
     }
 
