@@ -29,7 +29,12 @@
 
 #include <coreinit/mcp.h>
 
-#define CONFIG_PATH            NUSDIR_SD "/NUSspli.txt"
+#ifndef NUSSPLI_LITE
+#define CONFIG_PATH NUSDIR_SD "/NUSspli.txt"
+#else
+#define CONFIG_PATH NUSDIR_SD "/NUSspli-Lite.txt"
+#endif
+
 #define TITLE_KEY_URL_MAX_SIZE 1024
 
 #ifdef __cplusplus

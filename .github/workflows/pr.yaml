@@ -23,6 +23,12 @@ jobs:
           name: NUSspli-Aroma-DEBUG
           path: out/Aroma-DEBUG/*
           if-no-files-found: error
+      - name: Upload Lite version
+        uses: actions/upload-artifact@v3
+        with:
+          name: NUSspli-Lite-DEBUG
+          path: out/Lite-DEBUG/*
+          if-no-files-found: error
       - name: Upload Channel version
         uses: actions/upload-artifact@v3
         with:

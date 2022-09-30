@@ -18,6 +18,8 @@
  * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
+#ifndef NUSSPLI_LITE
+
 #include <wut-fixups.h>
 
 #include <config.h>
@@ -761,3 +763,5 @@ exitPDM:
     clearRamBuf();
     return ret;
 }
+
+#endif // ifndef NUSSPLI_LITE

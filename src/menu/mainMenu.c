@@ -43,17 +43,25 @@ static void drawMainMenuFrame()
 {
     startNewFrame();
     boxToFrame(0, 5);
+#ifndef NUSSPLI_LITE
     textToFrame(1, ALIGNED_CENTER, "NUSspli");
     textToFrame(3, ALIGNED_CENTER, "NUS simple packet loader/installer [" NUSSPLI_VERSION "]");
+#else
+    textToFrame(1, ALIGNED_CENTER, "NUSspli Lite");
+    textToFrame(3, ALIGNED_CENTER, NUSSPLI_VERSION);
+#endif
 
     textToFrame(4, ALIGNED_CENTER, NUSSPLI_COPYRIGHT);
 
-    textToFrame(12, 0, gettext("Press " BUTTON_A " to download content"));
-    textToFrame(13, 0, gettext("Press " BUTTON_X " to install content"));
-    textToFrame(14, 0, gettext("Press " BUTTON_Y " to generate a fake <title.tik> file"));
-    textToFrame(15, 0, gettext("Press " BUTTON_RIGHT " to uninstall a title"));
-    textToFrame(16, 0, gettext("Press " BUTTON_LEFT " for options"));
-    textToFrame(17, 0, gettext("Press " BUTTON_HOME " or " BUTTON_B " to exit"));
+    int line = 12;
+#ifndef NUSSPLI_LITE
+    textToFrame(line, 0, gettext("Press " BUTTON_A " to download content"));
+#endif
+    textToFrame(++line, 0, gettext("Press " BUTTON_X " to install content"));
+    textToFrame(++line, 0, gettext("Press " BUTTON_Y " to generate a fake <title.tik> file"));
+    textToFrame(++line, 0, gettext("Press " BUTTON_RIGHT " to uninstall a title"));
+    textToFrame(++line, 0, gettext("Press " BUTTON_LEFT " for options"));
+    textToFrame(++line, 0, gettext("Press " BUTTON_HOME " or " BUTTON_B " to exit"));
 
     textToFrame(8, MAX_CHARS - 27, gettext("Developers:"));
     textToFrame(9, MAX_CHARS - 26, "• DaThinkingChair");
@@ -89,32 +97,34 @@ void mainMenu()
         }
         showFrame();
 
+#ifndef NUSSPLI_LITE
         if(vpad.trigger & VPAD_BUTTON_A)
         {
             titleBrowserMenu();
             redraw = true;
         }
-        else if(vpad.trigger & VPAD_BUTTON_X)
+#endif
+        if(vpad.trigger & VPAD_BUTTON_X)
         {
             installerMenu();
             redraw = true;
         }
-        else if(vpad.trigger & VPAD_BUTTON_LEFT)
+        if(vpad.trigger & VPAD_BUTTON_LEFT)
         {
             configMenu();
             redraw = true;
         }
-        else if(vpad.trigger & VPAD_BUTTON_Y)
+        if(vpad.trigger & VPAD_BUTTON_Y)
         {
             generateFakeTicket();
             redraw = true;
         }
-        else if(vpad.trigger & VPAD_BUTTON_RIGHT)
+        if(vpad.trigger & VPAD_BUTTON_RIGHT)
         {
             ititleBrowserMenu();
             redraw = true;
         }
-        else if(vpad.trigger & VPAD_BUTTON_B)
+        if(vpad.trigger & VPAD_BUTTON_B)
         {
             drawByeFrame();
             return;

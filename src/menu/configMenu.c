@@ -32,7 +32,11 @@
 
 #include <coreinit/mcp.h>
 
+#ifndef NUSSPLI_LITE
 #define ENTRY_COUNT 4
+#else
+#define ENTRY_COUNT 3
+#endif
 
 static int cursorPos = 0;
 
@@ -61,10 +65,12 @@ static void drawConfigMenu()
     strcat(toScreen, gettext(getNotificationString(getNotificationMethod())));
     textToFrame(3, 4, toScreen);
 
+#ifndef NUSSPLI_LITE
     strcpy(toScreen, gettext("Region:"));
     strcat(toScreen, " ");
     strcat(toScreen, gettext(getFormattedRegion(getRegion())));
     textToFrame(4, 4, toScreen);
+#endif
 
     lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
     textToFrame(MAX_LINES - 1, 0, gettext("Press " BUTTON_B " to return"));
@@ -154,6 +160,7 @@ static inline void switchNotificationMethod()
     setNotificationMethod(m);
 }
 
+#ifndef NUSSPLI_LITE
 static inline void switchRegion()
 {
     MCPRegion reg = getRegion();
@@ -195,6 +202,7 @@ static inline void switchRegion()
 
     setRegion(reg);
 }
+#endif
 
 void configMenu()
 {
@@ -235,9 +243,11 @@ void configMenu()
                 case 3:
                     switchNotificationMethod();
                     break;
+#ifndef NUSSPLI_LITE
                 case 4:
                     switchRegion();
                     break;
+#endif
             }
 
             redraw = true;

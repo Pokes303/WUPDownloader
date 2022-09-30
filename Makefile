@@ -53,6 +53,10 @@ ifeq ($(strip $(HBL)), 1)
 CFLAGS		+=	-DNUSSPLI_HBL
 endif
 
+ifeq ($(strip $(LITE)), 1)
+CFLAGS		+=	-DNUSSPLI_LITE
+endif
+
 CXXFLAGS	:=	$(CFLAGS) -std=c++20 -fpermissive
 ASFLAGS		:=	-g $(ARCH)
 LDFLAGS		:=	-g $(ARCH) $(RPXSPECS) $(CFLAGS) -Wl,-Map,$(notdir $*.map)

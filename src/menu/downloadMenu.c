@@ -17,6 +17,8 @@
  * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
+#ifndef NUSSPLI_LITE
+
 #include <wut-fixups.h>
 
 #include <input.h>
@@ -58,3 +60,5 @@ bool downloadMenu()
     predownloadMenu(entry);
     return true;
 }
+
+#endif // ifndef NUSSPLI_LITE

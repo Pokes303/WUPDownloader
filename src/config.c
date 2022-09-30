@@ -75,8 +75,10 @@ static bool autoResume = true;
 static Swkbd_LanguageType lang = Swkbd_LanguageType__Invalid;
 static Swkbd_LanguageType sysLang;
 static MENU_LANGUAGE menuLang = MENU_LANGUAGE_ENGLISH;
+#ifndef NUSSPLI_LITE
 static bool dlToUSB = true;
 static MCPRegion regionSetting = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN;
+#endif
 static NOTIF_METHOD notifSetting = NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED;
 
 const char *menuLangToString(MENU_LANGUAGE lang)
@@ -297,6 +299,7 @@ bool initConfig()
         else
             changed = true;
 
+#ifndef NUSSPLI_LITE
         configEntry = json_object_get(json, "Region");
         if(configEntry != NULL && json_is_string(configEntry))
         {
@@ -317,6 +320,7 @@ bool initConfig()
             dlToUSB = json_is_true(configEntry);
         else
             changed = true;
+#endif
 
         configEntry = json_object_get(json, "Notification method");
         if(configEntry != NULL && json_is_string(configEntry))
@@ -445,12 +449,14 @@ bool saveConfig(bool force)
                         value = json_string(getLanguageString(lang));
                         if(setValue(config, "Keyboard language", value))
                         {
+#ifndef NUSSPLI_LITE
                             value = json_string(getFormattedRegion(getRegion()));
                             if(setValue(config, "Region", value))
                             {
                                 value = dlToUSB ? json_true() : json_false();
                                 if(setValue(config, "Download to USB", value))
                                 {
+#endif
                                     value = json_string(getNotificationString(getNotificationMethod()));
                                     if(setValue(config, "Notification method", value))
                                     {
@@ -485,8 +491,10 @@ bool saveConfig(bool force)
                                             }
                                         }
                                     }
+#ifndef NUSSPLI_LITE
                                 }
                             }
+#endif
                         }
                     }
                 }
@@ -529,6 +537,7 @@ void setAutoResume(bool enabled)
     changed = true;
 }
 
+#ifndef NUSSPLI_LITE
 bool dlToUSBenabled()
 {
     return dlToUSB;
@@ -541,31 +550,6 @@ void setDlToUSB(bool toUSB)
 
     dlToUSB = toUSB;
     changed = true;
-}
-
-MENU_LANGUAGE getMenuLanguage()
-{
-    return menuLang;
-}
-
-void setMenuLanguage(MENU_LANGUAGE lang)
-{
-    if(menuLang == lang)
-        return;
-
-    intSetMenuLanguage(lang);
-    menuLang = lang;
-    changed = true;
-}
-
-Swkbd_LanguageType getKeyboardLanguage()
-{
-    return lang == Swkbd_LanguageType__Invalid ? sysLang : lang;
-}
-
-Swkbd_LanguageType getUnfilteredLanguage()
-{
-    return lang;
 }
 
 MCPRegion getRegion()
@@ -595,6 +579,32 @@ void setRegion(MCPRegion region)
 
     regionSetting = region;
     changed = true;
+}
+#endif
+
+MENU_LANGUAGE getMenuLanguage()
+{
+    return menuLang;
+}
+
+void setMenuLanguage(MENU_LANGUAGE lang)
+{
+    if(menuLang == lang)
+        return;
+
+    intSetMenuLanguage(lang);
+    menuLang = lang;
+    changed = true;
+}
+
+Swkbd_LanguageType getKeyboardLanguage()
+{
+    return lang == Swkbd_LanguageType__Invalid ? sysLang : lang;
+}
+
+Swkbd_LanguageType getUnfilteredLanguage()
+{
+    return lang;
 }
 
 void setKeyboardLanguage(Swkbd_LanguageType language)

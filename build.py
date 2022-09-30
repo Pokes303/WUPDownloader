@@ -42,7 +42,7 @@ checkAndDeleteDir("out")
 
 editionList = ["-DEBUG", ""]
 extList = [".rpx", ".zip", ".wuhb"]
-pkgList = ["Aroma", "HBL", "Channel"]
+pkgList = ["Aroma", "HBL", "Channel", "Lite"]
 for edition in editionList:
     for ext in extList:  
         checkAndDeleteFile(f"NUSspli-{version}{edition}{ext}")
@@ -51,7 +51,7 @@ for edition in editionList:
         for pkg in pkgList:
             checkAndDeleteFile(f"zips/NUSspli-{version}-{pkg}{edition}{ext}")
 
-tmpArray = ["out/Aroma-DEBUG", "out/Channel-DEBUG", "out/HBL-DEBUG/NUSspli", "NUStmp/code"]
+tmpArray = ["out/Aroma-DEBUG", "out/Lite-DEBUG", "out/Channel-DEBUG", "out/HBL-DEBUG/NUSspli", "NUStmp/code"]
 for path in tmpArray:
     os.makedirs(path)
 os.makedirs("zips", exist_ok=True)
@@ -70,6 +70,9 @@ shutil.copytree("data", "NUStmp/content")
 os.system(f"java -jar {nuspacker} -in NUStmp -out out/Channel-DEBUG/NUSspli")
 shutil.make_archive(f"zips/NUSspli-{version}-Channel-DEBUG", "zip", "out/Channel-DEBUG", ".")
 
+os.system(f"make clean && make -j$(nproc) LITE=1 debug && {wuhbtool} NUSspli.rpx out/Lite-DEBUG/NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex-lite.tga --tv-image=meta/menu/bootTvTex-lite.tga --drc-image=meta/menu/bootDrcTex.tga --content=data")
+shutil.make_archive(f"zips/NUSspli-{version}-Lite-DEBUG", "zip", "out/Lite-DEBUG", ".")
+
 if not isBeta:
     os.makedirs("out/Aroma")
     os.system(f"make clean && make -j$(nproc) release && {wuhbtool} NUSspli.rpx out/Aroma/NUSspli.wuhb --name=NUSspli --short-name=NUSspli --author=V10lator --icon=meta/menu/iconTex.tga --tv-image=meta/menu/bootTvTex.tga --drc-image=meta/menu/bootDrcTex.tga --content=data")
@@ -79,6 +82,9 @@ if not isBeta:
     os.makedirs("out/Channel")
     os.system(f"java -jar {nuspacker} -in NUStmp -out out/Channel/NUSspli")
     shutil.make_archive(f"zips/NUSspli-{version}-Channel", "zip", "out/Channel", ".")
+    os.makedirs("out/Lite")
+    os.system(f"make clean && make -j$(nproc) release && {wuhbtool} NUSspli.rpx out/Aroma/Lite.wuhb --name=\"NUSspli Lite\" --short-name=\"NUSspli Lite\" --author=V10lator --icon=meta/menu/iconTex-lite.tga --tv-image=meta/menu/bootTvTex-lite.tga --drc-image=meta/menu/bootDrcTex.tga --content=data")
+    shutil.make_archive(f"zips/NUSspli-{version}-Lite", "zip", "out/Lite", ".")
 
 shutil.rmtree("NUStmp")
 os.system("make clean && make HBL=1 -j$(nproc) debug")

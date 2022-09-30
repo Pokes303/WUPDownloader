@@ -57,13 +57,27 @@
 #define UPDATE_DOWNLOAD_URL "https://github.com/V10lator/NUSspli/releases/download/v"
 #define UPDATE_TEMP_FOLDER  NUSDIR_SD "NUSspli_temp/"
 #define UPDATE_AROMA_FOLDER NUSDIR_SD "wiiu/apps/"
-#define UPDATE_AROMA_FILE   "NUSspli.wuhb"
-#define UPDATE_HBL_FOLDER   NUSDIR_SD "wiiu/apps/NUSspli"
+
+#ifndef NUSSPLI_LITE
+#define UPDATE_AROMA_FILE "NUSspli.wuhb"
+#define UPDATE_HBL_FOLDER NUSDIR_SD "wiiu/apps/NUSspli"
+#else
+#define UPDATE_AROMA_FILE "NUSspli-Lite.wuhb"
+#define UPDATE_HBL_FOLDER NUSDIR_SD "wiiu/apps/NUSspli-Lite"
+#endif
 
 #ifdef NUSSPLI_DEBUG
+#ifndef NUSSPLI_LITE
 #define NUSSPLI_DLVER "-DEBUG"
 #else
+#define NUSSPLI_DLVER "-Lite-DEBUG"
+#endif
+#else
+#ifndef NUSSPLI_LITE
 #define NUSSPLI_DLVER ""
+#else
+#define NUSSPLI_DLVER "-Lite"
+#endif
 #endif
 
 static void showUpdateError(const char *msg)
