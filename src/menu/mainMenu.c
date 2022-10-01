@@ -55,13 +55,13 @@ static void drawMainMenuFrame()
 
     int line = 12;
 #ifndef NUSSPLI_LITE
-    textToFrame(line, 0, gettext("Press " BUTTON_A " to download content"));
+    textToFrame(line++, 0, gettext("Press " BUTTON_A " to download content"));
 #endif
-    textToFrame(++line, 0, gettext("Press " BUTTON_X " to install content"));
-    textToFrame(++line, 0, gettext("Press " BUTTON_Y " to generate a fake <title.tik> file"));
-    textToFrame(++line, 0, gettext("Press " BUTTON_RIGHT " to uninstall a title"));
-    textToFrame(++line, 0, gettext("Press " BUTTON_LEFT " for options"));
-    textToFrame(++line, 0, gettext("Press " BUTTON_HOME " or " BUTTON_B " to exit"));
+    textToFrame(line++, 0, gettext("Press " BUTTON_X " to install content"));
+    textToFrame(line++, 0, gettext("Press " BUTTON_Y " to generate a fake <title.tik> file"));
+    textToFrame(line++, 0, gettext("Press " BUTTON_RIGHT " to uninstall a title"));
+    textToFrame(line++, 0, gettext("Press " BUTTON_LEFT " for options"));
+    textToFrame(line, 0, gettext("Press " BUTTON_HOME " or " BUTTON_B " to exit"));
 
     textToFrame(8, MAX_CHARS - 27, gettext("Developers:"));
     textToFrame(9, MAX_CHARS - 26, "• DaThinkingChair");
