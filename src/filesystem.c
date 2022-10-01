@@ -20,8 +20,8 @@
 
 #include <file.h>
 #include <filesystem.h>
-#include <utils.h>
 #include <menu/utils.h>
+#include <utils.h>
 
 #include <coreinit/filesystem_fsa.h>
 
