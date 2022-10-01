@@ -50,8 +50,7 @@ static void drawMainMenuFrame()
 #else
         "Lite"
 #endif
-        " [" NUSSPLI_VERSION "]"
-    );
+        " [" NUSSPLI_VERSION "]");
 
     textToFrame(4, ALIGNED_CENTER, NUSSPLI_COPYRIGHT);
 
