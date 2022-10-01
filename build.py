@@ -62,6 +62,8 @@ for root, dirs, files in os.walk("NUStmp/meta"):
     for file in files:
         if file.endswith(".xcf"):
             os.remove(os.path.join(root, file))
+        if file.__contains__("-Lite"):
+            os.remove(os.path.join(root, file))
 
 tmpArray = ["NUSspli.rpx", "NUStmp/meta/app.xml",  "NUStmp/meta/cos.xml"]
 for file in tmpArray:
