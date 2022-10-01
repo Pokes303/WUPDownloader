@@ -99,6 +99,11 @@ void mainMenu()
         }
         showFrame();
 
+        if(vpad.trigger & VPAD_BUTTON_B)
+        {
+            drawByeFrame();
+            return;
+        }
 #ifndef NUSSPLI_LITE
         if(vpad.trigger & VPAD_BUTTON_A)
         {
@@ -125,11 +130,6 @@ void mainMenu()
         {
             ititleBrowserMenu();
             redraw = true;
-        }
-        if(vpad.trigger & VPAD_BUTTON_B)
-        {
-            drawByeFrame();
-            return;
         }
     }
 }
