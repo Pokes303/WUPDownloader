@@ -43,13 +43,15 @@ static void drawMainMenuFrame()
 {
     startNewFrame();
     boxToFrame(0, 5);
-#ifndef NUSSPLI_LITE
     textToFrame(1, ALIGNED_CENTER, "NUSspli");
-    textToFrame(3, ALIGNED_CENTER, "NUS simple packet loader/installer [" NUSSPLI_VERSION "]");
+    textToFrame(3, ALIGNED_CENTER,
+#ifndef NUSSPLI_LITE
+        "NUS simple packet loader/installer"
 #else
-    textToFrame(1, ALIGNED_CENTER, "NUSspli Lite");
-    textToFrame(3, ALIGNED_CENTER, NUSSPLI_VERSION);
+        "Lite"
 #endif
+        " [" NUSSPLI_VERSION "]"
+    );
 
     textToFrame(4, ALIGNED_CENTER, NUSSPLI_COPYRIGHT);
 
