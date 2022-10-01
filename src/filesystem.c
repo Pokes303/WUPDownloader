@@ -21,6 +21,7 @@
 #include <file.h>
 #include <filesystem.h>
 #include <utils.h>
+#include <menu/utils.h>
 
 #include <coreinit/filesystem_fsa.h>
 
@@ -66,4 +67,16 @@ void deinitFS()
 NUSDEV getUSB()
 {
     return usb;
+}
+
+bool checkFreeSpace(NUSDEV dlDev, uint64_t size)
+{
+    uint64_t freeSpace;
+    const char *nd = dlDev == NUSDEV_USB01 ? NUSDIR_USB1 : (dlDev == NUSDEV_USB02 ? NUSDIR_USB2 : (dlDev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC));
+    if(FSGetFreeSpaceSize(__wut_devoptab_fs_client, getCmdBlk(), (char *)nd, &freeSpace, FS_ERROR_FLAG_ALL) == FS_STATUS_OK && size > freeSpace)
+    {
+        showNoSpaceOverlay(dlDev);
+        return false;
+    }
+    return true;
 }

@@ -57,6 +57,48 @@ static inline void removeFQ(TitleData *title)
 bool proccessQueue()
 {
     TitleData *title;
+    uint64_t sizes[3] = { 0, 0, 0 };
+
+    forEachListEntry(titleQueue, title)
+    {
+        for(uint16_t i = 0; i < title->tmd->num_contents; ++i)
+        {
+            if(title->inst)
+                sizes[title->toUSB ? 0 : 2] += title->tmd->contents[i].size;
+
+            if(title->keepFiles)
+            {
+                int j = title->dlDev & NUSDEV_USB ? 0 : (title->dlDev & NUSDEV_SD ? 1 : 2);
+                if((title->tmd->contents[i].type & 0x0003) == 0x0003)
+                    sizes[j] += 20;
+
+                sizes[j] += title->tmd->contents[i].size;
+            }
+        }
+    }
+
+    for(int i = 0; i < 3; ++i)
+    {
+        if(sizes[i] != 0)
+        {
+            NUSDEV toCheck;
+            switch(i)
+            {
+                case 0:
+                    toCheck = getUSB();
+                    break;
+                case 1:
+                    toCheck = NUSDEV_SD;
+                    break;
+                default:
+                    toCheck = NUSDEV_MLC;
+            }
+
+            if(!checkFreeSpace(toCheck, sizes[i]))
+                return false;
+        }
+    }
+
     TitleData *last = NULL;
     forEachListEntry(titleQueue, title)
     {
