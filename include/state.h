@@ -52,7 +52,11 @@ extern "C"
 #ifdef NUSSPLI_HBL
 #define isChannel() false
 #else
+#ifdef NUSSPLI_LITE
+#define isChannel() false
+#else
 bool isChannel();
+#endif
 #endif
     bool AppRunning(bool mainthread) __attribute__((__hot__));
     uint32_t homeButtonCallback(void *dummy);

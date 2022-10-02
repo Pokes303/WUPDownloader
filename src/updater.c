@@ -56,28 +56,19 @@
 #define UPDATE_CHECK_URL    NAPI_URL "s?t="
 #define UPDATE_DOWNLOAD_URL "https://github.com/V10lator/NUSspli/releases/download/v"
 #define UPDATE_TEMP_FOLDER  NUSDIR_SD "NUSspli_temp/"
+#define UPDATE_HBL_FOLDER   NUSDIR_SD "wiiu/apps/NUSspli"
 #define UPDATE_AROMA_FOLDER NUSDIR_SD "wiiu/apps/"
 
 #ifndef NUSSPLI_LITE
 #define UPDATE_AROMA_FILE "NUSspli.wuhb"
-#define UPDATE_HBL_FOLDER NUSDIR_SD "wiiu/apps/NUSspli"
 #else
 #define UPDATE_AROMA_FILE "NUSspli-Lite.wuhb"
-#define UPDATE_HBL_FOLDER NUSDIR_SD "wiiu/apps/NUSspli-Lite"
 #endif
 
 #ifdef NUSSPLI_DEBUG
-#ifndef NUSSPLI_LITE
 #define NUSSPLI_DLVER "-DEBUG"
 #else
-#define NUSSPLI_DLVER "-Lite-DEBUG"
-#endif
-#else
-#ifndef NUSSPLI_LITE
 #define NUSSPLI_DLVER ""
-#else
-#define NUSSPLI_DLVER "-Lite"
-#endif
 #endif
 
 static void showUpdateError(const char *msg)
@@ -117,7 +108,11 @@ bool updateCheck()
 #ifdef NUSSPLI_HBL
         UPDATE_CHECK_URL "h";
 #else
+#ifdef NUSSPLI_LITE
+        UPDATE_CHECK_URL "l";
+#else
         !isChannel() && isAroma() ? UPDATE_CHECK_URL "a" : UPDATE_CHECK_URL "c";
+#endif
 #endif
 
     bool ret = false;
@@ -412,7 +407,11 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
     switch(type)
     {
         case NUSSPLI_TYPE_AROMA:
+#ifndef NUSSPLI_LITE
             strcat(path, "-Aroma");
+#else
+            strcat(path, "-Lite");
+#endif
             break;
         case NUSSPLI_TYPE_CHANNEL:
             strcat(path, "-Channel");
