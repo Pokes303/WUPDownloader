@@ -85,7 +85,7 @@ if not isBeta:
     os.system(f"java -jar {nuspacker} -in NUStmp -out out/Channel/NUSspli")
     shutil.make_archive(f"zips/NUSspli-{version}-Channel", "zip", "out/Channel", ".")
     os.makedirs("out/Lite")
-    os.system(f"make clean && make -j$(nproc) release && {wuhbtool} NUSspli.rpx out/Aroma/NUSspli-Lite.wuhb --name=\"NUSspli Lite\" --short-name=\"NUSspli Lite\" --author=V10lator --icon=meta/menu/iconTex-lite.tga --tv-image=meta/menu/bootTvTex-lite.tga --drc-image=meta/menu/bootDrcTex.tga --content=data")
+    os.system(f"make clean && make -j$(nproc) LITE=1 release && {wuhbtool} NUSspli.rpx out/Lite/NUSspli-Lite.wuhb --name=\"NUSspli Lite\" --short-name=\"NUSspli Lite\" --author=V10lator --icon=meta/menu/iconTex-lite.tga --tv-image=meta/menu/bootTvTex-lite.tga --drc-image=meta/menu/bootDrcTex.tga --content=data")
     shutil.make_archive(f"zips/NUSspli-{version}-Lite", "zip", "out/Lite", ".")
 
 shutil.rmtree("NUStmp")
