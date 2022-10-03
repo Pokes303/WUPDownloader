@@ -509,7 +509,7 @@ bool createDirRecursive(const char *dir)
 
 const char *translateFSErr(FSStatus err)
 {
-    switch(err)
+    switch((int)err) // We cast to int cause -19 is not in WUTs enum
     {
         case FS_STATUS_PERMISSION_ERROR:
         case -19:
