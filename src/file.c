@@ -512,6 +512,7 @@ const char *translateFSErr(FSStatus err)
     switch(err)
     {
         case FS_STATUS_PERMISSION_ERROR:
+        case -19:
             return "Permission error (read only filesystem?)";
         case FS_STATUS_MEDIA_ERROR:
         case FS_STATUS_CORRUPTED:
