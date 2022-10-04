@@ -59,7 +59,9 @@ static void drawMainMenuFrame()
     textToFrame(line++, 0, gettext("Press " BUTTON_A " to download content"));
 #endif
     textToFrame(line++, 0, gettext("Press " BUTTON_X " to install content"));
+#ifndef NUSSPLI_LITE
     textToFrame(line++, 0, gettext("Press " BUTTON_Y " to generate a fake <title.tik> file"));
+#endif
     textToFrame(line++, 0, gettext("Press " BUTTON_RIGHT " to uninstall a title"));
     textToFrame(line++, 0, gettext("Press " BUTTON_LEFT " for options"));
     textToFrame(line, 0, gettext("Press " BUTTON_HOME " or " BUTTON_B " to exit"));
@@ -120,11 +122,13 @@ void mainMenu()
             configMenu();
             redraw = true;
         }
+#ifndef NUSSPLI_LITE
         if(vpad.trigger & VPAD_BUTTON_Y)
         {
             generateFakeTicket();
             redraw = true;
         }
+#endif
         if(vpad.trigger & VPAD_BUTTON_RIGHT)
         {
             ititleBrowserMenu();

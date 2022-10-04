@@ -16,6 +16,8 @@
  * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
+#ifndef NUSSPLI_LITE
+
 #include <wut-fixups.h>
 
 #include <mbedtls/md5.h>
@@ -112,3 +114,5 @@ bool generateKey(const TitleEntry *te, char *out)
 #endif
     return true;
 }
+
+#endif

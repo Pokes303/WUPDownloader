@@ -17,6 +17,8 @@
  * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
+#ifndef NUSSPLI_LITE
+
 #include <wut-fixups.h>
 
 #include <ticket.h>
@@ -285,3 +287,5 @@ gftEntry:
 
     MEMFreeToDefaultHeap(tmd);
 }
+
+#endif
