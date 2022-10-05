@@ -142,6 +142,9 @@ extern "C"
             if(cur->content == content)
             {
                 last->next = cur->next;
+                if(cur == list->last)
+                    list->last = last;
+
                 list->size--;
                 MEMFreeToDefaultHeap(cur);
                 return;
@@ -174,7 +177,11 @@ extern "C"
         if(last == entry)
             list->first = entry->next;
         else
+        {
             last->next = entry->next;
+            if(entry == list->last)
+                list->last = last;
+        }
 
         if(freeContent)
             MEMFreeToDefaultHeap(entry->content);
@@ -202,7 +209,11 @@ extern "C"
         if(last == entry)
             list->first = entry->next;
         else
+        {
             last->next = entry->next;
+            if(entry == list->last)
+                list->last = last;
+        }
 
         void *ret = entry->content;
         MEMFreeToDefaultHeap(entry);
