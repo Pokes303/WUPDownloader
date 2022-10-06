@@ -26,7 +26,9 @@
 #include <list.h>
 #include <localisation.h>
 #include <menu/filebrowser.h>
+#include <menu/queue.h>
 #include <menu/utils.h>
+#include <queue.h>
 #include <renderer.h>
 #include <state.h>
 
@@ -39,7 +41,7 @@
 
 #define MAX_FILEBROWSER_LINES (MAX_LINES - 5)
 
-static void drawFBMenuFrame(const char *path, LIST *folders, size_t pos, const size_t cursor, const NUSDEV activeDevice, bool usbMounted)
+static void drawFBMenuFrame(const char *path, LIST *folders, size_t pos, const size_t cursor, const NUSDEV activeDevice, bool usbMounted, bool showQueue)
 {
     startNewFrame();
     textToFrame(0, 6, gettext("Select a folder:"));
@@ -60,7 +62,15 @@ static void drawFBMenuFrame(const char *path, LIST *folders, size_t pos, const s
     strcat(toWrite, gettext(l));
     textToFrame(MAX_LINES - 2, ALIGNED_CENTER, toWrite);
 
-    strcpy(toWrite, gettext("Searching on"));
+    if(showQueue)
+    {
+        strcpy(toWrite, gettext(BUTTON_MINUS " to open the queue"));
+        strcat(toWrite, " || ");
+        strcat(toWrite, gettext("Searching on"));
+    }
+    else
+        strcpy(toWrite, gettext("Searching on"));
+
     strcat(toWrite, " => ");
     strcat(toWrite, prettyDir(path));
     textToFrame(MAX_LINES - 1, ALIGNED_CENTER, toWrite);
@@ -87,7 +97,7 @@ static void drawFBMenuFrame(const char *path, LIST *folders, size_t pos, const s
     drawFrame();
 }
 
-char *fileBrowserMenu()
+char *fileBrowserMenu(bool showQueue)
 {
     LIST *folders = createList();
     if(folders == NULL)
@@ -100,6 +110,9 @@ char *fileBrowserMenu()
     FSDirectoryHandle dir;
     bool ret = false;
     char *path = getStaticPathBuffer(2);
+
+    if(showQueue)
+        showQueue = getListSize(getTitleQueue());
 
 refreshVOlList:
     strcpy(path, (activeDevice & NUSDEV_USB) ? (usbMounted == NUSDEV_USB01 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC));
@@ -165,7 +178,7 @@ refreshDirList:
 
         if(redraw)
         {
-            drawFBMenuFrame(path, folders, pos, cursor, activeDevice, usbMounted);
+            drawFBMenuFrame(path, folders, pos, cursor, activeDevice, usbMounted, showQueue);
             redraw = false;
         }
         showFrame();
@@ -329,6 +342,13 @@ refreshDirList:
             }
         }
 
+        if(vpad.trigger & VPAD_BUTTON_MINUS && showQueue)
+        {
+            if(queueMenu())
+                goto exitFileBrowserMenu;
+
+            redraw = true;
+        }
         if(vpad.trigger & VPAD_BUTTON_X)
         {
             switch((int)activeDevice)

@@ -36,7 +36,7 @@
 
 #include <string.h>
 
-static int cursorPos = MAX_LINES - 4;
+static int cursorPos = MAX_LINES - 5;
 
 static bool addToOpQueue(const char *dir, TMD *tmd, NUSDEV fromDev, bool toUSB, bool keepFiles)
 {
@@ -81,25 +81,13 @@ static void drawInstallerMenuFrame(const char *name, NUSDEV dev, NUSDEV toDev, b
 {
     startNewFrame();
     textToFrame(0, 0, name);
-
-    int line = MAX_LINES - 1;
-    textToFrame(line--, ALIGNED_CENTER, gettext(BUTTON_MINUS " to add to the queue"));
+    arrowToFrame(cursorPos, 0);
 
     char *toFrame = getToFrameBuffer();
     strcpy(toFrame, gettext("Press " BUTTON_B " to return"));
     strcat(toFrame, " || ");
     strcat(toFrame, gettext(BUTTON_PLUS " to start"));
-    textToFrame(line--, ALIGNED_CENTER, toFrame);
-
-    lineToFrame(line--, SCREEN_COLOR_WHITE);
-
-    strcpy(toFrame, gettext("Keep downloaded files:"));
-    strcat(toFrame, " ");
-    strcat(toFrame, gettext(keepFiles ? "Yes" : "No"));
-    if(dev == NUSDEV_SD)
-        textToFrame(line--, 4, gettext(toFrame));
-    else
-        textToFrameColored(line--, 4, gettext(toFrame), SCREEN_COLOR_WHITE_TRANSP);
+    textToFrame(MAX_LINES - 2, ALIGNED_CENTER, toFrame);
 
     strcpy(toFrame, gettext("Install to:"));
     strcat(toFrame, " ");
@@ -115,12 +103,26 @@ static void drawInstallerMenuFrame(const char *name, NUSDEV dev, NUSDEV toDev, b
     }
 
     if(usbMounted)
-        textToFrame(line--, 4, toFrame);
+        textToFrame(MAX_LINES - 5, 4, toFrame);
     else
-        textToFrameColored(line--, 4, toFrame, SCREEN_COLOR_WHITE_TRANSP);
+        textToFrameColored(MAX_LINES - 5, 4, toFrame, SCREEN_COLOR_WHITE_TRANSP);
 
-    arrowToFrame(cursorPos, 0);
-    lineToFrame(line, SCREEN_COLOR_WHITE);
+    strcpy(toFrame, gettext("Keep downloaded files:"));
+    strcat(toFrame, " ");
+    strcat(toFrame, gettext(keepFiles ? "Yes" : "No"));
+    if(dev == NUSDEV_SD)
+        textToFrame(MAX_LINES - 4, 4, gettext(toFrame));
+    else
+        textToFrameColored(MAX_LINES - 4, 4, gettext(toFrame), SCREEN_COLOR_WHITE_TRANSP);
+
+    lineToFrame(MAX_LINES - 3, SCREEN_COLOR_WHITE);
+
+    strcpy(toFrame, gettext("Press " BUTTON_B " to return"));
+    strcat(toFrame, " || ");
+    strcat(toFrame, gettext(BUTTON_PLUS " to start"));
+    textToFrame(MAX_LINES - 2, ALIGNED_CENTER, toFrame);
+
+    textToFrame(MAX_LINES - 1, ALIGNED_CENTER, gettext(BUTTON_MINUS " to add to the queue"));
 
     drawFrame();
 }
@@ -141,7 +143,7 @@ static NUSDEV getDevFromPath(const char *path)
 
 void installerMenu()
 {
-    const char *dir = fileBrowserMenu();
+    const char *dir = fileBrowserMenu(true);
     if(dir == NULL || !AppRunning(true))
         return;
 
@@ -202,7 +204,7 @@ refreshDir:
         if(vpad.trigger & VPAD_BUTTON_B)
         {
             MEMFreeToDefaultHeap(tmd);
-            dir = fileBrowserMenu();
+            dir = fileBrowserMenu(true);
             if(dir == NULL)
                 return;
 
@@ -213,7 +215,7 @@ refreshDir:
         {
             switch(cursorPos)
             {
-                case MAX_LINES - 4:
+                case MAX_LINES - 5:
                     if(checkSystemTitleFromTid(tmd->tid))
                     {
                         if(install(nd, false, dev, dir, toDev & NUSDEV_USB, keepFiles, tmd))
@@ -222,10 +224,6 @@ refreshDir:
 
                     MEMFreeToDefaultHeap(tmd);
                     return;
-                case MAX_LINES - 3:
-                    if(dev == NUSDEV_SD)
-                        keepFiles = !keepFiles;
-                    break;
             }
 
             redraw = true;
@@ -234,7 +232,7 @@ refreshDir:
         {
             addToOpQueue(dir, tmd, dev, toDev & NUSDEV_USB, keepFiles);
 
-            dir = fileBrowserMenu();
+            dir = fileBrowserMenu(true);
             if(dir == NULL)
                 return;
 
@@ -244,7 +242,7 @@ refreshDir:
         {
             switch(cursorPos)
             {
-                case MAX_LINES - 4:
+                case MAX_LINES - 5:
                     if(usbMounted)
                     {
                         if(toDev & NUSDEV_USB)
@@ -253,7 +251,7 @@ refreshDir:
                             toDev = usbMounted;
                     }
                     break;
-                case MAX_LINES - 3:
+                case MAX_LINES - 4:
                     if(dev == NUSDEV_SD)
                         keepFiles = !keepFiles;
                     break;
@@ -263,15 +261,15 @@ refreshDir:
         }
         else if(vpad.trigger & VPAD_BUTTON_DOWN)
         {
-            if(++cursorPos == MAX_LINES - 2)
-                cursorPos = MAX_LINES - 4;
+            if(++cursorPos == MAX_LINES - 3)
+                cursorPos = MAX_LINES - 5;
 
             redraw = true;
         }
         else if(vpad.trigger & VPAD_BUTTON_UP)
         {
-            if(--cursorPos == MAX_LINES - 5)
-                cursorPos = MAX_LINES - 3;
+            if(--cursorPos == MAX_LINES - 6)
+                cursorPos = MAX_LINES - 4;
 
             redraw = true;
         }

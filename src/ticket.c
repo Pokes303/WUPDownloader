@@ -207,7 +207,7 @@ void generateFakeTicket()
     char *dir;
     TMD *tmd;
 gftEntry:
-    dir = fileBrowserMenu();
+    dir = fileBrowserMenu(false);
     if(dir == NULL || !AppRunning(true))
         return;
 

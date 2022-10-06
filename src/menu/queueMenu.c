@@ -17,15 +17,13 @@
  * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef NUSSPLI_LITE
-
 #include <wut-fixups.h>
 
 #include <input.h>
 #include <list.h>
 #include <localisation.h>
 #include <menu/main.h>
-#include <menu/queueMenu.h>
+#include <menu/queue.h>
 #include <menu/utils.h>
 #include <queue.h>
 #include <renderer.h>
@@ -292,5 +290,3 @@ bool queueMenu()
 
     return true;
 }
-
-#endif // ifndef NUSSPLI_LITE
