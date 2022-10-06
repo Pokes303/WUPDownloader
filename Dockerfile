@@ -1,11 +1,11 @@
 # build wut
-FROM wiiuenv/devkitppc:20220907 AS final
+FROM wiiuenv/devkitppc:20220917 AS final
 
 ENV DEBIAN_FRONTEND=noninteractive \
  PATH=$DEVKITPPC/bin:$PATH \
  WUT_ROOT=$DEVKITPRO/wut
 WORKDIR /
-COPY --from=wiiuenv/libmocha:2022090322084275f31e /artifacts $DEVKITPRO
+COPY --from=wiiuenv/libmocha:20220919112600f3c45c /artifacts $DEVKITPRO
 COPY --from=wiiuenv/librpxloader:20220903141341abbf92 /artifacts $DEVKITPRO
 
 RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
