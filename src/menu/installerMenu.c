@@ -177,6 +177,13 @@ refreshDir:
                 break;
         }
 
+        if(!AppRunning(true))
+            return;
+
+        dir = fileBrowserMenu(true);
+        if(dir == NULL)
+            return;
+
         goto refreshDir;
     }
 
