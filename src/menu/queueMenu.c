@@ -42,10 +42,10 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
 
     char *toScreen = getToFrameBuffer();
     int i = 0;
-    int p;
     TitleData *data;
 #ifndef NUSSPLI_LITE
     TitleEntry *entry;
+    int p;
 #endif
 
     forEachListEntry(titleQueue, data)
