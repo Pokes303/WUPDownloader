@@ -31,6 +31,7 @@
 #include <tmd.h>
 #include <utils.h>
 
+#include <coreinit/filesystem.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 
@@ -43,7 +44,7 @@ static bool addToOpQueue(const char *dir, TMD *tmd, NUSDEV fromDev, bool toUSB, 
     TitleData *titleInfo = MEMAllocFromDefaultHeap(sizeof(TitleData));
     if(titleInfo != NULL)
     {
-        titleInfo->data = MEMAllocFromDefaultHeapEx(strlen(dir) + 1, 0x40);
+        titleInfo->data = MEMAllocFromDefaultHeapEx(FS_MAX_PATH, 0x40);
         if(titleInfo->data != NULL)
         {
             titleInfo->tmd = tmd;
