@@ -39,6 +39,8 @@
 
 #include <string.h>
 
+static int cursorPos = 11;
+
 static void drawMainMenuFrame()
 {
     startNewFrame();
@@ -54,32 +56,37 @@ static void drawMainMenuFrame()
 
     textToFrame(4, ALIGNED_CENTER, NUSSPLI_COPYRIGHT);
 
-    int line = 12;
+    arrowToFrame(cursorPos, 0);
+
+    int line = 11;
 #ifndef NUSSPLI_LITE
-    textToFrame(line++, 0, gettext("Press " BUTTON_A " to download content"));
+    textToFrame(line++, 4, gettext("Download content"));
 #endif
-    textToFrame(line++, 0, gettext("Press " BUTTON_X " to install content"));
+    textToFrame(line++, 4, gettext("Install content"));
 #ifndef NUSSPLI_LITE
-    textToFrame(line++, 0, gettext("Press " BUTTON_Y " to generate a fake <title.tik> file"));
+    textToFrame(line++, 4, gettext("Generate a fake <title.tik> file"));
 #endif
-    textToFrame(line++, 0, gettext("Press " BUTTON_RIGHT " to uninstall a title"));
-    textToFrame(line++, 0, gettext("Press " BUTTON_LEFT " for options"));
-    textToFrame(line, 0, gettext("Press " BUTTON_HOME " or " BUTTON_B " to exit"));
+    textToFrame(line++, 4, gettext("Uninstall a title"));
+    textToFrame(line++, 4, gettext("Options"));
 
-    textToFrame(8, MAX_CHARS - 27, gettext("Developers:"));
-    textToFrame(9, MAX_CHARS - 26, "• DaThinkingChair");
-    textToFrame(10, MAX_CHARS - 26, "• Pokes303");
-    textToFrame(11, MAX_CHARS - 26, "• V10lator");
+    textToFrame(7, MAX_CHARS - 27, gettext("Developers:"));
+    textToFrame(8, MAX_CHARS - 26, "• DaThinkingChair");
+    textToFrame(9, MAX_CHARS - 26, "• Pokes303");
+    textToFrame(10, MAX_CHARS - 26, "• V10lator");
 
-    textToFrame(13, MAX_CHARS - 27, gettext("Thanks to:"));
-    textToFrame(14, MAX_CHARS - 26, "• E1ite007");
-    textToFrame(15, MAX_CHARS - 26, "• SDL");
-    textToFrame(16, MAX_CHARS - 26, "• WUP installer");
+    textToFrame(12, MAX_CHARS - 27, gettext("Thanks to:"));
+    textToFrame(13, MAX_CHARS - 26, "• E1ite007");
+    textToFrame(14, MAX_CHARS - 26, "• SDL");
+    textToFrame(15, MAX_CHARS - 26, "• WUP installer");
 
-    textToFrame(18, MAX_CHARS - 27, gettext("Beta testers:"));
-    textToFrame(19, MAX_CHARS - 26, "• jacobsson");
-    textToFrame(20, MAX_CHARS - 26, "• LuckyDingo");
-    textToFrame(21, MAX_CHARS - 26, "• Vague Rant");
+    textToFrame(17, MAX_CHARS - 27, gettext("Beta testers:"));
+    textToFrame(18, MAX_CHARS - 26, "• jacobsson");
+    textToFrame(19, MAX_CHARS - 26, "• LuckyDingo");
+    textToFrame(20, MAX_CHARS - 26, "• Vague Rant");
+
+    lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
+    textToFrame(MAX_LINES - 1, 0, gettext("Press " BUTTON_HOME " or " BUTTON_B " to exit"));
+
     drawFrame();
 }
 
@@ -105,33 +112,60 @@ void mainMenu()
             drawByeFrame();
             return;
         }
-#ifndef NUSSPLI_LITE
+
         if(vpad.trigger & VPAD_BUTTON_A)
         {
-            titleBrowserMenu();
-            redraw = true;
-        }
-#endif
-        if(vpad.trigger & VPAD_BUTTON_X)
-        {
-            installerMenu();
-            redraw = true;
-        }
-        if(vpad.trigger & VPAD_BUTTON_LEFT)
-        {
-            configMenu();
-            redraw = true;
-        }
+            switch(cursorPos)
+            {
+                case 11:
 #ifndef NUSSPLI_LITE
-        if(vpad.trigger & VPAD_BUTTON_Y)
-        {
-            generateFakeTicket();
+                    titleBrowserMenu();
+                    break;
+                case 12:
+#endif
+                    installerMenu();
+                    break;
+#ifndef NUSSPLI_LITE
+                case 13:
+                    generateFakeTicket();
+                    break;
+                case 14:
+#else
+                case 12:
+#endif
+                    ititleBrowserMenu();
+                    break;
+#ifndef NUSSPLI_LITE
+                case 15:
+#else
+                case 13:
+#endif
+                    configMenu();
+                    break;
+            }
+
             redraw = true;
         }
-#endif
-        if(vpad.trigger & VPAD_BUTTON_RIGHT)
+        else if(vpad.trigger & VPAD_BUTTON_DOWN)
         {
-            ititleBrowserMenu();
+#ifndef NUSSPLI_LITE
+            if(++cursorPos == 16)
+#else
+            if(++cursorPos == 14)
+#endif
+                cursorPos = 11;
+
+            redraw = true;
+        }
+        else if(vpad.trigger & VPAD_BUTTON_UP)
+        {
+            if(--cursorPos == 10)
+#ifndef NUSSPLI_LITE
+                cursorPos = 15;
+#else
+                cursorPos = 13;
+#endif
+
             redraw = true;
         }
     }
