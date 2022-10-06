@@ -152,8 +152,8 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 
     lineToFrame(--line, SCREEN_COLOR_WHITE);
 
-    textToFrame(--line, 5, gettext("Set custom name to the download folder"));
-    textToFrame(--line, 5, gettext("Set title version"));
+    textToFrame(--line, 4, gettext("Set custom name to the download folder"));
+    textToFrame(--line, 4, gettext("Set title version"));
 
     if(operation == OPERATION_DOWNLOAD)
         keepFiles = true;
@@ -172,9 +172,9 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
     strcat(toFrame, " ");
     strcat(toFrame, gettext(keepFiles ? "Yes" : "No"));
     if(dlDev == NUSDEV_SD && operation == OPERATION_INSTALL)
-        textToFrame(--line, 5, gettext(toFrame));
+        textToFrame(--line, 4, gettext(toFrame));
     else
-        textToFrameColored(--line, 5, gettext(toFrame), SCREEN_COLOR_WHITE_TRANSP);
+        textToFrameColored(--line, 4, gettext(toFrame), SCREEN_COLOR_WHITE_TRANSP);
 
     strcpy(toFrame, gettext("Download to:"));
     strcat(toFrame, " ");
@@ -190,7 +190,7 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
         case NUSDEV_MLC:
             strcat(toFrame, "NAND");
     }
-    textToFrame(--line, 5, gettext(toFrame));
+    textToFrame(--line, 4, gettext(toFrame));
 
     strcpy(toFrame, gettext("Operation:"));
     strcat(toFrame, " ");
@@ -203,7 +203,7 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
             strcat(toFrame, gettext("Install"));
             break;
     }
-    textToFrame(--line, 5, toFrame);
+    textToFrame(--line, 4, toFrame);
 
     strcpy(toFrame, gettext("Install to:"));
     strcat(toFrame, " ");
@@ -218,9 +218,9 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
             break;
     }
     if(operation == OPERATION_INSTALL)
-        textToFrame(--line, 5, toFrame);
+        textToFrame(--line, 4, toFrame);
     else
-        textToFrameColored(--line, 5, toFrame, SCREEN_COLOR_WHITE_TRANSP);
+        textToFrameColored(--line, 4, toFrame, SCREEN_COLOR_WHITE_TRANSP);
 
     lineToFrame(--line, SCREEN_COLOR_WHITE);
 
