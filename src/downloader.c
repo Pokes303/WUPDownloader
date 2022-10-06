@@ -104,10 +104,14 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
 
     if(dltotal > 0.1D && !isinf(dltotal) && !isnan(dltotal))
     {
+        addEntropy(&dlnow, sizeof(double));
+        OSTick t = OSGetTick();
+        addEntropy(&t, sizeof(OSTick));
+
         if(!spinTryLock(data->lock))
             return 0;
 
-        data->ts = OSGetTick();
+        data->ts = t;
         data->dltotal = dltotal;
         data->dlnow = dlnow;
         spinReleaseLock(data->lock);
@@ -587,9 +591,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
     double downloaded = 0.0D;
     double dlnow;
     double dltotal;
-    OSTick now;
     OSTick lastTransfair = OSGetTick();
-    OSTick ent;
     int frames = 1;
     uint32_t fileeta;
     uint32_t totaleta;
@@ -609,7 +611,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                     checkForQueueErrors();
 
                 dlnow = cdata.dlnow;
-                now = cdata.ts;
                 spinReleaseLock(cdata.lock);
 
                 dltotal = cdata.dltotal + fileSize;
@@ -654,14 +655,10 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 secsToTime(fileeta, toScreen);
                 textToFrame(1, ALIGNED_RIGHT, toScreen);
 
-                ent = (OSTick)dltotal;
-                addEntropy(&ent, sizeof(OSTick));
                 downloaded = dlnow;
                 if(dltotal > 0.0D)
                 {
-                    ent = now - lastTransfair;
-                    addEntropy(&ent, sizeof(OSTick));
-                    dlnow = OSTicksToMilliseconds(ent); // sample duration in milliseconds
+                    dlnow = OSTicksToMilliseconds(cdata.ts - lastTransfair); // sample duration in milliseconds
                     if(dlnow != 0.0D)
                     {
                         dlnow /= 1000.0D; // sample duration in seconds
@@ -670,7 +667,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                     }
                 }
 
-                lastTransfair = now;
+                lastTransfair = cdata.ts;
                 getSpeedString(dltotal, toScreen);
                 textToFrame(0, ALIGNED_RIGHT, toScreen);
             }
