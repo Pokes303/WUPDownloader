@@ -51,7 +51,9 @@ static inline void removeFQ(TitleData *title)
     if(title != NULL)
     {
         removeFromList(titleQueue, title);
+#ifndef NUSSPLI_LITE
         if(title->operation == OPERATION_INSTALL)
+#endif
             MEMFreeToDefaultHeap((void *)title->data);
 
         MEMFreeToDefaultHeap(title->tmd);
@@ -68,9 +70,12 @@ bool proccessQueue()
     {
         for(uint16_t i = 0; i < title->tmd->num_contents; ++i)
         {
+#ifndef NUSSPLI_LITE
             if(title->operation & OPERATION_INSTALL)
+#endif
                 sizes[title->toUSB ? 0 : 2] += title->tmd->contents[i].size;
 
+#ifndef NUSSPLI_LITE
             if(title->operation & OPERATION_DOWNLOAD && title->keepFiles)
             {
                 int j = title->dlDev & NUSDEV_USB ? 0 : (title->dlDev & NUSDEV_SD ? 1 : 2);
@@ -79,6 +84,7 @@ bool proccessQueue()
 
                 sizes[j] += title->tmd->contents[i].size;
             }
+#endif
         }
     }
 
@@ -108,6 +114,7 @@ bool proccessQueue()
     forEachListEntry(titleQueue, title)
     {
         removeFQ(last);
+#ifndef NUSSPLI_LITE
         if(title->operation & OPERATION_DOWNLOAD)
         {
             if(!downloadTitle(title->tmd, title->tmdSize, title->data, title->titleVer, title->folderName, title->operation & OPERATION_INSTALL, title->dlDev, title->toUSB, title->keepFiles))
@@ -115,9 +122,12 @@ bool proccessQueue()
         }
         else if(title->operation & OPERATION_INSTALL)
         {
+#endif
             if(!install(prettyDir(title->data), false /* TODO */, title->dlDev, title->data, title->toUSB, title->keepFiles, title->tmd))
                 return false;
+#ifndef NUSSPLI_LITE
         }
+#endif
 
         last = title;
     }
@@ -132,7 +142,9 @@ bool removeFromQueue(uint32_t index)
     if(title == NULL)
         return false;
 
+#ifndef NUSSPLI_LITE
     if(title->operation == OPERATION_INSTALL)
+#endif
         MEMFreeToDefaultHeap((void *)title->data);
 
     MEMFreeToDefaultHeap(title->tmd);

@@ -49,9 +49,11 @@ static bool addToOpQueue(const char *dir, TMD *tmd, NUSDEV fromDev, bool toUSB, 
         if(ret)
         {
             titleInfo->tmd = tmd;
+#ifndef NUSSPLI_LITE
             titleInfo->tmdSize = 0;
-            strcpy((char *)(titleInfo->data), dir);
             titleInfo->operation = OPERATION_INSTALL;
+#endif
+            strcpy((char *)(titleInfo->data), dir);
             titleInfo->dlDev = fromDev;
             titleInfo->toUSB = toUSB;
             titleInfo->keepFiles = keepFiles;

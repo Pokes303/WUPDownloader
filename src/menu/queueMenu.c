@@ -46,7 +46,9 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
     int i = 0;
     int p;
     TitleData *data;
+#ifndef NUSSPLI_LITE
     TitleEntry *entry;
+#endif
 
     forEachListEntry(titleQueue, data)
     {
@@ -59,6 +61,7 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
         if(cursor == i++)
             arrowToFrame(i, 1);
 
+#ifndef NUSSPLI_LITE
         if(data->operation & OPERATION_INSTALL)
             deviceToFrame(i, 7, data->toUSB ? DEVICE_TYPE_USB : DEVICE_TYPE_NAND);
 
@@ -99,6 +102,10 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
             strcpy(toScreen, prettyDir(data->data));
 
         textToFrameCut(i, 13, toScreen, (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * 14));
+#else
+        deviceToFrame(i, 4, data->toUSB ? DEVICE_TYPE_USB : DEVICE_TYPE_NAND);
+        textToFrameCut(i, 7, prettyDir(data->data), (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * 20));
+#endif
 
         if(i == MAX_ENTRIES)
             break;

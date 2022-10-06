@@ -31,21 +31,25 @@ extern "C"
 {
 #endif
 
+#ifndef NUSSPLI_LITE
     typedef enum
     {
         OPERATION_DOWNLOAD = 0x01,
         OPERATION_INSTALL = 0x02,
         OPERATION_DOWNLOAD_INSTALL = OPERATION_DOWNLOAD | OPERATION_INSTALL,
     } OPERATION;
+#endif
 
     typedef struct
     {
         TMD *tmd;
+#ifndef NUSSPLI_LITE
         size_t tmdSize;
+        OPERATION operation;
+#endif
         const void *data;
         char titleVer[33];
         char folderName[FS_MAX_PATH - 11];
-        OPERATION operation;
         NUSDEV dlDev;
         bool toUSB;
         bool keepFiles;
