@@ -110,6 +110,7 @@ bool proccessQueue()
         }
     }
 
+    const TitleEntry *entry;
     TitleData *last = NULL;
     forEachListEntry(titleQueue, title)
     {
@@ -123,7 +124,8 @@ bool proccessQueue()
         else if(title->operation & OPERATION_INSTALL)
         {
 #endif
-            if(!install(prettyDir(title->data), false /* TODO */, title->dlDev, title->data, title->toUSB, title->keepFiles, title->tmd))
+            entry = getTitleEntryByTid(title->tmd->tid);
+            if(!install(entry == NULL ? prettyDir(title->data) : entry->name, false /* TODO */, title->dlDev, title->data, title->toUSB, title->keepFiles, title->tmd))
                 return false;
 #ifndef NUSSPLI_LITE
         }
