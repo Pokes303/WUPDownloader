@@ -85,7 +85,7 @@ static void drawMainMenuFrame()
     textToFrame(20, MAX_CHARS - 26, "• Vague Rant");
 
     lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
-    textToFrame(MAX_LINES - 1, 0, gettext("Press " BUTTON_HOME " or " BUTTON_B " to exit"));
+    textToFrame(MAX_LINES - 1, ALIGNED_CENTER, gettext("Press " BUTTON_HOME " or " BUTTON_B " to exit"));
 
     drawFrame();
 }

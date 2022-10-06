@@ -73,7 +73,7 @@ static void drawConfigMenu()
 #endif
 
     lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
-    textToFrame(MAX_LINES - 1, 0, gettext("Press " BUTTON_B " to return"));
+    textToFrame(MAX_LINES - 1, ALIGNED_CENTER, gettext("Press " BUTTON_B " to return"));
 
     arrowToFrame(cursorPos, 0);
 
