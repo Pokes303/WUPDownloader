@@ -56,6 +56,10 @@ static volatile uint32_t activeWriteBuffer;
 static volatile FSStatus fwriteErrno = FS_STATUS_OK;
 static volatile void *fwriteOverlay = NULL;
 
+#ifdef NUSSPLI_DEBUG
+static bool queueStalled = false;
+#endif
+
 static int ioThreadMain(int argc, const char **argv)
 {
     FSCmdBlock cmdBlk;
@@ -174,9 +178,6 @@ void shutdownIOThread()
     MEMFreeToDefaultHeap(queueEntries);
 }
 
-#ifdef NUSSPLI_DEBUG
-bool queueStalled = false;
-#endif
 size_t addToIOQueue(const void *buf, size_t size, size_t n, FSFileHandle *file)
 {
     if(checkForQueueErrors())
