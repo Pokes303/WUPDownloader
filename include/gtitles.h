@@ -38,6 +38,7 @@ extern "C"
         TITLE_CATEGORY_DLC = 2,
         TITLE_CATEGORY_DEMO = 3,
         TITLE_CATEGORY_ALL = 4,
+        TITLE_CATEGORY_DISC = 5,
     } TITLE_CATEGORY;
 
     typedef enum

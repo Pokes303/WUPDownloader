@@ -65,6 +65,13 @@ const TitleEntry *getTitleEntryByTid(uint64_t tid)
         if(haystack->tid == tid)
             return haystack;
 
+    haystack = getTitleEntries(TITLE_CATEGORY_DISC);
+    haySize = getTitleEntriesSize(TITLE_CATEGORY_DISC);
+
+    for(++haySize; --haySize; ++haystack)
+        if(haystack->tid == tid)
+            return haystack;
+
     return NULL;
 }
 
