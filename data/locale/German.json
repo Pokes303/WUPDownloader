@@ -23,11 +23,6 @@
     "\uE002 to switch to USB": "\uE002 um zu USB zu wechseln",
     "Searching on": "Suche in",
 
-    "Press \uE000 to install to USB": "Drücke \uE000 um zu USB zu installieren",
-    "Press \uE002 to install to NAND": "Drücke \uE002 um zu NAND zu installieren",
-    "Press \uE07B to delete files after the installation": "Drücke \uE07B um die Dateien nach der Installation zu löschen",
-    "Press \uE07B to keep files after the installation": "Drücke \uE07B um die Dateien nach der Installation zu behalten",
-
     "Press \uE000 to delete": "Drücke \uE000 um zu deinstallieren",
 
     "Press \uE000 to continue": "Drücke \uE000 um fortzufahren",
@@ -98,7 +93,6 @@
     "\uE045 to start": "\uE045 zum starten",
     "\uE046 to add to the queue": "\uE046 um den Titel zur Warteschlange zuzufügen",
     "\uE003 to uninstall": "\uE003 zum deinstallieren",
-    "WARNING: Files on USB/NAND will always be deleted after installing!": "WARNUNG: Dateien auf USB/NAND werden nach der Installation immer gelöscht!",
     "Press \uE07B to detete downloaded files after the installation": "Drücke \uE07B um heruntergeladene Dateien nach der Installation zu löschen",
     "Press \uE07B to keep downloaded files after the installation": "Drücke \uE07B um heruntergeladene Dateien nach der Installation zu behalten",
 

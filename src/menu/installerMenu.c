@@ -19,6 +19,7 @@
 #include <wut-fixups.h>
 
 #include <file.h>
+#include <filesystem.h>
 #include <input.h>
 #include <installer.h>
 #include <localisation.h>
@@ -34,28 +35,47 @@
 
 #include <string.h>
 
-static void drawInstallerMenuFrame(const char *name, NUSDEV dev, bool keepFiles)
+static int cursorPos = MAX_LINES - 4;
+
+static void drawInstallerMenuFrame(const char *name, NUSDEV dev, NUSDEV toDev, bool usbMounted, bool keepFiles)
 {
     startNewFrame();
 
     textToFrame(0, 0, name);
 
-    lineToFrame(MAX_LINES - 6, SCREEN_COLOR_WHITE);
-    textToFrame(MAX_LINES - 5, 0, gettext("Press " BUTTON_A " to install to USB"));
-    textToFrame(MAX_LINES - 4, 0, gettext("Press " BUTTON_X " to install to NAND"));
-    textToFrame(MAX_LINES - 3, 0, gettext("Press " BUTTON_B " to return"));
+    lineToFrame(MAX_LINES - 5, SCREEN_COLOR_WHITE);
+
+    arrowToFrame(cursorPos, 0);
+
+    char *toFrame = getToFrameBuffer();
+    strcpy(toFrame, gettext("Install to:"));
+    strcat(toFrame, " ");
+    switch((int)toDev)
+    {
+        case NUSDEV_USB01:
+        case NUSDEV_USB02:
+            strcat(toFrame, "USB");
+            break;
+        case NUSDEV_MLC:
+            strcat(toFrame, "NAND");
+            break;
+    }
+
+    if(usbMounted)
+        textToFrame(MAX_LINES - 4, 4, toFrame);
+    else
+        textToFrameColored(MAX_LINES - 4, 4, toFrame, SCREEN_COLOR_WHITE_TRANSP);
+
+    strcpy(toFrame, gettext("Keep downloaded files:"));
+    strcat(toFrame, " ");
+    strcat(toFrame, gettext(keepFiles ? "Yes" : "No"));
+    if(dev == NUSDEV_SD)
+        textToFrame(MAX_LINES - 3, 4, gettext(toFrame));
+    else
+        textToFrameColored(MAX_LINES - 3, 4, gettext(toFrame), SCREEN_COLOR_WHITE_TRANSP);
 
     lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
-    if(dev != NUSDEV_SD)
-        textToFrame(MAX_LINES - 1, 0, gettext("WARNING: Files on USB/NAND will always be deleted after installing!"));
-    else
-    {
-        char *toFrame = getToFrameBuffer();
-        strcpy(toFrame, "Press " BUTTON_LEFT " to ");
-        strcat(toFrame, keepFiles ? "delete" : "keep");
-        strcat(toFrame, " files after the installation");
-        textToFrame(MAX_LINES - 1, 0, gettext(toFrame));
-    }
+    textToFrame(MAX_LINES - 1, 0, gettext("Press " BUTTON_B " to return"));
 
     drawFrame();
 }
@@ -81,6 +101,11 @@ void installerMenu()
         return;
 
     NUSDEV dev = getDevFromPath(dir);
+    NUSDEV toDev = getUSB();
+    NUSDEV usbMounted = toDev & NUSDEV_USB;
+    if(!usbMounted)
+        toDev = NUSDEV_MLC;
+
     bool keepFiles = dev == NUSDEV_SD;
     const char *nd = prettyDir(dir);
     bool redraw = true;
@@ -94,55 +119,99 @@ void installerMenu()
 
         if(redraw)
         {
-            drawInstallerMenuFrame(nd, dev, keepFiles);
+            drawInstallerMenuFrame(nd, dev, toDev, usbMounted, keepFiles);
             redraw = false;
         }
         showFrame();
 
-        if((vpad.trigger & VPAD_BUTTON_A) || (vpad.trigger & VPAD_BUTTON_X))
-        {
-            TMD *tmd = getTmd(dir);
-            if(tmd != NULL)
-            {
-                if(checkSystemTitleFromTid(tmd->tid))
-                {
-                    if(install(nd, false, dev, dir, vpad.trigger & VPAD_BUTTON_A, keepFiles, tmd))
-                        showFinishedScreen(nd, FINISHING_OPERATION_INSTALL);
-                }
-
-                MEMFreeToDefaultHeap(tmd);
-            }
-            else
-            {
-                drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
-
-                while(AppRunning(true))
-                {
-                    if(app == APP_STATE_BACKGROUND)
-                        continue;
-                    if(app == APP_STATE_RETURNING)
-                        drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
-
-                    showFrame();
-                    if(vpad.trigger)
-                        break;
-                }
-            }
-
-            return;
-        }
         if(vpad.trigger & VPAD_BUTTON_B)
         {
             dir = fileBrowserMenu();
             if(dir == NULL)
                 return;
 
+            dev = getDevFromPath(dir);
+            if(dev != NUSDEV_SD)
+                keepFiles = false;
+
+            nd = prettyDir(dir);
             redraw = true;
         }
-
-        if(vpad.trigger & VPAD_BUTTON_LEFT && dev == NUSDEV_SD)
+        else if(vpad.trigger & VPAD_BUTTON_A)
         {
-            keepFiles = !keepFiles;
+            switch(cursorPos)
+            {
+                case MAX_LINES - 4:
+                    TMD *tmd = getTmd(dir);
+                    if(tmd != NULL)
+                    {
+                        if(checkSystemTitleFromTid(tmd->tid))
+                        {
+                            if(install(nd, false, dev, dir, toDev & NUSDEV_USB, keepFiles, tmd))
+                                showFinishedScreen(nd, FINISHING_OPERATION_INSTALL);
+                        }
+
+                        MEMFreeToDefaultHeap(tmd);
+                    }
+                    else
+                    {
+                        drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
+
+                        while(AppRunning(true))
+                        {
+                            if(app == APP_STATE_BACKGROUND)
+                                continue;
+                            if(app == APP_STATE_RETURNING)
+                                drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
+
+                            showFrame();
+                            if(vpad.trigger)
+                                break;
+                        }
+                    }
+
+                    return;
+                case MAX_LINES - 3:
+                    if(dev == NUSDEV_SD)
+                        keepFiles = !keepFiles;
+                    break;
+            }
+
+            redraw = true;
+        }
+        else if(vpad.trigger & (VPAD_BUTTON_RIGHT | VPAD_BUTTON_LEFT))
+        {
+            switch(cursorPos)
+            {
+                case MAX_LINES - 4:
+                    if(usbMounted)
+                    {
+                        if(toDev & NUSDEV_USB)
+                            toDev = NUSDEV_MLC;
+                        else
+                            toDev = usbMounted;
+                    }
+                    break;
+                case MAX_LINES - 3:
+                    if(dev == NUSDEV_SD)
+                        keepFiles = !keepFiles;
+                    break;
+            }
+
+            redraw = true;
+        }
+        else if(vpad.trigger & VPAD_BUTTON_DOWN)
+        {
+            if(++cursorPos == MAX_LINES - 2)
+                cursorPos = MAX_LINES - 4;
+
+            redraw = true;
+        }
+        else if(vpad.trigger & VPAD_BUTTON_UP)
+        {
+            if(--cursorPos == MAX_LINES - 5)
+                cursorPos = MAX_LINES - 3;
+
             redraw = true;
         }
     }
