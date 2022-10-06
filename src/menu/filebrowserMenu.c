@@ -110,9 +110,7 @@ char *fileBrowserMenu(bool showQueue)
     FSDirectoryHandle dir;
     bool ret = false;
     char *path = getStaticPathBuffer(2);
-
-    if(showQueue)
-        showQueue = getListSize(getTitleQueue());
+    bool sQ;
 
 refreshVOlList:
     strcpy(path, (activeDevice & NUSDEV_USB) ? (usbMounted == NUSDEV_USB01 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC));
@@ -178,7 +176,8 @@ refreshDirList:
 
         if(redraw)
         {
-            drawFBMenuFrame(path, folders, pos, cursor, activeDevice, usbMounted, showQueue);
+            sQ = showQueue ? getListSize(getTitleQueue()) : false;
+            drawFBMenuFrame(path, folders, pos, cursor, activeDevice, usbMounted, sQ);
             redraw = false;
         }
         showFrame();
@@ -342,7 +341,7 @@ refreshDirList:
             }
         }
 
-        if(vpad.trigger & VPAD_BUTTON_MINUS && showQueue)
+        if(vpad.trigger & VPAD_BUTTON_MINUS && sQ)
         {
             if(queueMenu())
                 goto exitFileBrowserMenu;
