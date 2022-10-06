@@ -96,7 +96,7 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
             strcpy(toScreen + p, entry->name);
         }
         else
-            strcpy(toScreen, data->data);
+            strcpy(toScreen, prettyDir(data->data));
 
         textToFrameCut(i, 13, toScreen, (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * 14));
 
