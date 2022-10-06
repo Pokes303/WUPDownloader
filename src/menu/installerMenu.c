@@ -40,17 +40,14 @@ static int cursorPos = MAX_LINES - 5;
 
 static bool addToOpQueue(const char *dir, TMD *tmd, NUSDEV fromDev, bool toUSB, bool keepFiles)
 {
-    bool ret;
     TitleData *titleInfo = MEMAllocFromDefaultHeap(sizeof(TitleData));
     if(titleInfo != NULL)
     {
         titleInfo->data = MEMAllocFromDefaultHeapEx(strlen(dir) + 1, 0x40);
-        ret = titleInfo->data != NULL;
-        if(ret)
+        if(titleInfo->data != NULL)
         {
             titleInfo->tmd = tmd;
 #ifndef NUSSPLI_LITE
-            titleInfo->tmdSize = 0;
             titleInfo->operation = OPERATION_INSTALL;
 #endif
             strcpy((char *)(titleInfo->data), dir);
@@ -58,23 +55,17 @@ static bool addToOpQueue(const char *dir, TMD *tmd, NUSDEV fromDev, bool toUSB, 
             titleInfo->toUSB = toUSB;
             titleInfo->keepFiles = keepFiles;
 
-            ret = addToQueue(titleInfo);
-            if(!ret)
-            {
-                MEMFreeToDefaultHeap((void *)titleInfo->data);
-                MEMFreeToDefaultHeap(titleInfo);
-            }
+            if(addToQueue(titleInfo))
+                return true;
+
+            MEMFreeToDefaultHeap((void *)titleInfo->data);
         }
-        else
-            MEMFreeToDefaultHeap(titleInfo);
+
+        MEMFreeToDefaultHeap(titleInfo);
     }
-    else
-        ret = false;
 
-    if(!ret)
-        MEMFreeToDefaultHeap(tmd);
-
-    return ret;
+    MEMFreeToDefaultHeap(tmd);
+    return false;
 }
 
 static void drawInstallerMenuFrame(const char *name, NUSDEV dev, NUSDEV toDev, bool usbMounted, bool keepFiles)
@@ -237,7 +228,8 @@ refreshDir:
         }
         else if(vpad.trigger & VPAD_BUTTON_MINUS)
         {
-            addToOpQueue(dir, tmd, dev, toDev & NUSDEV_USB, keepFiles);
+            if(!addToOpQueue(dir, tmd, dev, toDev & NUSDEV_USB, keepFiles))
+                return;
 
             dir = fileBrowserMenu(true);
             if(dir == NULL)

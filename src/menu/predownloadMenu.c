@@ -342,7 +342,6 @@ static inline void switchDownloadDevice(NUSDEV *dev)
 
 static bool addToOpQueue(const TitleEntry *entry, const char *titleVer, const char *folderName, NUSDEV dlDev, NUSDEV instDev)
 {
-    bool ret;
     TitleData *titleInfo = MEMAllocFromDefaultHeap(sizeof(TitleData));
     if(titleInfo != NULL)
     {
@@ -350,7 +349,6 @@ static bool addToOpQueue(const TitleEntry *entry, const char *titleVer, const ch
         if(titleInfo->tmd != NULL)
         {
             OSBlockMove(titleInfo->tmd, getRamBuf(), getRamBufSize(), false);
-
             titleInfo->tmdSize = getRamBufSize();
             titleInfo->data = entry;
             strcpy(titleInfo->titleVer, titleVer);
@@ -360,23 +358,16 @@ static bool addToOpQueue(const TitleEntry *entry, const char *titleVer, const ch
             titleInfo->toUSB = instDev & NUSDEV_USB;
             titleInfo->keepFiles = keepFiles;
 
-            ret = addToQueue(titleInfo);
-            if(!ret)
-            {
-                MEMFreeToDefaultHeap(titleInfo->tmd);
-                MEMFreeToDefaultHeap(titleInfo);
-            }
-        }
-        else
-        {
-            MEMFreeToDefaultHeap(titleInfo);
-            ret = false;
-        }
-    }
-    else
-        ret = false;
+            if(addToQueue(titleInfo))
+                return true;
 
-    return ret;
+            MEMFreeToDefaultHeap(titleInfo->tmd);
+        }
+
+        MEMFreeToDefaultHeap(titleInfo);
+    }
+
+    return false;
 }
 
 bool predownloadMenu(const TitleEntry *entry)
