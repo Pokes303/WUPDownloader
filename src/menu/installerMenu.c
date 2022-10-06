@@ -168,14 +168,7 @@ refreshDir:
                 break;
         }
 
-        if(!AppRunning(true))
-            return;
-
-        dir = fileBrowserMenu(true);
-        if(dir == NULL)
-            return;
-
-        goto refreshDir;
+        goto grabNewDir;
     }
 
     dev = getDevFromPath(dir);
@@ -202,11 +195,7 @@ refreshDir:
         if(vpad.trigger & VPAD_BUTTON_B)
         {
             MEMFreeToDefaultHeap(tmd);
-            dir = fileBrowserMenu(true);
-            if(dir == NULL)
-                return;
-
-            goto refreshDir;
+            goto grabNewDir;
         }
 
         if(vpad.trigger & VPAD_BUTTON_PLUS)
@@ -231,11 +220,7 @@ refreshDir:
             if(!addToOpQueue(dir, tmd, dev, toDev & NUSDEV_USB, keepFiles))
                 return;
 
-            dir = fileBrowserMenu(true);
-            if(dir == NULL)
-                return;
-
-            goto refreshDir;
+            goto grabNewDir;
         }
         else if(vpad.trigger & (VPAD_BUTTON_A | VPAD_BUTTON_RIGHT | VPAD_BUTTON_LEFT))
         {
@@ -275,4 +260,13 @@ refreshDir:
     }
 
     MEMFreeToDefaultHeap(tmd);
+    return;
+
+grabNewDir:
+    if(!AppRunning(true))
+        return;
+
+    dir = fileBrowserMenu(true);
+    if(dir != NULL)
+        goto refreshDir;
 }
