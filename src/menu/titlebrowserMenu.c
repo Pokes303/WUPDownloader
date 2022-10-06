@@ -175,7 +175,7 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
         inQueue = false;
         forEachListEntry(getTitleQueue(), title)
         {
-            if(title->entry == filteredTitleEntries[j])
+            if(title->data == filteredTitleEntries[j])
             {
                 inQueue = true;
                 break;

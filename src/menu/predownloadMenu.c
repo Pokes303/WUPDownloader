@@ -48,14 +48,8 @@
 
 #define PD_MENU_ENTRIES 5
 
-typedef enum
-{
-    OPERATION_DOWNLOAD,
-    OPERATION_INSTALL,
-} OPERATION;
-
 static int cursorPos = 15;
-static OPERATION operation = OPERATION_INSTALL;
+static OPERATION operation = OPERATION_DOWNLOAD_INSTALL;
 static bool keepFiles = true;
 
 static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
@@ -171,7 +165,7 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
     strcpy(toFrame, gettext("Keep downloaded files:"));
     strcat(toFrame, " ");
     strcat(toFrame, gettext(keepFiles ? "Yes" : "No"));
-    if(dlDev == NUSDEV_SD && operation == OPERATION_INSTALL)
+    if(dlDev == NUSDEV_SD && operation == OPERATION_DOWNLOAD_INSTALL)
         textToFrame(--line, 4, gettext(toFrame));
     else
         textToFrameColored(--line, 4, gettext(toFrame), SCREEN_COLOR_WHITE_TRANSP);
@@ -199,7 +193,7 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
         case OPERATION_DOWNLOAD:
             strcat(toFrame, gettext("Download only"));
             break;
-        case OPERATION_INSTALL:
+        case OPERATION_DOWNLOAD_INSTALL:
             strcat(toFrame, gettext("Install"));
             break;
     }
@@ -217,7 +211,7 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
             strcat(toFrame, "NAND");
             break;
     }
-    if(operation == OPERATION_INSTALL)
+    if(operation == OPERATION_DOWNLOAD_INSTALL)
         textToFrame(--line, 4, toFrame);
     else
         textToFrameColored(--line, 4, toFrame, SCREEN_COLOR_WHITE_TRANSP);
@@ -250,7 +244,7 @@ static void *drawPDMainGameFrame(const TitleEntry *entry)
     strcat(toFrame, "\n");
     strcat(toFrame, gettext(isDLC(entry) ? "is DLC." : (isUpdate(entry) ? "is a update." : "is a demo.")));
     strcat(toFrame, "\n\n" BUTTON_A " ");
-    strcat(toFrame, gettext(operation == OPERATION_INSTALL ? "Install main game" : "Download main game"));
+    strcat(toFrame, gettext(operation == OPERATION_DOWNLOAD_INSTALL ? "Install main game" : "Download main game"));
     strcat(toFrame, " || " BUTTON_B " ");
     strcat(toFrame, gettext("Continue"));
 
@@ -287,13 +281,13 @@ static inline void switchInstallDevice(NUSDEV *dev)
 
 static inline void switchOperation()
 {
-    switch(operation)
+    switch((int)operation)
     {
-        case OPERATION_INSTALL:
+        case OPERATION_DOWNLOAD_INSTALL:
             operation = OPERATION_DOWNLOAD;
             break;
         case OPERATION_DOWNLOAD:
-            operation = OPERATION_INSTALL;
+            operation = OPERATION_DOWNLOAD_INSTALL;
             break;
     }
 }
@@ -358,10 +352,10 @@ static bool addToOpQueue(const TitleEntry *entry, const char *titleVer, const ch
             OSBlockMove(titleInfo->tmd, getRamBuf(), getRamBufSize(), false);
 
             titleInfo->tmdSize = getRamBufSize();
-            titleInfo->entry = entry;
+            titleInfo->data = entry;
             strcpy(titleInfo->titleVer, titleVer);
             strcpy(titleInfo->folderName, folderName);
-            titleInfo->inst = operation == OPERATION_INSTALL;
+            titleInfo->operation = operation;
             titleInfo->dlDev = dlDev;
             titleInfo->toUSB = instDev & NUSDEV_USB;
             titleInfo->keepFiles = keepFiles;
@@ -491,7 +485,7 @@ naNedNa:
                 switch(cursorPos)
                 {
                     case 15: // TODO: Change hardcoded numbers to something prettier
-                        if(operation == OPERATION_INSTALL)
+                        if(operation == OPERATION_DOWNLOAD_INSTALL)
                             switchInstallDevice(&instDev);
                         break;
                     case 16:
@@ -501,7 +495,7 @@ naNedNa:
                         switchDownloadDevice(&dlDev);
                         break;
                     case 18:
-                        if(dlDev == NUSDEV_SD && operation == OPERATION_INSTALL)
+                        if(dlDev == NUSDEV_SD && operation == OPERATION_DOWNLOAD_INSTALL)
                             keepFiles = !keepFiles;
                         break;
                     case 19:
@@ -626,7 +620,7 @@ naNedNa:
             uint64_t t = entry->tid & 0xFFFFFFF0FFFFFFFF;
             if(MCP_GetTitleInfo(mcpHandle, t, &tl) == 0)
             {
-                if(operation == OPERATION_INSTALL)
+                if(operation == OPERATION_DOWNLOAD_INSTALL)
                 {
                     NUSDEV toDev = tl.indexedDevice[0] == 'u' ? NUSDEV_USB : NUSDEV_MLC;
                     if(!(toDev & instDev))
@@ -740,9 +734,9 @@ naNedNa:
     }
     else if(checkSystemTitleFromEntry(entry))
     {
-        ret = !downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, operation == OPERATION_INSTALL, dlDev, instDev & NUSDEV_USB, keepFiles);
+        ret = !downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, operation == OPERATION_DOWNLOAD_INSTALL, dlDev, instDev & NUSDEV_USB, keepFiles);
         if(!ret)
-            showFinishedScreen(entry->name, operation == OPERATION_INSTALL ? FINISHING_OPERATION_INSTALL : FINISHING_OPERATION_DOWNLOAD);
+            showFinishedScreen(entry->name, operation == OPERATION_DOWNLOAD_INSTALL ? FINISHING_OPERATION_INSTALL : FINISHING_OPERATION_DOWNLOAD);
     }
     else
         ret = true;

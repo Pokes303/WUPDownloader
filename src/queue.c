@@ -20,7 +20,9 @@
 #include <wut-fixups.h>
 
 #include <downloader.h>
+#include <installer.h>
 #include <list.h>
+#include <menu/utils.h>
 #include <queue.h>
 
 #include <coreinit/memdefaultheap.h>
@@ -49,6 +51,9 @@ static inline void removeFQ(TitleData *title)
     if(title != NULL)
     {
         removeFromList(titleQueue, title);
+        if(title->operation == OPERATION_INSTALL)
+            MEMFreeToDefaultHeap((void *)title->data);
+
         MEMFreeToDefaultHeap(title->tmd);
         MEMFreeToDefaultHeap(title);
     }
@@ -63,10 +68,10 @@ bool proccessQueue()
     {
         for(uint16_t i = 0; i < title->tmd->num_contents; ++i)
         {
-            if(title->inst)
+            if(title->operation & OPERATION_INSTALL)
                 sizes[title->toUSB ? 0 : 2] += title->tmd->contents[i].size;
 
-            if(title->keepFiles)
+            if(title->operation & OPERATION_DOWNLOAD && title->keepFiles)
             {
                 int j = title->dlDev & NUSDEV_USB ? 0 : (title->dlDev & NUSDEV_SD ? 1 : 2);
                 if((title->tmd->contents[i].type & 0x0003) == 0x0003)
@@ -103,8 +108,16 @@ bool proccessQueue()
     forEachListEntry(titleQueue, title)
     {
         removeFQ(last);
-        if(!downloadTitle(title->tmd, title->tmdSize, title->entry, title->titleVer, title->folderName, title->inst, title->dlDev, title->toUSB, title->keepFiles))
-            return false;
+        if(title->operation & OPERATION_DOWNLOAD)
+        {
+            if(!downloadTitle(title->tmd, title->tmdSize, title->data, title->titleVer, title->folderName, title->operation & OPERATION_INSTALL, title->dlDev, title->toUSB, title->keepFiles))
+                return false;
+        }
+        else if(title->operation & OPERATION_INSTALL)
+        {
+            if(!install(prettyDir(title->data), false /* TODO */, title->dlDev, title->data, title->toUSB, title->keepFiles, title->tmd))
+                return false;
+        }
 
         last = title;
     }
@@ -118,6 +131,9 @@ bool removeFromQueue(uint32_t index)
     TitleData *title = getAndRemoveFromList(titleQueue, index);
     if(title == NULL)
         return false;
+
+    if(title->operation == OPERATION_INSTALL)
+        MEMFreeToDefaultHeap((void *)title->data);
 
     MEMFreeToDefaultHeap(title->tmd);
     MEMFreeToDefaultHeap(title);

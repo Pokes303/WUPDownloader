@@ -46,6 +46,7 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
     int i = 0;
     int p;
     TitleData *data;
+    TitleEntry *entry;
 
     forEachListEntry(titleQueue, data)
     {
@@ -58,38 +59,45 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
         if(cursor == i++)
             arrowToFrame(i, 1);
 
-        switch(data->dlDev)
-        {
-            case NUSDEV_SD:
-                deviceToFrame(i, 4, DEVICE_TYPE_SD);
-                break;
-            case NUSDEV_MLC:
-                deviceToFrame(i, 4, DEVICE_TYPE_NAND);
-                break;
-            default:
-                deviceToFrame(i, 4, DEVICE_TYPE_USB);
-                break;
-        }
-
-        if(data->inst)
+        if(data->operation & OPERATION_INSTALL)
             deviceToFrame(i, 7, data->toUSB ? DEVICE_TYPE_USB : DEVICE_TYPE_NAND);
 
-        flagToFrame(i, 10, data->entry->region);
+        if(data->operation & OPERATION_DOWNLOAD)
+        {
+            switch(data->dlDev)
+            {
+                case NUSDEV_SD:
+                    deviceToFrame(i, 4, DEVICE_TYPE_SD);
+                    break;
+                case NUSDEV_MLC:
+                    deviceToFrame(i, 4, DEVICE_TYPE_NAND);
+                    break;
+                default:
+                    deviceToFrame(i, 4, DEVICE_TYPE_USB);
+                    break;
+            }
 
-        if(isDLC(data->entry))
-        {
-            p = strlen("[DLC] ");
-            OSBlockMove(toScreen, "[DLC] ", p, false);
-        }
-        else if(isUpdate(data->entry))
-        {
-            p = strlen("[UPD] ");
-            OSBlockMove(toScreen, "[UPD] ", p, false);
+            entry = (TitleEntry *)data->data;
+            flagToFrame(i, 10, entry->region);
+
+            if(isDLC(entry))
+            {
+                p = strlen("[DLC] ");
+                OSBlockMove(toScreen, "[DLC] ", p, false);
+            }
+            else if(isUpdate(entry))
+            {
+                p = strlen("[UPD] ");
+                OSBlockMove(toScreen, "[UPD] ", p, false);
+            }
+            else
+                p = 0;
+
+            strcpy(toScreen + p, entry->name);
         }
         else
-            p = 0;
+            strcpy(toScreen, data->data);
 
-        strcpy(toScreen + p, data->entry->name);
         textToFrameCut(i, 13, toScreen, (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * 14));
 
         if(i == MAX_ENTRIES)

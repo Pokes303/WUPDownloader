@@ -25,6 +25,7 @@
 #include <localisation.h>
 #include <menu/filebrowser.h>
 #include <menu/utils.h>
+#include <queue.h>
 #include <renderer.h>
 #include <state.h>
 #include <tmd.h>
@@ -37,17 +38,67 @@
 
 static int cursorPos = MAX_LINES - 4;
 
+static bool addToOpQueue(const char *dir, TMD *tmd, NUSDEV fromDev, bool toUSB, bool keepFiles)
+{
+    bool ret;
+    TitleData *titleInfo = MEMAllocFromDefaultHeap(sizeof(TitleData));
+    if(titleInfo != NULL)
+    {
+        titleInfo->data = MEMAllocFromDefaultHeapEx(strlen(dir) + 1, 0x40);
+        ret = titleInfo->data != NULL;
+        if(ret)
+        {
+            titleInfo->tmd = tmd;
+            titleInfo->tmdSize = 0;
+            strcpy((char *)(titleInfo->data), dir);
+            titleInfo->operation = OPERATION_INSTALL;
+            titleInfo->dlDev = fromDev;
+            titleInfo->toUSB = toUSB;
+            titleInfo->keepFiles = keepFiles;
+
+            ret = addToQueue(titleInfo);
+            if(!ret)
+            {
+                MEMFreeToDefaultHeap((void *)titleInfo->data);
+                MEMFreeToDefaultHeap(titleInfo);
+            }
+        }
+        else
+            MEMFreeToDefaultHeap(titleInfo);
+    }
+    else
+        ret = false;
+
+    if(!ret)
+        MEMFreeToDefaultHeap(tmd);
+
+    return ret;
+}
+
 static void drawInstallerMenuFrame(const char *name, NUSDEV dev, NUSDEV toDev, bool usbMounted, bool keepFiles)
 {
     startNewFrame();
-
     textToFrame(0, 0, name);
 
-    lineToFrame(MAX_LINES - 5, SCREEN_COLOR_WHITE);
-
-    arrowToFrame(cursorPos, 0);
+    int line = MAX_LINES - 1;
+    textToFrame(line--, ALIGNED_CENTER, gettext(BUTTON_MINUS " to add to the queue"));
 
     char *toFrame = getToFrameBuffer();
+    strcpy(toFrame, gettext("Press " BUTTON_B " to return"));
+    strcat(toFrame, " || ");
+    strcat(toFrame, gettext(BUTTON_PLUS " to start"));
+    textToFrame(line--, ALIGNED_CENTER, toFrame);
+
+    lineToFrame(line--, SCREEN_COLOR_WHITE);
+
+    strcpy(toFrame, gettext("Keep downloaded files:"));
+    strcat(toFrame, " ");
+    strcat(toFrame, gettext(keepFiles ? "Yes" : "No"));
+    if(dev == NUSDEV_SD)
+        textToFrame(line--, 4, gettext(toFrame));
+    else
+        textToFrameColored(line--, 4, gettext(toFrame), SCREEN_COLOR_WHITE_TRANSP);
+
     strcpy(toFrame, gettext("Install to:"));
     strcat(toFrame, " ");
     switch((int)toDev)
@@ -62,20 +113,12 @@ static void drawInstallerMenuFrame(const char *name, NUSDEV dev, NUSDEV toDev, b
     }
 
     if(usbMounted)
-        textToFrame(MAX_LINES - 4, 4, toFrame);
+        textToFrame(line--, 4, toFrame);
     else
-        textToFrameColored(MAX_LINES - 4, 4, toFrame, SCREEN_COLOR_WHITE_TRANSP);
+        textToFrameColored(line--, 4, toFrame, SCREEN_COLOR_WHITE_TRANSP);
 
-    strcpy(toFrame, gettext("Keep downloaded files:"));
-    strcat(toFrame, " ");
-    strcat(toFrame, gettext(keepFiles ? "Yes" : "No"));
-    if(dev == NUSDEV_SD)
-        textToFrame(MAX_LINES - 3, 4, gettext(toFrame));
-    else
-        textToFrameColored(MAX_LINES - 3, 4, gettext(toFrame), SCREEN_COLOR_WHITE_TRANSP);
-
-    lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
-    textToFrame(MAX_LINES - 1, 0, gettext("Press " BUTTON_B " to return"));
+    arrowToFrame(cursorPos, 0);
+    lineToFrame(line, SCREEN_COLOR_WHITE);
 
     drawFrame();
 }
@@ -101,14 +144,44 @@ void installerMenu()
         return;
 
     NUSDEV dev = getDevFromPath(dir);
+    bool keepFiles = dev == NUSDEV_SD;
+
     NUSDEV toDev = getUSB();
     NUSDEV usbMounted = toDev & NUSDEV_USB;
     if(!usbMounted)
         toDev = NUSDEV_MLC;
 
-    bool keepFiles = dev == NUSDEV_SD;
-    const char *nd = prettyDir(dir);
-    bool redraw = true;
+    TMD *tmd;
+    const char *nd;
+    bool redraw;
+
+refreshDir:
+    tmd = getTmd(dir);
+    if(tmd == NULL)
+    {
+        drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
+
+        while(AppRunning(true))
+        {
+            if(app == APP_STATE_BACKGROUND)
+                continue;
+            if(app == APP_STATE_RETURNING)
+                drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
+
+            showFrame();
+            if(vpad.trigger)
+                break;
+        }
+
+        goto refreshDir;
+    }
+
+    dev = getDevFromPath(dir);
+    if(dev != NUSDEV_SD)
+        keepFiles = false;
+
+    nd = prettyDir(dir);
+    redraw = true;
 
     while(AppRunning(true))
     {
@@ -126,50 +199,26 @@ void installerMenu()
 
         if(vpad.trigger & VPAD_BUTTON_B)
         {
+            MEMFreeToDefaultHeap(tmd);
             dir = fileBrowserMenu();
             if(dir == NULL)
                 return;
 
-            dev = getDevFromPath(dir);
-            if(dev != NUSDEV_SD)
-                keepFiles = false;
-
-            nd = prettyDir(dir);
-            redraw = true;
+            goto refreshDir;
         }
-        else if(vpad.trigger & VPAD_BUTTON_A)
+
+        if(vpad.trigger & VPAD_BUTTON_PLUS)
         {
             switch(cursorPos)
             {
                 case MAX_LINES - 4:
-                    TMD *tmd = getTmd(dir);
-                    if(tmd != NULL)
+                    if(checkSystemTitleFromTid(tmd->tid))
                     {
-                        if(checkSystemTitleFromTid(tmd->tid))
-                        {
-                            if(install(nd, false, dev, dir, toDev & NUSDEV_USB, keepFiles, tmd))
-                                showFinishedScreen(nd, FINISHING_OPERATION_INSTALL);
-                        }
-
-                        MEMFreeToDefaultHeap(tmd);
-                    }
-                    else
-                    {
-                        drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
-
-                        while(AppRunning(true))
-                        {
-                            if(app == APP_STATE_BACKGROUND)
-                                continue;
-                            if(app == APP_STATE_RETURNING)
-                                drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
-
-                            showFrame();
-                            if(vpad.trigger)
-                                break;
-                        }
+                        if(install(nd, false, dev, dir, toDev & NUSDEV_USB, keepFiles, tmd))
+                            showFinishedScreen(nd, FINISHING_OPERATION_INSTALL);
                     }
 
+                    MEMFreeToDefaultHeap(tmd);
                     return;
                 case MAX_LINES - 3:
                     if(dev == NUSDEV_SD)
@@ -179,7 +228,17 @@ void installerMenu()
 
             redraw = true;
         }
-        else if(vpad.trigger & (VPAD_BUTTON_RIGHT | VPAD_BUTTON_LEFT))
+        else if(vpad.trigger & VPAD_BUTTON_MINUS)
+        {
+            addToOpQueue(dir, tmd, dev, toDev & NUSDEV_USB, keepFiles);
+
+            dir = fileBrowserMenu();
+            if(dir == NULL)
+                return;
+
+            goto refreshDir;
+        }
+        else if(vpad.trigger & (VPAD_BUTTON_A | VPAD_BUTTON_RIGHT | VPAD_BUTTON_LEFT))
         {
             switch(cursorPos)
             {
@@ -215,4 +274,6 @@ void installerMenu()
             redraw = true;
         }
     }
+
+    MEMFreeToDefaultHeap(tmd);
 }

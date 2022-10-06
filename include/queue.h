@@ -31,14 +31,21 @@ extern "C"
 {
 #endif
 
+    typedef enum
+    {
+        OPERATION_DOWNLOAD          = 0x01,
+        OPERATION_INSTALL           = 0x02,
+        OPERATION_DOWNLOAD_INSTALL  = OPERATION_DOWNLOAD | OPERATION_INSTALL,
+    } OPERATION;
+
     typedef struct
     {
         TMD *tmd;
         size_t tmdSize;
-        const TitleEntry *entry;
+        const void *data;
         char titleVer[33];
         char folderName[FS_MAX_PATH - 11];
-        bool inst;
+        OPERATION operation;
         NUSDEV dlDev;
         bool toUSB;
         bool keepFiles;
