@@ -51,8 +51,6 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
     int i = 0;
     int p;
     TitleData *data;
-    const TitleEntry *entry;
-    MCPRegion region;
 
     forEachListEntry(titleQueue, data)
     {
@@ -80,23 +78,13 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
                     deviceToFrame(i, 4, DEVICE_TYPE_USB);
                     break;
             }
-
-            entry = (TitleEntry *)data->data;
-            region = entry->region;
-        }
-        else
-        {
-#endif
-            entry = getTitleEntryByTid(data->tmd->tid);
-            region = entry == NULL ? MCP_REGION_UNKNOWN : entry->region;
-#ifndef NUSSPLI_LITE
         }
 
         if(data->operation & OPERATION_INSTALL)
 #endif
             deviceToFrame(i, SPACER, data->toUSB ? DEVICE_TYPE_USB : DEVICE_TYPE_NAND);
 
-        flagToFrame(i, SPACER + 3, region);
+        flagToFrame(i, SPACER + 3, data->entry == NULL ? MCP_REGION_UNKNOWN : data->entry->region);
 
         if(isDLC(data->tmd->tid))
         {
@@ -111,7 +99,7 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
         else
             p = 0;
 
-        strcpy(toScreen + p, entry == NULL ? prettyDir(data->data) : entry->name);
+        strcpy(toScreen + p, data->entry == NULL ? prettyDir(getPathFromInstData(data)) : data->entry->name);
         textToFrameCut(i, SPACER + 6, toScreen, (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * SPACER_END));
 
         if(i == MAX_ENTRIES)

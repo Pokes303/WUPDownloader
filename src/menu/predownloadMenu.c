@@ -351,7 +351,7 @@ static bool addToOpQueue(const TitleEntry *entry, const char *titleVer, const ch
         {
             OSBlockMove(titleInfo->tmd, getRamBuf(), getRamBufSize(), false);
             titleInfo->tmdSize = getRamBufSize();
-            titleInfo->data = entry;
+            titleInfo->entry = entry;
             strcpy(titleInfo->titleVer, titleVer);
             strcpy(titleInfo->folderName, folderName);
             titleInfo->operation = operation;

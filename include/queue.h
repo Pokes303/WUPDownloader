@@ -21,6 +21,7 @@
 
 #include <wut-fixups.h>
 
+#include <file.h>
 #include <filesystem.h>
 #include <list.h>
 #include <titles.h>
@@ -47,7 +48,7 @@ extern "C"
         size_t tmdSize;
         OPERATION operation;
 #endif
-        const void *data;
+        const TitleEntry *entry;
         char titleVer[33];
         char folderName[FS_MAX_PATH - 11];
         NUSDEV dlDev;
@@ -62,6 +63,8 @@ extern "C"
     void clearQueue();
     bool proccessQueue();
     LIST *getTitleQueue();
+
+#define getPathFromInstData(x) (((char *)x) + FS_ALIGN(sizeof(TitleData)))
 
 #ifdef __cplusplus
 }

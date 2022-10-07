@@ -124,7 +124,6 @@ bool proccessQueue()
         }
     }
 
-    const TitleEntry *entry;
     TitleData *last = NULL;
     forEachListEntry(titleQueue, title)
     {
@@ -132,14 +131,13 @@ bool proccessQueue()
 #ifndef NUSSPLI_LITE
         if(title->operation & OPERATION_DOWNLOAD)
         {
-            if(!downloadTitle(title->tmd, title->tmdSize, title->data, title->titleVer, title->folderName, title->operation & OPERATION_INSTALL, title->dlDev, title->toUSB, title->keepFiles))
+            if(!downloadTitle(title->tmd, title->tmdSize, title->entry, title->titleVer, title->folderName, title->operation & OPERATION_INSTALL, title->dlDev, title->toUSB, title->keepFiles))
                 return false;
         }
         else if(title->operation & OPERATION_INSTALL)
         {
 #endif
-            entry = getTitleEntryByTid(title->tmd->tid);
-            if(!install(entry == NULL ? prettyDir(title->data) : entry->name, false /* TODO */, title->dlDev, title->data, title->toUSB, title->keepFiles, title->tmd))
+            if(!install(title->entry == NULL ? prettyDir(((char *)title) + FS_ALIGN(sizeof(TitleData))) : title->entry->name, false /* TODO */, title->dlDev, getPathFromInstData(title), title->toUSB, title->keepFiles, title->tmd))
                 return false;
 #ifndef NUSSPLI_LITE
         }

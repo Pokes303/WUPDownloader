@@ -39,19 +39,19 @@
 
 static int cursorPos = MAX_LINES - 5;
 
-static bool addToOpQueue(const char *dir, TMD *tmd, NUSDEV fromDev, bool toUSB, bool keepFiles)
+static bool addToOpQueue(const TitleEntry *entry, const char *dir, TMD *tmd, NUSDEV fromDev, bool toUSB, bool keepFiles)
 {
     TitleData *titleInfo = MEMAllocFromDefaultHeapEx(FS_ALIGN(sizeof(TitleData)) + FS_MAX_PATH, 0x40);
     if(titleInfo == NULL)
         return false;
 
-    titleInfo->data = ((uint8_t *)titleInfo) + FS_ALIGN(sizeof(TitleData));
-    strcpy((char *)titleInfo->data, dir);
+    strcpy(getPathFromInstData(titleInfo), dir);
 
     titleInfo->tmd = tmd;
 #ifndef NUSSPLI_LITE
     titleInfo->operation = OPERATION_INSTALL;
 #endif
+    titleInfo->entry= entry;
     titleInfo->dlDev = fromDev;
     titleInfo->toUSB = toUSB;
     titleInfo->keepFiles = keepFiles;
@@ -217,7 +217,7 @@ refreshDir:
         }
         else if(vpad.trigger & VPAD_BUTTON_MINUS)
         {
-            if(!addToOpQueue(dir, tmd, dev, toDev & NUSDEV_USB, keepFiles))
+            if(!addToOpQueue(entry, dir, tmd, dev, toDev & NUSDEV_USB, keepFiles))
                 return;
 
             goto grabNewDir;
