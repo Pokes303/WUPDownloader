@@ -41,9 +41,28 @@ void shutdownQueue()
     destroyList(titleQueue, false);
 }
 
-bool addToQueue(TitleData *data)
+int addToQueue(TitleData *data)
 {
-    return addToListEnd(titleQueue, data);
+    TitleData *title;
+    forEachListEntry(titleQueue, title)
+    {
+#ifndef NUSSPLI_LITE
+        if(data->operation & OPERATION_INSTALL && title->operation & OPERATION_INSTALL)
+        {
+#endif
+            if(data->toUSB && title->toUSB && data->tmd->tid == title->tmd->tid)
+                return 2;
+#ifndef NUSSPLI_LITE
+        }
+        if(data->operation & OPERATION_DOWNLOAD && title->operation & OPERATION_DOWNLOAD)
+        {
+            if(data->dlDev == title->dlDev && data->tmd->tid == title->tmd->tid)
+                return 2;
+        }
+#endif
+    }
+
+    return addToListEnd(titleQueue, data) ? 1 : -1;
 }
 
 static inline void removeFQ(TitleData *title)

@@ -42,6 +42,7 @@ static int cursorPos = MAX_LINES - 5;
 static bool addToOpQueue(const char *dir, TMD *tmd, NUSDEV fromDev, bool toUSB, bool keepFiles)
 {
     TitleData *titleInfo = MEMAllocFromDefaultHeap(sizeof(TitleData));
+    int ret = false;
     if(titleInfo != NULL)
     {
         titleInfo->data = MEMAllocFromDefaultHeapEx(FS_MAX_PATH, 0x40);
@@ -59,6 +60,12 @@ static bool addToOpQueue(const char *dir, TMD *tmd, NUSDEV fromDev, bool toUSB, 
             if(addToQueue(titleInfo))
                 return true;
 
+            ret = addToQueue(titleInfo);
+            if(ret == 1)
+                return true;
+            if(ret < 0)
+                ret = false;
+
             MEMFreeToDefaultHeap((void *)titleInfo->data);
         }
 
@@ -66,7 +73,7 @@ static bool addToOpQueue(const char *dir, TMD *tmd, NUSDEV fromDev, bool toUSB, 
     }
 
     MEMFreeToDefaultHeap(tmd);
-    return false;
+    return ret;
 }
 
 static void drawInstallerMenuFrame(const char *name, NUSDEV dev, NUSDEV toDev, bool usbMounted, bool keepFiles)
