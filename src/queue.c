@@ -24,6 +24,7 @@
 #include <list.h>
 #include <menu/utils.h>
 #include <queue.h>
+#include <state.h>
 
 #include <coreinit/memdefaultheap.h>
 
@@ -128,6 +129,9 @@ bool proccessQueue()
     forEachListEntry(titleQueue, title)
     {
         removeFQ(last);
+        if(!AppRunning(true))
+            return false;
+
 #ifndef NUSSPLI_LITE
         if(title->operation & OPERATION_DOWNLOAD)
         {
