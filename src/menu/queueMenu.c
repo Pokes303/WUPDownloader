@@ -111,7 +111,7 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
         entry = getTitleEntryByTid(data->tmd->tid);
         region = entry == NULL ? MCP_REGION_UNKNOWN : entry->region;
         flagToFrame(i, 7, region);
-        textToFrameCut(i, 10, prettyDir(data->data), (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * 17));
+        textToFrameCut(i, 10, entry == NULL ? prettyDir(data->data) : entry->name, (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * 17));
 #endif
 
         if(i == MAX_ENTRIES)
