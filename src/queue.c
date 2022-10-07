@@ -137,7 +137,7 @@ bool proccessQueue()
         else if(title->operation & OPERATION_INSTALL)
         {
 #endif
-            if(!install(title->entry == NULL ? prettyDir(((char *)title) + FS_ALIGN(sizeof(TitleData))) : title->entry->name, false /* TODO */, title->dlDev, getPathFromInstData(title), title->toUSB, title->keepFiles, title->tmd))
+            if(!install(title->entry == NULL ? prettyDir(getPathFromInstData(title)) : title->entry->name, false /* TODO */, title->dlDev, getPathFromInstData(title), title->toUSB, title->keepFiles, title->tmd))
                 return false;
 #ifndef NUSSPLI_LITE
         }

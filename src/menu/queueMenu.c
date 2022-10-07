@@ -51,6 +51,7 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
     int i = 0;
     int p;
     TitleData *data;
+    MCPRegion region;
 
     forEachListEntry(titleQueue, data)
     {
@@ -99,7 +100,18 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
         else
             p = 0;
 
-        strcpy(toScreen + p, data->entry == NULL ? prettyDir(getPathFromInstData(data)) : data->entry->name);
+        if(date->entry == NULL)
+        {
+            region = MCP_REGION_UNKNOWN;
+            strcpy(toScreen + p, prettyDir(getPathFromInstData(data)));
+        }
+        else
+        {
+            region = date->entry->region;
+            strcpy(toScreen + p, data->entry->name);
+        }
+
+        flagToFrame(i, SPACER + 3, region);
         textToFrameCut(i, SPACER + 6, toScreen, (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * SPACER_END));
 
         if(i == MAX_ENTRIES)
