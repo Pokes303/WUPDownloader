@@ -242,7 +242,7 @@ static void *drawPDMainGameFrame(const TitleEntry *entry)
     char *toFrame = getToFrameBuffer();
     strcpy(toFrame, entry->name);
     strcat(toFrame, "\n");
-    strcat(toFrame, gettext(isDLC(entry) ? "is DLC." : (isUpdate(entry) ? "is a update." : "is a demo.")));
+    strcat(toFrame, gettext(isDLC(entry->tid) ? "is DLC." : (isUpdate(entry->tid) ? "is a update." : "is a demo.")));
     strcat(toFrame, "\n\n" BUTTON_A " ");
     strcat(toFrame, gettext(operation == OPERATION_DOWNLOAD_INSTALL ? "Install main game" : "Download main game"));
     strcat(toFrame, " || " BUTTON_B " ");
@@ -571,7 +571,7 @@ naNedNa:
                 goto exitPDM;
         }
 
-        if(isDemo(entry))
+        if(isDemo(entry->tid))
         {
             uint64_t t = entry->tid;
             t &= 0xFFFFFFF0FFFFFFF0; // TODO
@@ -605,7 +605,7 @@ naNedNa:
                     goto exitPDM;
             }
         }
-        else if(isDLC(entry) || isUpdate(entry))
+        else if(isDLC(entry->tid) || isUpdate(entry->tid))
         {
             MCPTitleListType tl __attribute__((__aligned__(0x40)));
             uint64_t t = entry->tid & 0xFFFFFFF0FFFFFFFF;

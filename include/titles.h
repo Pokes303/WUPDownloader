@@ -57,10 +57,10 @@ extern "C"
     const char *tid2name(const char *tid);
     bool name2tid(const char *name, char *out);
 
-#define isGame(title)   ((TID_HIGH)(title->tid >> 32) == TID_HIGH_GAME)
-#define isDLC(title)    ((TID_HIGH)(title->tid >> 32) == TID_HIGH_DLC)
-#define isUpdate(title) ((TID_HIGH)(title->tid >> 32) == TID_HIGH_UPDATE)
-#define isDemo(title)   ((TID_HIGH)(title->tid >> 32) == TID_HIGH_DEMO)
+#define isGame(tid)   (getTidHighFromTid(tid) == TID_HIGH_GAME)
+#define isDLC(tid)    (getTidHighFromTid(tid) == TID_HIGH_DLC)
+#define isUpdate(tid) (getTidHighFromTid(tid) == TID_HIGH_UPDATE)
+#define isDemo(tid)   (getTidHighFromTid(tid) == TID_HIGH_DEMO)
 
 #ifdef __cplusplus
 }

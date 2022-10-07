@@ -106,8 +106,8 @@ static volatile INST_META *getInstalledTitle(size_t index, ACPMetaXml *meta, boo
             title->name[MAX_ITITLEBROWSER_TITLE_LENGTH - 1] = '\0';
 
             title->region = e->region;
-            title->isDlc = isDLC(e);
-            title->isUpdate = isUpdate(e);
+            title->isDlc = isDLC(list->titleId);
+            title->isUpdate = isUpdate(list->titleId);
             goto finishExit;
         }
 

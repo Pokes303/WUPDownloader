@@ -34,6 +34,13 @@
 #include <coreinit/memory.h>
 
 #define MAX_ENTRIES (MAX_LINES - 3)
+#ifndef NUSSPLI_LITE
+#define SPACER 7
+#define SPACER_END 14
+#else
+#define SPACER 4
+#define SPACER_END 17
+#endif
 
 static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
 {
@@ -42,9 +49,7 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
 
     char *toScreen = getToFrameBuffer();
     int i = 0;
-#ifndef NUSSPLI_LITE
     int p;
-#endif
     TitleData *data;
     const TitleEntry *entry;
     MCPRegion region;
@@ -62,8 +67,10 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
 
 #ifndef NUSSPLI_LITE
         if(data->operation & OPERATION_INSTALL)
-            deviceToFrame(i, 7, data->toUSB ? DEVICE_TYPE_USB : DEVICE_TYPE_NAND);
+#endif
+            deviceToFrame(i, SPACER + 3, data->toUSB ? DEVICE_TYPE_USB : DEVICE_TYPE_NAND);
 
+#ifndef NUSSPLI_LITE
         if(data->operation & OPERATION_DOWNLOAD)
         {
             switch(data->dlDev)
@@ -81,38 +88,33 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
 
             entry = (TitleEntry *)data->data;
             region = entry->region;
-
-            if(isDLC(entry))
-            {
-                p = strlen("[DLC] ");
-                OSBlockMove(toScreen, "[DLC] ", p, false);
-            }
-            else if(isUpdate(entry))
-            {
-                p = strlen("[UPD] ");
-                OSBlockMove(toScreen, "[UPD] ", p, false);
-            }
-            else
-                p = 0;
-
-            strcpy(toScreen + p, entry->name);
         }
         else
         {
+#endif
             entry = getTitleEntryByTid(data->tmd->tid);
             region = entry == NULL ? MCP_REGION_UNKNOWN : entry->region;
-            strcpy(toScreen, prettyDir(data->data));
+#ifndef NUSSPLI_LITE
         }
-
-        flagToFrame(i, 10, region);
-        textToFrameCut(i, 13, toScreen, (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * 14));
-#else
-        deviceToFrame(i, 4, data->toUSB ? DEVICE_TYPE_USB : DEVICE_TYPE_NAND);
-        entry = getTitleEntryByTid(data->tmd->tid);
-        region = entry == NULL ? MCP_REGION_UNKNOWN : entry->region;
-        flagToFrame(i, 7, region);
-        textToFrameCut(i, 10, entry == NULL ? prettyDir(data->data) : entry->name, (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * 17));
 #endif
+
+        flagToFrame(i, SPACER, region);
+
+        if(isDLC(data->tmd->tid))
+        {
+            p = strlen("[DLC] ");
+            OSBlockMove(toScreen, "[DLC] ", p, false);
+        }
+        else if(isUpdate(data->tmd->tid))
+        {
+            p = strlen("[UPD] ");
+            OSBlockMove(toScreen, "[UPD] ", p, false);
+        }
+        else
+            p = 0;
+
+        strcpy(toScreen + p, entry == NULL ? prettyDir(data->data) : entry->name);
+        textToFrameCut(i, SPACER + 6, toScreen, (SCREEN_WIDTH - (FONT_SIZE << 1)) - (getSpaceWidth() * SPACER_END));
 
         if(i == MAX_ENTRIES)
             break;

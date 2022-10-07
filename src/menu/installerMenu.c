@@ -148,6 +148,7 @@ void installerMenu()
         toDev = NUSDEV_MLC;
 
     TMD *tmd;
+    const TitleEntry *entry;
     const char *nd;
     bool redraw;
 
@@ -176,7 +177,8 @@ refreshDir:
     if(dev != NUSDEV_SD)
         keepFiles = false;
 
-    nd = prettyDir(dir);
+    entry = getTitleEntryByTid(tmd->tid);
+    nd = entry == NULL ? prettyDir(dir) : entry->name;
     redraw = true;
 
     while(AppRunning(true))

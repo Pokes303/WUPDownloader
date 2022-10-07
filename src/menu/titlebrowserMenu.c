@@ -160,9 +160,9 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
 
         if(tab == TITLE_CATEGORY_ALL)
         {
-            if(isDLC(filteredTitleEntries[j]))
+            if(isDLC(filteredTitleEntries[j]->tid))
                 strcpy(toFrame, "[DLC] ");
-            else if(isUpdate(filteredTitleEntries[j]))
+            else if(isUpdate(filteredTitleEntries[j]->tid))
                 strcpy(toFrame, "[UPD] ");
             else
                 toFrame[0] = '\0';
