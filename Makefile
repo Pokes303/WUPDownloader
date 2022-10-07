@@ -47,7 +47,7 @@ endif
 CFLAGS		:=	$(MACHDEP) -Ofast -flto=auto -fno-fat-lto-objects \
 				-fuse-linker-plugin -pipe -D__WIIU__ -D__WUT__ \
 				-DNUSSPLI_VERSION=\"$(NUSSPLI_VERSION)\" \
-				-DIOAPI_NO_64 $(ROMFS_CFLAGS)
+				-DIOAPI_NO_64 -Wno-trigraphs $(ROMFS_CFLAGS)
 
 ifeq ($(strip $(HBL)), 1)
 CFLAGS		+=	-DNUSSPLI_HBL
@@ -163,9 +163,9 @@ $(OUTPUT).elf	:	$(OFILES)
 $(OFILES_SRC)	: $(HFILES_BIN)
 
 #-------------------------------------------------------------------------------
-debug: CFLAGS	+=	-Wall -DNUSSPLI_DEBUG
-debug: CXXFLAGS	+=	-Wall -DNUSSPLI_DEBUG
-debug: LDFLAGS	+=	-Wall -DNUSSPLI_DEBUG
+debug: CFLAGS	+=	-Wall -Wno-trigraphs -DNUSSPLI_DEBUG
+debug: CXXFLAGS	+=	-Wall -Wno-trigraphs -DNUSSPLI_DEBUG
+debug: LDFLAGS	+=	-Wall -Wno-trigraphs -DNUSSPLI_DEBUG
 debug: all
 
 #-------------------------------------------------------------------------------
