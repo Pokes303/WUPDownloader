@@ -362,8 +362,6 @@ static bool addToOpQueue(const TitleEntry *entry, const char *titleVer, const ch
             ret = addToQueue(titleInfo);
             if(ret == 1)
                 return true;
-            if(ret < 0)
-                ret = false;
 
             MEMFreeToDefaultHeap(titleInfo->tmd);
         }

@@ -57,12 +57,12 @@ int addToQueue(TitleData *data)
         if(data->operation & OPERATION_DOWNLOAD && title->operation & OPERATION_DOWNLOAD)
         {
             if(data->dlDev == title->dlDev && data->tmd->tid == title->tmd->tid)
-                return 2;
+                return 3;
         }
 #endif
     }
 
-    return addToListEnd(titleQueue, data) ? 1 : -1;
+    return addToListEnd(titleQueue, data) ? 1 : 0;
 }
 
 static inline void removeFQ(TitleData *title)

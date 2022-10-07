@@ -57,14 +57,9 @@ static bool addToOpQueue(const char *dir, TMD *tmd, NUSDEV fromDev, bool toUSB, 
             titleInfo->toUSB = toUSB;
             titleInfo->keepFiles = keepFiles;
 
-            if(addToQueue(titleInfo))
-                return true;
-
             ret = addToQueue(titleInfo);
             if(ret == 1)
                 return true;
-            if(ret < 0)
-                ret = false;
 
             MEMFreeToDefaultHeap((void *)titleInfo->data);
         }
