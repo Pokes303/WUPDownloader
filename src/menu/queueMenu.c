@@ -66,11 +66,6 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
             arrowToFrame(i, 1);
 
 #ifndef NUSSPLI_LITE
-        if(data->operation & OPERATION_INSTALL)
-#endif
-            deviceToFrame(i, SPACER + 3, data->toUSB ? DEVICE_TYPE_USB : DEVICE_TYPE_NAND);
-
-#ifndef NUSSPLI_LITE
         if(data->operation & OPERATION_DOWNLOAD)
         {
             switch(data->dlDev)
@@ -96,9 +91,12 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
             region = entry == NULL ? MCP_REGION_UNKNOWN : entry->region;
 #ifndef NUSSPLI_LITE
         }
-#endif
 
-        flagToFrame(i, SPACER, region);
+        if(data->operation & OPERATION_INSTALL)
+#endif
+            deviceToFrame(i, SPACER, data->toUSB ? DEVICE_TYPE_USB : DEVICE_TYPE_NAND);
+
+        flagToFrame(i, SPACER + 3, region);
 
         if(isDLC(data->tmd->tid))
         {
