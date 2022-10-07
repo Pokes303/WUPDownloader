@@ -70,11 +70,6 @@ static inline void removeFQ(TitleData *title)
     if(title != NULL)
     {
         removeFromList(titleQueue, title);
-#ifndef NUSSPLI_LITE
-        if(title->operation == OPERATION_INSTALL)
-#endif
-            MEMFreeToDefaultHeap((void *)title->data);
-
         MEMFreeToDefaultHeap(title->tmd);
         MEMFreeToDefaultHeap(title);
     }
@@ -162,11 +157,6 @@ bool removeFromQueue(uint32_t index)
     TitleData *title = getAndRemoveFromList(titleQueue, index);
     if(title == NULL)
         return false;
-
-#ifndef NUSSPLI_LITE
-    if(title->operation == OPERATION_INSTALL)
-#endif
-        MEMFreeToDefaultHeap((void *)title->data);
 
     MEMFreeToDefaultHeap(title->tmd);
     MEMFreeToDefaultHeap(title);
