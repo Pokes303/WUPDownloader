@@ -576,7 +576,7 @@ naNedNa:
             uint64_t t = entry->tid;
             t &= 0xFFFFFFF0FFFFFFF0; // TODO
             const TitleEntry *te = getTitleEntryByTid(t);
-            if(te != NULL)
+            if(te != NULL && te->key != TITKE_KEY_MAGIC)
             {
                 void *ovl = drawPDMainGameFrame(entry);
                 if(ovl == NULL)
@@ -648,7 +648,7 @@ naNedNa:
             else // main game not installed
             {
                 const TitleEntry *te = getTitleEntryByTid(t);
-                if(te != NULL)
+                if(te != NULL && te->key != TITKE_KEY_MAGIC)
                 {
                     void *ovl = drawPDMainGameFrame(entry);
                     if(ovl == NULL)
