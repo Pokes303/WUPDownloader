@@ -100,14 +100,14 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
         else
             p = 0;
 
-        if(date->entry == NULL)
+        if(data->entry == NULL)
         {
             region = MCP_REGION_UNKNOWN;
             strcpy(toScreen + p, prettyDir(getPathFromInstData(data)));
         }
         else
         {
-            region = date->entry->region;
+            region = data->entry->region;
             strcpy(toScreen + p, data->entry->name);
         }
 
