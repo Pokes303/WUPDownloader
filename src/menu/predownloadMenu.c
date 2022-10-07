@@ -679,7 +679,7 @@ naNedNa:
                                 goto exitPDM;
                             }
 
-                            if(addToOpQueue(entry, titleVer, folderName, dlDev, instDev))
+                            if(!addToOpQueue(entry, titleVer, folderName, dlDev, instDev))
                                 goto exitPDM;
 
                             clearRamBuf();
