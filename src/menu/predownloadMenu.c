@@ -101,6 +101,9 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
     }
 
     sprintf(toFrame, "%.02f %s", fsize, bs);
+
+    flagToFrame(1, 0, entry->region);
+
     textToFrame(++line, 0, gettext("Size:"));
     textToFrame(++line, 3, toFrame);
 

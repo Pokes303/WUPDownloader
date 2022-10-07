@@ -66,10 +66,11 @@ static bool addToOpQueue(const TitleEntry *entry, const char *dir, TMD *tmd, NUS
     return ret;
 }
 
-static void drawInstallerMenuFrame(const char *name, NUSDEV dev, NUSDEV toDev, bool usbMounted, bool keepFiles)
+static void drawInstallerMenuFrame(const char *name, NUSDEV dev, NUSDEV toDev, bool usbMounted, bool keepFiles, MCPRegion region)
 {
     startNewFrame();
     textToFrame(0, 0, name);
+    flagToFrame(1, 0, region);
     arrowToFrame(cursorPos, 0);
 
     char *toFrame = getToFrameBuffer();
@@ -187,7 +188,7 @@ refreshDir:
 
         if(redraw)
         {
-            drawInstallerMenuFrame(nd, dev, toDev, usbMounted, keepFiles);
+            drawInstallerMenuFrame(nd, dev, toDev, usbMounted, keepFiles, entry == NULL ? MCP_REGION_UNKNOWN : entry->region);
             redraw = false;
         }
         showFrame();
