@@ -66,18 +66,56 @@ static bool addToOpQueue(const TitleEntry *entry, const char *dir, TMD *tmd, NUS
     return ret;
 }
 
-static void drawInstallerMenuFrame(const char *name, NUSDEV dev, NUSDEV toDev, bool usbMounted, bool keepFiles, MCPRegion region)
+static void drawInstallerMenuFrame(const char *name, NUSDEV dev, NUSDEV toDev, bool usbMounted, bool keepFiles, MCPRegion region, const TMD *tmd)
 {
     startNewFrame();
-    textToFrame(0, 0, name);
-    flagToFrame(1, 0, region);
-    arrowToFrame(cursorPos, 0);
+    textToFrame(0, 0, gettext("Name:"));
 
     char *toFrame = getToFrameBuffer();
-    strcpy(toFrame, gettext("Press " BUTTON_B " to return"));
-    strcat(toFrame, " || ");
-    strcat(toFrame, gettext(BUTTON_PLUS " to start"));
-    textToFrame(MAX_LINES - 2, ALIGNED_CENTER, toFrame);
+    strcpy(toFrame, name);
+    char tid[17];
+    hex(tmd->tid, 16, tid);
+    strcat(toFrame, " [");
+    strcat(toFrame, tid);
+    strcat(toFrame, "]");
+    int line = textToFrameMultiline(0, ALIGNED_CENTER, toFrame, MAX_CHARS - 33); // TODO
+
+    size_t size = 0;
+    for(uint16_t i = 0; i < tmd->num_contents; ++i)
+        size += tmd->contents[i].size;
+
+    char *bs;
+    float fsize;
+    if(size > 1024 * 1024 * 1024)
+    {
+        bs = "GB";
+        fsize = ((float)(size / 1024 / 1024)) / 1024.0F;
+    }
+    else if(size > 1024 * 1924)
+    {
+        bs = "MB";
+        fsize = ((float)(size / 1024)) / 1024.0F;
+    }
+    else if(size > 1024)
+    {
+        bs = "KB";
+        fsize = ((float)size) / 1024.0F;
+    }
+    else
+    {
+        bs = "B";
+        fsize = (float)size;
+    }
+
+    sprintf(toFrame, "%.02f %s", fsize, bs);
+
+    flagToFrame(1, 0, region);
+
+    textToFrame(++line, 0, gettext("Size:"));
+    textToFrame(++line, 3, toFrame);
+
+    lineToFrame(MAX_LINES - 6, SCREEN_COLOR_WHITE);
+    arrowToFrame(cursorPos, 0);
 
     strcpy(toFrame, gettext("Install to:"));
     strcat(toFrame, " ");
@@ -177,6 +215,7 @@ refreshDir:
 
     entry = getTitleEntryByTid(tmd->tid);
     nd = entry == NULL ? prettyDir(dir) : entry->name;
+
     redraw = true;
 
     while(AppRunning(true))
@@ -188,7 +227,7 @@ refreshDir:
 
         if(redraw)
         {
-            drawInstallerMenuFrame(nd, dev, toDev, usbMounted, keepFiles, entry == NULL ? MCP_REGION_UNKNOWN : entry->region);
+            drawInstallerMenuFrame(nd, dev, toDev, usbMounted, keepFiles, entry == NULL ? MCP_REGION_UNKNOWN : entry->region, tmd);
             redraw = false;
         }
         showFrame();
