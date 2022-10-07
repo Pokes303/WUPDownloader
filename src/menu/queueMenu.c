@@ -35,10 +35,10 @@
 
 #define MAX_ENTRIES (MAX_LINES - 3)
 #ifndef NUSSPLI_LITE
-#define SPACER 7
+#define SPACER     7
 #define SPACER_END 14
 #else
-#define SPACER 4
+#define SPACER     4
 #define SPACER_END 17
 #endif
 
