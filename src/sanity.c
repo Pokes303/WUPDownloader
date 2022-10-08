@@ -39,7 +39,7 @@
 
 static const uint32_t md5[MD5_FILES][16] = {
     { 0xcb490117, 0xda849d9f, 0x5cd4bbe8, 0xe860b181 },
-    { 0xe91699c5, 0x5f10d1bb, 0x08bb8849, 0xd36f35ff },
+    { 0x85e37679, 0x0ea9a811, 0x091c7f52, 0x55f6a2b6 },
 };
 
 static const char *md5File[MD5_FILES] = {
