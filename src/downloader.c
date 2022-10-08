@@ -62,8 +62,8 @@
 #include <mbedtls/ssl.h>
 #include <mbedtls/x509_crt.h>
 
-#define USERAGENT        "NUSspli/" NUSSPLI_VERSION // TODO: Spoof eShop here?
-#define DLT_STACK_SIZE   0x4000
+#define USERAGENT      "NUSspli/" NUSSPLI_VERSION
+#define DLT_STACK_SIZE 0x4000
 
 static volatile char *ramBuf = NULL;
 static volatile size_t ramBufSize = 0;
