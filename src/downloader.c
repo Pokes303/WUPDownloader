@@ -164,13 +164,13 @@ static int initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 
     o = IO_BUFSIZE;
     // Set send buffersize
-    /*	r = setsockopt(socket, SOL_SOCKET, SO_SNDBUF, &o, sizeof(o));
-            if(r != 0)
-            {
-                    debugPrintf("initSocket: Error settings SBS: %d", r);
-                    return CURL_SOCKOPT_ERROR;
-            }
-    */
+    r = setsockopt(socket, SOL_SOCKET, SO_SNDBUF, &o, sizeof(o));
+    if(r != 0)
+    {
+        debugPrintf("initSocket: Error settings SBS: %d", r);
+        return CURL_SOCKOPT_ERROR;
+    }
+
     // Set receive buffersize
     r = setsockopt(socket, SOL_SOCKET, SO_RCVBUF, &o, sizeof(o));
     if(r != 0)
