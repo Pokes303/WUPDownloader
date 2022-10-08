@@ -328,10 +328,10 @@ int main()
             tid |= 0x000000000000A000;
             _SYSLaunchTitleWithStdArgsInNoSplash(tid, NULL);
         }
-
-#else
-        SYSLaunchMenu();
+        else
 #endif
+            SYSLaunchMenu();
+
         if(app == APP_STATE_HOME)
         {
             app = APP_STATE_RUNNING;
