@@ -37,7 +37,7 @@
 
 #define MD5_FILES 2
 
-static const uint32_t md5[MD5_FILES][16] = {
+static const uint32_t md5[MD5_FILES][4] = {
     { 0xcb490117, 0xda849d9f, 0x5cd4bbe8, 0xe860b181 },
     { 0x85e37679, 0x0ea9a811, 0x091c7f52, 0x55f6a2b6 },
 };
