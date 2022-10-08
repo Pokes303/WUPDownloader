@@ -63,9 +63,7 @@
 #include <mbedtls/x509_crt.h>
 
 #define USERAGENT        "NUSspli/" NUSSPLI_VERSION // TODO: Spoof eShop here?
-#define DLBGT_STACK_SIZE 0x1000
 #define DLT_STACK_SIZE   0x4000
-#define SOCKLIB_BUFSIZE  (IO_BUFSIZE * 2) // double buffering
 
 static volatile char *ramBuf = NULL;
 static volatile size_t ramBufSize = 0;
@@ -73,7 +71,6 @@ static volatile size_t ramBufSize = 0;
 static CURL *curl;
 static char curlError[CURL_ERROR_SIZE];
 static bool curlReuseConnection = true;
-static OSThread *dlbgThread = NULL;
 
 static void *cancelOverlay = NULL;
 
@@ -120,30 +117,6 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
     return 0;
 }
 
-static int dlbgThreadMain(int argc, const char **argv)
-{
-    debugPrintf("Socket optimizer running!");
-
-    void *buf = MEMAllocFromDefaultHeapEx(SOCKLIB_BUFSIZE, 64);
-    if(buf == NULL)
-    {
-        debugPrintf("Socket optimizer: OUT OF MEMORY!");
-        return 1;
-    }
-
-    int ret = somemopt(0x01, buf, SOCKLIB_BUFSIZE, 0) == -1 ? RPLWRAP(socketlasterr)() : 50; // We need the rplwrapped socketlasterr() here as WUTs simply retuns errno but errno hasn't been setted.
-    __init_wut_socket();
-    debugInit();
-    if(ret == 50)
-        ret = 0;
-    else
-        debugPrintf("somemopt failed!");
-
-    MEMFreeToDefaultHeap(buf);
-    debugPrintf("Socket optimizer finished!");
-    return ret;
-}
-
 static int initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 {
     int o = 1;
@@ -177,14 +150,6 @@ static int initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
     if(r != 0)
     {
         debugPrintf("initSocket: Error settings Noslowstart: %d", r);
-        return CURL_SOCKOPT_ERROR;
-    }
-
-    // Activate userspace buffer (fom our socket optimizer)
-    r = setsockopt(socket, SOL_SOCKET, 0x10000, &o, sizeof(o));
-    if(r != 0)
-    {
-        debugPrintf("initSocket: Error settings UB: %d", r);
         return CURL_SOCKOPT_ERROR;
     }
 
@@ -223,28 +188,11 @@ static CURLcode ssl_ctx_init(CURL *curl, void *sslctx, void *parm)
     return CURLE_OK;
 }
 
-#define killDlbgThread()                  \
-    {                                     \
-        if(dlbgThread != NULL)            \
-        {                                 \
-            shutdownDebug();              \
-            __fini_wut_socket();          \
-            stopThread(dlbgThread, NULL); \
-            dlbgThread = NULL;            \
-        }                                 \
-    }
-
-#define initNetwork()                                                                                                                                         \
-    {                                                                                                                                                         \
-        curlReuseConnection = false;                                                                                                                          \
-        dlbgThread = startThread("NUSspli socket optimizer", THREAD_PRIORITY_LOW, DLBGT_STACK_SIZE, dlbgThreadMain, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_CPU0); \
-    }
+#define initNetwork() (curlReuseConnection = false)
 
 // We call AC functions here without calling ACInitialize() / ACFinalize() as WUT should call these for us.
 #define resetNetwork()                                      \
     {                                                       \
-        killDlbgThread();                                   \
-                                                            \
         ACConfigId networkCfg;                              \
         if(NNResult_IsSuccess(ACGetStartupId(&networkCfg))) \
             ACConnectWithConfigId(networkCfg);              \
@@ -255,8 +203,6 @@ static CURLcode ssl_ctx_init(CURL *curl, void *sslctx, void *parm)
 bool initDownloader()
 {
     initNetwork();
-    if(dlbgThread == NULL)
-        return false;
 
     char *fn = getStaticPathBuffer(2);
     strcpy(fn, ROMFS_PATH "ca-certificates/");
@@ -399,7 +345,6 @@ bool initDownloader()
         curl_global_cleanup();
     }
 
-    killDlbgThread();
     if(blob.data != NULL)
         MEMFreeToDefaultHeap(blob.data);
 
@@ -414,7 +359,6 @@ void deinitDownloader()
         curl = NULL;
     }
     curl_global_cleanup();
-    killDlbgThread();
 }
 
 static int dlThreadMain(int argc, const char **argv)
