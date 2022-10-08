@@ -688,8 +688,8 @@ void resumeRenderer()
             SDL_SetRenderDrawColor(renderer, co.r, co.g, co.b, co.a);
             SDL_RenderDrawPoint(renderer, 2, 1);
 
-            SDL_Texture *tt = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, 2, 2);
-            SDL_SetRenderTarget(renderer, tt);
+            bgTex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, 2, 2);
+            SDL_SetRenderTarget(renderer, bgTex);
             // Top left
             SDL_SetRenderDrawColor(renderer, 0x91, 0x1E, 0xFF, 0xFF);
             SDL_RenderClear(renderer);
@@ -702,11 +702,6 @@ void resumeRenderer()
             // Bottom left
             SDL_SetRenderDrawColor(renderer, 0x83, 0x18, 0xFF, 0xFF);
             SDL_RenderDrawPoint(renderer, 1, 2);
-
-            bgTex = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_TARGET, SCREEN_WIDTH, SCREEN_HEIGHT);
-            SDL_SetRenderTarget(renderer, bgTex);
-            SDL_RenderCopy(renderer, tt, NULL, NULL);
-            SDL_DestroyTexture(tt);
 
             SDL_SetRenderTarget(renderer, frameBuffer);
 
