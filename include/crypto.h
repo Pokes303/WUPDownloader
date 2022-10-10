@@ -36,7 +36,7 @@ extern "C"
     int NUSrng(void *data, unsigned char *out, size_t outlen);
     bool encryptAES(void *data, int data_len, const unsigned char *key, unsigned char *iv, void *encrypted);
 
-#define osslBytes(buf, num) NUSrng(NULL, buf, num)
+#define osslBytes(buf, num) NUSrng(NULL, (unsigned char *)buf, num)
 
 #ifdef __cplusplus
 }

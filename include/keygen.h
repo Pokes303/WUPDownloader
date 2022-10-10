@@ -29,7 +29,7 @@ extern "C"
 {
 #endif
 
-    bool generateKey(const TitleEntry *te, char *out);
+    bool generateKey(const TitleEntry *te, uint8_t *out);
 
 #ifdef __cplusplus
 }

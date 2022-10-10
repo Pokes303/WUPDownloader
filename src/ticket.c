@@ -23,6 +23,7 @@
 
 #include <ticket.h>
 
+#include <crypto.h>
 #include <file.h>
 #include <input.h>
 #include <ioQueue.h>
@@ -41,14 +42,59 @@
 #include <string.h>
 
 #include <coreinit/memdefaultheap.h>
+#include <coreinit/memory.h>
+
+static const uint8_t magic_header[12] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x00, 0x00 };
+
+static void generateHeader(FileType type, NUS_HEADER *out)
+{
+    OSBlockMove(out->magic_header, magic_header, 12, false);
+    OSBlockMove(out->app, "NUSspli", strlen("NUSspli"), false);
+    OSBlockMove(out->app_version, NUSSPLI_VERSION, strlen(NUSSPLI_VERSION), false);
+
+    if(type == FILE_TYPE_TIK)
+        OSBlockMove(out->file_type, "Ticket", strlen("Ticket"), false);
+    else
+        OSBlockMove(out->file_type, "Certificate", strlen("Certificate"), false);
+
+    out->sig_type = 0x00010004;
+    out->meta_version = 0x01;
+    osslBytes(out->rand_area, sizeof(out->rand_area));
+}
 
 /* This generates a ticket and writes it to a file.
  * The ticket algorithm is ported from FunkiiU combined
  * with the randomness of NUSPackager to create unique
  * NUSspli tickets.
  */
-bool generateTik(const char *path, const TitleEntry *titleEntry)
+bool generateTik(const char *path, const TitleEntry *titleEntry, const TMD *tmd)
 {
+    TICKET ticket;
+    OSBlockSet(&ticket, 0x00, sizeof(TICKET));
+
+    if(!generateKey(titleEntry, ticket.key))
+        return false;
+
+    generateHeader(FILE_TYPE_TIK, &ticket.header);
+    osslBytes(&ticket.ecdsa_pubkey, sizeof(ticket.ecdsa_pubkey));
+    osslBytes(&ticket.ticket_id, sizeof(uint64_t));
+    ticket.ticket_id &= 0x0000FFFFFFFFFFFF;
+    ticket.ticket_id |= 0x0005000000000000;
+
+    OSBlockMove(ticket.issuer, "Root-CA00000003-XS0000000c", strlen("Root-CA00000003-XS0000000c"), false);
+
+    ticket.version = 0x01;
+    ticket.ca_clr_version = 0x01;
+
+    ticket.tid = titleEntry->tid;
+    ticket.title_version = tmd->version;
+    ticket.property_mask = 0x0006;
+    ticket.audit = 0x01;
+
+    // We support zero sections only
+    ticket.header_version = 0x0001;
+    ticket.total_hdr_size = 0x14;
+
     FSFileHandle *tik = openFile(path, "w", 0);
     if(tik == NULL)
     {
@@ -70,52 +116,44 @@ bool generateTik(const char *path, const TitleEntry *titleEntry)
         return false;
     }
 
-    char encKey[33];
-    if(!generateKey(titleEntry, encKey))
-        return false;
-
-    char tid[17];
-    hex(titleEntry->tid, 16, tid);
-
-    debugPrintf("Generating fake ticket at %s", path);
-
-    // NUSspli adds its own header.
-    writeHeader(tik, FILE_TYPE_TIK);
-
-    // SSH certificate
-    writeCustomBytes(tik, "0x526F6F742D434130303030303030332D58533030303030303063"); // "Root-CA00000003-XS0000000c"writeVoidBytes(tik, 0x26);
-    writeVoidBytes(tik, 0x26);
-    writeRandomBytes(tik, 0x3B);
-
-    // The title data
-    writeCustomBytes(tik, "0x00010000");
-    writeCustomBytes(tik, encKey);
-    writeVoidBytes(tik, 0xD); // 0x00000000, so one of the magic things again
-    writeCustomBytes(tik, tid);
-
-    writeVoidBytes(tik, 0x3D);
-    writeCustomBytes(tik, "01"); // Not sure what shis is for
-    writeVoidBytes(tik, 0x82);
-
-    // And some footer. Also not sure what it means
-    // Let's write it out in parts so we might be able to find patterns
-    writeCustomBytes(tik, "0x00010014"); // Magic thing A
-    writeCustomBytes(tik, "0x000000ac");
-    writeCustomBytes(tik, "0x00000014"); // Might be connected to magic thing A
-    writeCustomBytes(tik, "0x00010014"); // Magic thing A
-    writeCustomBytes(tik, "0x0000000000000028");
-    writeCustomBytes(tik, "0x00000001"); // Magic thing B ?
-    writeCustomBytes(tik, "0x0000008400000084"); // Pattern
-    writeCustomBytes(tik, "0x0003000000000000");
-    writeCustomBytes(tik, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-    writeVoidBytes(tik, 0x60);
-
+    addToIOQueue(&ticket, 1, sizeof(TICKET), tik);
     addToIOQueue(NULL, 0, 0, tik);
     return true;
 }
 
 bool generateCert(const char *path)
 {
+    CETK cetk;
+    OSBlockSet(&cetk, 0x00, sizeof(CETK));
+
+    generateHeader(FILE_TYPE_CERT, &cetk.header);
+
+    OSBlockMove(cetk.cert1.issuer, "Root-CA00000003", strlen("Root-CA00000003"), false);
+    OSBlockMove(cetk.cert1.type, "CP0000000b", strlen("CP0000000b"), false);
+
+    OSBlockMove(cetk.cert2.issuer, "Root", strlen("Root"), false);
+    OSBlockMove(cetk.cert2.type, "CA00000003", strlen("CA00000003"), false);
+
+    OSBlockMove(cetk.cert3.issuer, "Root-CA00000003", strlen("Root-CA00000003"), false);
+    OSBlockMove(cetk.cert3.type, "XS0000000c", strlen("XS0000000c"), false);
+
+    osslBytes(&cetk.cert1.sig, sizeof(cetk.cert1.sig));
+    osslBytes(&cetk.cert1.cert, sizeof(cetk.cert1.cert));
+    osslBytes(&cetk.cert2.sig, sizeof(cetk.cert2.sig));
+    osslBytes(&cetk.cert2.cert, sizeof(cetk.cert2.cert));
+    osslBytes(&cetk.cert3.sig, sizeof(cetk.cert3.sig));
+
+    cetk.cert1.version = 0x01;
+    cetk.cert1.unknown_01 = 0x00010001;
+    cetk.cert1.unknown_02 = 0x00010003;
+
+    cetk.cert2.version = 0x01;
+    cetk.cert2.unknown_01 = 0x00010001;
+    cetk.cert2.unknown_02 = 0x00010004;
+
+    cetk.cert3.version = 0x01;
+    cetk.cert3.unknown_01 = 0x00010001;
+
     FSFileHandle *cert = openFile(path, "w", 0);
     if(cert == NULL)
     {
@@ -137,42 +175,7 @@ bool generateCert(const char *path)
         return false;
     }
 
-    // NUSspli adds its own header.
-    writeHeader(cert, FILE_TYPE_CERT);
-
-    // Some SSH certificate
-    writeCustomBytes(cert, "0x526F6F742D43413030303030303033"); // "Root-CA00000003"
-    writeVoidBytes(cert, 0x34);
-    writeCustomBytes(cert, "0x0143503030303030303062"); // "?CP0000000b"
-    writeVoidBytes(cert, 0x36);
-    writeRandomBytes(cert, 0x104);
-    writeCustomBytes(cert, "0x00010001");
-    writeVoidBytes(cert, 0x34);
-    writeCustomBytes(cert, "0x00010003");
-    writeRandomBytes(cert, 0x200);
-    writeVoidBytes(cert, 0x3C);
-
-    // Next certificate
-    writeCustomBytes(cert, "0x526F6F74"); // "Root"
-    writeVoidBytes(cert, 0x3F);
-    writeCustomBytes(cert, "0x0143413030303030303033"); // "?CA00000003"
-    writeVoidBytes(cert, 0x36);
-    writeRandomBytes(cert, 0x104);
-    writeCustomBytes(cert, "0x00010001");
-    writeVoidBytes(cert, 0x34);
-    writeCustomBytes(cert, "0x00010004");
-    writeRandomBytes(cert, 0x100);
-    writeVoidBytes(cert, 0x3C);
-
-    // Last certificate
-    writeCustomBytes(cert, "0x526F6F742D43413030303030303033"); // "Root-CA00000003"
-    writeVoidBytes(cert, 0x34);
-    writeCustomBytes(cert, "0x0158533030303030303063"); // "?XS0000000c"
-    writeVoidBytes(cert, 0x36);
-    writeRandomBytes(cert, 0x104);
-    writeCustomBytes(cert, "0x00010001");
-    writeVoidBytes(cert, 0x34);
-
+    addToIOQueue(&cetk, 1, sizeof(CETK), cert);
     addToIOQueue(NULL, 0, 0, cert);
     return true;
 }
@@ -260,7 +263,7 @@ gftEntry:
                 entry = &te;
 
             strcpy(ptr, "tik");
-            if(!generateTik(dir, entry))
+            if(!generateTik(dir, entry, tmd))
                 break;
 
             drawTicketGenFrame(dir);

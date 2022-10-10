@@ -64,7 +64,7 @@ static inline const char *transformPassword(TITLE_KEY in)
     }
 }
 
-bool generateKey(const TitleEntry *te, char *out)
+bool generateKey(const TitleEntry *te, uint8_t *out)
 {
     const uint8_t *ti = (const uint8_t *)&(te->tid);
     size_t i;
@@ -99,21 +99,7 @@ bool generateKey(const TitleEntry *te, char *out)
     uint8_t iv[16];
     OSBlockMove(iv, &(te->tid), 8, false);
     OSBlockSet(iv + 8, 0, 8);
-    if(!encryptAES(key, 16, getCommonKey(), iv, key))
-        return false;
-
-    // Finally we print the key as a hex string to the out arg
-    for(i = 0; i < 16; ++i)
-    {
-        sprintf(out, "%02x", key[i]);
-        out += 2;
-    }
-
-#ifdef NUSSPLI_DEBUG
-    out -= 32;
-    debugPrintf("Key: 0x%s", out);
-#endif
-    return true;
+    return encryptAES(key, 16, getCommonKey(), iv, out);
 }
 
 #endif

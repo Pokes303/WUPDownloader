@@ -73,11 +73,6 @@ extern "C"
     extern FSClient *__wut_devoptab_fs_client;
     FSCmdBlock *getCmdBlk() __attribute__((__hot__));
 
-    void writeVoidBytes(FSFileHandle *fp, uint32_t length);
-    void writeCustomBytes(FSFileHandle *fp, const char *str);
-    void writeRandomBytes(FSFileHandle *fp, uint32_t length);
-    void writeHeader(FSFileHandle *fp, FileType type);
-
     bool fileExists(const char *path);
     bool dirExists(const char *path);
     FSStatus removeDirectory(const char *path) __attribute__((__hot__));

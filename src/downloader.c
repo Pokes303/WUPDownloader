@@ -1097,7 +1097,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
                 writeScreenLog(3);
                 drawFrame();
 
-                if(generateTik(installDir, titleEntry))
+                if(generateTik(installDir, titleEntry, tmd))
                     addToScreenLog("Fake ticket created successfully");
                 else
                     return false;
