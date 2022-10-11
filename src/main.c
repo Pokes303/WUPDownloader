@@ -331,9 +331,11 @@ int main()
                 _SYSLaunchTitleWithStdArgsInNoSplash(tid, NULL);
             }
             else
-#endif
-                SYSLaunchMenu();
+                SYSRelaunchTitle(0, NULL);
         }
+#else
+        SYSLaunchMenu();
+#endif
 
         if(app == APP_STATE_HOME)
         {

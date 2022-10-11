@@ -30,7 +30,7 @@
 
 bool jailbreak()
 {
-     MochaRPXLoadInfo info = {
+    MochaRPXLoadInfo info = {
         .target = LOAD_RPX_TARGET_SD_CARD,
         .filesize = 0,
         .fileoffset = 0,
