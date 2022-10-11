@@ -23,19 +23,26 @@
 #include <stdbool.h>
 
 #include <jailbreak.h>
+#include <menu/utils.h>
+#include <utils.h>
 
 #include <mocha/mocha.h>
 
 bool jailbreak()
 {
-    MochaRPXLoadInfo info = {
+     MochaRPXLoadInfo info = {
         .target = LOAD_RPX_TARGET_SD_CARD,
         .filesize = 0,
         .fileoffset = 0,
         .path = "wiiu/apps/NUSspli/NUSspli.rpx",
     };
 
-    return Mocha_LaunchRPX(&info) == MOCHA_RESULT_SUCCESS;
+    MochaUtilsStatus ret = Mocha_LaunchRPX(&info);
+    if(ret == MOCHA_RESULT_SUCCESS)
+        return true;
+
+    debugPrintf("Mocha_LaunchRPX failed: 0x%08X", ret);
+    return false;
 }
 
 #endif // ifdef NUSSPLI_HBL
