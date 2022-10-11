@@ -811,7 +811,7 @@ bool initRenderer()
     {
         if(SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO) == 0)
         {
-            window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+            window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP);
             if(window)
             {
                 renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
