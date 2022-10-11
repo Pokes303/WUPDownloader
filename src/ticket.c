@@ -44,11 +44,11 @@
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 
-static const uint8_t magic_header[12] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x00, 0x00 };
+static const uint8_t magic_header[10] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, };
 
 static void generateHeader(FileType type, NUS_HEADER *out)
 {
-    OSBlockMove(out->magic_header, magic_header, 12, false);
+    OSBlockMove(out->magic_header, magic_header, 10, false);
     OSBlockMove(out->app, "NUSspli", strlen("NUSspli"), false);
     OSBlockMove(out->app_version, NUSSPLI_VERSION, strlen(NUSSPLI_VERSION), false);
 

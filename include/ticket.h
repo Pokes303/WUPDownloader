@@ -31,12 +31,25 @@ extern "C"
 {
 #endif
 
+    /*
+    ￼ * The header is meaned to be human (hex editor) and machine readable.
+     * It's hidden inside the tmds signature field. The format is:
+    ￼ *  - 0x00010203040506070809 As a magic value / metadata detection
+    ￼ *  - 2 byte spacing
+    ￼ *  - 64 byte "NUSspli\0" string
+    ￼ *  - 64 byte version string ending with 0x00
+    ￼ *  - 64 byte file type string ending with 0x00
+    ￼ *  - Padding till 0x000000EF / area reserved for future use
+    ￼ *  - uint8_t storing the meta version number (currently 1, so 00000001 or 0x01)
+    ￼ *  - 128 + 32 random bytes marking the end of the header usable area
+    ￼ */
     typedef struct WUT_PACKED
     {
         uint32_t sig_type;
 
         // Our header
-        uint8_t magic_header[0x0C];
+        uint8_t magic_header[0x0A];
+        WUT_UNKNOWN_BYTES(2);
         char app[0x10];
         char app_version[0x10];
         char file_type[0x10];
