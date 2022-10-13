@@ -64,7 +64,7 @@ static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static FC_Font *font = NULL;
 static void *bgmBuffer = NULL;
-static Mix_Chunk *backgroundMusic = NULL;
+static Mix_Music *backgroundMusic = NULL;
 
 static int32_t spaceWidth;
 
@@ -778,8 +778,8 @@ static inline void quitSDL()
     if(backgroundMusic != NULL)
     {
         debugPrintf("Stopping background music");
-        Mix_HaltChannel(0);
-        Mix_FreeChunk(backgroundMusic);
+        Mix_HaltMusic();
+        Mix_FreeMusic(backgroundMusic);
         Mix_CloseAudio();
         backgroundMusic = NULL;
     }
@@ -831,14 +831,15 @@ bool initRenderer()
                                 if(Mix_OpenAudio(22050, AUDIO_S16MSB, 2, 4096) == 0)
                                 {
                                     SDL_RWops *rw = SDL_RWFromMem(bgmBuffer, fs);
-                                    backgroundMusic = Mix_LoadWAV_RW(rw, true);
+                                    backgroundMusic = Mix_LoadMUS_RW(rw, true);
                                     if(backgroundMusic != NULL)
                                     {
-                                        Mix_VolumeChunk(backgroundMusic, 15);
-                                        if(Mix_PlayChannel(0, backgroundMusic, -1) == 0)
+                                        Mix_VolumeMusic(15);
+                                        Mix_PlayMusic(backgroundMusic, -1);
+                                        if(Mix_PlayMusic(backgroundMusic, -1) == 0)
                                             goto audioRunning;
 
-                                        Mix_FreeChunk(backgroundMusic);
+                                        Mix_FreeMusic(backgroundMusic);
                                         backgroundMusic = NULL;
                                     }
 
