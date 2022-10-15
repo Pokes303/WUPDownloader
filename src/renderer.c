@@ -828,13 +828,13 @@ bool initRenderer()
                             size_t fs = readFile(ROMFS_PATH "audio/bg.mp3", &bgmBuffer);
                             if(bgmBuffer != NULL)
                             {
-                                if(Mix_OpenAudio(22050, AUDIO_S16MSB, 2, 4096) == 0)
+                                if(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096) == 0)
                                 {
                                     SDL_RWops *rw = SDL_RWFromMem(bgmBuffer, fs);
                                     backgroundMusic = Mix_LoadMUS_RW(rw, true);
                                     if(backgroundMusic != NULL)
                                     {
-                                        Mix_VolumeMusic(15);
+                                        Mix_VolumeMusic(SDL_MIX_MAXVOLUME * 0.15);
                                         Mix_PlayMusic(backgroundMusic, -1);
                                         if(Mix_PlayMusic(backgroundMusic, -1) == 0)
                                             goto audioRunning;
