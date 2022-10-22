@@ -53,7 +53,7 @@
 #define LANG_CHI       "Chinese"
 #define LANG_KOR       "Korean"
 #define LANG_DUT       "Dutch"
-#define LANG_POR       "Potuguese"
+#define LANG_POR       "Portuguese"
 #define LANG_RUS       "Russian"
 #define LANG_TCH       "Traditional chinese"
 #define LANG_SYS       "System settings"
@@ -106,7 +106,7 @@ static inline MENU_LANGUAGE sysLangToMenuLang(Swkbd_LanguageType lang)
             return MENU_LANGUAGE_GERMAN;
         case Swkbd_LanguageType__Spanish:
             return MENU_LANGUAGE_SPANISH;
-        case Swkbd_LanguageType__Potuguese:
+        case Swkbd_LanguageType__Portuguese:
             return MENU_LANGUAGE_PORTUGUESE;
         default:
             return MENU_LANGUAGE_ENGLISH;
@@ -239,7 +239,7 @@ bool initConfig()
                     else if(strcmp(json_string_value(configEntry), LANG_DUT) == 0)
                         lang = Swkbd_LanguageType__Dutch;
                     else if(strcmp(json_string_value(configEntry), LANG_POR) == 0)
-                        lang = Swkbd_LanguageType__Potuguese;
+                        lang = Swkbd_LanguageType__Portuguese;
                     else if(strcmp(json_string_value(configEntry), LANG_RUS) == 0)
                         lang = Swkbd_LanguageType__Russian;
                     else if(strcmp(json_string_value(configEntry), LANG_TCH) == 0)
@@ -273,7 +273,7 @@ bool initConfig()
                     else if(strcmp(json_string_value(configEntry), LANG_DUT) == 0)
                         lang = Swkbd_LanguageType__Dutch;
                     else if(strcmp(json_string_value(configEntry), LANG_POR) == 0)
-                        lang = Swkbd_LanguageType__Potuguese;
+                        lang = Swkbd_LanguageType__Portuguese;
                     else if(strcmp(json_string_value(configEntry), LANG_RUS) == 0)
                         lang = Swkbd_LanguageType__Russian;
                     else if(strcmp(json_string_value(configEntry), LANG_TCH) == 0)
@@ -388,7 +388,7 @@ const char *getLanguageString(Swkbd_LanguageType language)
             return LANG_KOR;
         case Swkbd_LanguageType__Dutch:
             return LANG_DUT;
-        case Swkbd_LanguageType__Potuguese:
+        case Swkbd_LanguageType__Portuguese:
             return LANG_POR;
         case Swkbd_LanguageType__Russian:
             return LANG_RUS;

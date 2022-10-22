@@ -203,7 +203,7 @@ static bool SWKBD_Show(SWKBD_Args *args, KeyboardLayout layout, KeyboardType typ
         case Swkbd_LanguageType__Dutch:
             appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__Dutch;
             break;
-        case Swkbd_LanguageType__Potuguese:
+        case Swkbd_LanguageType__Portuguese:
             appearArg.keyboardArg.configArg.languageType2 = Swkbd_LanguageType2__Portuguese;
             break;
         case Swkbd_LanguageType__Russian:
