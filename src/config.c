@@ -91,6 +91,8 @@ const char *menuLangToString(MENU_LANGUAGE lang)
             return LANG_GER;
         case MENU_LANGUAGE_SPANISH:
             return LANG_SPA;
+        case MENU_LANGUAGE_PORTUGUESE:
+            return LANG_POR;
         default:
             return LANG_SYS;
     }
@@ -104,6 +106,8 @@ static inline MENU_LANGUAGE sysLangToMenuLang(Swkbd_LanguageType lang)
             return MENU_LANGUAGE_GERMAN;
         case Swkbd_LanguageType__Spanish:
             return MENU_LANGUAGE_SPANISH;
+        case Swkbd_LanguageType__Potuguese:
+            return MENU_LANGUAGE_PORTUGUESE;
         default:
             return MENU_LANGUAGE_ENGLISH;
     }
@@ -117,6 +121,8 @@ static MENU_LANGUAGE stringToMenuLang(const char *lang)
         return MENU_LANGUAGE_GERMAN;
     if(strcmp(lang, LANG_SPA) == 0)
         return MENU_LANGUAGE_SPANISH;
+    if(strcmp(lang, LANG_POR) == 0)
+        return MENU_LANGUAGE_PORTUGUESE;
 
     return sysLangToMenuLang(sysLang);
 }
