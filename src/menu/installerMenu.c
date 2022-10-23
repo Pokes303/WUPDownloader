@@ -18,6 +18,7 @@
 
 #include <wut-fixups.h>
 
+#include <config.h>
 #include <file.h>
 #include <filesystem.h>
 #include <input.h>
@@ -109,7 +110,9 @@ static void drawInstallerMenuFrame(const char *name, NUSDEV dev, NUSDEV toDev, b
 
     sprintf(toFrame, "%.02f %s", fsize, bs);
 
-    flagToFrame(1, 0, region);
+    textToFrame(++line, 0, gettext("Region:"));
+    flagToFrame(++line, 3, region);
+    textToFrame(line, 4, getFormattedRegion(region));
 
     textToFrame(++line, 0, gettext("Size:"));
     textToFrame(++line, 3, toFrame);
