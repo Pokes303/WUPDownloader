@@ -543,6 +543,21 @@ void setAutoResume(bool enabled)
     changed = true;
 }
 
+const char *getFormattedRegion(MCPRegion region)
+{
+    switch(region)
+    {
+        case MCP_REGION_EUROPE:
+            return SET_EUR;
+        case MCP_REGION_USA:
+            return SET_USA;
+        case MCP_REGION_JAPAN:
+            return SET_JPN;
+        default:
+            return SET_ALL;
+    }
+}
+
 #ifndef NUSSPLI_LITE
 bool dlToUSBenabled()
 {
@@ -561,21 +576,6 @@ void setDlToUSB(bool toUSB)
 MCPRegion getRegion()
 {
     return regionSetting;
-}
-
-const char *getFormattedRegion(MCPRegion region)
-{
-    switch(region)
-    {
-        case MCP_REGION_EUROPE:
-            return SET_EUR;
-        case MCP_REGION_USA:
-            return SET_USA;
-        case MCP_REGION_JAPAN:
-            return SET_JPN;
-        default:
-            return SET_ALL;
-    }
 }
 
 void setRegion(MCPRegion region)

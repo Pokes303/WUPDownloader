@@ -63,11 +63,11 @@ extern "C"
     void setUpdateCheck(bool enabled);
     bool autoResumeEnabled();
     void setAutoResume(bool enabled);
+    const char *getFormattedRegion(MCPRegion region);
     Swkbd_LanguageType getKeyboardLanguage();
     Swkbd_LanguageType getUnfilteredLanguage();
     MCPRegion getRegion();
     void setRegion(MCPRegion region);
-    const char *getFormattedRegion(MCPRegion region);
     void setKeyboardLanguage(Swkbd_LanguageType language);
     const char *getLanguageString(Swkbd_LanguageType language);
     const char *getNotificationString(NOTIF_METHOD method);
