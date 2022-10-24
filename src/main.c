@@ -19,6 +19,7 @@
 
 #include <wut-fixups.h>
 
+#include <cfw.h>
 #include <config.h>
 #include <crypto.h>
 #include <downloader.h>
@@ -68,8 +69,6 @@
 #include <proc_ui/procui.h>
 #include <sysapp/launch.h>
 #include <whb/crash.h>
-
-static bool mochaReady = false;
 
 static void drawLoadingScreen(const char *toScreenLog, const char *loadingMsg)
 {
@@ -254,35 +253,6 @@ static void innerMain(bool validCfw)
     FSShutdown();
 }
 
-static bool cfwValid()
-{
-    mochaReady = Mocha_InitLibrary() == MOCHA_RESULT_SUCCESS;
-    bool ret = mochaReady;
-    if(ret)
-    {
-        ret = Mocha_UnlockFSClient(__wut_devoptab_fs_client) == MOCHA_RESULT_SUCCESS;
-        if(ret)
-        {
-            WiiUConsoleOTP otp;
-            ret = Mocha_ReadOTP(&otp) == MOCHA_RESULT_SUCCESS;
-            if(ret)
-            {
-                MochaRPXLoadInfo info = {
-                    .target = 0xDEADBEEF,
-                    .filesize = 0,
-                    .fileoffset = 0,
-                    .path = "dummy"
-                };
-
-                MochaUtilsStatus s = Mocha_LaunchRPX(&info);
-                ret = s != MOCHA_RESULT_UNSUPPORTED_API_VERSION && s != MOCHA_RESULT_UNSUPPORTED_COMMAND;
-            }
-        }
-    }
-
-    return ret;
-}
-
 int main()
 {
     initState();
@@ -310,8 +280,7 @@ int main()
 #endif
     }
 
-    if(mochaReady)
-        Mocha_DeInitLibrary();
+    deinitCfw();
 
 #ifdef NUSSPLI_DEBUG
     checkStacks("main");
