@@ -18,6 +18,7 @@
 
 #include <wut-fixups.h>
 
+#include <cfw.h>
 #include <file.h>
 #include <filesystem.h>
 #include <menu/utils.h>
@@ -39,6 +40,10 @@ bool initFS()
     else
         usb = NUSDEV_NONE;
 
+    //TODO: Not implemented in cemu
+    if(isCemu())
+        return true;
+
     if(FSAInit() == FS_ERROR_OK)
     {
         handle = FSAAddClient(NULL);
@@ -59,6 +64,10 @@ bool initFS()
 
 void deinitFS()
 {
+    //TODO: Not implemented in cemu
+    if(isCemu())
+        return;
+
     FSAUnmount(handle, "/vol/app_sd", FSA_UNMOUNT_FLAG_BIND_MOUNT);
     FSADelClient(handle);
     FSAShutdown();

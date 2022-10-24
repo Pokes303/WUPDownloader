@@ -264,7 +264,7 @@ int main()
     if(cfwValid())
     {
 #ifdef NUSSPLI_HBL
-        jailbreaking = !isAroma() && (tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004A000; // Mii Maker
+        jailbreaking = !isCemu() && !isAroma() && (tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004A000; // Mii Maker
         if(jailbreaking)
             jailbreaking = jailbreak();
 

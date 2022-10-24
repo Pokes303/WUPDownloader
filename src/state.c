@@ -19,6 +19,7 @@
 
 #include <wut-fixups.h>
 
+#include <cfw.h>
 #include <crypto.h>
 #include <ioQueue.h>
 #include <renderer.h>
@@ -97,7 +98,7 @@ void disableShutdown()
 
 bool isAroma()
 {
-    return aroma;
+    return !isCemu() && aroma;
 }
 
 #ifndef NUSSPLI_HBL

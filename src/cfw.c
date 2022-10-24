@@ -22,12 +22,18 @@
 
 #include <filesystem.h>
 
+#include <coreinit/title.h>
 #include <mocha/mocha.h>
 
 static bool mochaReady = false;
+static bool cemu = false;
 
 bool cfwValid()
 {
+    cemu = OSGetTitleID() == 0x0000000000000000;
+    if(cemu)
+        return true;
+
     mochaReady = Mocha_InitLibrary() == MOCHA_RESULT_SUCCESS;
     bool ret = mochaReady;
     if(ret)
@@ -53,6 +59,11 @@ bool cfwValid()
     }
 
     return ret;
+}
+
+bool isCemu()
+{
+    return cemu;
 }
 
 void deinitCfw()
