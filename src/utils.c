@@ -306,6 +306,8 @@ void showMcpProgress(McpData *data, const char *game, bool inst)
 #include <coreinit/fastmutex.h>
 #include <coreinit/time.h>
 #include <whb/log.h>
+#include <whb/log_cafe.h>
+#include <whb/log_udp.h>
 
 static const char days[7][4] = {
     "Sun",
@@ -337,6 +339,7 @@ void debugInit()
 {
     spinCreateLock(debugLock, SPINLOCK_FREE);
     WHBLogUdpInit();
+    WHBLogCafeInit();
 }
 
 void debugPrintf(const char *str, ...)
