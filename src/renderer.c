@@ -779,6 +779,7 @@ static inline void quitSDL()
     {
         debugPrintf("Stopping background music");
         Mix_HaltMusic();
+        OSSleepTicks(OSMillisecondsToTicks(20));
         Mix_FreeMusic(backgroundMusic);
         Mix_CloseAudio();
         backgroundMusic = NULL;
