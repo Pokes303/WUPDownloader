@@ -40,7 +40,7 @@ bool initFS()
     else
         usb = NUSDEV_NONE;
 
-    //TODO: Not implemented in cemu
+    // TODO: Not implemented in cemu
     if(isCemu())
         return true;
 
@@ -64,7 +64,7 @@ bool initFS()
 
 void deinitFS()
 {
-    //TODO: Not implemented in cemu
+    // TODO: Not implemented in cemu
     if(isCemu())
         return;
 
