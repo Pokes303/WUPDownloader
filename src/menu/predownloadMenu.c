@@ -261,7 +261,7 @@ static void *drawPDUpdateFrame(const TitleEntry *entry)
     char *toFrame = getToFrameBuffer();
     strcpy(toFrame, entry->name);
     strcat(toFrame, "\n");
-    strcat(toFrame, gettext("Has an update availabla."));
+    strcat(toFrame, gettext("Has an update available."));
     strcat(toFrame, "\n\n" BUTTON_A " ");
     strcat(toFrame, gettext(operation == OPERATION_DOWNLOAD_INSTALL ? "Install the update, too" : "Download the update, too"));
     strcat(toFrame, " || " BUTTON_B " ");
