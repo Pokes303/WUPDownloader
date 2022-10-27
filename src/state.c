@@ -55,7 +55,12 @@ void enableApd()
         return;
 
     if(--apdDisabledCount == 0)
-        debugPrintf(IMEnableAPD() == 0 ? "APD enabled!" : "Error enabling APD!");
+    {
+        if(IMEnableAPD() == 0)
+            debugPrintf("APD enabled!");
+        else
+            debugPrintf("Error enabling APD!");
+    }
 }
 
 void disableApd()
@@ -64,7 +69,12 @@ void disableApd()
         return;
 
     if(apdDisabledCount++ == 0)
-        debugPrintf(IMDisableAPD() == 0 ? "APD disabled!" : "Error disabling APD!");
+    {
+        if(IMDisableAPD() == 0)
+            debugPrintf("APD disabled!");
+        else
+            debugPrintf("Error disabling APD!");
+    }
 }
 
 void enableShutdown()
