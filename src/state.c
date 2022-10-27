@@ -51,8 +51,16 @@ static uint32_t apdDisabledCount = 0;
 
 void enableApd()
 {
-    if(!apdEnabled || apdDisabledCount == 0)
+    if(!apdEnabled)
         return;
+
+    if(apdDisabledCount == 0)
+    {
+        debugPrintf("Tried to enable APD while already enabled!");
+        return;
+    }
+
+    debugPrintf("enableApd(): apdDisabledCount = %u", apdDisabledCount);
 
     if(--apdDisabledCount == 0)
     {
@@ -75,6 +83,8 @@ void disableApd()
         else
             debugPrintf("Error disabling APD!");
     }
+
+    debugPrintf("APD disable request #%u", apdDisabledCount);
 }
 
 void enableShutdown()
