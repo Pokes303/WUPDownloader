@@ -47,34 +47,24 @@ static bool channel;
 #endif
 static bool aroma;
 static bool apdEnabled;
-static bool apdDisabled = false;
+static uint32_t apdEnableCount = 0;
 
 void enableApd()
 {
-    if(!apdEnabled || !apdDisabled)
+    if(!apdEnabled)
         return;
 
-    if(IMEnableAPD() == 0)
-    {
-        apdDisabled = false;
-        debugPrintf("APD enabled!");
-    }
-    else
-        debugPrintf("Error enabling APD!");
+    if(apdEnableCount++ == 0)
+        debugPrintf(IMEnableAPD() == 0 ? "APD enabled!" : "Error enabling APD!");
 }
 
 void disableApd()
 {
-    if(!apdEnabled || apdDisabled)
+    if(!apdEnabled || apdEnableCount == 0)
         return;
 
-    if(IMDisableAPD() == 0)
-    {
-        apdDisabled = true;
-        debugPrintf("APD disabled!");
-    }
-    else
-        debugPrintf("Error disabling APD!");
+    if(--apdEnableCount == 0)
+        debugPrintf(IMDisableAPD() == 0 ? "APD disabled!" : "Error disabling APD!");
 }
 
 void enableShutdown()
@@ -159,6 +149,12 @@ void deinitState()
 {
     if(aroma)
         RPXLoader_DeInitLibrary();
+
+    if(apdEnableCount != 0)
+    {
+        apdEnableCount = 1;
+        disableApd();
+    }
 }
 
 bool AppRunning(bool mainthread)

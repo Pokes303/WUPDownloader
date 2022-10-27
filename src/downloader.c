@@ -1152,7 +1152,6 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
         }
     }
 
-    disableApd();
     char *dupp = dup + 8;
     char *idpp = idp + 8;
     char cid[9];
@@ -1165,10 +1164,8 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 
         data.cs = tmd->contents[i].size;
         if(downloadFile(downloadUrl, installDir, &data, FILE_TYPE_APP, true) == 1)
-        {
-            enableApd();
             return false;
-        }
+
         ++data.dcontent;
 
         if(tmd->contents[i].type & TMD_CONTENT_TYPE_HASHED)
@@ -1177,10 +1174,8 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
             strcpy(idpp, ".h3");
 
             if(downloadFile(downloadUrl, installDir, &data, FILE_TYPE_H3, true) == 1)
-            {
-                enableApd();
                 return false;
-            }
+
             ++data.dcontent;
         }
     }
@@ -1189,10 +1184,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
         closeCancelOverlay();
 
     if(!AppRunning(true))
-    {
-        enableApd();
         return false;
-    }
 
     bool ret;
     if(inst)
@@ -1203,7 +1195,6 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
     else
         ret = true;
 
-    enableApd();
     return ret;
 }
 #endif

@@ -248,8 +248,11 @@ refreshDir:
                 case MAX_LINES - 5:
                     if(checkSystemTitleFromTid(tmd->tid))
                     {
+                        disableApd();
                         if(install(nd, false, dev, dir, toDev & NUSDEV_USB, keepFiles, tmd))
                             showFinishedScreen(nd, FINISHING_OPERATION_INSTALL);
+
+                        enableApd();
                     }
 
                     MEMFreeToDefaultHeap(tmd);

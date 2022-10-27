@@ -732,9 +732,12 @@ naNedNa:
     }
     else if(checkSystemTitleFromEntry(entry))
     {
+        disableApd();
         ret = !downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, operation == OPERATION_DOWNLOAD_INSTALL, dlDev, instDev & NUSDEV_USB, keepFiles);
         if(!ret)
             showFinishedScreen(entry->name, operation == OPERATION_DOWNLOAD_INSTALL ? FINISHING_OPERATION_INSTALL : FINISHING_OPERATION_DOWNLOAD);
+
+        enableApd();
     }
     else
         ret = true;
