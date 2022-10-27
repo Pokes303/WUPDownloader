@@ -256,6 +256,20 @@ static void *drawPDMainGameFrame(const TitleEntry *entry)
     return addErrorOverlay(toFrame);
 }
 
+static void *drawPDUpdateFrame(const TitleEntry *entry)
+{
+    char *toFrame = getToFrameBuffer();
+    strcpy(toFrame, entry->name);
+    strcat(toFrame, "\n");
+    strcat(toFrame, gettext("Has an update availabla."));
+    strcat(toFrame, "\n\n" BUTTON_A " ");
+    strcat(toFrame, gettext(operation == OPERATION_DOWNLOAD_INSTALL ? "Install the update, too" : "Download the update, too"));
+    strcat(toFrame, " || " BUTTON_B " ");
+    strcat(toFrame, gettext("Continue"));
+
+    return addErrorOverlay(toFrame);
+}
+
 static inline void changeTitleVersion(char *buf)
 {
     if(!showKeyboard(KEYBOARD_LAYOUT_TID, KEYBOARD_TYPE_RESTRICTED, buf, CHECK_NUMERICAL, 5, false, buf, NULL))
@@ -658,6 +672,60 @@ naNedNa:
                 if(te != NULL && te->key != TITKE_KEY_MAGIC)
                 {
                     void *ovl = drawPDMainGameFrame(entry);
+                    if(ovl == NULL)
+                        goto exitPDM;
+
+                    while(AppRunning(true))
+                    {
+                        if(app == APP_STATE_BACKGROUND)
+                            continue;
+
+                        showFrame();
+
+                        if(vpad.trigger & VPAD_BUTTON_B)
+                            break;
+                        if(vpad.trigger & VPAD_BUTTON_A)
+                        {
+                            removeErrorOverlay(ovl);
+
+                            if(!checkFreeSpace(dlDev, dls))
+                            {
+                                if(AppRunning(true))
+                                    goto naNedNa;
+
+                                goto exitPDM;
+                            }
+
+                            if(!addToOpQueue(entry, titleVer, folderName, dlDev, instDev))
+                                goto exitPDM;
+
+                            clearRamBuf();
+                            entry = te;
+                            autoAddToQueue = true;
+
+                            if(!toQueue)
+                                autoStartQueue = true;
+
+                            goto downloadTMD;
+                        }
+                    }
+
+                    removeErrorOverlay(ovl);
+                    if(!AppRunning(true))
+                        goto exitPDM;
+                }
+            }
+        }
+        else if((entry->tid & 0x0000000F00000000) == 0x0000000000000000) // is a game
+        {
+            uint64_t t = entry->tid | 0x0000000E00000000;
+            const TitleEntry *te = getTitleEntryByTid(t);
+            if(te != NULL) // Update available
+            {
+                MCPTitleListType tl __attribute__((__aligned__(0x40)));
+                if(MCP_GetTitleInfo(mcpHandle, t, &tl) != 0) // Update not installed
+                {
+                    void *ovl = drawPDUpdateFrame(entry);
                     if(ovl == NULL)
                         goto exitPDM;
 
