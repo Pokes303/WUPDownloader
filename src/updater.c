@@ -74,19 +74,7 @@
 static void showUpdateError(const char *msg)
 {
     enableShutdown();
-    drawErrorFrame(msg, ANY_RETURN);
-    while(AppRunning(true))
-    {
-        if(app == APP_STATE_BACKGROUND)
-            continue;
-        if(app == APP_STATE_RETURNING)
-            drawErrorFrame(msg, ANY_RETURN);
-
-        showFrame();
-
-        if(vpad.trigger)
-            return;
-    }
+    showErrorFrame(msg);
 }
 
 static void showUpdateErrorf(const char *msg, ...)

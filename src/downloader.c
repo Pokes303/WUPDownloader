@@ -939,20 +939,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
         {
             char *toScreen = getToFrameBuffer();
             strcpy(toScreen, translateFSErr(err));
-            drawErrorFrame(toScreen, ANY_RETURN);
-
-            while(AppRunning(true))
-            {
-                if(app == APP_STATE_BACKGROUND)
-                    continue;
-                if(app == APP_STATE_RETURNING)
-                    drawErrorFrame(toScreen, ANY_RETURN);
-
-                showFrame();
-
-                if(vpad.trigger)
-                    break;
-            }
+            showErrorFrame(toScreen);
             return false;
         }
     }
@@ -973,20 +960,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
         {
             char *toScreen = getToFrameBuffer();
             strcpy(toScreen, translateFSErr(err));
-            drawErrorFrame(toScreen, ANY_RETURN);
-
-            while(AppRunning(true))
-            {
-                if(app == APP_STATE_BACKGROUND)
-                    continue;
-                if(app == APP_STATE_RETURNING)
-                    drawErrorFrame(toScreen, ANY_RETURN);
-
-                showFrame();
-
-                if(vpad.trigger)
-                    break;
-            }
+            showErrorFrame(toScreen);
             return false;
         }
     }
@@ -999,20 +973,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
     FSFileHandle *fp = openFile(installDir, "w", tmdSize);
     if(fp == NULL)
     {
-        drawErrorFrame("Can't save title.tmd file!", ANY_RETURN);
-
-        while(AppRunning(true))
-        {
-            if(app == APP_STATE_BACKGROUND)
-                continue;
-            if(app == APP_STATE_RETURNING)
-                drawErrorFrame("Can't save title.tmd file!", ANY_RETURN);
-
-            showFrame();
-
-            if(vpad.trigger)
-                break;
-        }
+        showErrorFrame("Can't save title.tmd file!");
         return false;
     }
 

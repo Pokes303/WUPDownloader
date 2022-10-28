@@ -146,6 +146,24 @@ void drawErrorFrame(const char *text, ErrorOptions option)
     drawFrame();
 }
 
+void showErrorFrame(const char *text)
+{
+    drawErrorFrame(text, ANY_RETURN);
+
+    while(AppRunning(true))
+    {
+        if(app == APP_STATE_BACKGROUND)
+            continue;
+        if(app == APP_STATE_RETURNING)
+            drawErrorFrame(text, ANY_RETURN);
+
+        showFrame();
+
+        if(vpad.trigger)
+            break;
+    }
+}
+
 bool checkSystemTitle(uint64_t tid, MCPRegion region)
 {
     switch(getTidHighFromTid(tid))

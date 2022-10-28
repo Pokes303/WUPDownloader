@@ -156,20 +156,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 
         debugPrintf(toScreen);
         addToScreenLog("Installation failed!");
-        drawErrorFrame(toScreen, ANY_RETURN);
-
-        while(AppRunning(true))
-        {
-            if(app == APP_STATE_BACKGROUND)
-                continue;
-            if(app == APP_STATE_RETURNING)
-                drawErrorFrame(toScreen, ANY_RETURN);
-
-            showFrame();
-
-            if(vpad.trigger)
-                break;
-        }
+        showErrorFrame(toScreen);
         goto installError;
     }
 
@@ -187,20 +174,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
     {
         const char *err = gettext(toUsb ? "Error opening USB device" : "Error opening internal memory");
         addToScreenLog("Installation failed!");
-        drawErrorFrame(err, ANY_RETURN);
-
-        while(AppRunning(true))
-        {
-            if(app == APP_STATE_BACKGROUND)
-                continue;
-            if(app == APP_STATE_RETURNING)
-                drawErrorFrame(err, ANY_RETURN);
-
-            showFrame();
-
-            if(vpad.trigger)
-                break;
-        }
+        showErrorFrame(err);
         goto installError;
     }
 
@@ -220,20 +194,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
         sprintf(toScreen, "%s \"%s\": %#010x", gettext("Error starting async installation of"), path, data.err);
         debugPrintf(toScreen);
         addToScreenLog("Installation failed!");
-        drawErrorFrame(toScreen, ANY_RETURN);
-
-        while(AppRunning(true))
-        {
-            if(app == APP_STATE_BACKGROUND)
-                continue;
-            if(app == APP_STATE_RETURNING)
-                drawErrorFrame(toScreen, ANY_RETURN);
-
-            showFrame();
-
-            if(vpad.trigger)
-                break;
-        }
+        showErrorFrame(toScreen);
         enableShutdown();
         goto installError;
     }
@@ -299,20 +260,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
         }
 
         addToScreenLog("Installation failed!");
-        drawErrorFrame(toScreen, ANY_RETURN);
-
-        while(AppRunning(true))
-        {
-            if(app == APP_STATE_BACKGROUND)
-                continue;
-            if(app == APP_STATE_RETURNING)
-                drawErrorFrame(toScreen, ANY_RETURN);
-
-            showFrame();
-
-            if(vpad.trigger)
-                break;
-        }
+        showErrorFrame(toScreen);
         return false;
     }
 

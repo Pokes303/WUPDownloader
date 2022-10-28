@@ -100,19 +100,7 @@ bool generateTik(const char *path, const TitleEntry *titleEntry, const TMD *tmd)
     {
         char *err = getStaticScreenBuffer();
         sprintf(err, "%s\n%s", gettext("Could not open path"), prettyDir(path));
-        drawErrorFrame(err, ANY_RETURN);
-
-        while(AppRunning(true))
-        {
-            if(app == APP_STATE_BACKGROUND)
-                continue;
-            if(app == APP_STATE_RETURNING)
-                drawErrorFrame(err, ANY_RETURN);
-
-            showFrame();
-            if(vpad.trigger)
-                break;
-        }
+        showErrorFrame(err);
         return false;
     }
 
@@ -159,19 +147,7 @@ bool generateCert(const char *path)
     {
         char *err = getStaticScreenBuffer();
         sprintf(err, "%s\n%s", gettext("Could not open path"), prettyDir(path));
-        drawErrorFrame(err, ANY_RETURN);
-
-        while(AppRunning(true))
-        {
-            if(app == APP_STATE_BACKGROUND)
-                continue;
-            if(app == APP_STATE_RETURNING)
-                drawErrorFrame(err, ANY_RETURN);
-
-            showFrame();
-            if(vpad.trigger)
-                break;
-        }
+        showErrorFrame(err);
         return false;
     }
 
@@ -217,19 +193,7 @@ gftEntry:
     tmd = getTmd(dir);
     if(tmd == NULL)
     {
-        drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
-
-        while(AppRunning(true))
-        {
-            if(app == APP_STATE_BACKGROUND)
-                continue;
-            if(app == APP_STATE_RETURNING)
-                drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
-
-            showFrame();
-            if(vpad.trigger)
-                break;
-        }
+        showErrorFrame(gettext("Invalid title.tmd file!"));
         return;
     }
 

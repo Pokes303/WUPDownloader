@@ -482,13 +482,7 @@ bool saveConfig(bool force)
                                                     ret = true;
                                                 }
                                                 else
-                                                {
-                                                    drawErrorFrame(gettext("Couldn't save config file!\nYour SD card might be write locked."), ANY_RETURN);
-                                                    showFrame();
-
-                                                    while(!(vpad.trigger))
-                                                        showFrame();
-                                                }
+                                                    showErrorFrame(gettext("Couldn't save config file!\nYour SD card might be write locked."));
 
                                                 MEMFreeToDefaultHeap(json);
                                             }

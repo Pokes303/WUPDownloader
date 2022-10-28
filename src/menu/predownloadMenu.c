@@ -439,20 +439,7 @@ downloadTMD:
         clearRamBuf();
         saveConfig(false);
 
-        drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
-
-        while(AppRunning(true))
-        {
-            if(app == APP_STATE_BACKGROUND)
-                continue;
-            if(app == APP_STATE_RETURNING)
-                drawErrorFrame(gettext("Invalid title.tmd file!"), ANY_RETURN);
-
-            showFrame();
-            if(vpad.trigger)
-                break;
-        }
-
+        showErrorFrame(gettext("Invalid title.tmd file!"));
         return true;
     }
 
