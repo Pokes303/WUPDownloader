@@ -716,7 +716,7 @@ naNedNa:
                 }
             }
         }
-        else if((entry->tid & 0x0000000F00000000) == 0x0000000000000000) // is a game
+        else if(isGame(entry->tid))
         {
             uint64_t t = entry->tid | 0x0000000E00000000;
             const TitleEntry *te = getTitleEntryByTid(t);
