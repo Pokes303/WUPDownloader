@@ -27,9 +27,9 @@
 #include <ioQueue.h>
 #include <localisation.h>
 #include <menu/utils.h>
-#include <staticMem.h>
 #include <renderer.h>
 #include <romfs.h>
+#include <staticMem.h>
 #include <utils.h>
 
 #include <coreinit/memdefaultheap.h>
