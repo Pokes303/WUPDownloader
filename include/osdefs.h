@@ -39,9 +39,6 @@ extern "C"
     // MCP
     extern MCPError MCP_DeleteTitleAsync(int handle, char *path, MCPInstallTitleInfo *out);
 
-    // SO
-    extern int somemopt(int type, void *buf, size_t bufsize, int unk);
-
     // GX2
     extern void GX2SetDRCGamma(float gamma);
     extern void GX2SetTVGamma(float gamma);
