@@ -20,12 +20,7 @@
 #include <wut-fixups.h>
 
 #include <dirent.h>
-#include <math.h>
 #include <netinet/tcp.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
 
 #include <config.h>
 #include <crypto.h>
@@ -37,7 +32,6 @@
 #include <ioQueue.h>
 #include <localisation.h>
 #include <menu/utils.h>
-#include <osdefs.h>
 #include <renderer.h>
 #include <romfs.h>
 #include <state.h>
@@ -48,10 +42,7 @@
 #include <tmd.h>
 #include <utils.h>
 
-#include <coreinit/filesystem.h>
-#include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
-#include <coreinit/thread.h>
 #include <coreinit/time.h>
 #include <curl/curl.h>
 #include <nn/ac/ac_c.h>

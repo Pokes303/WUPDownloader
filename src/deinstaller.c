@@ -18,21 +18,13 @@
 
 #include <wut-fixups.h>
 
-#include <dirent.h>
 #include <stdbool.h>
-#include <string.h>
 
-#include <coreinit/ios.h>
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
-#include <coreinit/memory.h>
-#include <coreinit/thread.h>
-#include <coreinit/time.h>
 
 #include <crypto.h>
 #include <deinstaller.h>
-#include <file.h>
-#include <input.h>
 #include <localisation.h>
 #include <menu/utils.h>
 #include <osdefs.h>

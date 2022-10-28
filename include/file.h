@@ -21,7 +21,6 @@
 
 #include <wut-fixups.h>
 
-#include <ioQueue.h>
 #include <tmd.h>
 
 #include <stdbool.h>

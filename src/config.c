@@ -24,17 +24,14 @@
 
 #include <config.h>
 #include <crypto.h>
-#include <file.h>
-#include <input.h>
 #include <ioQueue.h>
 #include <localisation.h>
 #include <menu/utils.h>
+#include <staticMem.h>
 #include <renderer.h>
 #include <romfs.h>
-#include <swkbd_wrapper.h>
 #include <utils.h>
 
-#include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 #include <coreinit/time.h>

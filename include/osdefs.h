@@ -19,12 +19,9 @@
 #pragma once
 
 #include <wut-fixups.h>
-#include <wut_structsize.h>
 
-#include <stdbool.h>
 #include <stdint.h>
 
-#include <coreinit/ios.h>
 #include <coreinit/mcp.h>
 #include <nn/acp/title.h>
 

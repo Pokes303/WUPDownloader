@@ -19,7 +19,6 @@
 #include <wut-fixups.h>
 
 #include <stdbool.h>
-#include <stdio.h>
 
 #include <coreinit/core.h>
 #include <coreinit/filesystem.h>

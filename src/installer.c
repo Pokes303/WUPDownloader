@@ -18,17 +18,11 @@
 
 #include <wut-fixups.h>
 
-#include <dirent.h>
 #include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
+#include <stdint.h>
 
-#include <coreinit/filesystem.h>
-#include <coreinit/ios.h>
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
-#include <coreinit/memory.h>
-#include <coreinit/thread.h>
 #include <coreinit/time.h>
 
 #include <crypto.h>

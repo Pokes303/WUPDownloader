@@ -21,16 +21,12 @@
 
 #include <cfw.h>
 #include <crypto.h>
-#include <ioQueue.h>
 #include <renderer.h>
 #include <state.h>
 #include <utils.h>
 
-#include <coreinit/core.h>
 #include <coreinit/energysaver.h>
 #include <coreinit/foreground.h>
-#include <coreinit/ios.h>
-#include <coreinit/systeminfo.h>
 #include <coreinit/time.h>
 #include <coreinit/title.h>
 #include <proc_ui/procui.h>

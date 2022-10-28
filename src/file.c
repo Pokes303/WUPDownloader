@@ -19,18 +19,16 @@
 
 #include <wut-fixups.h>
 
+#include <crypto.h>
 #include <file.h>
 #include <ioQueue.h>
 #include <staticMem.h>
 #include <tmd.h>
 #include <utils.h>
 
-#include <crypto.h>
 #include <dirent.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/stat.h>
 
 #include <coreinit/filesystem.h>
