@@ -240,6 +240,7 @@ bool initDownloader()
                 if(blob.data == NULL)
                 {
                     blob.len = 0;
+                    MEMFreeToDefaultHeap(buf);
                     continue;
                 }
             }
@@ -251,6 +252,7 @@ bool initDownloader()
                 {
                     blob.data = tmp;
                     blob.len -= bufsize;
+                    MEMFreeToDefaultHeap(buf);
                     continue;
                 }
 
@@ -259,6 +261,7 @@ bool initDownloader()
             }
 
             OSBlockMove(blob.data + oldcertsize, buf, bufsize, false);
+            MEMFreeToDefaultHeap(buf);
         }
 
 #ifndef NUSSPLI_HBL
