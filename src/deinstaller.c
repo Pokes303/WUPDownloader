@@ -21,7 +21,6 @@
 #include <stdbool.h>
 
 #include <coreinit/mcp.h>
-#include <coreinit/memdefaultheap.h>
 
 #include <crypto.h>
 #include <deinstaller.h>
@@ -45,24 +44,18 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool
     drawFrame();
     showFrame();
 
-    MCPInstallTitleInfo *info = MEMAllocFromDefaultHeapEx(sizeof(MCPInstallTitleInfo), 0x40);
-    if(info == NULL)
-        return false;
-
+    MCPInstallTitleInfo info __attribute__((__aligned__(0x40)));
     McpData data;
-    glueMcpData(info, &data);
+    glueMcpData(&info, &data);
 
-    // err = MCP_UninstallTitleAsync(mcpHandle, title->path, info);
-    //  The above crashes MCP, so let's leave WUT:
     debugPrintf("Deleting %s", title->path);
     OSTick t = OSGetTick();
     if(!channelHaxx)
         disableShutdown();
 
-    MCPError err = MCP_DeleteTitleAsync(mcpHandle, title->path, info);
+    MCPError err = MCP_DeleteTitleAsync(mcpHandle, title->path, &info);
     if(err != 0)
     {
-        MEMFreeToDefaultHeap(info);
         debugPrintf("Err1: %#010x (%d)", err, err);
         if(!channelHaxx)
             enableShutdown();
@@ -72,12 +65,10 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool
     if(channelHaxx)
     {
         OSSleepTicks(OSSecondsToTicks(10));
-        MEMFreeToDefaultHeap(info);
         return true;
     }
 
     showMcpProgress(&data, name, false);
-    MEMFreeToDefaultHeap(info);
     enableShutdown();
     t = OSGetTick() - t;
     addEntropy(&t, sizeof(OSTick));

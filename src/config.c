@@ -175,34 +175,23 @@ bool initConfig()
         UCHandle handle = UCOpen();
         if(handle >= 0)
         {
-            UCSysConfig *settings = MEMAllocFromDefaultHeapEx(sizeof(UCSysConfig), 0x40);
-            if(settings != NULL)
-            {
-                strcpy(settings->name, "cafe.language");
-                settings->access = 0;
-                settings->dataType = UC_DATATYPE_UNSIGNED_INT;
-                settings->error = UC_ERROR_OK;
-                settings->dataSize = sizeof(Swkbd_LanguageType);
-                settings->data = &sysLang;
+            UCSysConfig settings __attribute__((__aligned__(0x40))) = {
+                .access = 0,
+                .dataType = UC_DATATYPE_UNSIGNED_INT,
+                .error = UC_ERROR_OK,
+                .dataSize = sizeof(Swkbd_LanguageType),
+                .data = &sysLang,
+            };
 
-                UCError err = UCReadSysConfig(handle, 1, settings);
-                UCClose(handle);
-                MEMFreeToDefaultHeap(settings);
-                if(err != UC_ERROR_OK)
-                {
-                    debugPrintf("Error reading UC: %d!", err);
-                    sysLang = Swkbd_LanguageType__English;
-                }
-                else
-                    debugPrintf("System language found: %s", getLanguageString(sysLang));
-            }
-            else
+            UCError err = UCReadSysConfig(handle, 1, &settings);
+            UCClose(handle);
+            if(err != UC_ERROR_OK)
             {
-                debugPrintf("OUT OF MEMORY!");
+                debugPrintf("Error reading UC: %d!", err);
                 sysLang = Swkbd_LanguageType__English;
             }
-
-            UCClose(handle);
+            else
+                debugPrintf("System language found: %s", getLanguageString(sysLang));
         }
         else
         {

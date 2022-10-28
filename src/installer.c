@@ -22,7 +22,6 @@
 #include <stdint.h>
 
 #include <coreinit/mcp.h>
-#include <coreinit/memdefaultheap.h>
 #include <coreinit/time.h>
 
 #include <crypto.h>
@@ -117,16 +116,14 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
         }
     }
 
-    MCPInstallTitleInfo *info = MEMAllocFromDefaultHeapEx(sizeof(MCPInstallTitleInfo), 0x40);
-    if(info == NULL)
-        return false;
+    MCPInstallTitleInfo info __attribute__((__aligned__(0x40)));
 
     McpData data;
     flushIOQueue(); // Make sure all game files are on disc
 
     // Let's see if MCP is able to parse the TMD...
     OSTime t = OSGetSystemTime();
-    data.err = MCP_InstallGetInfo(mcpHandle, path, (MCPInstallInfo *)info);
+    data.err = MCP_InstallGetInfo(mcpHandle, path, (MCPInstallInfo *)&info);
     t = OSGetSystemTime() - t;
     addEntropy(&t, sizeof(OSTime));
     if(data.err != 0)
@@ -182,12 +179,12 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
     debugPrintf("Path: %s (%d)", path, strlen(path));
 
     // Last preparing step...
-    glueMcpData(info, &data);
+    glueMcpData(&info, &data);
 
     // Start the installation process
     t = OSGetSystemTime();
     disableShutdown();
-    MCPError err = MCP_InstallTitleAsync(mcpHandle, path, info);
+    MCPError err = MCP_InstallTitleAsync(mcpHandle, path, &info);
 
     if(err != 0)
     {
@@ -203,7 +200,6 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
     enableShutdown();
     t = OSGetSystemTime() - t;
     addEntropy(&t, sizeof(OSTime));
-    MEMFreeToDefaultHeap(info);
 
     // MCP thread finished. Let's see if we got any error - TODO: This is a 1:1 copy&paste from WUP Installer GX2 which itself stole it from WUP Installer Y mod which got it from WUP Installer minor edit by Nexocube who got it from WUP installer JHBL Version by Dimrok who portet it from the ASM of WUP Installer. So I think it's time for something new... ^^
     if(data.err != 0)
@@ -275,6 +271,5 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
     return true;
 
 installError:
-    MEMFreeToDefaultHeap(info);
     return false;
 }
