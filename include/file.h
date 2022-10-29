@@ -69,14 +69,14 @@ extern "C"
         NUSDEV_MLC = 0x08,
     } NUSDEV;
 
-    bool fileExists(const char *path);
-    bool dirExists(const char *path);
+    bool fileExists(const char *path) __attribute__((__hot__));
+    bool dirExists(const char *path) __attribute__((__hot__));
     FSError removeDirectory(const char *path) __attribute__((__hot__));
     FSError moveDirectory(const char *src, const char *dest);
     FSError createDirectory(const char *path);
     bool createDirRecursive(const char *dir) __attribute__((__hot__));
     const char *translateFSErr(FSError err) __attribute__((__cold__));
-    size_t getFilesize(const char *path);
+    size_t getFilesize(const char *path) __attribute__((__hot__));
 #ifdef NUSSPLI_HBL
     size_t readFile(const char *path, void **buffer) __attribute__((__hot__));
 #else
