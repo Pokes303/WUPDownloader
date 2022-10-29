@@ -450,6 +450,8 @@ const char *translateFSErr(FSError err)
             return "Not enough free space";
         case FS_ERROR_ALREADY_OPEN:
             return "File held open by another process";
+        case FS_ERROR_ALREADY_EXISTS:
+            return "File exists";
         default:
             break;
     }
