@@ -230,23 +230,16 @@ refreshDir:
 
         if(vpad.trigger & VPAD_BUTTON_PLUS)
         {
-            switch(cursorPos)
+            if(checkSystemTitleFromTid(tmd->tid))
             {
-                case MAX_LINES - 5:
-                    if(checkSystemTitleFromTid(tmd->tid))
-                    {
-                        disableApd();
-                        if(install(nd, false, dev, dir, toDev & NUSDEV_USB, keepFiles, tmd))
-                            showFinishedScreen(nd, FINISHING_OPERATION_INSTALL);
+                disableApd();
+                if(install(nd, false, dev, dir, toDev & NUSDEV_USB, keepFiles, tmd))
+                    showFinishedScreen(nd, FINISHING_OPERATION_INSTALL);
 
-                        enableApd();
-                    }
-
-                    MEMFreeToDefaultHeap(tmd);
-                    return;
+                enableApd();
             }
 
-            redraw = true;
+            break;
         }
         else if(vpad.trigger & VPAD_BUTTON_MINUS)
         {
