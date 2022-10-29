@@ -459,6 +459,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
     else if(isAroma())
     {
         RPXLoaderStatus rs = RPXLoader_UnmountCurrentRunningBundle();
+        OSSleepTicks(OSMillisecondsToTicks(20)); // TODO: Aroma bug
         if(rs == RPX_LOADER_RESULT_SUCCESS)
         {
             strcpy(path, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
