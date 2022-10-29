@@ -114,7 +114,7 @@ static MENU_LANGUAGE stringToMenuLang(const char *lang)
 {
     if(strcmp(lang, LANG_ENG) == 0)
         return MENU_LANGUAGE_ENGLISH;
-    if(strcmp(lang, LANG_ENG) == 0)
+    if(strcmp(lang, LANG_GER) == 0)
         return MENU_LANGUAGE_GERMAN;
     if(strcmp(lang, LANG_SPA) == 0)
         return MENU_LANGUAGE_SPANISH;
