@@ -751,7 +751,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
             strcpy(p, pt);
             const char *n = strchr(pt, '_');
             p += n - pt;
-            strcat(toScreen, pt);
         }
         else
             drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
