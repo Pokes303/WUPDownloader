@@ -361,33 +361,24 @@ static int dlThreadMain(int argc, const char **argv)
 
 static const char *translateCurlError(CURLcode err, const char *curlError)
 {
-    const char *ret;
     switch(err)
     {
         case CURLE_COULDNT_RESOLVE_HOST:
-            ret = "Couldn't resolve hostname";
-            break;
+            return "Couldn't resolve hostname";
         case CURLE_COULDNT_CONNECT:
-            ret = "Couldn't connect to server";
-            break;
+            return "Couldn't connect to server";
         case CURLE_OPERATION_TIMEDOUT:
-            ret = "Operation timed out";
-            break;
+            return "Operation timed out";
         case CURLE_GOT_NOTHING:
-            ret = "The server didn't return any data";
-            break;
+            return "The server didn't return any data";
         case CURLE_SEND_ERROR:
         case CURLE_RECV_ERROR:
         case CURLE_PARTIAL_FILE:
-            ret = "I/O error";
-            break;
+            return "I/O error";
         case CURLE_PEER_FAILED_VERIFICATION:
-            ret = "Verification failed";
-            break;
+            return "Verification failed";
         case CURLE_SSL_CONNECT_ERROR:
-            ret = "Handshake failed";
-            break;
-
+            return "Handshake failed";
         case CURLE_FAILED_INIT:
         case CURLE_READ_ERROR:
         case CURLE_OUT_OF_MEMORY:
@@ -395,8 +386,6 @@ static const char *translateCurlError(CURLcode err, const char *curlError)
         default:
             return curlError[0] == '\0' ? "Unknown libcurl error" : curlError;
     }
-
-    return ret;
 }
 
 int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume)
