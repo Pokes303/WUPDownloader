@@ -234,33 +234,21 @@ bool initDownloader()
 
             oldcertsize = blob.len;
             blob.len += bufsize;
-            if(blob.data == NULL)
+            tmp = blob.data;
+            blob.data = MEMAllocFromDefaultHeap(blob.len);
+            if(blob.data != NULL)
             {
-                blob.data = MEMAllocFromDefaultHeap(blob.len);
-                if(blob.data == NULL)
-                {
-                    blob.len = 0;
-                    MEMFreeToDefaultHeap(buf);
-                    continue;
-                }
+                if(tmp != NULL)
+                    OSBlockMove(blob.data, tmp, oldcertsize, false);
+
+                OSBlockMove(blob.data + oldcertsize, buf, bufsize, false);
             }
             else
             {
-                tmp = blob.data;
-                blob.data = MEMAllocFromDefaultHeap(blob.len);
-                if(blob.data == NULL)
-                {
-                    blob.data = tmp;
-                    blob.len -= bufsize;
-                    MEMFreeToDefaultHeap(buf);
-                    continue;
-                }
-
-                OSBlockMove(blob.data, tmp, oldcertsize, false);
-                MEMFreeToDefaultHeap(tmp);
+                blob.data = tmp;
+                blob.len = oldcertsize;
             }
 
-            OSBlockMove(blob.data + oldcertsize, buf, bufsize, false);
             MEMFreeToDefaultHeap(buf);
         }
 
