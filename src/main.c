@@ -95,7 +95,6 @@ static void innerMain(bool validCfw)
         checkStacks("main");
     }
 
-    FSInit();
 #ifdef NUSSPLI_HBL
     romfsInit();
 #endif
@@ -248,7 +247,6 @@ static void innerMain(bool validCfw)
 #ifdef NUSSPLI_HBL
     romfsExit();
 #endif
-    FSShutdown();
 }
 
 int main()
