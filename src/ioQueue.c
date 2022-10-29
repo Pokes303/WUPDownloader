@@ -22,6 +22,7 @@
 
 #include <coreinit/core.h>
 #include <coreinit/filesystem.h>
+#include <coreinit/filesystem_fsa.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
@@ -29,6 +30,7 @@
 
 #include <crypto.h>
 #include <file.h>
+#include <filesystem.h>
 #include <ioQueue.h>
 #include <renderer.h>
 #include <thread.h>
@@ -40,7 +42,7 @@
 
 typedef struct WUT_PACKED
 {
-    volatile FSFileHandle *file;
+    volatile FSAFileHandle *file;
     volatile size_t size;
     volatile uint8_t *buf;
 } WriteQueueEntry;
@@ -52,7 +54,7 @@ static WriteQueueEntry *queueEntries;
 static volatile uint32_t activeReadBuffer;
 static volatile uint32_t activeWriteBuffer;
 
-static volatile FSStatus fwriteErrno = FS_STATUS_OK;
+static volatile FSError fwriteErrno = FS_ERROR_OK;
 static volatile void *fwriteOverlay = NULL;
 
 #ifdef NUSSPLI_DEBUG
@@ -61,11 +63,7 @@ static bool queueStalled = false;
 
 static int ioThreadMain(int argc, const char **argv)
 {
-    FSCmdBlock cmdBlk;
-    FSInitCmdBlock(&cmdBlk);
-    FSSetCmdPriority(&cmdBlk, 1);
-
-    FSStatus err;
+    FSError err;
     uint32_t asl = activeWriteBuffer;
     WriteQueueEntry *entry = queueEntries + asl;
 
@@ -79,7 +77,7 @@ static int ioThreadMain(int argc, const char **argv)
 
         if(entry->size) // WRITE command
         {
-            err = FSWriteFile(__wut_devoptab_fs_client, &cmdBlk, (uint8_t *)entry->buf, entry->size, 1, *entry->file, 0, FS_ERROR_FLAG_ALL);
+            err = FSAWriteFile(getFSAClient(), (void *)entry->buf, entry->size, 1, *entry->file, 0);
             if(err != 1)
                 goto ioError;
 
@@ -88,8 +86,8 @@ static int ioThreadMain(int argc, const char **argv)
         else // Close command
         {
             OSTime t = OSGetTime();
-            err = FSCloseFile(__wut_devoptab_fs_client, &cmdBlk, *entry->file, FS_ERROR_FLAG_ALL);
-            if(err != FS_STATUS_OK)
+            err = FSACloseFile(getFSAClient(), *entry->file);
+            if(err != FS_ERROR_OK)
                 goto ioError;
 
             t = OSGetTime() - t;
@@ -145,7 +143,7 @@ bool initIOThread()
 
 bool checkForQueueErrors()
 {
-    if(fwriteErrno != FS_STATUS_OK)
+    if(fwriteErrno != FS_ERROR_OK)
     {
         if(fwriteOverlay == NULL && OSIsMainCore())
         {
@@ -177,7 +175,7 @@ void shutdownIOThread()
     MEMFreeToDefaultHeap(queueEntries);
 }
 
-size_t addToIOQueue(const void *buf, size_t size, size_t n, FSFileHandle *file)
+size_t addToIOQueue(const void *buf, size_t size, size_t n, FSAFileHandle *file)
 {
     if(checkForQueueErrors())
         return 0;
@@ -274,13 +272,13 @@ void flushIOQueue()
     checkForQueueErrors();
 }
 
-FSFileHandle *openFile(const char *path, const char *mode, size_t filesize)
+FSAFileHandle *openFile(const char *path, const char *mode, size_t filesize)
 {
     if(checkForQueueErrors())
         return NULL;
 
     OSTime t = OSGetTime();
-    FSFileHandle *ret = MEMAllocFromDefaultHeap(sizeof(FSFileHandle));
+    FSAFileHandle *ret = MEMAllocFromDefaultHeap(sizeof(FSAFileHandle));
     if(ret == NULL)
         return NULL;
 
@@ -290,8 +288,8 @@ FSFileHandle *openFile(const char *path, const char *mode, size_t filesize)
     if(filesize != 0 && strncmp(NUSDIR_SD, newPath, strlen(NUSDIR_SD)) == 0)
         filesize = 0;
 
-    FSStatus s = FSOpenFileEx(__wut_devoptab_fs_client, getCmdBlk(), newPath, mode, 0x660, filesize == 0 ? FS_OPEN_FLAG_NONE : FS_OPEN_FLAG_PREALLOC_SIZE, filesize, ret, FS_ERROR_FLAG_ALL);
-    if(s == FS_STATUS_OK)
+    FSError e = FSAOpenFileEx(getFSAClient(), newPath, mode, 0x660, filesize == 0 ? FS_OPEN_FLAG_NONE : FS_OPEN_FLAG_PREALLOC_SIZE, filesize, ret);
+    if(e == FS_ERROR_OK)
     {
         t = OSGetTime() - t;
         addEntropy(&t, sizeof(OSTime));
@@ -299,6 +297,6 @@ FSFileHandle *openFile(const char *path, const char *mode, size_t filesize)
     }
 
     MEMFreeToDefaultHeap(ret);
-    debugPrintf("Error opening %s: %s!", path, translateFSErr(s));
+    debugPrintf("Error opening %s: %s!", path, translateFSErr(e));
     return NULL;
 }

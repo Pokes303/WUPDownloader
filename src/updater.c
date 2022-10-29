@@ -36,6 +36,7 @@
 
 #include <coreinit/dynload.h>
 #include <coreinit/filesystem.h>
+#include <coreinit/filesystem_fsa.h>
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
@@ -249,7 +250,7 @@ static bool unzipUpdate()
                 char *needle;
                 char *lastSlash;
                 char *lspp;
-                FSFileHandle *file;
+                FSAFileHandle *file;
                 size_t extracted;
                 ret = true;
 
@@ -374,8 +375,8 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
     disableShutdown();
     showUpdateFrame();
     removeDirectory(UPDATE_TEMP_FOLDER);
-    FSStatus err = createDirectory(UPDATE_TEMP_FOLDER);
-    if(err != FS_STATUS_OK)
+    FSError err = createDirectory(UPDATE_TEMP_FOLDER);
+    if(err != FS_ERROR_OK)
     {
         char *toScreen = getToFrameBuffer();
         strcpy(toScreen, gettext("Error creating temporary directory!"));
@@ -434,7 +435,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 
     // Uninstall currently running type/version
 #ifdef NUSSPLI_HBL
-    if(removeDirectory(UPDATE_HBL_FOLDER) != FS_STATUS_OK)
+    if(removeDirectory(UPDATE_HBL_FOLDER) != FS_ERROR_OK)
     {
         showUpdateErrorf("%s: %s", gettext("Error removing directory"), translateFSErr(err));
         goto updateError;
@@ -461,8 +462,8 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
         if(rs == RPX_LOADER_RESULT_SUCCESS)
         {
             strcpy(path, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
-            err = FSRemove(__wut_devoptab_fs_client, getCmdBlk(), path, FS_ERROR_FLAG_ALL);
-            if(err != FS_STATUS_OK)
+            err = FSARemove(getFSAClient(), path);
+            if(err != FS_ERROR_OK)
             {
                 showUpdateErrorf("%s: %s", gettext("Error removing file"), translateFSErr(err));
                 goto updateError;
@@ -484,8 +485,8 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
             strcpy(path, UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE);
             char *path2 = getStaticPathBuffer(0);
             strcpy(path2, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
-            err = FSRename(__wut_devoptab_fs_client, getCmdBlk(), path, path2, FS_ERROR_FLAG_ALL);
-            if(err != FS_STATUS_OK)
+            err = FSARename(getFSAClient(), path, path2);
+            if(err != FS_ERROR_OK)
             {
                 showUpdateErrorf("%s: %s", gettext("Error moving file"), translateFSErr(err));
                 goto updateError;
@@ -499,7 +500,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
             break;
         case NUSSPLI_TYPE_HBL:
             err = moveDirectory(UPDATE_TEMP_FOLDER "NUSspli", UPDATE_HBL_FOLDER);
-            if(err != FS_STATUS_OK)
+            if(err != FS_ERROR_OK)
             {
                 showUpdateErrorf("%s: %s", gettext("Error moving directory"), translateFSErr(err));
                 goto updateError;

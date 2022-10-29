@@ -41,6 +41,8 @@
 
 // WIP. This need a better implementation
 
+extern FSClient *__wut_devoptab_fs_client;
+
 VPADStatus vpad;
 static const KPADStatus kpad[4];
 static const Swkbd_ControllerInfo controllerInfo = {

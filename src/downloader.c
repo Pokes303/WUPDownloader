@@ -42,6 +42,7 @@
 #include <tmd.h>
 #include <utils.h>
 
+#include <coreinit/filesystem_fsa.h>
 #include <coreinit/memory.h>
 #include <coreinit/time.h>
 #include <curl/curl.h>
@@ -200,8 +201,8 @@ bool initDownloader()
     struct curl_blob blob = { .data = NULL, .len = 0, .flags = CURL_BLOB_COPY };
 
 #ifndef NUSSPLI_HBL
-    FSDirectoryHandle dir;
-    if(FSOpenDir(__wut_devoptab_fs_client, getCmdBlk(), fn, &dir, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
+    FSADirectoryHandle dir;
+    if(FSAOpenDir(getFSAClient(), fn, &dir) == FS_ERROR_OK)
 #else
     DIR *dir = opendir(fn);
     if(dir != NULL)
@@ -213,8 +214,8 @@ bool initDownloader()
         size_t oldcertsize = 0;
         void *tmp;
 #ifndef NUSSPLI_HBL
-        FSDirectoryEntry entry;
-        while(FSReadDir(__wut_devoptab_fs_client, getCmdBlk(), dir, &entry, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
+        FSADirectoryEntry entry;
+        while(FSAReadDir(getFSAClient(), dir, &entry) == FS_ERROR_OK)
         {
             if(entry.name[0] == '.')
                 continue;
@@ -253,7 +254,7 @@ bool initDownloader()
         }
 
 #ifndef NUSSPLI_HBL
-        FSCloseDir(__wut_devoptab_fs_client, getCmdBlk(), dir, FS_ERROR_FLAG_ALL);
+        FSACloseDir(getFSAClient(), dir);
 #else
         closedir(dir);
 #endif
@@ -808,7 +809,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
             flushIOQueue();
             char *newFile = getStaticPathBuffer(2);
             strcpy(newFile, file);
-            FSRemove(__wut_devoptab_fs_client, getCmdBlk(), newFile, FS_ERROR_FLAG_ALL);
+            FSARemove(getFSAClient(), newFile);
         }
 
         if(resp == 404 && (type & FILE_TYPE_TMD) == FILE_TYPE_TMD) // Title.tmd not found

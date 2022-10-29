@@ -21,6 +21,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <coreinit/filesystem_fsa.h>
 #include <coreinit/mcp.h>
 #include <coreinit/time.h>
 
@@ -55,16 +56,16 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUs
     if(!keepFiles)
         removeDirectory(path);
 
-    FSDirectoryHandle dir;
+    FSADirectoryHandle dir;
     char *importPath = getStaticPathBuffer(2);
     strcpy(importPath, toUsb ? (getUSB() == NUSDEV_USB01 ? NUSDIR_USB1 "usr/import/" : NUSDIR_USB2 "usr/import/") : NUSDIR_MLC "usr/import/");
 
-    if(FSOpenDir(__wut_devoptab_fs_client, getCmdBlk(), importPath, &dir, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
+    if(FSAOpenDir(getFSAClient(), importPath, &dir) == FS_ERROR_OK)
     {
         char *ptr = importPath + strlen(importPath);
-        FSDirectoryEntry entry;
+        FSADirectoryEntry entry;
 
-        while(FSReadDir(__wut_devoptab_fs_client, getCmdBlk(), dir, &entry, FS_ERROR_FLAG_ALL) == FS_STATUS_OK)
+        while(FSAReadDir(getFSAClient(), dir, &entry) == FS_ERROR_OK)
         {
             if(entry.name[0] == '.' || !(entry.info.flags & FS_STAT_DIRECTORY) || strlen(entry.name) != 8)
                 continue;
@@ -73,7 +74,7 @@ static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUs
             removeDirectory(importPath);
         }
 
-        FSCloseDir(__wut_devoptab_fs_client, getCmdBlk(), dir, FS_ERROR_FLAG_ALL);
+        FSACloseDir(getFSAClient(), dir);
     }
 }
 
@@ -109,7 +110,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
         if(toUsb ? dev & NUSDEV_USB : dev == NUSDEV_MLC)
             flushIOQueue();
 
-        if(FSGetFreeSpaceSize(__wut_devoptab_fs_client, getCmdBlk(), (char *)nd, &freeSpace, FS_ERROR_FLAG_ALL) == FS_STATUS_OK && size > freeSpace)
+        if(FSAGetFreeSpaceSize(getFSAClient(), (char *)nd, &freeSpace) == FS_ERROR_OK && size > freeSpace)
         {
             showNoSpaceOverlay(toUsb ? NUSDEV_USB : NUSDEV_MLC);
             return !(AppRunning(true));
