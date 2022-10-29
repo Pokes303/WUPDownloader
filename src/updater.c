@@ -250,7 +250,7 @@ static bool unzipUpdate()
                 char *needle;
                 char *lastSlash;
                 char *lspp;
-                FSAFileHandle *file;
+                FSAFileHandle file;
                 size_t extracted;
                 ret = true;
 
@@ -298,7 +298,7 @@ static bool unzipUpdate()
                             {
                                 sprintf(fnp, "%s%s", path, zipFileName);
                                 file = openFile(fileName, "w", 0);
-                                if(file != NULL)
+                                if(file != 0)
                                 {
                                     while(ret)
                                     {

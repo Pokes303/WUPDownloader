@@ -462,8 +462,8 @@ bool saveConfig(bool force)
                                             {
                                                 entropy = strlen(json);
                                                 flushIOQueue();
-                                                FSFileHandle *f = openFile(CONFIG_PATH, "w", 0);
-                                                if(f != NULL)
+                                                FSFileHandle f = openFile(CONFIG_PATH, "w", 0);
+                                                if(f != 0)
                                                 {
                                                     addToIOQueue(json, 1, entropy, f);
                                                     addToIOQueue(NULL, 0, 0, f);

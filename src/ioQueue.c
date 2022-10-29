@@ -42,7 +42,7 @@
 
 typedef struct WUT_PACKED
 {
-    volatile FSAFileHandle *file;
+    volatile FSAFileHandle file;
     volatile size_t size;
     volatile uint8_t *buf;
 } WriteQueueEntry;
@@ -69,7 +69,7 @@ static int ioThreadMain(int argc, const char **argv)
 
     while(ioRunning)
     {
-        if(entry->file == NULL)
+        if(entry->file == 0)
         {
             OSSleepTicks(OSMillisecondsToTicks(2));
             continue;
@@ -77,7 +77,7 @@ static int ioThreadMain(int argc, const char **argv)
 
         if(entry->size) // WRITE command
         {
-            err = FSAWriteFile(getFSAClient(), (void *)entry->buf, entry->size, 1, *entry->file, 0);
+            err = FSAWriteFile(getFSAClient(), (void *)entry->buf, entry->size, 1, entry->file, 0);
             if(err != 1)
                 goto ioError;
 
@@ -86,7 +86,7 @@ static int ioThreadMain(int argc, const char **argv)
         else // Close command
         {
             OSTime t = OSGetTime();
-            err = FSACloseFile(getFSAClient(), *entry->file);
+            err = FSACloseFile(getFSAClient(), entry->file);
             if(err != FS_ERROR_OK)
                 goto ioError;
 
@@ -98,7 +98,7 @@ static int ioThreadMain(int argc, const char **argv)
             asl = 0;
 
         activeWriteBuffer = asl;
-        entry->file = NULL;
+        entry->file = 0;
         entry = queueEntries + asl;
     }
 
@@ -119,7 +119,7 @@ bool initIOThread()
         {
             for(int i = 0; i < MAX_IO_QUEUE_ENTRIES; ++i, buf += IO_MAX_FILE_BUFFER)
             {
-                queueEntries[i].file = NULL;
+                queueEntries[i].file = 0;
                 queueEntries[i].size = 0;
                 queueEntries[i].buf = buf;
             }
@@ -175,7 +175,7 @@ void shutdownIOThread()
     MEMFreeToDefaultHeap(queueEntries);
 }
 
-size_t addToIOQueue(const void *buf, size_t size, size_t n, FSAFileHandle *file)
+size_t addToIOQueue(const void *buf, size_t size, size_t n, FSAFileHandle file)
 {
     if(checkForQueueErrors())
         return 0;
@@ -184,7 +184,7 @@ size_t addToIOQueue(const void *buf, size_t size, size_t n, FSAFileHandle *file)
 
 retryAddingToQueue:
     entry = queueEntries + activeReadBuffer;
-    if(entry->file != NULL)
+    if(entry->file != 0)
     {
 #ifdef NUSSPLI_DEBUG
         if(!queueStalled)
@@ -256,13 +256,13 @@ retryAddingToQueue:
 
 void flushIOQueue()
 {
-    if(checkForQueueErrors() || queueEntries[activeWriteBuffer].file == NULL)
+    if(checkForQueueErrors() || queueEntries[activeWriteBuffer].file == 0)
         return;
 
     void *ovl = addErrorOverlay("Flushing queue, please wait...");
     debugPrintf("Flushing...");
 
-    while(queueEntries[activeWriteBuffer].file != NULL)
+    while(queueEntries[activeWriteBuffer].file != 0)
         if(checkForQueueErrors())
             break;
 
@@ -272,15 +272,10 @@ void flushIOQueue()
     checkForQueueErrors();
 }
 
-FSAFileHandle *openFile(const char *path, const char *mode, size_t filesize)
+FSAFileHandle openFile(const char *path, const char *mode, size_t filesize)
 {
     if(checkForQueueErrors())
-        return NULL;
-
-    OSTime t = OSGetTime();
-    FSAFileHandle *ret = MEMAllocFromDefaultHeap(sizeof(FSAFileHandle));
-    if(ret == NULL)
-        return NULL;
+        return 0;
 
     char *newPath = getStaticPathBuffer(0);
     strcpy(newPath, path);
@@ -288,7 +283,9 @@ FSAFileHandle *openFile(const char *path, const char *mode, size_t filesize)
     if(filesize != 0 && strncmp(NUSDIR_SD, newPath, strlen(NUSDIR_SD)) == 0)
         filesize = 0;
 
-    FSError e = FSAOpenFileEx(getFSAClient(), newPath, mode, 0x660, filesize == 0 ? FS_OPEN_FLAG_NONE : FS_OPEN_FLAG_PREALLOC_SIZE, filesize, ret);
+    OSTime t = OSGetTime();
+    FSAFileHandle ret;
+    FSError e = FSAOpenFileEx(getFSAClient(), newPath, mode, 0x660, filesize == 0 ? FS_OPEN_FLAG_NONE : FS_OPEN_FLAG_PREALLOC_SIZE, filesize, &ret);
     if(e == FS_ERROR_OK)
     {
         t = OSGetTime() - t;
@@ -296,7 +293,6 @@ FSAFileHandle *openFile(const char *path, const char *mode, size_t filesize)
         return ret;
     }
 
-    MEMFreeToDefaultHeap(ret);
     debugPrintf("Error opening %s: %s!", path, translateFSErr(e));
-    return NULL;
+    return 0;
 }
