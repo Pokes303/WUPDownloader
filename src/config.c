@@ -525,17 +525,18 @@ void setAutoResume(bool enabled)
 
 const char *getFormattedRegion(MCPRegion region)
 {
-    switch(region)
+    if(region & MCP_REGION_EUROPE)
     {
-        case MCP_REGION_EUROPE:
-            return SET_EUR;
-        case MCP_REGION_USA:
-            return SET_USA;
-        case MCP_REGION_JAPAN:
-            return SET_JPN;
-        default:
-            return SET_ALL;
+        if(region & MCP_REGION_USA)
+            return region & MCP_REGION_JAPAN ? SET_ALL : "USA/Europe";
+
+        return region & MCP_REGION_JAPAN ? "Europe/Japan" : SET_EUR;
     }
+
+    if(region & MCP_REGION_USA)
+        return region & MCP_REGION_JAPAN ? "USA/Japan" : SET_USA;
+
+    return region & MCP_REGION_JAPAN ? SET_JPN : "Unknown";
 }
 
 #ifndef NUSSPLI_LITE
