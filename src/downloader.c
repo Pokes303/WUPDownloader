@@ -1086,12 +1086,10 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 
     char *dupp = dup + 8;
     char *idpp = idp + 8;
-    char cid[9];
     for(int i = 0; i < tmd->num_contents && AppRunning(true); ++i)
     {
-        hex(tmd->contents[i].cid, 8, cid);
-        strcpy(dup, cid);
-        strcpy(idp, cid);
+        hex(tmd->contents[i].cid, 8, dup);
+        OSBlockMove(idp, dup, 8, false);
         strcpy(idpp, ".app");
 
         data.cs = tmd->contents[i].size;
