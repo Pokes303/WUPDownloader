@@ -212,6 +212,7 @@ bool initConfig()
         int v = json_integer_value(configEntry);
         if(v < 2)
         {
+            addToScreenLog("Old vonfig file updating...");
             configEntry = json_object_get(json, "Language");
             if(configEntry != NULL && json_is_string(configEntry))
             {
@@ -286,6 +287,7 @@ bool initConfig()
     }
     else
     {
+        addToScreenLog("Config file version not found!");
         menuLang = sysLangToMenuLang(sysLang);
         changed = true;
     }
@@ -296,7 +298,10 @@ bool initConfig()
     if(configEntry != NULL && json_is_boolean(configEntry))
         autoResume = json_is_true(configEntry);
     else
+    {
+        addToScreenLog("Auto resume setting not found!");
         changed = true;
+    }
 
 #ifndef NUSSPLI_LITE
     configEntry = json_object_get(json, "Region");
@@ -312,13 +317,19 @@ bool initConfig()
             regionSetting = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN;
     }
     else
+    {
+        addToScreenLog("Region setting not foind!");
         changed = true;
+    }
 
     configEntry = json_object_get(json, "Download to USB");
     if(configEntry != NULL && json_is_boolean(configEntry))
         dlToUSB = json_is_true(configEntry);
     else
+    {
+        addToScreenLog("Download to setting not found!");
         changed = true;
+    }
 #endif
 
     configEntry = json_object_get(json, "Notification method");
@@ -334,7 +345,10 @@ bool initConfig()
             notifSetting = NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED;
     }
     else
+    {
+        addToScreenLog("Notification setting not found!");
         changed = true;
+    }
 
     configEntry = json_object_get(json, "Seed");
     if(configEntry != NULL && json_is_integer(configEntry))
