@@ -38,7 +38,7 @@
 #include <thread.h>
 #include <utils.h>
 
-#define IOT_STACK_SIZE       0x1000
+#define IOT_STACK_SIZE       0x400
 #define IO_MAX_FILE_BUFFER   (1024 * 1024) // 1 MB
 #define MAX_IO_QUEUE_ENTRIES (64 * (IO_MAX_FILE_BUFFER / (1024 * 1024))) // 64 MB
 
