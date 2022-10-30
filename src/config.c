@@ -151,34 +151,6 @@ bool initConfig()
 {
     debugPrintf("Initializing config file...");
 
-    if(!fileExists(CONFIG_PATH))
-    {
-        addToScreenLog("Config file not found, using defaults!");
-        changed = true; // trigger a save on app exit
-        return true;
-    }
-
-    OSTime t = OSGetTime();
-    void *buf;
-    size_t bufSize = readFile(CONFIG_PATH, &buf);
-    if(buf == NULL)
-        return false;
-
-#ifdef NUSSPLI_DEBUG
-    json_error_t jerr;
-    json_t *json = json_loadb(buf, bufSize, 0, &jerr);
-#else
-    json_t *json = json_loadb(buf, bufSize, 0, NULL);
-#endif
-    if(json == NULL)
-    {
-        MEMFreeToDefaultHeap(buf);
-        debugPrintf("json_loadb() failed: %s!", jerr.text);
-        addToScreenLog("Error parsing config file, using defaults!");
-        changed = true; // trigger a save on app exit
-        return true;
-    }
-
     UCHandle handle = UCOpen();
     if(handle >= 0)
     {
@@ -204,6 +176,38 @@ bool initConfig()
     {
         debugPrintf("Error opening UC: %d", handle);
         sysLang = Swkbd_LanguageType__English;
+    }
+
+    menuLang = sysLang;
+
+    if(!fileExists(CONFIG_PATH))
+    {
+        addToScreenLog("Config file not found, using defaults!");
+        changed = true; // trigger a save on app exit
+        intSetMenuLanguage(menuLang);
+        return true;
+    }
+
+    OSTime t = OSGetTime();
+    void *buf;
+    size_t bufSize = readFile(CONFIG_PATH, &buf);
+    if(buf == NULL)
+        return false;
+
+#ifdef NUSSPLI_DEBUG
+    json_error_t jerr;
+    json_t *json = json_loadb(buf, bufSize, 0, &jerr);
+#else
+    json_t *json = json_loadb(buf, bufSize, 0, NULL);
+#endif
+    if(json == NULL)
+    {
+        MEMFreeToDefaultHeap(buf);
+        debugPrintf("json_loadb() failed: %s!", jerr.text);
+        addToScreenLog("Error parsing config file, using defaults!");
+        changed = true; // trigger a save on app exit
+        intSetMenuLanguage(menuLang);
+        return true;
     }
 
     json_t *configEntry = json_object_get(json, "File Version");
