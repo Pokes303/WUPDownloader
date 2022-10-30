@@ -26,6 +26,8 @@
 static bool mochaReady = false;
 static bool cemu = false;
 
+extern FSClient *__wut_devoptab_fs_client;
+
 bool cfwValid()
 {
     cemu = OSGetTitleID() == 0x0000000000000000;
@@ -36,19 +38,23 @@ bool cfwValid()
     bool ret = mochaReady;
     if(ret)
     {
-        WiiUConsoleOTP otp;
-        ret = Mocha_ReadOTP(&otp) == MOCHA_RESULT_SUCCESS;
+        ret = Mocha_UnlockFSClient(__wut_devoptab_fs_client) == MOCHA_RESULT_SUCCESS;
         if(ret)
         {
-            MochaRPXLoadInfo info = {
-                .target = 0xDEADBEEF,
-                .filesize = 0,
-                .fileoffset = 0,
-                .path = "dummy"
-            };
+            WiiUConsoleOTP otp;
+            ret = Mocha_ReadOTP(&otp) == MOCHA_RESULT_SUCCESS;
+            if(ret)
+            {
+                MochaRPXLoadInfo info = {
+                    .target = 0xDEADBEEF,
+                    .filesize = 0,
+                    .fileoffset = 0,
+                    .path = "dummy"
+                };
 
-            MochaUtilsStatus s = Mocha_LaunchRPX(&info);
-            ret = s != MOCHA_RESULT_UNSUPPORTED_API_VERSION && s != MOCHA_RESULT_UNSUPPORTED_COMMAND;
+                MochaUtilsStatus s = Mocha_LaunchRPX(&info);
+                ret = s != MOCHA_RESULT_UNSUPPORTED_API_VERSION && s != MOCHA_RESULT_UNSUPPORTED_COMMAND;
+            }
         }
     }
 
