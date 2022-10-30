@@ -31,6 +31,7 @@ jobs:
           docker build . -t builder
           echo ${{ secrets.ENC_KEY }} > encryptKeyWith
           docker run --rm -v ${PWD}:/project builder python3 build.py
+          cat version.txt >> $GITHUB_OUTPUT
         id: version
       - name: Upload Aroma version
         if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') && (contains(github.event.head_commit.message, '-ALPHA') || contains(github.event.head_commit.message, '-BETA')) }}
