@@ -276,18 +276,18 @@ retryAddingToQueue:
 
 void flushIOQueue()
 {
-    if(checkForQueueErrors() || queueEntries[activeWriteBuffer].file == 0)
-        return;
+    if(queueEntries[activeWriteBuffer].file != 0)
+    {
+        void *ovl = addErrorOverlay("Flushing queue, please wait...");
+        debugPrintf("Flushing...");
 
-    void *ovl = addErrorOverlay("Flushing queue, please wait...");
-    debugPrintf("Flushing...");
+        while(queueEntries[activeWriteBuffer].file != 0)
+            if(checkForQueueErrors())
+                break;
 
-    while(queueEntries[activeWriteBuffer].file != 0)
-        if(checkForQueueErrors())
-            break;
-
-    if(ovl != NULL)
-        removeErrorOverlay(ovl);
+        if(ovl != NULL)
+            removeErrorOverlay(ovl);
+    }
 
     checkForQueueErrors();
 }
