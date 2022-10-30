@@ -31,8 +31,10 @@
 #include <crypto.h>
 #include <file.h>
 #include <filesystem.h>
+#include <input.h>
 #include <ioQueue.h>
 #include <renderer.h>
+#include <state.h>
 #include <thread.h>
 #include <utils.h>
 
@@ -147,12 +149,30 @@ bool checkForQueueErrors()
     {
         if(fwriteOverlay == NULL && OSIsMainCore())
         {
-            char errMsg[1024];
-            sprintf(errMsg, "Write error:\n%s\n\nThis is an unrecoverable error!", translateFSErr(fwriteErrno));
+            char *errMsg = getToFrameBuffer();
+            sprintf(errMsg, "Write error:\n%s\n\nThis is an unrecoverable error!\nPress any button to exit.", translateFSErr(fwriteErrno));
             fwriteOverlay = addErrorOverlay(errMsg);
+
+            if(fwriteOverlay != NULL)
+            {
+                while(AppRunning(true))
+                {
+                    showFrame();
+
+                    if(vpad.trigger)
+                        break;
+                }
+
+                removeErrorOverlay((void *)fwriteOverlay);
+            }
+
+            if(AppRunning(true))
+                homeButtonCallback(NULL);
         }
+
         return true;
     }
+
     return false;
 }
 
