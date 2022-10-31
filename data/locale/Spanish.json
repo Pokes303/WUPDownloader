@@ -43,6 +43,10 @@
     "None": "Ninguno",
     "Europe": "Europa",
     "Japan": "Japón",
+    
+    "USA/Europe": "USA/Europa",
+    "Europe/Japan": "Europa/Japón",
+    "Unknown": "Desconocido",
 
     "Update available!": "Actualización disponible!",
     "Press \uE000 to update to": "Presiona \uE000 para actualizar a:",
