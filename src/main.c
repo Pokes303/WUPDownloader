@@ -201,7 +201,7 @@ static void innerMain(bool validCfw)
                         debugPrintf("Crypto closed");
                     }
                     else
-                        lerr = "Signature patches missing!";
+                        lerr = "Couldn't initialize Crypto!";
                 }
                 else
                     lerr = "Unsupported environment.\nEither you're not using Tiramisu/Aroma or your Tiramisu version is out of date.";
