@@ -27,40 +27,21 @@
 
 #define VALUE_A 0xE3A00000 // mov r0, #0
 #define VALUE_B 0xE12FFF1E // bx lr
-#define VALUE_C 0x20004770 // mov r0, #0; bx lr
-#define VALUE_D 0x20002000 // mov r0, #0; mov r0, #0
 
 static bool mochaReady = false;
 static bool cemu = false;
-static const uint32_t addys[8] = {
+static const uint32_t addys[6] = {
+    // Cached cert check
     0x05054D6C,
     0x05054D70,
-
+    // Cert verification
     0x05052A90,
     0x05052A94,
-
-    0x05014CAC,
-
+    // IOSC_VerifyPubkeySign
     0x05052C44,
     0x05052C48,
-
-    0x0500A818,
 };
-static const uint32_t patchValues[8] = {
-    VALUE_A,
-    VALUE_B,
-
-    VALUE_A,
-    VALUE_B,
-
-    VALUE_C,
-
-    VALUE_A,
-    VALUE_B,
-
-    VALUE_D,
-};
-static uint32_t origValues[8];
+static uint32_t origValues[6];
 
 extern FSClient *__wut_devoptab_fs_client;
 
@@ -92,13 +73,13 @@ bool cfwValid()
                 ret = s != MOCHA_RESULT_UNSUPPORTED_API_VERSION && s != MOCHA_RESULT_UNSUPPORTED_COMMAND;
                 if(ret)
                 {
-                    for(int i = 0; i < 8; ++i)
+                    for(int i = 0; i < 6; ++i)
                     {
                         s = Mocha_IOSUKernelRead32(addys[i], origValues + i);
                         if(s != MOCHA_RESULT_SUCCESS)
                             goto restoreIOSU;
 
-                        s = Mocha_IOSUKernelWrite32(addys[i], patchValues[i]);
+                        s = Mocha_IOSUKernelWrite32(addys[i], i % 2 == 0 ? VALUE_A : VALUE_B);
                         if(s != MOCHA_RESULT_SUCCESS)
                             goto restoreIOSU;
 
@@ -127,7 +108,7 @@ void deinitCfw()
 {
     if(mochaReady)
     {
-        for(int i = 0; i < 8; ++i)
+        for(int i = 0; i < 6; ++i)
             Mocha_IOSUKernelWrite32(addys[i], origValues[i]);
 
         Mocha_DeInitLibrary();
