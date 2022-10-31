@@ -95,7 +95,7 @@ bool cfwValid()
                     for(int i = 0; i < 8; ++i)
                     {
                         s = Mocha_IOSUKernelRead32(addys[i], origValues + i);
-                        if(s != MOCHA_RESULT_SUCCESS && --i >= 0)
+                        if(s != MOCHA_RESULT_SUCCESS)
                             goto restoreIOSU;
 
                         s = Mocha_IOSUKernelWrite32(addys[i], patchValues[i]);
@@ -104,7 +104,7 @@ bool cfwValid()
 
                         continue;
                     restoreIOSU:
-                        for(; i >= 0; --i)
+                        for(--i; i >= 0; --i)
                             Mocha_IOSUKernelWrite32(addys[i], origValues[i]);
 
                         debugPrintf("libmocha error: %s", Mocha_GetStatusStr(s));
