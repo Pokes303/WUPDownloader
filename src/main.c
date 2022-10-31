@@ -206,7 +206,7 @@ static void innerMain(bool validCfw)
                         debugPrintf("Crypto closed");
                     }
                     else
-                        lerr = "Couldn't initialize Crypto!";
+                        lerr = "Signature patches missing!";
 
                     deinitFS();
                     debugPrintf("Filesystem closed");

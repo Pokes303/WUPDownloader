@@ -23,8 +23,44 @@
 #include <coreinit/title.h>
 #include <mocha/mocha.h>
 
+#include <utils.h>
+
+#define VALUE_A 0xE3A00000 // mov r0, #0
+#define VALUE_B 0xE12FFF1E // bx lr
+#define VALUE_C 0x20004770 // mov r0, #0; bx lr
+#define VALUE_D 0x20002000 // mov r0, #0; mov r0, #0
+
 static bool mochaReady = false;
 static bool cemu = false;
+static const uint32_t addys[8] = {
+    0x05054D6C,
+    0x05054D70,
+
+    0x05052A90,
+    0x05052A94,
+
+    0x05014CAC,
+
+    0x05052C44,
+    0x05052C48,
+
+    0x0500A818,
+};
+static const uint32_t patchValues[8] = {
+    VALUE_A,
+    VALUE_B,
+
+    VALUE_A,
+    VALUE_B,
+
+    VALUE_C,
+
+    VALUE_A,
+    VALUE_B,
+
+    VALUE_D,
+};
+static uint32_t origValues[8];
 
 extern FSClient *__wut_devoptab_fs_client;
 
@@ -54,6 +90,27 @@ bool cfwValid()
 
                 MochaUtilsStatus s = Mocha_LaunchRPX(&info);
                 ret = s != MOCHA_RESULT_UNSUPPORTED_API_VERSION && s != MOCHA_RESULT_UNSUPPORTED_COMMAND;
+                if(ret)
+                {
+                    for(int i = 0; i < 8; ++i)
+                    {
+                        s = Mocha_IOSUKernelRead32(addys[i], origValues + i);
+                        if(s != MOCHA_RESULT_SUCCESS && --i >= 0)
+                            goto restoreIOSU;
+
+                        s = Mocha_IOSUKernelWrite32(addys[i], patchValues[i]);
+                        if(s != MOCHA_RESULT_SUCCESS)
+                            goto restoreIOSU;
+
+                        continue;
+                    restoreIOSU:
+                        for(; i >= 0; --i)
+                            Mocha_IOSUKernelWrite32(addys[i], origValues[i]);
+
+                        debugPrintf("libmocha error: %s", Mocha_GetStatusStr(s));
+                        return false;
+                    }
+                }
             }
         }
     }
@@ -69,5 +126,10 @@ bool isCemu()
 void deinitCfw()
 {
     if(mochaReady)
+    {
+        for(int i = 0; i < 8; ++i)
+            Mocha_IOSUKernelWrite32(addys[i], origValues[i]);
+
         Mocha_DeInitLibrary();
+    }
 }
