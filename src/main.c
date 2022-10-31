@@ -226,7 +226,7 @@ static void innerMain(bool validCfw)
             debugPrintf("Filesystem closed");
         }
         else
-            debugPrintf("Error initializinf filesystem!");
+            debugPrintf("Error initializing filesystem!");
 
         shutdownStaticMem();
     }
