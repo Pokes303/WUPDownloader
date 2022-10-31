@@ -207,9 +207,6 @@ static void innerMain(bool validCfw)
                     }
                     else
                         lerr = "Signature patches missing!";
-
-                    deinitFS();
-                    debugPrintf("Filesystem closed");
                 }
                 else
                     lerr = "Unsupported environment.\nEither you're not using Tiramisu/Aroma or your Tiramisu version is out of date.";
@@ -229,6 +226,9 @@ static void innerMain(bool validCfw)
                 gettextCleanUp();
                 debugPrintf("SDL closed");
             }
+
+            deinitFS();
+            debugPrintf("Filesystem closed");
         }
         else
             debugPrintf("Error initializinf filesystem!");
@@ -242,7 +242,6 @@ static void innerMain(bool validCfw)
     clearScreenLog();
     KPADShutdown();
 
-    debugPrintf("Shutting down filesystem");
 #ifdef NUSSPLI_HBL
     romfsExit();
 #endif
