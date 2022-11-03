@@ -21,6 +21,7 @@
 
 #include <cfw.h>
 #include <crypto.h>
+#include <exception.h>
 #include <renderer.h>
 #include <state.h>
 #include <utils.h>
@@ -131,6 +132,7 @@ uint32_t homeButtonCallback(void *dummy)
 void initState()
 {
     ProcUIInit(&OSSavesDone_ReadyToRelease);
+    initExceptionHandler();
     OSTime t = OSGetTime();
 
     app = APP_STATE_RUNNING;
@@ -172,6 +174,8 @@ void deinitState()
         apdDisabledCount = 1;
         enableApd();
     }
+
+    deinitExceptionHandler();
 }
 
 bool AppRunning(bool mainthread)

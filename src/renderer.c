@@ -31,6 +31,7 @@
 #include <coreinit/memory.h>
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
+#include <coreinit/title.h>
 #include <gx2/event.h>
 
 #include <stdbool.h>
@@ -47,6 +48,7 @@
 #include <romfs.h>
 #include <staticMem.h>
 #include <swkbd_wrapper.h>
+#include <thread.h>
 #include <utils.h>
 
 #define SSAA         8
@@ -885,8 +887,6 @@ void pauseRenderer()
     if(font == NULL)
         return;
 
-    FC_FreeFont(font);
-
     destroyTex(arrowTex);
     destroyTex(checkmarkTex);
     destroyTex(tabTex);
@@ -906,6 +906,7 @@ void pauseRenderer()
         defaultTex = NULL;
     }
 
+    FC_FreeFont(font);
     font = NULL;
 }
 

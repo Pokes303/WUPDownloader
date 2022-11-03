@@ -26,15 +26,11 @@
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
 
-// Our current implementation glues the threads stack to the OSThread, returning something 100% OSThread compatible
-OSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksize, OSThreadEntryPointFn mainfunc, int argc, char *argv, OSThreadAttributes attribs)
+OSThread *prepareThread(const char *name, THREAD_PRIORITY priority, size_t stacksize, OSThreadEntryPointFn mainfunc, int argc, char *argv, OSThreadAttributes attribs)
 {
     if(name == NULL)
         return NULL;
 
-    OSTime t;
-    addEntropy(&t, sizeof(OSTime));
-    t = OSGetSystemTime();
     uint8_t *thread = MEMAllocFromDefaultHeapEx(sizeof(OSThread) + stacksize, 8);
     if(thread != NULL)
     {
@@ -46,14 +42,28 @@ OSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksi
             if(!OSSetThreadStackUsage(ost))
                 debugPrintf("Tracking stack usage failed for %s", name);
 #endif
-            OSResumeThread(ost);
-            t = OSGetSystemTime() - t;
-            addEntropy(&t, sizeof(OSTime));
-            addEntropy(&(ost->id), sizeof(uint16_t));
-
             return ost;
         }
+
         MEMFreeToDefaultHeap(thread);
     }
+
     return NULL;
+}
+
+// Our current implementation glues the threads stack to the OSThread, returning something 100% OSThread compatible
+OSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksize, OSThreadEntryPointFn mainfunc, int argc, char *argv, OSThreadAttributes attribs)
+{
+    OSTime t;
+    addEntropy(&t, sizeof(OSTime));
+    t = OSGetSystemTime();
+    OSThread *thread = prepareThread(name, priority, stacksize, mainfunc, argc, argv, attribs);
+    if(thread == NULL)
+        return NULL;
+
+    OSResumeThread(thread);
+    t = OSGetSystemTime() - t;
+    addEntropy(&t, sizeof(OSTime));
+    addEntropy(&(thread->id), sizeof(uint16_t));
+    return thread;
 }

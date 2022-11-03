@@ -67,7 +67,6 @@
 #include <padscore/wpad.h>
 #include <proc_ui/procui.h>
 #include <sysapp/launch.h>
-#include <whb/crash.h>
 
 static void drawLoadingScreen(const char *toScreenLog, const char *loadingMsg)
 {

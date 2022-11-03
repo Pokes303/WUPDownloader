@@ -43,6 +43,8 @@
 
 #define BUTTON_HOME       "\uE044"
 
+#define BUTTON_POWER      "\uE040"
+
 #ifdef __cplusplus
 extern "C"
 {

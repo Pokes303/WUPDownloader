@@ -42,6 +42,7 @@ extern "C"
      */
     typedef enum
     {
+        THREAD_PRIORITY_EXCEPTION = 10,
         THREAD_PRIORITY_HIGH = 13,
         THREAD_PRIORITY_MEDIUM = 14,
         THREAD_PRIORITY_LOW = 15,
@@ -66,6 +67,7 @@ extern "C"
     }
 #define spinReleaseLock(lock) lock = SPINLOCK_FREE
 
+    OSThread *prepareThread(const char *name, THREAD_PRIORITY priority, size_t stacksize, OSThreadEntryPointFn mainfunc, int argc, char *argv, OSThreadAttributes attribs) __attribute__((__hot__));
     OSThread *startThread(const char *name, THREAD_PRIORITY priority, size_t stacksize, OSThreadEntryPointFn mainfunc, int argc, char *argv, OSThreadAttributes attribs) __attribute__((__hot__));
 
 #ifdef NUSSPLI_DEBUG
