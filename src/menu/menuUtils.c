@@ -145,7 +145,11 @@ void drawErrorFrame(const char *text, ErrorOptions option)
     }
 
     lineToFrame(--line, SCREEN_COLOR_WHITE);
+#ifndef NUSSPLI_LITE
     textToFrame(--line, 0, "NUSspli v" NUSSPLI_VERSION);
+#else
+    textToFrame(--line, 0, "NUSspli Lite v" NUSSPLI_VERSION);
+#endif
     drawFrame();
 }
 
