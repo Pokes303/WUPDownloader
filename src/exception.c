@@ -35,7 +35,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define CRASH_BUFSIZE   0x500
+#define CRASH_BUFSIZE   0x800
 #define CRASH_STACKSIZE 0x1000
 
 typedef struct BACKTRACK_LIST BACKTRACK_LIST;
@@ -70,7 +70,7 @@ static int exceptionHandlerThread(int argc, const char **argv)
         "Tag  : 0x%016llX (expected 0x%016llX)\n"
         "SRR1 : 0x%08X | DSISR: 0x%08X\n"
         "SRR0 : 0x%08X %s\n"
-        "LR0  : 0x%08X %s\n",
+        "LR0  : 0x%08X %s",
         OSGetCoreId(), crashType, crashContext->srr0, crashContext->dar,
         crashContext->tag, OS_CONTEXT_TAG,
         crashContext->srr1, crashContext->dsisr,
@@ -99,12 +99,16 @@ static int exceptionHandlerThread(int argc, const char **argv)
         ++i;
         const char *fn = getFun(backtrack->stackPointer);
 #ifdef NUSSPLI_DEBUG
-        debugPrintf("LR%-2d : 0x%08X %s", i, backtrack->stackPointer, fn);
+        debugPrintf("LR%-3d: 0x%08X %s", i, backtrack->stackPointer, fn);
         if(i < 13)
         {
 #endif
             size_t len = strlen(buf);
-            snprintf(buf + len, CRASH_BUFSIZE - len, "LR%-2d : 0x%08X %s\n", i, backtrack->stackPointer, fn);
+            if(CRASH_BUFSIZE - 1 - len > 2)
+            {
+                buf[len++] = '\n';
+                snprintf(buf + len, CRASH_BUFSIZE - len, "LR%-3d: 0x%08X %s", i, backtrack->stackPointer, fn);
+            }
 #ifdef NUSSPLI_DEBUG
         }
 #else
