@@ -93,6 +93,8 @@ const char *menuLangToString(MENU_LANGUAGE lang)
             return LANG_POR;
         case MENU_LANGUAGE_PORTUGUESE_BR:
             return LANG_POR_BR;
+        case MENU_LANGUAGE_FRENCH:
+            return LANG_FRE;
         default:
             return LANG_SYS;
     }
@@ -110,6 +112,8 @@ static inline MENU_LANGUAGE sysLangToMenuLang(Swkbd_LanguageType lang)
             return MENU_LANGUAGE_PORTUGUESE;
         case Swkbd_LanguageType__Portuguese_BR:
             return MENU_LANGUAGE_PORTUGUESE_BR;
+        case Swkbd_LanguageType__French:
+            return MENU_LANGUAGE_FRENCH;
         default:
             return MENU_LANGUAGE_ENGLISH;
     }
@@ -127,6 +131,8 @@ static MENU_LANGUAGE stringToMenuLang(const char *lang)
         return MENU_LANGUAGE_PORTUGUESE;
     if(strcmp(lang, LANG_POR_BR) == 0)
         return MENU_LANGUAGE_PORTUGUESE_BR;
+    if(strcmp(lang, LANG_FRE) == 0)
+        return MENU_LANGUAGE_FRENCH;
 
     return sysLangToMenuLang(sysLang);
 }
@@ -223,7 +229,7 @@ bool initConfig()
         int v = json_integer_value(configEntry);
         if(v < 2)
         {
-            addToScreenLog("Old vonfig file updating...");
+            addToScreenLog("Old config file updating...");
             configEntry = json_object_get(json, "Language");
             if(configEntry != NULL && json_is_string(configEntry))
             {
@@ -231,6 +237,8 @@ bool initConfig()
                     lang = Swkbd_LanguageType__Japanese;
                 else if(strcmp(json_string_value(configEntry), LANG_ENG) == 0)
                     lang = Swkbd_LanguageType__English;
+                else if(strcmp(json_string_value(configEntry), LANG_FRE) == 0)
+                    lang = Swkbd_LanguageType__French;
                 else if(strcmp(json_string_value(configEntry), LANG_GER) == 0)
                     lang = Swkbd_LanguageType__French;
                 else if(strcmp(json_string_value(configEntry), LANG_ITA) == 0)
@@ -267,6 +275,8 @@ bool initConfig()
                     lang = Swkbd_LanguageType__Japanese;
                 else if(strcmp(json_string_value(configEntry), LANG_ENG) == 0)
                     lang = Swkbd_LanguageType__English;
+                else if(strcmp(json_string_value(configEntry), LANG_FRE) == 0)
+                    lang = Swkbd_LanguageType__French;
                 else if(strcmp(json_string_value(configEntry), LANG_GER) == 0)
                     lang = Swkbd_LanguageType__French;
                 else if(strcmp(json_string_value(configEntry), LANG_ITA) == 0)
@@ -333,7 +343,7 @@ bool initConfig()
     }
     else
     {
-        addToScreenLog("Region setting not foind!");
+        addToScreenLog("Region setting not found!");
         changed = true;
     }
 
