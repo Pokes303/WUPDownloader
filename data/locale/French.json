@@ -36,9 +36,10 @@
     "Disabled": "Désactivé",
     "Auto resume failed downloads:": "Reprise automatique des téléchargements échoués :",
     "Notification method:": "Méthode de notification:",
-    "German": "Allemand",
+    "French": "Français",
     "None": "Aucun",
     "Europe": "Europe",
+    "Japan": "Japon",
 
     "USA/Europe": "USA/Europe",
     "Europe/Japan": "Europe/Japon",
@@ -100,8 +101,6 @@
     "\uE045 to start": "\uE045 pour commencer",
     "\uE046 to add to the queue": "\uE046 pour ajouter à la file d'attente",
     "\uE003 to uninstall": "\uE003 pour désinstaller",
-    "Press \uE07B to delete downloaded files after the installation": "Appuyez sur \uE07B pour effacer les fichiers téléchargés après l'installation.",
-    "Press \uE07B to keep downloaded files after the installation": "Appuyez sur \uE07B pour conserver les fichiers téléchargés après l'installation.",
 
     "hours": "heures",
     "minutes": "minutes",
