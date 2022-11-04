@@ -106,23 +106,6 @@
     "\uE045 to start": "\uE045 para empezar",
     "\uE046 to add to the queue": "\uE046 para añadir a la cola",
     "\uE003 to uninstall": "\uE003 para desinstalar",
-    "Press \uE079 to uninstall": "\uE079 para desinstalar",
-    "Press \uE000 to install to USB": "\uE000 para instalar a USB",
-    "Press \uE002 to install to NAND": "\uE002 para instalar a NAND",
-    "Press \uE003 to download to USB only": "\uE003 para sólo descargar a USB",
-    "Press \uE003 to download to SD only": "\uE003 para sólo descargar a la tarjeta SD",
-    "Press \uE003 to download to NAND only": "\uE003 para sólo descargar a NAND",
-
-    "\uE045 to start downloading": "\uE045 para empezar a descargar",
-    "\uE046 to delete an item": "\uE046 para eliminar un elemento",
-
-    "Press \uE07C to set the title version": "\uE07C para establecer la versión del título",
-    "Press \uE07A to set a custom name to the download folder": "\uE07A para establecer un nombre personalizado a la carpeta donde se descargará",
-    "Press \uE07B to detete downloaded files after the installation": "\uE07B para eliminar los archivos descargados después de la instalación",
-    "Press \uE07B to keep downloaded files after the installation": "\uE07B para mantener los archivos descargados después de la instalación",
-    "Press \uE046 to download to SD": "\uE046 para descargar a SD",
-    "Press \uE046 to download to NAND": "\uE046 para descargar a NAND",
-    "Press \uE046 to download to USB": "\uE046 para descargar a USB",
 
     "hours": "horas",
     "minutes": "minutos",
