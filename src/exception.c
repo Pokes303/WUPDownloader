@@ -87,10 +87,13 @@ static int exceptionHandlerThread(int argc, const char **argv)
         *needle = '\n';
         ptr = needle + 1;
         if(*ptr == '\0')
-            break;
+            goto debugFinished;
 
         needle = strstr(ptr, "\n");
     }
+
+    debugPrintf(ptr);
+debugFinished:
 #endif
 
     int i = 0;
