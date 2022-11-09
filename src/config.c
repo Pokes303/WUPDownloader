@@ -191,7 +191,7 @@ bool initConfig()
         sysLang = Swkbd_LanguageType__English;
     }
 
-    menuLang = sysLang;
+    menuLang = sysLangToMenuLang(sysLang);
 
     if(!fileExists(CONFIG_PATH))
     {
