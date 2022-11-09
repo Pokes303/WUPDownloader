@@ -25,8 +25,8 @@
 #include <menu/main.h>
 #include <menu/utils.h>
 #include <renderer.h>
-#include <swkbd_wrapper.h>
 #include <state.h>
+#include <swkbd_wrapper.h>
 #include <titles.h>
 
 #include <string.h>
