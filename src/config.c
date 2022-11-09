@@ -128,6 +128,7 @@ bool initConfig()
     if(handle >= 0)
     {
         UCSysConfig settings __attribute__((__aligned__(0x40))) = {
+            .name = "cafe.language",
             .access = 0,
             .dataType = UC_DATATYPE_UNSIGNED_INT,
             .error = UC_ERROR_OK,
