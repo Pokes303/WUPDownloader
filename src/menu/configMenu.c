@@ -89,7 +89,7 @@ static inline void switchMenuLanguage()
     {
         switch((int)lang)
         {
-            case Swkbd_LanguageType__English:
+            case Swkbd_LanguageType__Invalid:
                 lang = Swkbd_LanguageType__French;
                 break;
             case Swkbd_LanguageType__French:
@@ -106,6 +106,9 @@ static inline void switchMenuLanguage()
                 break;
             case Swkbd_LanguageType__German:
                 lang = Swkbd_LanguageType__English;
+                break;
+            case Swkbd_LanguageType__English:
+                lang = Swkbd_LanguageType__Invalid;
                 break;
         }
     }
@@ -113,6 +116,9 @@ static inline void switchMenuLanguage()
     {
         switch((int)lang)
         {
+            case Swkbd_LanguageType__Invalid:
+                lang = Swkbd_LanguageType__English;
+                break;
             case Swkbd_LanguageType__English:
                 lang = Swkbd_LanguageType__German;
                 break;
@@ -129,7 +135,7 @@ static inline void switchMenuLanguage()
                 lang = Swkbd_LanguageType__French;
                 break;
             case Swkbd_LanguageType__French:
-                lang = Swkbd_LanguageType__English;
+                lang = Swkbd_LanguageType__Invalid;
                 break;
         }
     }

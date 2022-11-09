@@ -94,10 +94,10 @@ static inline const char *getLocalisationFile(Swkbd_LanguageType lang)
     return ret;
 }
 
-static inline void intSetMenuLanguage(Swkbd_LanguageType lang)
+static inline void intSetMenuLanguage()
 {
     gettextCleanUp();
-    const char *path = getLocalisationFile(lang);
+    const char *path = getLocalisationFile(menuLang == Swkbd_LanguageType__Invalid ? sysLang : menuLang);
     if(path != NULL)
         gettextLoadLanguage(path);
 }
@@ -194,7 +194,7 @@ bool initConfig()
         debugPrintf("json_loadb() failed: %s!", jerr.text);
         addToScreenLog("Error parsing config file, using defaults!");
         changed = true; // trigger a save on app exit
-        intSetMenuLanguage(menuLang);
+        intSetMenuLanguage();
         return true;
     }
 
@@ -234,7 +234,7 @@ bool initConfig()
         changed = true;
     }
 
-    intSetMenuLanguage(menuLang);
+    intSetMenuLanguage();
 
     configEntry = json_object_get(json, "Auto resume failed downloads");
     if(configEntry != NULL && json_is_boolean(configEntry))
@@ -537,8 +537,8 @@ void setMenuLanguage(Swkbd_LanguageType lang)
     if(menuLang == lang)
         return;
 
-    intSetMenuLanguage(lang);
     menuLang = lang;
+    intSetMenuLanguage();
     changed = true;
 }
 
