@@ -87,7 +87,7 @@ static inline void switchMenuLanguage()
 
     if(vpad.trigger & VPAD_BUTTON_LEFT)
     {
-        switch((int)lang)
+        switch(lang)
         {
             case Swkbd_LanguageType__Invalid:
                 lang = Swkbd_LanguageType__French;
@@ -107,14 +107,14 @@ static inline void switchMenuLanguage()
             case Swkbd_LanguageType__German:
                 lang = Swkbd_LanguageType__English;
                 break;
-            case Swkbd_LanguageType__English:
+            default:
                 lang = Swkbd_LanguageType__Invalid;
                 break;
         }
     }
     else
     {
-        switch((int)lang)
+        switch(lang)
         {
             case Swkbd_LanguageType__Invalid:
                 lang = Swkbd_LanguageType__English;
@@ -134,7 +134,7 @@ static inline void switchMenuLanguage()
             case Swkbd_LanguageType__Portuguese_BR:
                 lang = Swkbd_LanguageType__French;
                 break;
-            case Swkbd_LanguageType__French:
+            default:
                 lang = Swkbd_LanguageType__Invalid;
                 break;
         }
@@ -160,7 +160,7 @@ static inline void switchNotificationMethod()
             case NOTIF_METHOD_RUMBLE:
                 m = NOTIF_METHOD_LED;
                 break;
-            case NOTIF_METHOD_LED:
+            default:
                 m = NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED;
         }
     }
@@ -177,7 +177,7 @@ static inline void switchNotificationMethod()
             case NOTIF_METHOD_RUMBLE:
                 m = NOTIF_METHOD_NONE;
                 break;
-            case NOTIF_METHOD_NONE:
+            default:
                 m = NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED;
         }
     }
@@ -203,7 +203,7 @@ static inline void switchRegion()
             case MCP_REGION_USA:
                 reg = MCP_REGION_EUROPE;
                 break;
-            case MCP_REGION_EUROPE:
+            default:
                 reg = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN;
         }
     }
@@ -220,7 +220,7 @@ static inline void switchRegion()
             case MCP_REGION_USA:
                 reg = MCP_REGION_JAPAN;
                 break;
-            case MCP_REGION_JAPAN:
+            default:
                 reg = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN;
         }
     }
