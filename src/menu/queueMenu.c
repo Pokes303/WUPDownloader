@@ -33,7 +33,7 @@
 
 #include <coreinit/memory.h>
 
-#define MAX_ENTRIES (MAX_LINES - 3)
+#define MAX_ENTRIES (MAX_LINES - 4)
 #ifndef NUSSPLI_LITE
 #define SPACER     7
 #define SPACER_END 14
@@ -45,7 +45,7 @@
 static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
 {
     startNewFrame();
-    boxToFrame(0, MAX_LINES - 2);
+    boxToFrame(0, MAX_LINES - 3);
 
     char *toScreen = getToFrameBuffer();
     int i = 0;
@@ -118,9 +118,9 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
             break;
     }
 
-    strcpy(toScreen, gettext("Press " BUTTON_B " to return"));
-    strcat(toScreen, " || ");
-    strcat(toScreen, gettext(BUTTON_PLUS " to start downloading"));
+    textToFrame(MAX_LINES - 2, ALIGNED_CENTER, gettext("Press " BUTTON_B " to return"));
+
+    strcpy(toScreen, gettext(BUTTON_PLUS " to start downloading"));
     strcat(toScreen, " || ");
     strcat(toScreen, gettext(BUTTON_MINUS " to delete an item"));
     textToFrame(MAX_LINES - 1, ALIGNED_CENTER, toScreen);
