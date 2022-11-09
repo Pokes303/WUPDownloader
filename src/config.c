@@ -72,90 +72,52 @@ static bool checkForUpdates = true;
 static bool autoResume = true;
 static Swkbd_LanguageType lang = Swkbd_LanguageType__Invalid;
 static Swkbd_LanguageType sysLang;
-static MENU_LANGUAGE menuLang = MENU_LANGUAGE_ENGLISH;
+static Swkbd_LanguageType menuLang = Swkbd_LanguageType__English;
 #ifndef NUSSPLI_LITE
 static bool dlToUSB = true;
 static MCPRegion regionSetting = MCP_REGION_EUROPE | MCP_REGION_USA | MCP_REGION_JAPAN;
 #endif
 static NOTIF_METHOD notifSetting = NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED;
 
-const char *menuLangToString(MENU_LANGUAGE lang)
-{
-    switch(lang)
-    {
-        case MENU_LANGUAGE_ENGLISH:
-            return LANG_ENG;
-        case MENU_LANGUAGE_GERMAN:
-            return LANG_GER;
-        case MENU_LANGUAGE_SPANISH:
-            return LANG_SPA;
-        case MENU_LANGUAGE_PORTUGUESE:
-            return LANG_POR;
-        case MENU_LANGUAGE_PORTUGUESE_BR:
-            return LANG_POR_BR;
-        case MENU_LANGUAGE_FRENCH:
-            return LANG_FRE;
-        default:
-            return LANG_SYS;
-    }
-}
-
-static inline MENU_LANGUAGE sysLangToMenuLang(Swkbd_LanguageType lang)
-{
-    switch(lang)
-    {
-        case Swkbd_LanguageType__German:
-            return MENU_LANGUAGE_GERMAN;
-        case Swkbd_LanguageType__Spanish:
-            return MENU_LANGUAGE_SPANISH;
-        case Swkbd_LanguageType__Portuguese:
-            return MENU_LANGUAGE_PORTUGUESE;
-        case Swkbd_LanguageType__French:
-            return MENU_LANGUAGE_FRENCH;
-        default:
-            return MENU_LANGUAGE_ENGLISH;
-    }
-}
-
-static MENU_LANGUAGE stringToMenuLang(const char *lang)
-{
-    if(strcmp(lang, LANG_ENG) == 0)
-        return MENU_LANGUAGE_ENGLISH;
-    if(strcmp(lang, LANG_GER) == 0)
-        return MENU_LANGUAGE_GERMAN;
-    if(strcmp(lang, LANG_SPA) == 0)
-        return MENU_LANGUAGE_SPANISH;
-    if(strcmp(lang, LANG_POR) == 0)
-        return MENU_LANGUAGE_PORTUGUESE;
-    if(strcmp(lang, LANG_POR_BR) == 0)
-        return MENU_LANGUAGE_PORTUGUESE_BR;
-    if(strcmp(lang, LANG_FRE) == 0)
-        return MENU_LANGUAGE_FRENCH;
-
-    return sysLangToMenuLang(sysLang);
-}
-
 #define LOCALE_PATH      ROMFS_PATH "locale/"
 #define LOCALE_EXTENSION ".json"
-static inline const char *getLocalisationFile(MENU_LANGUAGE lang)
+static inline const char *getLocalisationFile(Swkbd_LanguageType lang)
 {
-    if(lang == MENU_LANGUAGE_ENGLISH)
+    if(lang == Swkbd_LanguageType__English)
         return NULL;
 
     char *ret = getStaticPathBuffer(2);
     OSBlockMove(ret, LOCALE_PATH, strlen(LOCALE_PATH), false);
-    strcpy(ret + strlen(LOCALE_PATH), menuLangToString(lang));
+    strcpy(ret + strlen(LOCALE_PATH), getLanguageString(lang));
     strcat(ret + strlen(LOCALE_PATH), LOCALE_EXTENSION);
 
     return ret;
 }
 
-static inline void intSetMenuLanguage(MENU_LANGUAGE lang)
+static inline void intSetMenuLanguage(Swkbd_LanguageType lang)
 {
     gettextCleanUp();
     const char *path = getLocalisationFile(lang);
     if(path != NULL)
         gettextLoadLanguage(path);
+}
+
+Swkbd_LanguageType stringToLanguageType(const char *lang)
+{
+    if(strcmp(lang, LANG_ENG) == 0)
+        return Swkbd_LanguageType__English;
+    if(strcmp(lang, LANG_GER) == 0)
+        return Swkbd_LanguageType__German;
+    if(strcmp(lang, LANG_SPA) == 0)
+        return Swkbd_LanguageType__Spanish;
+    if(strcmp(lang, LANG_POR) == 0)
+        return Swkbd_LanguageType__Portuguese;
+    if(strcmp(lang, LANG_POR_BR) == 0)
+        return Swkbd_LanguageType__Portuguese_BR;
+    if(strcmp(lang, LANG_FRE) == 0)
+        return Swkbd_LanguageType__French;
+
+    return sysLang;
 }
 
 bool initConfig()
@@ -189,7 +151,7 @@ bool initConfig()
         sysLang = Swkbd_LanguageType__English;
     }
 
-    menuLang = sysLangToMenuLang(sysLang);
+    menuLang = sysLang;
 
     if(!fileExists(CONFIG_PATH))
     {
@@ -261,7 +223,7 @@ bool initConfig()
                     lang = Swkbd_LanguageType__Invalid;
             }
 
-            menuLang = sysLangToMenuLang(sysLang);
+            menuLang = sysLang;
             changed = true;
         }
         else
@@ -303,7 +265,7 @@ bool initConfig()
 
             configEntry = json_object_get(json, "Menu language");
             if(configEntry != NULL && json_is_string(configEntry))
-                menuLang = stringToMenuLang(json_string_value(configEntry));
+                menuLang = stringToLanguageType(json_string_value(configEntry));
             else
                 changed = true;
         }
@@ -311,7 +273,7 @@ bool initConfig()
     else
     {
         addToScreenLog("Config file version not found!");
-        menuLang = sysLangToMenuLang(sysLang);
+        menuLang = sysLang;
         changed = true;
     }
 
@@ -413,6 +375,8 @@ const char *getLanguageString(Swkbd_LanguageType language)
             return LANG_DUT;
         case Swkbd_LanguageType__Portuguese:
             return LANG_POR;
+        case Swkbd_LanguageType__Portuguese_BR:
+            return LANG_POR_BR;
         case Swkbd_LanguageType__Russian:
             return LANG_RUS;
         case Swkbd_LanguageType__Chinese2:
@@ -472,7 +436,7 @@ bool saveConfig(bool force)
                 value = autoResume ? json_true() : json_false();
                 if(setValue(config, "Auto resume failed downloads", value))
                 {
-                    value = json_string(menuLangToString(menuLang));
+                    value = json_string(getLanguageString(menuLang));
                     if(setValue(config, "Menu language", value))
                     {
                         value = json_string(getLanguageString(lang));
@@ -606,12 +570,12 @@ void setRegion(MCPRegion region)
 }
 #endif
 
-MENU_LANGUAGE getMenuLanguage()
+Swkbd_LanguageType getMenuLanguage()
 {
     return menuLang;
 }
 
-void setMenuLanguage(MENU_LANGUAGE lang)
+void setMenuLanguage(Swkbd_LanguageType lang)
 {
     if(menuLang == lang)
         return;

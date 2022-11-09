@@ -25,6 +25,7 @@
 #include <menu/main.h>
 #include <menu/utils.h>
 #include <renderer.h>
+#include <swkbd_wrapper.h>
 #include <state.h>
 #include <titles.h>
 
@@ -47,7 +48,7 @@ static void drawConfigMenu()
 
     strcpy(toScreen, gettext("Language:"));
     strcat(toScreen, " ");
-    strcat(toScreen, gettext(menuLangToString(getMenuLanguage())));
+    strcat(toScreen, gettext(getLanguageString(getMenuLanguage())));
     textToFrame(0, 4, toScreen);
 
     strcpy(toScreen, gettext("Online updates:"));
@@ -82,29 +83,29 @@ static void drawConfigMenu()
 
 static inline void switchMenuLanguage()
 {
-    MENU_LANGUAGE lang = getMenuLanguage();
+    Swkbd_LanguageType lang = getMenuLanguage();
 
     if(vpad.trigger & VPAD_BUTTON_LEFT)
     {
         switch((int)lang)
         {
-            case MENU_LANGUAGE_ENGLISH:
-                lang = MENU_LANGUAGE_FRENCH;
+            case Swkbd_LanguageType__English:
+                lang = Swkbd_LanguageType__French;
                 break;
-            case MENU_LANGUAGE_FRENCH:
-                lang = MENU_LANGUAGE_PORTUGUESE_BR;
+            case Swkbd_LanguageType__French:
+                lang = Swkbd_LanguageType__Portuguese_BR;
                 break;
-            case MENU_LANGUAGE_PORTUGUESE_BR:
-                lang = MENU_LANGUAGE_PORTUGUESE;
+            case Swkbd_LanguageType__Portuguese_BR:
+                lang = Swkbd_LanguageType__Portuguese;
                 break;
-            case MENU_LANGUAGE_PORTUGUESE:
-                lang = MENU_LANGUAGE_SPANISH;
+            case Swkbd_LanguageType__Portuguese:
+                lang = Swkbd_LanguageType__Spanish;
                 break;
-            case MENU_LANGUAGE_SPANISH:
-                lang = MENU_LANGUAGE_GERMAN;
+            case Swkbd_LanguageType__Spanish:
+                lang = Swkbd_LanguageType__German;
                 break;
-            case MENU_LANGUAGE_GERMAN:
-                lang = MENU_LANGUAGE_ENGLISH;
+            case Swkbd_LanguageType__German:
+                lang = Swkbd_LanguageType__English;
                 break;
         }
     }
@@ -112,23 +113,23 @@ static inline void switchMenuLanguage()
     {
         switch((int)lang)
         {
-            case MENU_LANGUAGE_ENGLISH:
-                lang = MENU_LANGUAGE_GERMAN;
+            case Swkbd_LanguageType__English:
+                lang = Swkbd_LanguageType__German;
                 break;
-            case MENU_LANGUAGE_GERMAN:
-                lang = MENU_LANGUAGE_SPANISH;
+            case Swkbd_LanguageType__German:
+                lang = Swkbd_LanguageType__Spanish;
                 break;
-            case MENU_LANGUAGE_SPANISH:
-                lang = MENU_LANGUAGE_PORTUGUESE;
+            case Swkbd_LanguageType__Spanish:
+                lang = Swkbd_LanguageType__Portuguese;
                 break;
-            case MENU_LANGUAGE_PORTUGUESE:
-                lang = MENU_LANGUAGE_PORTUGUESE_BR;
+            case Swkbd_LanguageType__Portuguese:
+                lang = Swkbd_LanguageType__Portuguese_BR;
                 break;
-            case MENU_LANGUAGE_PORTUGUESE_BR:
-                lang = MENU_LANGUAGE_FRENCH;
+            case Swkbd_LanguageType__Portuguese_BR:
+                lang = Swkbd_LanguageType__French;
                 break;
-            case MENU_LANGUAGE_FRENCH:
-                lang = MENU_LANGUAGE_ENGLISH;
+            case Swkbd_LanguageType__French:
+                lang = Swkbd_LanguageType__English;
                 break;
         }
     }

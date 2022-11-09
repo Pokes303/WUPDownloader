@@ -49,7 +49,9 @@ typedef enum
     Swkbd_LanguageType__Portuguese = 9,
     Swkbd_LanguageType__Russian = 10,
     Swkbd_LanguageType__Chinese2 = 11,
-    Swkbd_LanguageType__Invalid = 12
+    Swkbd_LanguageType__Invalid = 12,
+    // We add new languages here which can only be used as menu languages
+    Swkbd_LanguageType__Portuguese_BR = 13,
 } Swkbd_LanguageType;
 
 typedef enum

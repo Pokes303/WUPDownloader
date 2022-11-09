@@ -49,16 +49,6 @@ extern "C"
         NOTIF_METHOD_LED = 0x02,
     } NOTIF_METHOD;
 
-    typedef enum
-    {
-        MENU_LANGUAGE_ENGLISH,
-        MENU_LANGUAGE_GERMAN,
-        MENU_LANGUAGE_SPANISH,
-        MENU_LANGUAGE_PORTUGUESE,
-        MENU_LANGUAGE_PORTUGUESE_BR,
-        MENU_LANGUAGE_FRENCH,
-    } MENU_LANGUAGE;
-
     bool initConfig();
     bool saveConfig(bool force);
     bool updateCheckEnabled();
@@ -77,9 +67,8 @@ extern "C"
     void setDlToUSB(bool toUSB);
     NOTIF_METHOD getNotificationMethod();
     void setNotificationMethod(NOTIF_METHOD method);
-    MENU_LANGUAGE getMenuLanguage();
-    void setMenuLanguage(MENU_LANGUAGE lang);
-    const char *menuLangToString(MENU_LANGUAGE lang);
+    Swkbd_LanguageType getMenuLanguage();
+    void setMenuLanguage(Swkbd_LanguageType lang);
 
 #ifdef __cplusplus
 }
