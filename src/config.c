@@ -110,8 +110,6 @@ static inline MENU_LANGUAGE sysLangToMenuLang(Swkbd_LanguageType lang)
             return MENU_LANGUAGE_SPANISH;
         case Swkbd_LanguageType__Portuguese:
             return MENU_LANGUAGE_PORTUGUESE;
-        case Swkbd_LanguageType__Portuguese_BR:
-            return MENU_LANGUAGE_PORTUGUESE_BR;
         case Swkbd_LanguageType__French:
             return MENU_LANGUAGE_FRENCH;
         default:
@@ -415,8 +413,6 @@ const char *getLanguageString(Swkbd_LanguageType language)
             return LANG_DUT;
         case Swkbd_LanguageType__Portuguese:
             return LANG_POR;
-        case Swkbd_LanguageType__Portuguese_BR:
-            return LANG_POR_BR;
         case Swkbd_LanguageType__Russian:
             return LANG_RUS;
         case Swkbd_LanguageType__Chinese2:
