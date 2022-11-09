@@ -104,20 +104,34 @@ static inline void intSetMenuLanguage(Swkbd_LanguageType lang)
 
 Swkbd_LanguageType stringToLanguageType(const char *lang)
 {
+    if(strcmp(lang, LANG_JAP) == 0)
+        return Swkbd_LanguageType__Japanese;
     if(strcmp(lang, LANG_ENG) == 0)
         return Swkbd_LanguageType__English;
+    if(strcmp(lang, LANG_FRE) == 0)
+        return Swkbd_LanguageType__French;
     if(strcmp(lang, LANG_GER) == 0)
         return Swkbd_LanguageType__German;
+    if(strcmp(lang, LANG_ITA) == 0)
+        return Swkbd_LanguageType__Italian;
     if(strcmp(lang, LANG_SPA) == 0)
         return Swkbd_LanguageType__Spanish;
+    if(strcmp(lang, LANG_CHI) == 0)
+        return Swkbd_LanguageType__Chinese1;
+    if(strcmp(lang, LANG_KOR) == 0)
+        return Swkbd_LanguageType__Korean;
+    if(strcmp(lang, LANG_DUT) == 0)
+        return Swkbd_LanguageType__Dutch;
     if(strcmp(lang, LANG_POR) == 0)
         return Swkbd_LanguageType__Portuguese;
     if(strcmp(lang, LANG_POR_BR) == 0)
         return Swkbd_LanguageType__Portuguese_BR;
-    if(strcmp(lang, LANG_FRE) == 0)
-        return Swkbd_LanguageType__French;
+    if(strcmp(lang, LANG_RUS) == 0)
+        return Swkbd_LanguageType__Russian;
+    if(strcmp(lang, LANG_TCH) == 0)
+        return Swkbd_LanguageType__Chinese2;
 
-    return sysLang;
+    return Swkbd_LanguageType__Invalid;
 }
 
 bool initConfig()
@@ -193,36 +207,7 @@ bool initConfig()
             addToScreenLog("Old config file updating...");
             configEntry = json_object_get(json, "Language");
             if(configEntry != NULL && json_is_string(configEntry))
-            {
-                if(strcmp(json_string_value(configEntry), LANG_JAP) == 0)
-                    lang = Swkbd_LanguageType__Japanese;
-                else if(strcmp(json_string_value(configEntry), LANG_ENG) == 0)
-                    lang = Swkbd_LanguageType__English;
-                else if(strcmp(json_string_value(configEntry), LANG_FRE) == 0)
-                    lang = Swkbd_LanguageType__French;
-                else if(strcmp(json_string_value(configEntry), LANG_GER) == 0)
-                    lang = Swkbd_LanguageType__French;
-                else if(strcmp(json_string_value(configEntry), LANG_ITA) == 0)
-                    lang = Swkbd_LanguageType__Italian;
-                else if(strcmp(json_string_value(configEntry), LANG_SPA) == 0)
-                    lang = Swkbd_LanguageType__Spanish;
-                else if(strcmp(json_string_value(configEntry), LANG_CHI) == 0)
-                    lang = Swkbd_LanguageType__Chinese1;
-                else if(strcmp(json_string_value(configEntry), LANG_KOR) == 0)
-                    lang = Swkbd_LanguageType__Korean;
-                else if(strcmp(json_string_value(configEntry), LANG_DUT) == 0)
-                    lang = Swkbd_LanguageType__Dutch;
-                else if(strcmp(json_string_value(configEntry), LANG_POR) == 0)
-                    lang = Swkbd_LanguageType__Portuguese;
-                else if(strcmp(json_string_value(configEntry), LANG_POR_BR) == 0)
-                    lang = Swkbd_LanguageType__Portuguese_BR;
-                else if(strcmp(json_string_value(configEntry), LANG_RUS) == 0)
-                    lang = Swkbd_LanguageType__Russian;
-                else if(strcmp(json_string_value(configEntry), LANG_TCH) == 0)
-                    lang = Swkbd_LanguageType__Chinese2;
-                else
-                    lang = Swkbd_LanguageType__Invalid;
-            }
+                lang = stringToLanguageType(json_string_value(configEntry));
 
             menuLang = sysLang;
             changed = true;
@@ -231,36 +216,7 @@ bool initConfig()
         {
             configEntry = json_object_get(json, "Keyboard language");
             if(configEntry != NULL && json_is_string(configEntry))
-            {
-                if(strcmp(json_string_value(configEntry), LANG_JAP) == 0)
-                    lang = Swkbd_LanguageType__Japanese;
-                else if(strcmp(json_string_value(configEntry), LANG_ENG) == 0)
-                    lang = Swkbd_LanguageType__English;
-                else if(strcmp(json_string_value(configEntry), LANG_FRE) == 0)
-                    lang = Swkbd_LanguageType__French;
-                else if(strcmp(json_string_value(configEntry), LANG_GER) == 0)
-                    lang = Swkbd_LanguageType__French;
-                else if(strcmp(json_string_value(configEntry), LANG_ITA) == 0)
-                    lang = Swkbd_LanguageType__Italian;
-                else if(strcmp(json_string_value(configEntry), LANG_SPA) == 0)
-                    lang = Swkbd_LanguageType__Spanish;
-                else if(strcmp(json_string_value(configEntry), LANG_CHI) == 0)
-                    lang = Swkbd_LanguageType__Chinese1;
-                else if(strcmp(json_string_value(configEntry), LANG_KOR) == 0)
-                    lang = Swkbd_LanguageType__Korean;
-                else if(strcmp(json_string_value(configEntry), LANG_DUT) == 0)
-                    lang = Swkbd_LanguageType__Dutch;
-                else if(strcmp(json_string_value(configEntry), LANG_POR) == 0)
-                    lang = Swkbd_LanguageType__Portuguese;
-                else if(strcmp(json_string_value(configEntry), LANG_POR_BR) == 0)
-                    lang = Swkbd_LanguageType__Portuguese_BR;
-                else if(strcmp(json_string_value(configEntry), LANG_RUS) == 0)
-                    lang = Swkbd_LanguageType__Russian;
-                else if(strcmp(json_string_value(configEntry), LANG_TCH) == 0)
-                    lang = Swkbd_LanguageType__Chinese2;
-                else
-                    lang = Swkbd_LanguageType__Invalid;
-            }
+                lang = stringToLanguageType(json_string_value(configEntry));
             else
                 changed = true;
 
