@@ -166,7 +166,7 @@ bool initConfig()
         sysLang = Swkbd_LanguageType__English;
     }
 
-    menuLang = sysLang;
+    menuLang = Swkbd_LanguageType__Invalid;
 
     if(!fileExists(CONFIG_PATH))
     {
@@ -209,7 +209,7 @@ bool initConfig()
             if(configEntry != NULL && json_is_string(configEntry))
                 lang = stringToLanguageType(json_string_value(configEntry));
 
-            menuLang = sysLang;
+            menuLang = Swkbd_LanguageType__Invalid;
             changed = true;
         }
         else
@@ -230,7 +230,7 @@ bool initConfig()
     else
     {
         addToScreenLog("Config file version not found!");
-        menuLang = sysLang;
+        menuLang = Swkbd_LanguageType__Invalid;
         changed = true;
     }
 
