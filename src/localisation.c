@@ -74,11 +74,15 @@ static void addMSG(const char *msgid, const char *msgstr)
 
     msg->hash = hash_string((unsigned char *)msgid);
     msg->msgstr = strdup(msgstr);
-    if(!addToListEnd(baseMSG, msg))
+    if(msg->msgstr != NULL)
     {
+        if(addToListEnd(baseMSG, msg))
+            return;
+
         MEMFreeToDefaultHeap((void *)(msg->msgstr));
-        MEMFreeToDefaultHeap(msg);
     }
+
+    MEMFreeToDefaultHeap(msg);
 }
 
 void gettextCleanUp()
