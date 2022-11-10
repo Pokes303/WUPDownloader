@@ -150,15 +150,15 @@ bool gettextLoadLanguage(const char *langFile)
 
 const char *gettext(const char *msgid)
 {
-    if(baseMSG == NULL)
-        return msgid;
+    if(baseMSG != NULL)
+    {
+        hashMsg *msg;
+        uint32_t hash = hash_string((unsigned char *)msgid);
 
-    hashMsg *msg;
-    uint32_t hash = hash_string((unsigned char *)msgid);
-
-    forEachListEntry(baseMSG, msg)
-        if(msg->hash == hash)
-            return msg->msgstr;
+        forEachListEntry(baseMSG, msg)
+            if(msg->hash == hash)
+                return msg->msgstr;
+    }
 
     return msgid;
 }
