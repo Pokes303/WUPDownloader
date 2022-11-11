@@ -296,58 +296,50 @@ bool verifyTmd(const TMD *tmd, size_t size)
                 if(size == (sizeof(TMD) + 0x700) + (sizeof(TMD_CONTENT) * tmd->num_contents) || // Most title.tmd files have a certificate attached to the end. This certificate is 0x700 bytes long.
                     size == sizeof(TMD) + (sizeof(TMD_CONTENT) * tmd->num_contents)) // Some (like ones made with NUSPacker) don't have a certificate attached through.
                 {
-                    // Validate TMD hash
-                    bool teconmoon = false;
-                    uint32_t hash[8];
-                    uint8_t *ptr = ((uint8_t *)tmd) + (sizeof(TMD) - (sizeof(TMD_CONTENT_INFO) * 64));
-                    mbedtls_sha256(ptr, sizeof(TMD_CONTENT_INFO) * 64, (unsigned char *)hash, 0);
-
+                    // Teconmoon workaround
+                    bool teconmoon = true;
                     for(int i = 0; i < 8; ++i)
                     {
-                        if(i == 0)
+                        if(tmd->hash[i] != 0)
                         {
-                            if(tmd->hash[0] == 0)
-                            {
-                                teconmoon = true;
-                                continue;
-                            }
-                        }
-                        else if(teconmoon)
-                        {
-                            if(tmd->hash[i] != 0)
-                                goto invalidTmdHash;
-
-                            continue;
-                        }
-
-                        if(hash[i] != tmd->hash[i])
-                        {
-                        invalidTmdHash:
-                            debugPrintf("Invalid title.tmd file (tmd hash mismatch)");
-                            return false;
+                            teconmoon = false;
+                            break;
                         }
                     }
 
-                    // Validate content hash
                     if(!teconmoon)
                     {
+                        // Validate TMD hash
+                        uint32_t hash[8];
+                        uint8_t *ptr = ((uint8_t *)tmd) + (sizeof(TMD) - (sizeof(TMD_CONTENT_INFO) * 64));
+                        mbedtls_sha256(ptr, sizeof(TMD_CONTENT_INFO) * 64, (unsigned char *)hash, 0);
+                        for(int i = 0; i < 8; ++i)
+                        {
+                            if(hash[i] != tmd->hash[i])
+                            {
+                                debugPrintf("Invalid title.tmd file (tmd hash mismatch)");
+                                return false;
+                            }
+                        }
+
+                        // Validate content hash
                         ptr += sizeof(TMD_CONTENT_INFO) * 64;
                         mbedtls_sha256(ptr, sizeof(TMD_CONTENT) * tmd->num_contents, (unsigned char *)hash, 0);
-                    }
-
-                    for(int i = 0; i < 8; ++i)
-                    {
-                        if(teconmoon)
+                        for(int i = 0; i < 8; ++i)
                         {
+                            if(hash[i] != tmd->content_infos[0].hash[i])
+                            {
+                            invalidContentHash:
+                                debugPrintf("Invalid title.tmd file (content hash mismatch)");
+                                return false;
+                            }
+                        }
+                    }
+                    else // Teconmoon hashes are all zeroes
+                    {
+                        for(int i = 0; i < 8; ++i)
                             if(tmd->content_infos[0].hash[i] != 0)
                                 goto invalidContentHash;
-                        }
-                        else if(hash[i] != tmd->content_infos[0].hash[i])
-                        {
-                        invalidContentHash:
-                            debugPrintf("Invalid title.tmd file (content hash mismatch)");
-                            return false;
-                        }
                     }
 
                     // Validate content
