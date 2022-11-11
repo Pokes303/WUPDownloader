@@ -434,7 +434,7 @@ downloadTMD:
     }
 
     tmd = (TMD *)getRamBuf();
-    if(!verifyTmd(tmd, getRamBufSize()))
+    if(verifyTmd(tmd, getRamBufSize()) != TMD_STATE_GOOD)
     {
         clearRamBuf();
         saveConfig(false);

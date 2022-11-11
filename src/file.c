@@ -285,7 +285,7 @@ size_t readFile(const char *path, void **buffer)
 #endif
 
 // This uses informations from https://github.com/Maschell/nuspacker
-bool verifyTmd(const TMD *tmd, size_t size)
+TMD_STATE verifyTmd(const TMD *tmd, size_t size)
 {
     if(size >= sizeof(TMD) + (sizeof(TMD_CONTENT) * 9)) // Minimal title.tmd size
     {
@@ -318,7 +318,7 @@ bool verifyTmd(const TMD *tmd, size_t size)
                             if(hash[i] != tmd->hash[i])
                             {
                                 debugPrintf("Invalid title.tmd file (tmd hash mismatch)");
-                                return false;
+                                return TMD_STATE_BAD;
                             }
                         }
 
@@ -331,7 +331,7 @@ bool verifyTmd(const TMD *tmd, size_t size)
                             {
                             invalidContentHash:
                                 debugPrintf("Invalid title.tmd file (content hash mismatch)");
-                                return false;
+                                return TMD_STATE_BAD;
                             }
                         }
                     }
@@ -340,6 +340,8 @@ bool verifyTmd(const TMD *tmd, size_t size)
                         for(int i = 0; i < 8; ++i)
                             if(tmd->content_infos[0].hash[i] != 0)
                                 goto invalidContentHash;
+
+                        return TMD_STATE_TECONMOON;
                     }
 
                     // Validate content
@@ -349,23 +351,23 @@ bool verifyTmd(const TMD *tmd, size_t size)
                         if(tmd->contents[i].index != i)
                         {
                             debugPrintf("Invalid title.tmd file (content: %d, index: %u)", i, tmd->contents[i].index);
-                            return false;
+                            return TMD_STATE_BAD;
                         }
                         // Validate content type
                         if(!((tmd->contents[i].type & TMD_CONTENT_TYPE_CONTENT) && (tmd->contents[i].type & TMD_CONTENT_TYPE_ENCRYPTED)))
                         {
                             debugPrintf("Invalid title.tmd file (content: %u, type: 0x%04X)", i, tmd->contents[i].type);
-                            return false;
+                            return TMD_STATE_BAD;
                         }
                         // Validate content size
                         if(tmd->contents[i].size == 0 || tmd->contents[i].size > (uint64_t)1024 * 1024 * 1024 * 4)
                         {
                             debugPrintf("Invalid title.tmd file (content: %d, size: %llu)", i, tmd->contents[i].size);
-                            return false;
+                            return TMD_STATE_BAD;
                         }
                     }
 
-                    return true;
+                    return TMD_STATE_GOOD;
                 }
                 else
                     debugPrintf("Wrong title.tmd filesize (num_contents: %u, filesize: 0x%X)", tmd->num_contents, size);
@@ -379,7 +381,47 @@ bool verifyTmd(const TMD *tmd, size_t size)
     else
         debugPrintf("Wrong title.tmd filesize: 0x%X", size);
 
-    return false;
+    return TMD_STATE_BAD;
+}
+
+TMD *fixTMD(const char *dir, TMD *tmd, size_t size)
+{
+    // Fix content hash
+    uint32_t hash[8];
+    uint8_t *ptr = ((uint8_t *)tmd) + sizeof(TMD);
+    mbedtls_sha256(ptr, sizeof(TMD_CONTENT) * tmd->num_contents, (unsigned char *)hash, 0);
+    for(int i = 0; i < 8; ++i)
+        tmd->content_infos[0].hash[i] = hash[i];
+
+    // Fix tmd hash
+    ptr -= sizeof(TMD_CONTENT_INFO) * 64;
+    mbedtls_sha256(ptr, sizeof(TMD_CONTENT_INFO) * 64, (unsigned char *)hash, 0);
+    for(int i = 0; i < 8; ++i)
+        tmd->hash[i] = hash[i];
+
+    // Verify the new tmd
+    if(verifyTmd(tmd, size) == TMD_STATE_GOOD)
+    {
+        size_t s = strlen(dir);
+        char *path = MEMAllocFromDefaultHeap(s + (strlen("title.tmd") + 1));
+        if(path != NULL)
+        {
+            OSBlockMove(path, dir, s, false);
+            strcpy(path + s, "title.tmd");
+            FSFileHandle file = openFile(path, "w", 0);
+            MEMFreeToDefaultHeap(path);
+
+            // Write fixed file to disc
+            addToIOQueue(tmd, 1, size, file);
+            addToIOQueue(NULL, 0, 0, file);
+            flushIOQueue();
+
+            return tmd;
+        }
+    }
+
+    MEMFreeToDefaultHeap(tmd);
+    return NULL;
 }
 
 TMD *getTmd(const char *dir)
@@ -397,8 +439,17 @@ TMD *getTmd(const char *dir)
 
         if(tmd != NULL)
         {
-            if(verifyTmd(tmd, s))
-                return tmd;
+            switch(verifyTmd(tmd, s))
+            {
+                case TMD_STATE_GOOD:
+                    return tmd;
+                case TMD_STATE_TECONMOON:
+                    debugPrintf("Teconmoon title.tmd file detected, fixing...");
+                    return fixTMD(dir, tmd, s);
+                case TMD_STATE_BAD:
+                    break;
+
+            }
 
             MEMFreeToDefaultHeap(tmd);
         }
