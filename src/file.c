@@ -322,7 +322,7 @@ bool verifyTmd(const TMD *tmd, size_t size)
 
                         if(hash[i] != tmd->hash[i])
                         {
-invalidTmdHash:
+                        invalidTmdHash:
                             debugPrintf("Invalid title.tmd file (tmd hash mismatch)");
                             return false;
                         }
@@ -340,7 +340,7 @@ invalidTmdHash:
                         }
                         else if(hash[i] != tmd->content_infos[0].hash[i])
                         {
-invalidContentHash:
+                        invalidContentHash:
                             debugPrintf("Invalid title.tmd file (content hash mismatch)");
                             return false;
                         }
