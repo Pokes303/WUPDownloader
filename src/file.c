@@ -436,7 +436,7 @@ TMD *getTmd(const char *dir)
                     MEMFreeToDefaultHeap(tmd);
                     tmd = NULL;
                 case TMD_STATE_GOOD:
-                    break;;
+                    break;
                 case TMD_STATE_TECONMOON:
                     debugPrintf("Teconmoon title.tmd file detected, fixing...");
                     if(!fixTMD(path, tmd, s))
