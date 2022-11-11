@@ -120,7 +120,7 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
 
     textToFrame(MAX_LINES - 2, ALIGNED_CENTER, gettext("Press " BUTTON_B " to return"));
 
-    strcpy(toScreen, gettext(BUTTON_PLUS " to start downloading"));
+    strcpy(toScreen, gettext(BUTTON_PLUS " to start the queue"));
     strcat(toScreen, " || ");
     strcat(toScreen, gettext(BUTTON_MINUS " to delete an item"));
     textToFrame(MAX_LINES - 1, ALIGNED_CENTER, toScreen);
