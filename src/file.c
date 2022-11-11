@@ -384,7 +384,7 @@ TMD_STATE verifyTmd(const TMD *tmd, size_t size)
     return TMD_STATE_BAD;
 }
 
-static TMD *fixTMD(const char *dir, TMD *tmd, size_t size)
+static bool fixTMD(const char *path, TMD *tmd, size_t size)
 {
     // Fix content hash
     uint32_t hash[8];
@@ -402,58 +402,56 @@ static TMD *fixTMD(const char *dir, TMD *tmd, size_t size)
     // Verify the new tmd
     if(verifyTmd(tmd, size) == TMD_STATE_GOOD)
     {
-        size_t s = strlen(dir);
-        char *path = MEMAllocFromDefaultHeap(s + (strlen("title.tmd") + 1));
-        if(path != NULL)
+        // Write fixed file to disc
+        FSFileHandle file = openFile(path, "w", 0);
+        if(file != 0)
         {
-            OSBlockMove(path, dir, s, false);
-            OSBlockMove(path + s, "title.tmd", strlen("title.tmd") + 1, false);
-            FSFileHandle file = openFile(path, "w", 0);
-            MEMFreeToDefaultHeap(path);
-
             // Write fixed file to disc
             addToIOQueue(tmd, 1, size, file);
             addToIOQueue(NULL, 0, 0, file);
 
-            return tmd;
+            return true;
         }
     }
 
-    MEMFreeToDefaultHeap(tmd);
-    return NULL;
+    return false;
 }
 
 TMD *getTmd(const char *dir)
 {
     size_t s = strlen(dir);
     char *path = MEMAllocFromDefaultHeap(s + (strlen("title.tmd") + 1));
+    TMD *tmd = NULL;
     if(path != NULL)
     {
         OSBlockMove(path, dir, s, false);
         OSBlockMove(path + s, "title.tmd", strlen("title.tmd") + 1, false);
 
-        TMD *tmd;
         s = readFile(path, (void **)&tmd);
-        MEMFreeToDefaultHeap(path);
-
         if(tmd != NULL)
         {
             switch(verifyTmd(tmd, s))
             {
+                case TMD_STATE_BAD:
+                    MEMFreeToDefaultHeap(tmd);
+                    tmd = NULL;
                 case TMD_STATE_GOOD:
-                    return tmd;
+                    break;;
                 case TMD_STATE_TECONMOON:
                     debugPrintf("Teconmoon title.tmd file detected, fixing...");
-                    return fixTMD(dir, tmd, s);
-                case TMD_STATE_BAD:
+                    if(!fixTMD(path, tmd, s))
+                    {
+                        MEMFreeToDefaultHeap(tmd);
+                        tmd = NULL;
+                    }
                     break;
             }
 
-            MEMFreeToDefaultHeap(tmd);
+            MEMFreeToDefaultHeap(path);
         }
     }
 
-    return NULL;
+    return tmd;
 }
 
 FSError createDirectory(const char *path)
