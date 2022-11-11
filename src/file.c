@@ -384,6 +384,12 @@ TMD_STATE verifyTmd(const TMD *tmd, size_t size)
     return TMD_STATE_BAD;
 }
 
+/*
+ * Teconmoons Injetor bundles a exe version of NUSPacker.
+ * It looks like converting the jar to an exe file slightly
+ * corrupted the binary, so the title.tmd files created are
+ * slightly off. We fix them here.
+ */
 static bool fixTMD(const char *path, TMD *tmd, size_t size)
 {
     // Fix content hash
