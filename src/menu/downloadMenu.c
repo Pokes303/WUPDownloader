@@ -33,7 +33,7 @@
 
 #include <stdint.h>
 
-#include <coreinit/filesystem.h>
+#include <coreinit/filesystem_fsa.h>
 
 bool downloadMenu()
 {

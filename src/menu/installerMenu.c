@@ -32,7 +32,7 @@
 #include <tmd.h>
 #include <utils.h>
 
-#include <coreinit/filesystem.h>
+#include <coreinit/filesystem_fsa.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 

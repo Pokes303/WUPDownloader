@@ -52,7 +52,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#include <coreinit/filesystem.h>
+#include <coreinit/filesystem_fsa.h>
 #include <coreinit/foreground.h>
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>

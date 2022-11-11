@@ -25,7 +25,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <coreinit/filesystem.h>
+#include <coreinit/filesystem_fsa.h>
 #include <coreinit/mcp.h>
 #include <coreinit/memdefaultheap.h>
 

@@ -23,7 +23,6 @@
 #include <cwchar>
 #include <string>
 
-#include <coreinit/filesystem.h>
 #include <coreinit/memdefaultheap.h>
 
 #include <swkbd_wrapper.h>

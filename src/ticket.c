@@ -95,7 +95,7 @@ bool generateTik(const char *path, const TitleEntry *titleEntry, const TMD *tmd)
     ticket.header_version = 0x0001;
     ticket.total_hdr_size = 0x14;
 
-    FSFileHandle tik = openFile(path, "w", 0);
+    FSAFileHandle tik = openFile(path, "w", 0);
     if(tik == 0)
     {
         char *err = getStaticScreenBuffer();
@@ -142,7 +142,7 @@ bool generateCert(const char *path)
     cetk.cert3.version = 0x01;
     cetk.cert3.unknown_01 = 0x00010001;
 
-    FSFileHandle cert = openFile(path, "w", 0);
+    FSAFileHandle cert = openFile(path, "w", 0);
     if(cert == 0)
     {
         char *err = getStaticScreenBuffer();

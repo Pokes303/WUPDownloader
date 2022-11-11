@@ -22,7 +22,6 @@
 
 #include <coreinit/cache.h>
 #include <coreinit/core.h>
-#include <coreinit/filesystem.h>
 #include <coreinit/filesystem_fsa.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>

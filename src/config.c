@@ -32,6 +32,7 @@
 #include <staticMem.h>
 #include <utils.h>
 
+#include <coreinit/filesystem_fsa.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 #include <coreinit/time.h>
@@ -420,7 +421,7 @@ bool saveConfig(bool force)
                                             {
                                                 entropy = strlen(json);
                                                 flushIOQueue();
-                                                FSFileHandle f = openFile(CONFIG_PATH, "w", 0);
+                                                FSAFileHandle f = openFile(CONFIG_PATH, "w", 0);
                                                 if(f != 0)
                                                 {
                                                     addToIOQueue(json, 1, entropy, f);

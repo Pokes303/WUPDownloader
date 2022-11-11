@@ -421,7 +421,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
     {
         if(resume && fileExists(file))
         {
-            FSFileHandle nf;
+            FSAFileHandle nf;
             fileSize = getFilesize(file);
             if(fileSize != 0)
             {
@@ -486,7 +486,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
         if(toRam)
             fclose((FILE *)fp);
         else
-            addToIOQueue(NULL, 0, 0, (FSFileHandle)fp);
+            addToIOQueue(NULL, 0, 0, (FSAFileHandle)fp);
 
         debugPrintf("curl_easy_setopt error: %s (%d / %ud)", curlError, ret, fileSize);
         return 1;
@@ -688,7 +688,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
     if(toRam)
         fclose((FILE *)fp);
     else
-        addToIOQueue(NULL, 0, 0, (FSFileHandle)fp);
+        addToIOQueue(NULL, 0, 0, (FSAFileHandle)fp);
 
     if(!AppRunning(true))
         return 1;
@@ -950,7 +950,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
     char *idp = installDir + strlen(installDir);
     strcpy(idp, "title.tmd");
 
-    FSFileHandle fp = openFile(installDir, "w", tmdSize);
+    FSAFileHandle fp = openFile(installDir, "w", tmdSize);
     if(fp == 0)
     {
         showErrorFrame("Can't save title.tmd file!");

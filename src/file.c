@@ -32,7 +32,6 @@
 #include <stdio.h>
 #include <sys/stat.h>
 
-#include <coreinit/filesystem.h>
 #include <coreinit/filesystem_fsa.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
@@ -409,7 +408,7 @@ static bool fixTMD(const char *path, TMD *tmd, size_t size)
     if(verifyTmd(tmd, size) == TMD_STATE_GOOD)
     {
         // Write fixed file to disc
-        FSFileHandle file = openFile(path, "w", 0);
+        FSAFileHandle file = openFile(path, "w", 0);
         if(file != 0)
         {
             // Write fixed file to disc

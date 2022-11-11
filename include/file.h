@@ -25,7 +25,7 @@
 
 #include <stdbool.h>
 
-#include <coreinit/filesystem.h>
+#include <coreinit/filesystem_fsa.h>
 
 #define NUSDIR_SD        "/vol/app_sd/"
 #define NUSDIR_USB1      "/vol/storage_usb01/"
