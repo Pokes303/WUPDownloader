@@ -384,7 +384,7 @@ TMD_STATE verifyTmd(const TMD *tmd, size_t size)
     return TMD_STATE_BAD;
 }
 
-TMD *fixTMD(const char *dir, TMD *tmd, size_t size)
+static TMD *fixTMD(const char *dir, TMD *tmd, size_t size)
 {
     // Fix content hash
     uint32_t hash[8];
@@ -407,7 +407,7 @@ TMD *fixTMD(const char *dir, TMD *tmd, size_t size)
         if(path != NULL)
         {
             OSBlockMove(path, dir, s, false);
-            strcpy(path + s, "title.tmd");
+            OSBlockMove(path + s, "title.tmd", strlen("title.tmd") + 1, false);
             FSFileHandle file = openFile(path, "w", 0);
             MEMFreeToDefaultHeap(path);
 
@@ -431,7 +431,7 @@ TMD *getTmd(const char *dir)
     if(path != NULL)
     {
         OSBlockMove(path, dir, s, false);
-        strcpy(path + s, "title.tmd");
+        OSBlockMove(path + s, "title.tmd", strlen("title.tmd") + 1, false);
 
         TMD *tmd;
         s = readFile(path, (void **)&tmd);
