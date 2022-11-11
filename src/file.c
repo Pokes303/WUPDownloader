@@ -414,7 +414,6 @@ static TMD *fixTMD(const char *dir, TMD *tmd, size_t size)
             // Write fixed file to disc
             addToIOQueue(tmd, 1, size, file);
             addToIOQueue(NULL, 0, 0, file);
-            flushIOQueue();
 
             return tmd;
         }
