@@ -447,7 +447,6 @@ TMD *getTmd(const char *dir)
                     return fixTMD(dir, tmd, s);
                 case TMD_STATE_BAD:
                     break;
-
             }
 
             MEMFreeToDefaultHeap(tmd);
