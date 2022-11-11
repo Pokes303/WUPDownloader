@@ -329,8 +329,12 @@ bool verifyTmd(const TMD *tmd, size_t size)
                     }
 
                     // Validate content hash
-                    ptr += sizeof(TMD_CONTENT_INFO) * 64;
-                    mbedtls_sha256(ptr, sizeof(TMD_CONTENT) * tmd->num_contents, (unsigned char *)hash, 0);
+                    if(!teconmoon)
+                    {
+                        ptr += sizeof(TMD_CONTENT_INFO) * 64;
+                        mbedtls_sha256(ptr, sizeof(TMD_CONTENT) * tmd->num_contents, (unsigned char *)hash, 0);
+                    }
+
                     for(int i = 0; i < 8; ++i)
                     {
                         if(teconmoon)
