@@ -40,6 +40,7 @@
     "Notification method:": "Método de notificación:",
     "Region:": "Región:",
     "Spanish": "Español",
+    "System settings": "Preferencias del sistema",
     "None": "Ninguno",
     "Europe": "Europa",
     "Japan": "Japón",
@@ -107,7 +108,7 @@
     "\uE046 to add to the queue": "\uE046 para añadir a la cola",
     "\uE003 to uninstall": "\uE003 para desinstalar",
 
-    "\uE045 to start downloading": "\uE045 para empezar a descargar",
+    "\uE045 to start the queue": "\uE045 para empezar la cola",
     "\uE046 to delete an item": "\uE046 para eliminar un elemento",
 
     "hours": "horas",
