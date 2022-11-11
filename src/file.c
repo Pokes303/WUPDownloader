@@ -297,13 +297,32 @@ bool verifyTmd(const TMD *tmd, size_t size)
                     size == sizeof(TMD) + (sizeof(TMD_CONTENT) * tmd->num_contents)) // Some (like ones made with NUSPacker) don't have a certificate attached through.
                 {
                     // Validate TMD hash
+                    bool teconmoon = false;
                     uint32_t hash[8];
                     uint8_t *ptr = ((uint8_t *)tmd) + (sizeof(TMD) - (sizeof(TMD_CONTENT_INFO) * 64));
                     mbedtls_sha256(ptr, sizeof(TMD_CONTENT_INFO) * 64, (unsigned char *)hash, 0);
+
                     for(int i = 0; i < 8; ++i)
                     {
+                        if(i == 0)
+                        {
+                            if(tmd->hash[0] == 0)
+                            {
+                                teconmoon = true;
+                                continue;
+                            }
+                        }
+                        else if(teconmoon)
+                        {
+                            if(tmd->hash[i] != 0)
+                                goto invalidTmdHash;
+
+                            continue;
+                        }
+
                         if(hash[i] != tmd->hash[i])
                         {
+invalidTmdHash:
                             debugPrintf("Invalid title.tmd file (tmd hash mismatch)");
                             return false;
                         }
@@ -314,8 +333,14 @@ bool verifyTmd(const TMD *tmd, size_t size)
                     mbedtls_sha256(ptr, sizeof(TMD_CONTENT) * tmd->num_contents, (unsigned char *)hash, 0);
                     for(int i = 0; i < 8; ++i)
                     {
-                        if(hash[i] != tmd->content_infos[0].hash[i])
+                        if(teconmoon)
                         {
+                            if(tmd->content_infos[0].hash[i] != 0)
+                                goto invalidContentHash;
+                        }
+                        else if(hash[i] != tmd->content_infos[0].hash[i])
+                        {
+invalidContentHash:
                             debugPrintf("Invalid title.tmd file (content hash mismatch)");
                             return false;
                         }
