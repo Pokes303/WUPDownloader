@@ -446,9 +446,9 @@ TMD *getTmd(const char *dir)
                     }
                     break;
             }
-
-            MEMFreeToDefaultHeap(path);
         }
+
+        MEMFreeToDefaultHeap(path);
     }
 
     return tmd;
