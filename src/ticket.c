@@ -84,12 +84,9 @@ bool generateTik(const char *path, const TitleEntry *titleEntry, const TMD *tmd)
     OSBlockMove(ticket.issuer, "Root-CA00000003-XS0000000c", strlen("Root-CA00000003-XS0000000c"), false);
 
     ticket.version = 0x01;
-    ticket.ca_clr_version = 0x01;
-
-    ticket.tid = titleEntry->tid;
-    ticket.title_version = tmd->version;
-    ticket.property_mask = 0x0006;
-    ticket.audit = 0x01;
+    ticket.tid = tmd->tid;
+    ticket.title_version = tmd->title_version;
+    ticket.property_mask = 0xFFFF;
 
     // We support zero sections only
     ticket.header_version = 0x0001;
