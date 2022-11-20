@@ -29,6 +29,7 @@
 #include <osdefs.h>
 #include <renderer.h>
 #include <state.h>
+#include <ticket.h>
 #include <utils.h>
 
 bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool skipEnd)
@@ -69,6 +70,7 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool
     }
 
     showMcpProgress(&data, name, false);
+    deleteTicket(title->titleId);
     enableShutdown();
     t = OSGetTick() - t;
     addEntropy(&t, sizeof(OSTick));

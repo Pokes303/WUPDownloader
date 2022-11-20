@@ -25,9 +25,11 @@
 
 #include <crypto.h>
 #include <file.h>
+#include <filesystem.h>
 #include <input.h>
 #include <ioQueue.h>
 #include <keygen.h>
+#include <list.h>
 #include <localisation.h>
 #include <menu/filebrowser.h>
 #include <menu/utils.h>
@@ -43,6 +45,14 @@
 
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
+
+#define TICKET_BUCKET "/vol/slc/sys/rights/ticket/apps/"
+
+typedef struct
+{
+    uint8_t *start;
+    size_t size;
+} TICKET_SECTION;
 
 static const uint8_t magic_header[10] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09 };
 
@@ -250,6 +260,136 @@ gftEntry:
     }
 
     MEMFreeToDefaultHeap(tmd);
+}
+
+void deleteTicket(uint64_t tid)
+{
+    LIST *ticketList = createList();
+    if(ticketList == NULL)
+        return;
+
+    char *path = getStaticPathBuffer(0);
+    OSBlockMove(path, TICKET_BUCKET, strlen(TICKET_BUCKET) + 1, false);
+
+    char *inSentence = path + strlen(TICKET_BUCKET);
+    FSADirectoryHandle dir;
+    OSTime t = OSGetTime();
+    FSError ret = FSAOpenDir(getFSAClient(), path, &dir);
+    if(ret != FS_ERROR_OK)
+    {
+        debugPrintf("Error opening %s: %s", path, translateFSErr(ret));
+        return;
+    }
+
+    FSADirectoryEntry entry;
+    FSADirectoryHandle dir2;
+    char *fileName;
+    void *file;
+    size_t fileSize;
+    TICKET *ticket;
+    TICKET_SECTION *sec;
+    bool found;
+    uint8_t *fileEnd;
+    uint8_t *ptr;
+    while(FSAReadDir(getFSAClient(), dir, &entry) == FS_ERROR_OK)
+    {
+        if(entry.name[0] == '.')
+            continue;
+
+        strcpy(inSentence, entry.name);
+        ret = FSAOpenDir(getFSAClient(), path, &dir2);
+        if(ret == FS_ERROR_OK)
+        {
+            strcat(inSentence, "/");
+            fileName = inSentence + strlen(inSentence);
+            while(FSAReadDir(getFSAClient(), dir2, &entry) == FS_ERROR_OK)
+            {
+                if(entry.name[0] == '.')
+                    continue;
+
+                strcpy(fileName, entry.name);
+                fileSize = readFile(path, &file);
+                if(file != NULL)
+                {
+                    ticket = (TICKET *)file;
+                    fileEnd = ((uint8_t *)file) + fileSize;
+                    found = false;
+                    while(true)
+                    {
+                        ptr = ((uint8_t *)ticket) + sizeof(TICKET);
+                        if(ticket->total_hdr_size > 0x14)
+                            ptr += ticket->total_hdr_size - 0x14;
+
+                        if(ticket->tid == tid)
+                        {
+                            found = true;
+                            debugPrintf("Ticket found at %s+0x%X", path, ((uint8_t *)ticket) - ((uint8_t *)file));
+                        }
+                        else
+                        {
+                            sec = MEMAllocFromDefaultHeap(sizeof(TICKET_SECTION));
+                            if(sec)
+                            {
+                                sec->start = (uint8_t *)ticket;
+                                sec->size = ptr - sec->start;
+
+                                if(!addToListEnd(ticketList, sec))
+                                {
+                                    MEMFreeToDefaultHeap(sec);
+                                    debugPrintf("Error allocating memory!");
+                                    found = false;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                debugPrintf("Error allocating memory!");
+                                found = false;
+                                break;
+                            }
+                        }
+
+                        if(ptr == fileEnd)
+                            break;
+                        if(ptr > fileEnd)
+                        {
+                            debugPrintf("Filesize missmatch!");
+                            found = false;
+                            break;
+                        }
+
+                        ticket = (TICKET *)ptr;
+                    }
+
+                    if(found)
+                    {
+                        if(getListSize(ticketList) == 0)
+                            FSARemove(getFSAClient(), path);
+                        else
+                        {
+                            FSAFileHandle fh = openFile(path, "r", 0);
+                            forEachListEntry(ticketList, sec)
+                                addToIOQueue(sec->start, 1, sec->size, fh);
+
+                            addToIOQueue(NULL, 0, 0, fh);
+                        }
+                    }
+
+                    clearList(ticketList, true);
+                    MEMFreeToDefaultHeap(file);
+                }
+            }
+
+            FSACloseDir(getFSAClient(), dir2);
+        }
+        else
+            debugPrintf("Error opening %s: %s", path, translateFSErr(ret));
+    }
+
+    FSACloseDir(getFSAClient(), dir);
+    t = OSGetTime() - t;
+    addEntropy(&t, sizeof(OSTime));
+    destroyList(ticketList, true);
 }
 
 #endif

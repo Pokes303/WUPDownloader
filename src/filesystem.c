@@ -59,7 +59,12 @@ bool initFS()
                     return true;
 
                 if(FSAMount(handle, "/vol/external01", "/vol/app_sd", FSA_MOUNT_FLAG_BIND_MOUNT, NULL, 0) == FS_ERROR_OK)
-                    return true;
+                {
+                    if(FSAMount(handle, "/dev/slc01", "/vol/slc", FSA_MOUNT_FLAG_LOCAL_MOUNT, NULL, 0) == FS_ERROR_OK)
+                        return true;
+
+                    FSAUnmount(handle, "/vol/app_sd", FSA_UNMOUNT_FLAG_BIND_MOUNT);
+                }
             }
 
             FSADelClient(handle);
@@ -75,7 +80,10 @@ void deinitFS()
 {
     // TODO: Not implemented in cemu
     if(!isCemu())
+    {
         FSAUnmount(handle, "/vol/app_sd", FSA_UNMOUNT_FLAG_BIND_MOUNT);
+        FSAUnmount(handle, "/vol/slc", FSA_UNMOUNT_FLAG_NONE);
+    }
 
     FSADelClient(handle);
     FSAShutdown();

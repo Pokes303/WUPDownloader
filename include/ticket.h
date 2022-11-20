@@ -204,6 +204,7 @@ extern "C"
     bool generateTik(const char *path, const TitleEntry *titleEntry, const TMD *tmd);
     bool generateCert(const char *path);
     void generateFakeTicket();
+    void deleteTicket(uint64_t tid);
 
 #ifdef __cplusplus
 }
