@@ -422,7 +422,7 @@ void deleteTicket(uint64_t tid)
                             FSARemove(getFSAClient(), path);
                         else
                         {
-                            FSAFileHandle fh = openFile(path, "r", 0);
+                            FSAFileHandle fh = openFile(path, "w", 0);
                             forEachListEntry(ticketList, sec)
                                 addToIOQueue(sec->start, 1, sec->size, fh);
 
