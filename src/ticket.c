@@ -17,8 +17,6 @@
  * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef NUSSPLI_LITE
-
 #include <wut-fixups.h>
 
 #include <ticket.h>
@@ -28,7 +26,6 @@
 #include <filesystem.h>
 #include <input.h>
 #include <ioQueue.h>
-#include <keygen.h>
 #include <list.h>
 #include <localisation.h>
 #include <menu/filebrowser.h>
@@ -38,6 +35,10 @@
 #include <titles.h>
 #include <tmd.h>
 #include <utils.h>
+
+#ifndef NUSSPLI_LITE
+#include <keygen.h>
+#endif
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -53,6 +54,8 @@ typedef struct
     uint8_t *start;
     size_t size;
 } TICKET_SECTION;
+
+#ifndef NUSSPLI_LITE
 
 typedef struct WUT_PACKED
 {
@@ -300,6 +303,8 @@ gftEntry:
     MEMFreeToDefaultHeap(tmd);
 }
 
+#endif // ifndef NUSSPLI_LITE
+
 void deleteTicket(uint64_t tid)
 {
     LIST *ticketList = createList();
@@ -435,5 +440,3 @@ void deleteTicket(uint64_t tid)
     addEntropy(&t, sizeof(OSTime));
     destroyList(ticketList, true);
 }
-
-#endif
