@@ -111,8 +111,8 @@ bool generateTik(const char *path, const TitleEntry *titleEntry, const TMD *tmd)
     ticket.title_version = tmd->title_version;
     ticket.property_mask = 0xFFFF;
 
-    // We support zero sections only
     ticket.header_version = 0x0001;
+    // Normal tickets don't need header sections but DLC needs one
     if(!isDLC(tmd->tid))
         ticket.total_hdr_size = 0x00000014;
     else
@@ -329,6 +329,7 @@ void deleteTicket(uint64_t tid)
     bool found;
     uint8_t *fileEnd;
     uint8_t *ptr;
+    // Loop through all the folder inside of the ticket bucket
     while(FSAReadDir(getFSAClient(), dir, &entry) == FS_ERROR_OK)
     {
         if(entry.name[0] == '.')
@@ -340,6 +341,7 @@ void deleteTicket(uint64_t tid)
         {
             strcat(inSentence, "/");
             fileName = inSentence + strlen(inSentence);
+            // Loop through all the subfolders
             while(FSAReadDir(getFSAClient(), dir2, &entry) == FS_ERROR_OK)
             {
                 if(entry.name[0] == '.')
@@ -352,17 +354,20 @@ void deleteTicket(uint64_t tid)
                     ticket = (TICKET *)file;
                     fileEnd = ((uint8_t *)file) + fileSize;
                     found = false;
+                    // Loop through all the tickets inside of a file
                     while(true)
                     {
                         ptr = ((uint8_t *)ticket) + sizeof(TICKET);
                         if(ticket->total_hdr_size > 0x14)
                             ptr += ticket->total_hdr_size - 0x14;
 
+                        // Ignore the ticket in case the title ID matches
                         if(ticket->tid == tid)
                         {
                             found = true;
                             debugPrintf("Ticket found at %s+0x%X", path, ((uint8_t *)ticket) - ((uint8_t *)file));
                         }
+                        // Else remeber its offset and size
                         else
                         {
                             sec = MEMAllocFromDefaultHeap(sizeof(TICKET_SECTION));
@@ -399,6 +404,7 @@ void deleteTicket(uint64_t tid)
                         ticket = (TICKET *)ptr;
                     }
 
+                    // In case there was a matching ticket inside of the file either delete or recreate it with the remembered tickets only
                     if(found)
                     {
                         if(getListSize(ticketList) == 0)
