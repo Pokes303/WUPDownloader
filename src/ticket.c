@@ -90,11 +90,6 @@ static void generateHeader(FileType type, NUS_HEADER *out)
     osslBytes(out->rand_area, sizeof(out->rand_area));
 }
 
-/* This generates a ticket and writes it to a file.
- * The ticket algorithm is ported from FunkiiU combined
- * with the randomness of NUSPackager to create unique
- * NUSspli tickets.
- */
 bool generateTik(const char *path, const TitleEntry *titleEntry, const TMD *tmd)
 {
     TICKET ticket;
