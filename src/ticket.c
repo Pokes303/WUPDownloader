@@ -54,6 +54,18 @@ typedef struct
     size_t size;
 } TICKET_SECTION;
 
+typedef struct WUT_PACKED
+{
+    uint32_t unk01;
+    uint32_t unk02;
+    uint32_t unk03;
+    uint32_t unk04;
+    uint16_t unk05;
+    WUT_UNKNOWN_BYTES(6);
+    uint32_t unk06[8];
+    WUT_UNKNOWN_BYTES(96);
+} TICKET_HEADER_SECTION;
+
 static const uint8_t magic_header[10] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09 };
 
 static void generateHeader(FileType type, NUS_HEADER *out)
@@ -100,7 +112,15 @@ bool generateTik(const char *path, const TitleEntry *titleEntry, const TMD *tmd)
 
     // We support zero sections only
     ticket.header_version = 0x0001;
-    ticket.total_hdr_size = 0x14;
+    if(!isDLC(tmd->tid))
+        ticket.total_hdr_size = 0x00000014;
+    else
+    {
+        ticket.total_hdr_size = 0x000000AC;
+        ticket.sect_hdr_offset = 0x00000014;
+        ticket.num_sect_headers = 0x0001;
+        ticket.num_sect_header_entry_size = 0x0014;
+    }
 
     FSAFileHandle tik = openFile(path, "w", 0);
     if(tik == 0)
@@ -112,6 +132,23 @@ bool generateTik(const char *path, const TitleEntry *titleEntry, const TMD *tmd)
     }
 
     addToIOQueue(&ticket, 1, sizeof(TICKET), tik);
+
+    if(isDLC(tmd->tid))
+    {
+        TICKET_HEADER_SECTION section;
+        OSBlockSet(&section, 0x00, sizeof(TICKET_HEADER_SECTION));
+
+        section.unk01 = 0x00000028;
+        section.unk02 = 0x00000001;
+        section.unk03 = 0x00000084;
+        section.unk04 = 0x00000084;
+        section.unk05 = 0x0003;
+        for(int i = 0; i < 8; i++)
+            section.unk06[i] = 0xFFFFFFFF;
+
+        addToIOQueue(&section, 1, sizeof(TICKET_HEADER_SECTION), tik);
+    }
+
     addToIOQueue(NULL, 0, 0, tik);
     return true;
 }
