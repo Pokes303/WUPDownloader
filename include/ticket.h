@@ -205,6 +205,7 @@ extern "C"
     bool generateCert(const char *path);
     void generateFakeTicket();
     void deleteTicket(uint64_t tid);
+    bool hasMagicHeader(const TICKET *ticket);
 
 #ifdef __cplusplus
 }

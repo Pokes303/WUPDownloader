@@ -26,6 +26,7 @@
 #include <filesystem.h>
 #include <input.h>
 #include <ioQueue.h>
+#include <keygen.h>
 #include <list.h>
 #include <localisation.h>
 #include <menu/filebrowser.h>
@@ -35,10 +36,6 @@
 #include <titles.h>
 #include <tmd.h>
 #include <utils.h>
-
-#ifndef NUSSPLI_LITE
-#include <keygen.h>
-#endif
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -54,8 +51,6 @@ typedef struct
     uint8_t *start;
     size_t size;
 } TICKET_SECTION;
-
-#ifndef NUSSPLI_LITE
 
 typedef struct WUT_PACKED
 {
@@ -80,7 +75,11 @@ static const uint8_t magic_header[10] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x
 static void generateHeader(FileType type, NUS_HEADER *out)
 {
     OSBlockMove(out->magic_header, magic_header, 10, false);
+#ifndef NUSSPLI_LITE
     OSBlockMove(out->app, "NUSspli", strlen("NUSspli"), false);
+#else
+    OSBlockMove(out->app, "NUSspli Lite", strlen("NUSspli Lite"), false);
+#endif
     OSBlockMove(out->app_version, NUSSPLI_VERSION, strlen(NUSSPLI_VERSION), false);
 
     if(type == FILE_TYPE_TIK)
@@ -156,6 +155,8 @@ bool generateTik(const char *path, const TitleEntry *titleEntry, const TMD *tmd)
     addToIOQueue(NULL, 0, 0, tik);
     return true;
 }
+
+#ifndef NUSSPLI_LITE
 
 bool generateCert(const char *path)
 {
@@ -445,4 +446,13 @@ void deleteTicket(uint64_t tid)
     t = OSGetTime() - t;
     addEntropy(&t, sizeof(OSTime));
     destroyList(ticketList, true);
+}
+
+bool hasMagicHeader(const TICKET *ticket)
+{
+    for(int i = 0; i < sizeof(magic_header); ++i)
+        if(ticket->header.magic_header[i] != magic_header[i])
+            return false;
+
+    return ticket->header.meta_version == 0x01;
 }

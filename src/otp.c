@@ -17,8 +17,6 @@
  * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef NUSSPLI_LITE
-
 #include <wut-fixups.h>
 
 #include <coreinit/memory.h>
@@ -60,5 +58,3 @@ uint8_t *getCommonKey()
 
     return otp_common_key;
 }
-
-#endif

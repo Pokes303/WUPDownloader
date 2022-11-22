@@ -16,8 +16,6 @@
  * with this program; if not, If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef NUSSPLI_LITE
-
 #include <wut-fixups.h>
 
 #include <mbedtls/md5.h>
@@ -101,5 +99,3 @@ bool generateKey(const TitleEntry *te, uint8_t *out)
     OSBlockSet(iv + 8, 0, 8);
     return encryptAES(key, 16, getCommonKey(), iv, out);
 }
-
-#endif

@@ -23,6 +23,7 @@
 
 #include <coreinit/filesystem_fsa.h>
 #include <coreinit/mcp.h>
+#include <coreinit/memory.h>
 #include <coreinit/time.h>
 
 #include <crypto.h>
@@ -37,6 +38,7 @@
 #include <renderer.h>
 #include <state.h>
 #include <staticMem.h>
+#include <ticket.h>
 #include <utils.h>
 
 static void cleanupCancelledInstallation(NUSDEV dev, const char *path, bool toUsb, bool keepFiles)
@@ -114,6 +116,42 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
         {
             showNoSpaceOverlay(toUsb ? NUSDEV_USB : NUSDEV_MLC);
             return !(AppRunning(true));
+        }
+
+        // Fix tickets of broken NUSspli versions
+        if(isDLC(tmd->tid))
+        {
+            char *tikPath = getStaticPathBuffer(1);
+            size_t s = strlen(path);
+            OSBlockMove(tikPath, path, s, false);
+            OSBlockMove(tikPath + s, "title.tik", strlen("title.tik") + 1, false);
+
+            TICKET *tik;
+            s = readFile(tikPath, (void **)&tik);
+            if(tik != NULL && hasMagicHeader(tik) && strcmp(tik->header.app, "NUSspli") == 0)
+            {
+                char *needle = strstr(tik->header.app_version, ".");
+                if(needle)
+                {
+                    *needle = '\0';
+                    if(atoi(tik->header.app_version) == 1) // Major version
+                    {
+                        char *betaNeedle = strstr(++needle, "-");
+                        if(betaNeedle)
+                            *betaNeedle = '\0';
+
+                        int minor = atoi(needle);
+                        if(minor >= 113 && minor < 125)
+                        {
+                            debugPrintf("Broken ticket detected, fixing...");
+                            if(generateTik(tikPath, getTitleEntryByTid(tmd->tid), tmd))
+                                return install(game, hasDeps, dev, path, toUsb, keepFiles, tmd);
+                            else
+                                debugPrintf("Error fixing ticket!");
+                        }
+                    }
+                }
+            }
         }
     }
 
