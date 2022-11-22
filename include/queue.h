@@ -53,7 +53,7 @@ extern "C"
 #endif
         const TitleEntry *entry;
         char titleVer[33];
-        char folderName[FS_MAX_PATH - 11];
+        char folderName[FS_MAX_PATH - 11] __attribute__((__aligned__(0x40)));
         NUSDEV dlDev;
         bool toUSB;
         bool keepFiles;
