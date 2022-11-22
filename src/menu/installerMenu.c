@@ -42,17 +42,16 @@ static int cursorPos = MAX_LINES - 5;
 
 static bool addToOpQueue(const TitleEntry *entry, const char *dir, TMD *tmd, NUSDEV fromDev, bool toUSB, bool keepFiles)
 {
-    TitleData *titleInfo = MEMAllocFromDefaultHeapEx(FS_ALIGN(sizeof(TitleData)) + FS_MAX_PATH, 0x40);
+    TitleData *titleInfo = MEMAllocFromDefaultHeap(sizeof(TitleData));
     if(titleInfo == NULL)
         return false;
-
-    strcpy(getPathFromInstData(titleInfo), dir);
 
     titleInfo->tmd = tmd;
 #ifndef NUSSPLI_LITE
     titleInfo->operation = OPERATION_INSTALL;
 #endif
     titleInfo->entry = entry;
+    strcpy(titleInfo->folderName, dir);
     titleInfo->dlDev = fromDev;
     titleInfo->toUSB = toUSB;
     titleInfo->keepFiles = keepFiles;

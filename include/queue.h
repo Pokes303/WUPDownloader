@@ -67,8 +67,6 @@ extern "C"
     bool proccessQueue();
     LIST *getTitleQueue();
 
-#define getPathFromInstData(x) (((char *)x) + FS_ALIGN(sizeof(TitleData)))
-
 #ifdef __cplusplus
 }
 #endif
