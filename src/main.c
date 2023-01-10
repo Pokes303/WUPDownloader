@@ -98,7 +98,7 @@ static void innerMain(bool validCfw)
 
     if(initStaticMem())
     {
-        if(initFS())
+        if(initFS(validCfw))
         {
             if(initRenderer())
             {
@@ -221,7 +221,7 @@ static void innerMain(bool validCfw)
                 debugPrintf("SDL closed");
             }
 
-            deinitFS();
+            deinitFS(validCfw);
             debugPrintf("Filesystem closed");
         }
         else

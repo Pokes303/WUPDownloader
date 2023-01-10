@@ -34,7 +34,7 @@
 static FSAClientHandle handle;
 static NUSDEV usb = NUSDEV_NONE;
 
-bool initFS()
+bool initFS(bool validCfw)
 {
 #ifdef NUSSPLI_HBL
     romfsInit();
@@ -45,6 +45,9 @@ bool initFS()
         handle = FSAAddClient(NULL);
         if(handle)
         {
+            if(!validCfw)
+                return true;
+
             if(Mocha_UnlockFSClientEx(handle) == MOCHA_RESULT_SUCCESS)
             {
                 if(dirExists(NUSDIR_USB1 "usr"))
@@ -76,10 +79,10 @@ bool initFS()
     return false;
 }
 
-void deinitFS()
+void deinitFS(bool validCfw)
 {
     // TODO: Not implemented in cemu
-    if(!isCemu())
+    if(validCfw && !isCemu())
     {
         FSAUnmount(handle, "/vol/app_sd", FSA_UNMOUNT_FLAG_BIND_MOUNT);
         FSAUnmount(handle, "/vol/slc", FSA_UNMOUNT_FLAG_NONE);
