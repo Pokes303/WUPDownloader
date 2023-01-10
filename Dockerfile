@@ -1,5 +1,5 @@
 # build wut
-FROM wiiuenv/devkitppc:20220917 AS final
+FROM wiiuenv/devkitppc:20221228 AS final
 
 ENV DEBIAN_FRONTEND=noninteractive \
  PATH=$DEVKITPPC/bin:$PATH \
