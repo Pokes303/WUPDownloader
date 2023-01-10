@@ -307,7 +307,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
         debugPrintf("Removing installation files...");
         FSError ret =
 #endif
-        removeDirectory(path);
+            removeDirectory(path);
 #ifdef NUSSPLI_DEBUG
         if(ret != FS_ERROR_OK)
             debugPrintf("Couldn't remove installation files from SD card: %s", translateFSErr(ret));

@@ -17,6 +17,7 @@ RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
  git clone --recursive https://github.com/yawut/libromfs-wiiu --single-branch && \
  cd libromfs-wiiu && \
  make -j$(nproc) && \
- make install
+ make install && \
+ git config --global --add safe.directory /project
 
 WORKDIR /project
