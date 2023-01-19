@@ -94,7 +94,7 @@ bool proccessQueue()
             if(title->operation & OPERATION_DOWNLOAD && title->keepFiles)
             {
                 int j = title->dlDev & NUSDEV_USB ? 0 : (title->dlDev & NUSDEV_SD ? 1 : 2);
-                if((title->tmd->contents[i].type & 0x0003) == 0x0003)
+                if(title->tmd->contents[i].type & TMD_CONTENT_TYPE_HASHED)
                     sizes[j] += getH3size(title->tmd->contents[i].size);
 
                 sizes[j] += title->tmd->contents[i].size;
