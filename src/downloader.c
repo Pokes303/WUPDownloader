@@ -1074,13 +1074,15 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
     data.eta = 0;
 
     // Get .app and .h3 files
+    double as;
     for(int i = 0; i < tmd->num_contents; ++i)
     {
-        data.dltotal += (double)(tmd->contents[i].size);
+        as = (double)(tmd->contents[i].size);
+        data.dltotal += as;
         if(tmd->contents[i].type & TMD_CONTENT_TYPE_HASHED)
         {
             ++data.contents;
-            data.dltotal += getH3size(tmd->contents[i].size);
+            data.dltotal += getH3size(as);
         }
     }
 
