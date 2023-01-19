@@ -1080,7 +1080,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
         if(tmd->contents[i].type & TMD_CONTENT_TYPE_HASHED)
         {
             ++data.contents;
-            data.dltotal += 20; // TODO
+            data.dltotal += getH3size(tmd->contents[i].size);
         }
     }
 

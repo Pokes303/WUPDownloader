@@ -20,6 +20,7 @@
 
 #include <wut-fixups.h>
 
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -58,6 +59,8 @@ extern "C"
 #define isDLC(tid)    (getTidHighFromTid(tid) == TID_HIGH_DLC)
 #define isUpdate(tid) (getTidHighFromTid(tid) == TID_HIGH_UPDATE)
 #define isDemo(tid)   (getTidHighFromTid(tid) == TID_HIGH_DEMO)
+
+#define getH3size(appSize) (ceil(((float)appSize) / 0x10000000f) * 0x14)
 
 #ifdef __cplusplus
 }

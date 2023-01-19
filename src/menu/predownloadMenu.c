@@ -447,7 +447,7 @@ downloadTMD:
     for(uint16_t i = 0; i < tmd->num_contents; ++i)
     {
         if((tmd->contents[i].type & 0x0003) == 0x0003)
-            dls += 20;
+            dls += getH3size(tmd->contents[i].size);
 
         dls += tmd->contents[i].size;
     }

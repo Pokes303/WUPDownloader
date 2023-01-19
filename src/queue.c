@@ -95,7 +95,7 @@ bool proccessQueue()
             {
                 int j = title->dlDev & NUSDEV_USB ? 0 : (title->dlDev & NUSDEV_SD ? 1 : 2);
                 if((title->tmd->contents[i].type & 0x0003) == 0x0003)
-                    sizes[j] += 20;
+                    sizes[j] += getH3size(title->tmd->contents[i].size);
 
                 sizes[j] += title->tmd->contents[i].size;
             }
