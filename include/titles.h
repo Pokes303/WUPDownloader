@@ -55,10 +55,10 @@ extern "C"
     const char *tid2name(const char *tid);
     bool name2tid(const char *name, char *out);
 
-#define isGame(tid)   (getTidHighFromTid(tid) == TID_HIGH_GAME)
-#define isDLC(tid)    (getTidHighFromTid(tid) == TID_HIGH_DLC)
-#define isUpdate(tid) (getTidHighFromTid(tid) == TID_HIGH_UPDATE)
-#define isDemo(tid)   (getTidHighFromTid(tid) == TID_HIGH_DEMO)
+#define isGame(tid)        (getTidHighFromTid(tid) == TID_HIGH_GAME)
+#define isDLC(tid)         (getTidHighFromTid(tid) == TID_HIGH_DLC)
+#define isUpdate(tid)      (getTidHighFromTid(tid) == TID_HIGH_UPDATE)
+#define isDemo(tid)        (getTidHighFromTid(tid) == TID_HIGH_DEMO)
 
 #define getH3size(appSize) (ceil(((double)appSize) / 0x10000000D) * 0x14)
 
