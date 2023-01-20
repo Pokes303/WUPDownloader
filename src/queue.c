@@ -80,9 +80,16 @@ bool proccessQueue()
 {
     TitleData *title;
     uint64_t sizes[3] = { 0, 0, 0 };
+#ifndef NUSSPLI_LITE
+    QUEUE_DATA queueData = { .downloaded = 0.0D, .dlSize = 0.0D, .packages = 0, .current = 0, .eta = 0 };
+#endif
 
     forEachListEntry(titleQueue, title)
     {
+#ifndef NUSSPLI_LITE
+        if(title->operation & OPERATION_DOWNLOAD)
+            queueData.packages++;
+#endif
         for(uint16_t i = 0; i < title->tmd->num_contents; ++i)
         {
 #ifndef NUSSPLI_LITE
@@ -91,13 +98,20 @@ bool proccessQueue()
                 sizes[title->toUSB ? 0 : 2] += title->tmd->contents[i].size;
 
 #ifndef NUSSPLI_LITE
-            if(title->operation & OPERATION_DOWNLOAD && title->keepFiles)
+            if(title->operation & OPERATION_DOWNLOAD)
             {
-                int j = title->dlDev & NUSDEV_USB ? 0 : (title->dlDev & NUSDEV_SD ? 1 : 2);
+                queueData.dlSize += title->tmd->contents[i].size;
                 if(title->tmd->contents[i].type & TMD_CONTENT_TYPE_HASHED)
-                    sizes[j] += getH3size(title->tmd->contents[i].size);
+                    queueData.dlSize += getH3size(title->tmd->contents[i].size);
 
-                sizes[j] += title->tmd->contents[i].size;
+                if(title->keepFiles)
+                {
+                    int j = title->dlDev & NUSDEV_USB ? 0 : (title->dlDev & NUSDEV_SD ? 1 : 2);
+                    if(title->tmd->contents[i].type & TMD_CONTENT_TYPE_HASHED)
+                        sizes[j] += getH3size(title->tmd->contents[i].size);
+
+                    sizes[j] += title->tmd->contents[i].size;
+                }
             }
 #endif
         }
@@ -136,7 +150,9 @@ bool proccessQueue()
 #ifndef NUSSPLI_LITE
         if(title->operation & OPERATION_DOWNLOAD)
         {
-            if(!downloadTitle(title->tmd, title->tmdSize, title->entry, title->titleVer, title->folderName, title->operation & OPERATION_INSTALL, title->dlDev, title->toUSB, title->keepFiles))
+            queueData.current++;
+
+            if(!downloadTitle(title->tmd, title->tmdSize, title->entry, title->titleVer, title->folderName, title->operation & OPERATION_INSTALL, title->dlDev, title->toUSB, title->keepFiles, &queueData))
                 goto exitApd;
         }
         else if(title->operation & OPERATION_INSTALL)

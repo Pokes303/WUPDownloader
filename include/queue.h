@@ -59,6 +59,15 @@ extern "C"
         bool keepFiles;
     } TitleData;
 
+    typedef struct
+    {
+        double downloaded;
+        double dlSize;
+        uint32_t packages;
+        uint32_t current;
+        uint32_t eta;
+    } QUEUE_DATA;
+
     bool initQueue();
     void shutdownQueue();
     int addToQueue(TitleData *data);

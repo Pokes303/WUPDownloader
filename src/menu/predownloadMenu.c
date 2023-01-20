@@ -425,7 +425,7 @@ downloadTMD:
         strcat(downloadUrl, titleVer);
     }
 
-    if(downloadFile(downloadUrl, "title.tmd", NULL, (FileType)(FILE_TYPE_TMD | FILE_TYPE_TORAM), false))
+    if(downloadFile(downloadUrl, "title.tmd", NULL, (FileType)(FILE_TYPE_TMD | FILE_TYPE_TORAM), false, NULL))
     {
         clearRamBuf();
         debugPrintf("Error downloading TMD");
@@ -788,7 +788,7 @@ naNedNa:
     else if(checkSystemTitleFromEntry(entry))
     {
         disableApd();
-        ret = !downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, operation == OPERATION_DOWNLOAD_INSTALL, dlDev, instDev & NUSDEV_USB, keepFiles);
+        ret = !downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, operation == OPERATION_DOWNLOAD_INSTALL, dlDev, instDev & NUSDEV_USB, keepFiles, NULL);
         if(!ret)
             showFinishedScreen(entry->name, operation == OPERATION_DOWNLOAD_INSTALL ? FINISHING_OPERATION_INSTALL : FINISHING_OPERATION_DOWNLOAD);
 

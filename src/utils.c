@@ -111,13 +111,20 @@ void getSpeedString(double bytePerSecond, char *out)
 
 void secsToTime(uint32_t seconds, char *out)
 {
+    uint32_t day = seconds / 86400 % 86400;
     uint32_t hour = seconds / 3600 % 3600;
     uint32_t minute = seconds / 60 % 60;
     seconds %= 60;
 
     bool visible = false;
 
-    if(hour)
+    if(day)
+    {
+        sprintf(out, "%u %s ", day, gettext("days"));
+        out += strlen(out);
+        visible = true;
+    }
+    if(hour || visible)
     {
         sprintf(out, "%u %s ", hour, gettext("hours"));
         out += strlen(out);

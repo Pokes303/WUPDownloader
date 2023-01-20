@@ -32,6 +32,7 @@
 #include <ioQueue.h>
 #include <localisation.h>
 #include <menu/utils.h>
+#include <queue.h>
 #include <renderer.h>
 #include <romfs.h>
 #include <state.h>
@@ -70,7 +71,6 @@ typedef struct
 {
     bool running;
     CURLcode error;
-    spinlock lock;
     OSTick ts;
     double dltotal;
     double dlnow;
@@ -97,13 +97,9 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
         OSTick t = OSGetTick();
         addEntropy(&t, sizeof(OSTick));
 
-        if(!spinTryLock(data->lock))
-            return 0;
-
         data->ts = t;
         data->dltotal = dltotal;
         data->dlnow = dlnow;
-        spinReleaseLock(data->lock);
     }
 
     return 0;
@@ -352,12 +348,11 @@ static int dlThreadMain(int argc, const char **argv)
     return ret;
 }
 
-#define setDefaultDataValues(x)                  \
-    {                                            \
-        x.running = true;                        \
-        x.error = CURLE_OK;                      \
-        spinCreateLock((x.lock), SPINLOCK_FREE); \
-        x.dlnow = x.dltotal = 0.0D;              \
+#define setDefaultDataValues(x)     \
+    {                               \
+        x.running = true;           \
+        x.error = CURLE_OK;         \
+        x.dlnow = x.dltotal = 0.0D; \
     }
 
 static const char *translateCurlError(CURLcode err, const char *curlError)
@@ -389,7 +384,7 @@ static const char *translateCurlError(CURLcode err, const char *curlError)
     }
 }
 
-int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume)
+int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume, QUEUE_DATA *queueData)
 {
     // Results: 0 = OK | 1 = Error | 2 = No ticket aviable | 3 = Exit
     // Types: 0 = .app | 1 = .h3 | 2 = title.tmd | 3 = tilte.tik
@@ -421,26 +416,29 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
     {
         if(resume && fileExists(file))
         {
-            FSAFileHandle nf;
             fileSize = getFilesize(file);
             if(fileSize != 0)
             {
-                if(fileSize == data->cs)
+                if(data != NULL && data->cs)
                 {
-                    sprintf(toScreen, "Download %s skipped!", name);
-                    addToScreenLog(toScreen);
-                    data->dltmp += (double)fileSize;
-                    return 0;
-                }
-                if(fileSize > data->cs)
-                    return downloadFile(url, file, data, type, false);
+                    if(fileSize == data->cs)
+                    {
+                        sprintf(toScreen, "Download %s skipped!", name);
+                        addToScreenLog(toScreen);
+                        data->dltmp += (double)fileSize;
+                        if(queueData != NULL)
+                            queueData->downloaded += (double)fileSize;
 
-                nf = openFile(file, "a", 0);
+                        return 0;
+                    }
+                    if(fileSize > data->cs)
+                        return downloadFile(url, file, data, type, false, queueData);
+                }
+
+                fp = (void *)openFile(file, "a", 0);
             }
             else
-                nf = openFile(file, "w", data == NULL ? 0 : data->cs);
-
-            fp = (void *)nf;
+                fp = (void *)openFile(file, "w", data == NULL ? 0 : data->cs);
         }
         else
         {
@@ -507,50 +505,152 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
     double downloaded = 0.0D;
     double dlnow;
     double dltotal;
+    double tmp;
     OSTick lastTransfair = OSGetTick();
     int frames = 1;
-    uint32_t fileeta;
-    uint32_t totaleta;
+    uint32_t eta;
+    int line;
     while(cdata.running && AppRunning(true))
     {
         if(--frames == 0)
         {
-            if(cdata.dltotal > 0.1D)
+            dlnow = fileSize + cdata.dlnow;
+            dltotal = (dlnow - downloaded);
+
+            startNewFrame();
+
+            if(data != NULL)
             {
-                if(!spinTryLock(cdata.lock))
+                if(queueData != NULL)
                 {
-                    frames = 2;
-                    continue;
+                    sprintf(toScreen, "%s (%d/%d)", data->name, queueData->current, queueData->packages);
+                    line = textToFrameMultiline(0, ALIGNED_CENTER, toScreen, MAX_CHARS);
                 }
+                else
+                    line = textToFrameMultiline(0, ALIGNED_CENTER, data->name, MAX_CHARS);
 
-                if(!toRam)
-                    checkForQueueErrors();
-
-                dlnow = cdata.dlnow;
-                spinReleaseLock(cdata.lock);
-
-                dltotal = cdata.dltotal + fileSize;
-                dlnow += fileSize;
-
-                frames = 60;
-                startNewFrame();
-                strcpy(toScreen, gettext("Downloading"));
-                strcat(toScreen, " ");
-                strcat(toScreen, name);
-                textToFrame(0, 0, toScreen);
-                barToFrame(1, 0, 29, dlnow / dltotal * 100.0D);
-
-                if(dltotal < 1024.0D)
+                if(data->dltotal < 1024.0D)
                 {
                     multiplier = 1.0D;
                     multiplierName = "B";
                 }
-                else if(dltotal < 1024.0D * 1024.0D)
+                else if(data->dltotal < 1024.0D * 1024.0D)
                 {
                     multiplier = 1 << 10;
                     multiplierName = "KB";
                 }
-                else if(dltotal < 1024.0f * 1024.0D * 1024.0D)
+                else if(data->dltotal < 1024.0D * 1024.0D * 1024.0D)
+                {
+                    multiplier = 1 << 20;
+                    multiplierName = "MB";
+                }
+                else
+                {
+                    multiplier = 1 << 30;
+                    multiplierName = "GB";
+                }
+                data->dlnow = data->dltmp + dlnow;
+                barToFrame(line, 0, 29, data->dlnow / data->dltotal * 100.0D);
+                sprintf(toScreen, "%.2f / %.2f %s", data->dlnow / multiplier, data->dltotal / multiplier, multiplierName);
+                textToFrame(line, 30, toScreen);
+
+                if(cdata.dltotal > 0.1D)
+                {
+                    eta = (data->dltotal - data->dlnow) / dltotal;
+                    if(eta)
+                        data->eta = eta;
+                    else
+                        eta = data->eta;
+                }
+                else
+                    eta = data->eta;
+
+                secsToTime(eta, toScreen);
+                textToFrame(line, ALIGNED_RIGHT, toScreen);
+
+                sprintf(toScreen, "(%d/%d)", data->dcontent + 1, data->contents);
+                line += queueData == NULL ? 2 : 3;
+                textToFrame(line--, ALIGNED_CENTER, toScreen);
+
+                if(queueData != NULL)
+                {
+                    --line;
+                    if(queueData->dlSize < 1024.0D)
+                    {
+                        multiplier = 1.0D;
+                        multiplierName = "B";
+                    }
+                    else if(queueData->dlSize < 1024.0D * 1024.0D)
+                    {
+                        multiplier = 1 << 10;
+                        multiplierName = "KB";
+                    }
+                    else if(queueData->dlSize < 1024.0D * 1024.0D * 1024.0D)
+                    {
+                        multiplier = 1 << 20;
+                        multiplierName = "MB";
+                    }
+                    else if(queueData->dlSize < 1024.0D * 1024.0D * 1024.0D * 1024.0D)
+                    {
+                        multiplier = 1 << 30;
+                        multiplierName = "GB";
+                    }
+                    else
+                    {
+                        multiplier = 1llu << 40;
+                        multiplierName = "TB";
+                    }
+
+                    tmp = queueData->downloaded + dlnow;
+                    barToFrame(line, 0, 29, tmp / queueData->dlSize * 100.0D);
+                    sprintf(toScreen, "%.2f / %.2f %s", tmp / multiplier, queueData->dlSize / multiplier, multiplierName);
+                    textToFrame(line, 30, toScreen);
+
+                    if(cdata.dltotal > 0.1D)
+                    {
+                        eta = (queueData->dlSize - tmp) / dltotal;
+                        if(eta)
+                            queueData->eta = eta;
+                        else
+                            eta = queueData->eta;
+                    }
+                    else
+                        eta = queueData->eta;
+
+                    secsToTime(eta, toScreen);
+                    textToFrame(line++, ALIGNED_RIGHT, toScreen);
+                }
+
+                lineToFrame(line++, SCREEN_COLOR_WHITE);
+            }
+            else
+                line = 0;
+
+            if(cdata.dltotal > 0.1D)
+            {
+                if(!toRam)
+                    checkForQueueErrors();
+
+                frames = 60;
+                tmp = cdata.dltotal + fileSize;
+
+                strcpy(toScreen, gettext("Downloading"));
+                strcat(toScreen, " ");
+                strcat(toScreen, name);
+                textToFrame(line, 0, toScreen);
+                barToFrame(++line, 0, 29, dlnow / tmp * 100.0D);
+
+                if(tmp < 1024.0D)
+                {
+                    multiplier = 1.0D;
+                    multiplierName = "B";
+                }
+                else if(tmp < 1024.0D * 1024.0D)
+                {
+                    multiplier = 1 << 10;
+                    multiplierName = "KB";
+                }
+                else if(tmp < 1024.0D * 1024.0D * 1024.0D)
                 {
                     multiplier = 1 << 20;
                     multiplierName = "MB";
@@ -561,15 +661,12 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                     multiplierName = "GB";
                 }
 
-                sprintf(toScreen, "%.2f / %.2f %s", dlnow / multiplier, dltotal / multiplier, multiplierName);
-                textToFrame(1, 30, toScreen);
+                sprintf(toScreen, "%.2f / %.2f %s", dlnow / multiplier, tmp / multiplier, multiplierName);
+                textToFrame(line, 30, toScreen);
 
-                fileeta = (dltotal - dlnow);
-                dltotal = (dlnow - downloaded); // sample length in bytes
-                fileeta /= dltotal;
-
-                secsToTime(fileeta, toScreen);
-                textToFrame(1, ALIGNED_RIGHT, toScreen);
+                eta = (tmp - dlnow) / dltotal;
+                secsToTime(eta, toScreen);
+                textToFrame(line, ALIGNED_RIGHT, toScreen);
 
                 downloaded = dlnow;
                 if(dltotal > 0.0D)
@@ -585,67 +682,19 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
                 lastTransfair = cdata.ts;
                 getSpeedString(dltotal, toScreen);
-                textToFrame(0, ALIGNED_RIGHT, toScreen);
+                textToFrame(--line, ALIGNED_RIGHT, toScreen);
+                ++line;
             }
             else
             {
                 frames = 1;
-                startNewFrame();
                 strcpy(toScreen, gettext("Preparing"));
                 strcat(toScreen, " ");
                 strcat(toScreen, name);
-                textToFrame(0, 0, toScreen);
+                textToFrame(line++, 0, toScreen);
             }
 
-            if(data != NULL)
-            {
-                sprintf(toScreen, "(%d/%d)", data->dcontent + 1, data->contents);
-                textToFrame(0, ALIGNED_CENTER, toScreen);
-
-                if(data->dltotal < 1024.0D)
-                {
-                    multiplier = 1.0D;
-                    multiplierName = "B";
-                }
-                else if(data->dltotal < 1024.0D * 1024.0f)
-                {
-                    multiplier = 1 << 10;
-                    multiplierName = "KB";
-                }
-                else if(data->dltotal < 1024.0D * 1024.0D * 1024.0D)
-                {
-                    multiplier = 1 << 20;
-                    multiplierName = "MB";
-                }
-                else
-                {
-                    multiplier = 1 << 30;
-                    multiplierName = "GB";
-                }
-                data->dlnow = data->dltmp + downloaded;
-                barToFrame(2, 0, 29, data->dlnow / data->dltotal * 100.0f);
-                sprintf(toScreen, "%.2f / %.2f %s", data->dlnow / multiplier, data->dltotal / multiplier, multiplierName);
-                textToFrame(2, 30, toScreen);
-
-                if(cdata.dltotal > 0.1D)
-                {
-                    totaleta = (data->dltotal - data->dlnow) / dltotal;
-                    if(totaleta)
-                        data->eta = totaleta;
-                    else
-                        totaleta = data->eta;
-                }
-                else
-                    totaleta = data->eta;
-
-                secsToTime(totaleta, toScreen);
-                textToFrame(2, ALIGNED_RIGHT, toScreen);
-
-                writeScreenLog(3);
-            }
-            else
-                writeScreenLog(2);
-
+            writeScreenLog(++line);
             drawFrame();
         }
 
@@ -714,7 +763,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
         switch(ret)
         {
             case CURLE_RANGE_ERROR:
-                int r = downloadFile(url, file, data, type, false);
+                int r = downloadFile(url, file, data, type, false, queueData);
                 curlReuseConnection = false;
                 return r;
             case CURLE_COULDNT_RESOLVE_HOST:
@@ -782,7 +831,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
             {
                 flushIOQueue(); // We flush here so the last file is completely on disc and closed before we retry.
                 resetNetwork(); // Recover from network errors.
-                return downloadFile(url, file, data, type, resume);
+                return downloadFile(url, file, data, type, resume, queueData);
             }
         }
         resetNetwork();
@@ -830,7 +879,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 if(vpad.trigger & VPAD_BUTTON_B)
                     break;
                 if(vpad.trigger & VPAD_BUTTON_Y)
-                    return downloadFile(url, file, data, type, resume);
+                    return downloadFile(url, file, data, type, resume, queueData);
             }
             return 1;
         }
@@ -861,7 +910,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 if(vpad.trigger & VPAD_BUTTON_B)
                     break;
                 if(vpad.trigger & VPAD_BUTTON_Y)
-                    return downloadFile(url, file, data, type, resume);
+                    return downloadFile(url, file, data, type, resume, queueData);
             }
             return 1;
         }
@@ -873,6 +922,8 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
             dld += (double)fileSize;
 
         data->dltmp += dld;
+        if(queueData != NULL)
+            queueData->downloaded += dld;
     }
 
     sprintf(toScreen, "Download %s finished!", name);
@@ -881,7 +932,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 }
 
 #ifndef NUSSPLI_LITE
-bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, NUSDEV dlDev, bool toUSB, bool keepFiles)
+bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, NUSDEV dlDev, bool toUSB, bool keepFiles, QUEUE_DATA *queueData)
 {
     char tid[17];
     hex(tmd->tid, 16, tid);
@@ -1017,18 +1068,22 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
     char *dup = downloadUrl + strlen(downloadUrl);
     strcpy(dup, "cetk");
     strcpy(idp, "title.tik");
+
+    downloadData data = {
+        .name = titleEntry->name,
+        .contents = tmd->num_contents + 1,
+        .dcontent = 0,
+        .dlnow = data.dltmp = data.dltotal = 0.0D,
+        .eta = 0,
+    };
+
     if(!fileExists(installDir))
     {
-        int tikRes = downloadFile(downloadUrl, installDir, NULL, FILE_TYPE_TIK, false);
+        data.cs = 0;
+        int tikRes = downloadFile(downloadUrl, installDir, &data, FILE_TYPE_TIK, false, queueData);
         switch(tikRes)
         {
             case 2:
-                addToScreenLog("title.tik not found on the NUS. Generating...");
-                startNewFrame();
-                textToFrame(0, 0, gettext("Creating fake title.tik"));
-                writeScreenLog(3);
-                drawFrame();
-
                 if(generateTik(installDir, titleEntry, tmd))
                     addToScreenLog("Fake ticket created successfully");
                 else
@@ -1047,15 +1102,10 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
     if(!AppRunning(true))
         return false;
 
+    ++data.dcontent;
     strcpy(idp, "title.cert");
     if(!fileExists(installDir))
     {
-        debugPrintf("Creating CERT...");
-        startNewFrame();
-        textToFrame(0, 0, gettext("Creating CERT"));
-        writeScreenLog(3);
-        drawFrame();
-
         if(generateCert(installDir))
             addToScreenLog("Cert created!");
         else
@@ -1066,12 +1116,6 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
     }
     else
         addToScreenLog("Cert skipped!");
-
-    downloadData data;
-    data.contents = tmd->num_contents;
-    data.dcontent = 0;
-    data.dlnow = data.dltmp = data.dltotal = 0.0D;
-    data.eta = 0;
 
     // Get .app and .h3 files
     double as;
@@ -1095,7 +1139,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
         strcpy(idpp, ".app");
 
         data.cs = tmd->contents[i].size;
-        if(downloadFile(downloadUrl, installDir, &data, FILE_TYPE_APP, true) == 1)
+        if(downloadFile(downloadUrl, installDir, &data, FILE_TYPE_APP, true, queueData) == 1)
             return false;
 
         ++data.dcontent;
@@ -1106,7 +1150,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
             strcpy(idpp, ".h3");
             data.cs = getH3size(tmd->contents[i].size);
 
-            if(downloadFile(downloadUrl, installDir, &data, FILE_TYPE_H3, true) == 1)
+            if(downloadFile(downloadUrl, installDir, &data, FILE_TYPE_H3, true, queueData) == 1)
                 return false;
 
             ++data.dcontent;
