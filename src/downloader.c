@@ -425,7 +425,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
             fileSize = getFilesize(file);
             if(fileSize != 0)
             {
-                if((type & FILE_TYPE_H3) || fileSize == data->cs)
+                if(fileSize == data->cs)
                 {
                     sprintf(toScreen, "Download %s skipped!", name);
                     addToScreenLog(toScreen);
@@ -1104,6 +1104,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
         {
             strcpy(dupp, ".h3");
             strcpy(idpp, ".h3");
+            data.cs = getH3size(tmd->contents[i].size);
 
             if(downloadFile(downloadUrl, installDir, &data, FILE_TYPE_H3, true) == 1)
                 return false;
