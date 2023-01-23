@@ -348,13 +348,6 @@ static int dlThreadMain(int argc, const char **argv)
     return ret;
 }
 
-#define setDefaultDataValues(x)     \
-    {                               \
-        x.running = true;           \
-        x.error = CURLE_OK;         \
-        x.dlnow = x.dltotal = 0.0D; \
-    }
-
 static const char *translateCurlError(CURLcode err, const char *curlError)
 {
     switch(err)
@@ -425,7 +418,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                     {
                         sprintf(toScreen, "Download %s skipped!", name);
                         addToScreenLog(toScreen);
-                        data->dltmp += (double)fileSize;
+                        data->dlnow += (double)fileSize;
                         if(queueData != NULL)
                             queueData->downloaded += (double)fileSize;
 
@@ -451,7 +444,12 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
         return 1;
 
     curlError[0] = '\0';
-    volatile curlProgressData cdata;
+    volatile curlProgressData cdata = {
+        .running = true,
+        .error = CURLE_OK,
+        .dlnow = 0.0D,
+        .dltotal = 0.0D,
+    };
 
     CURLcode ret = curl_easy_setopt(curl, CURLOPT_URL, url);
     if(ret == CURLE_OK)
@@ -489,8 +487,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
         debugPrintf("curl_easy_setopt error: %s (%d / %ud)", curlError, ret, fileSize);
         return 1;
     }
-
-    setDefaultDataValues(cdata);
 
     debugPrintf("Calling curl_easy_perform()");
     OSTime t = OSGetSystemTime();
@@ -549,21 +545,29 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                     multiplier = 1 << 30;
                     multiplierName = "GB";
                 }
-                data->dlnow = data->dltmp + dlnow;
-                barToFrame(line, 0, 29, data->dlnow / data->dltotal * 100.0D);
-                sprintf(toScreen, "%.2f / %.2f %s", data->dlnow / multiplier, data->dltotal / multiplier, multiplierName);
+                tmp = data->dlnow + dlnow;
+                sprintf(toScreen, "%.2f / %.2f %s", tmp / multiplier, data->dltotal / multiplier, multiplierName);
                 textToFrame(line, 30, toScreen);
 
-                if(cdata.dltotal > 0.1D)
+                if(tmp > 0.009D)
                 {
-                    eta = (data->dltotal - data->dlnow) / dltotal;
-                    if(eta)
-                        data->eta = eta;
+                    barToFrame(line, 0, 29, tmp / data->dltotal * 100.0D);
+                    if(cdata.dltotal > 0.01D)
+                    {
+                        eta = (data->dltotal - tmp) / dltotal;
+                        if(eta)
+                            data->eta = eta;
+                        else
+                            eta = data->eta;
+                    }
                     else
                         eta = data->eta;
                 }
                 else
+                {
+                    barToFrame(line, 0, 29, 0.0D);
                     eta = data->eta;
+                }
 
                 secsToTime(eta, toScreen);
                 textToFrame(line, ALIGNED_RIGHT, toScreen);
@@ -602,20 +606,28 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                     }
 
                     tmp = queueData->downloaded + dlnow;
-                    barToFrame(line, 0, 29, tmp / queueData->dlSize * 100.0D);
                     sprintf(toScreen, "%.2f / %.2f %s", tmp / multiplier, queueData->dlSize / multiplier, multiplierName);
                     textToFrame(line, 30, toScreen);
 
-                    if(cdata.dltotal > 0.1D)
+                    if(tmp > 0.009D)
                     {
-                        eta = (queueData->dlSize - tmp) / dltotal;
-                        if(eta)
-                            queueData->eta = eta;
+                        barToFrame(line, 0, 29, tmp / queueData->dlSize * 100.0D);
+                        if(cdata.dltotal > 0.1D)
+                        {
+                            eta = (queueData->dlSize - tmp) / dltotal;
+                            if(eta)
+                                queueData->eta = eta;
+                            else
+                                eta = queueData->eta;
+                        }
                         else
-                            eta = queueData->eta;
+                            eta = queueData-> eta;
                     }
                     else
+                    {
+                        barToFrame(line, 0, 29, 0.0D);
                         eta = queueData->eta;
+                    }
 
                     secsToTime(eta, toScreen);
                     textToFrame(line++, ALIGNED_RIGHT, toScreen);
@@ -921,7 +933,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
         if(fileSize)
             dld += (double)fileSize;
 
-        data->dltmp += dld;
+        data->dlnow += dld;
         if(queueData != NULL)
             queueData->downloaded += dld;
     }
@@ -1073,7 +1085,8 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
         .name = titleEntry->name,
         .contents = tmd->num_contents + 1,
         .dcontent = 0,
-        .dlnow = data.dltmp = data.dltotal = 0.0D,
+        .dlnow = 0.0D,
+        .dltotal = 0.0D,
         .eta = 0,
     };
 

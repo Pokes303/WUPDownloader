@@ -40,7 +40,6 @@ extern "C"
         uint16_t dcontent; // Actual content number
         double dlnow;
         double dltotal;
-        double dltmp;
         uint32_t eta;
         size_t cs;
     } downloadData;
