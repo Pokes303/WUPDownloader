@@ -621,7 +621,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                                 eta = queueData->eta;
                         }
                         else
-                            eta = queueData-> eta;
+                            eta = queueData->eta;
                     }
                     else
                     {
