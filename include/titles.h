@@ -60,7 +60,7 @@ extern "C"
 #define isUpdate(tid)      (getTidHighFromTid(tid) == TID_HIGH_UPDATE)
 #define isDemo(tid)        (getTidHighFromTid(tid) == TID_HIGH_DEMO)
 
-#define getH3size(appSize) (ceil(((double)appSize) / 0x10000000D) * 0x14)
+#define getH3size(appSize) (ceil(((double)appSize) / 0x1000000D) * 0x14)
 
 #ifdef __cplusplus
 }
