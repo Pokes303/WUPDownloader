@@ -342,12 +342,9 @@ const char *prettyDir(const char *dir)
 static inline void drawFinishedScreen(const char *titleName, const char *text, FINISHING_OPERATION op)
 {
     colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-    int i = 0;
-    if(op != FINISHING_OPERATION_QUEUE)
-        textToFrame(i++, 0, titleName);
-
+    int i = op != FINISHING_OPERATION_QUEUE ? textToFrameMultiline(0, ALIGNED_CENTER, titleName, MAX_CHARS) : 0;
     textToFrame(i++, 0, text);
-    writeScreenLog(i++);
+    writeScreenLog(i);
     drawFrame();
 }
 
