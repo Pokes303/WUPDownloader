@@ -71,6 +71,7 @@ typedef struct
 {
     bool running;
     CURLcode error;
+    spinlock lock;
     OSTick ts;
     double dltotal;
     double dlnow;
@@ -97,9 +98,13 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
         OSTick t = OSGetTick();
         addEntropy(&t, sizeof(OSTick));
 
+        if(!spinTryLock(data->lock))
+            return 0;
+
         data->ts = t;
         data->dltotal = dltotal;
         data->dlnow = dlnow;
+        spinReleaseLock(data->lock);
     }
 
     return 0;
@@ -450,6 +455,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
         .dlnow = 0.0D,
         .dltotal = 0.0D,
     };
+    spinCreateLock((cdata.lock), SPINLOCK_FREE);
 
     CURLcode ret = curl_easy_setopt(curl, CURLOPT_URL, url);
     if(ret == CURLE_OK)
@@ -499,9 +505,11 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
     double multiplier;
     char *multiplierName;
     double downloaded = 0.0D;
-    double dlnow;
+    OSTick ts;
     double dltotal;
+    double dlnow;
     double tmp;
+    double have;
     OSTick lastTransfair = OSGetTick();
     int frames = 1;
     uint32_t eta;
@@ -510,8 +518,20 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
     {
         if(--frames == 0)
         {
-            dlnow = fileSize + cdata.dlnow;
-            dltotal = (dlnow - downloaded);
+            if(!spinTryLock(cdata.lock))
+            {
+                frames = 2;
+                continue;
+
+            }
+
+            ts = cdata.ts;
+            dltotal = cdata.dltotal;
+            dlnow = cdata.dlnow;
+            spinReleaseLock(cdata.lock);
+
+            dlnow += fileSize;
+            have = dlnow - downloaded;
 
             startNewFrame();
 
@@ -552,9 +572,9 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 if(tmp > 0.009D)
                 {
                     barToFrame(line, 0, 29, tmp / data->dltotal * 100.0D);
-                    if(cdata.dltotal > 0.01D)
+                    if(dltotal > 0.01D)
                     {
-                        eta = (data->dltotal - tmp) / dltotal;
+                        eta = (data->dltotal - tmp) / have;
                         if(eta)
                             data->eta = eta;
                         else
@@ -612,9 +632,9 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                     if(tmp > 0.009D)
                     {
                         barToFrame(line, 0, 29, tmp / queueData->dlSize * 100.0D);
-                        if(cdata.dltotal > 0.1D)
+                        if(dltotal > 0.1D)
                         {
-                            eta = (queueData->dlSize - tmp) / dltotal;
+                            eta = (queueData->dlSize - tmp) / have;
                             if(eta)
                                 queueData->eta = eta;
                             else
@@ -638,31 +658,31 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
             else
                 line = 0;
 
-            if(cdata.dltotal > 0.1D)
+            if(dltotal > 0.1D)
             {
                 if(!toRam)
                     checkForQueueErrors();
 
                 frames = 60;
-                tmp = cdata.dltotal + fileSize;
+                dltotal += fileSize;
 
                 strcpy(toScreen, gettext("Downloading"));
                 strcat(toScreen, " ");
                 strcat(toScreen, name);
                 textToFrame(line, 0, toScreen);
-                barToFrame(++line, 0, 29, dlnow / tmp * 100.0D);
+                barToFrame(++line, 0, 29, dlnow / dltotal * 100.0D);
 
-                if(tmp < 1024.0D)
+                if(dltotal < 1024.0D)
                 {
                     multiplier = 1.0D;
                     multiplierName = "B";
                 }
-                else if(tmp < 1024.0D * 1024.0D)
+                else if(dltotal < 1024.0D * 1024.0D)
                 {
                     multiplier = 1 << 10;
                     multiplierName = "KB";
                 }
-                else if(tmp < 1024.0D * 1024.0D * 1024.0D)
+                else if(dltotal < 1024.0D * 1024.0D * 1024.0D)
                 {
                     multiplier = 1 << 20;
                     multiplierName = "MB";
@@ -673,27 +693,27 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                     multiplierName = "GB";
                 }
 
-                sprintf(toScreen, "%.2f / %.2f %s", dlnow / multiplier, tmp / multiplier, multiplierName);
+                sprintf(toScreen, "%.2f / %.2f %s", dlnow / multiplier, dltotal / multiplier, multiplierName);
                 textToFrame(line, 30, toScreen);
 
-                eta = (tmp - dlnow) / dltotal;
+                eta = (dltotal - dlnow) / have;
                 secsToTime(eta, toScreen);
                 textToFrame(line, ALIGNED_RIGHT, toScreen);
 
                 downloaded = dlnow;
-                if(dltotal > 0.0D)
+                if(have > 0.0D)
                 {
-                    dlnow = OSTicksToMilliseconds(cdata.ts - lastTransfair); // sample duration in milliseconds
+                    dlnow = OSTicksToMilliseconds(ts - lastTransfair); // sample duration in milliseconds
                     if(dlnow != 0.0D)
                     {
                         dlnow /= 1000.0D; // sample duration in seconds
                         if(dlnow != 0.0D)
-                            dltotal /= dlnow; // mbyte/s
+                            have /= dlnow; // mbyte/s
                     }
                 }
 
-                lastTransfair = cdata.ts;
-                getSpeedString(dltotal, toScreen);
+                lastTransfair = ts;
+                getSpeedString(have, toScreen);
                 textToFrame(--line, ALIGNED_RIGHT, toScreen);
                 ++line;
             }
