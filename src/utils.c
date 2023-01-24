@@ -112,8 +112,8 @@ void getSpeedString(double bytePerSecond, char *out)
 void secsToTime(uint32_t seconds, char *out)
 {
     uint32_t days = seconds / 86400;
-    int hours;
-    int minutes;
+    uint32_t hours;
+    uint32_t minutes;
     if(days < 100)
     {
         hours = (seconds % 86400) / 3600;
@@ -122,6 +122,7 @@ void secsToTime(uint32_t seconds, char *out)
     }
     else
     {
+        days = 99;
         hours = 23;
         minutes = 59;
         seconds = 59;
