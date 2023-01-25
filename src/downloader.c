@@ -522,7 +522,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
             {
                 frames = 2;
                 continue;
-
             }
 
             ts = cdata.ts;
