@@ -103,9 +103,9 @@
     "\uE003 to uninstall": "\uE003 zum deinstallieren",
 
     "days": "Tage",
-    "hours": "Stunden",
-    "minutes": "Minuten",
-    "seconds": "Sekunden",
+    "hours": "Std.",
+    "minutes": "Min.",
+    "seconds": "Sek.",
 
     "Downloading": "Downloade",
     "Preparing": "Vorbereitung:",
