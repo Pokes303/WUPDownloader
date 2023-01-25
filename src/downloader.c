@@ -613,15 +613,10 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 }
 
                 secsToTime(eta, toScreen);
-                textToFrame(line, ALIGNED_RIGHT, toScreen);
-
-                sprintf(toScreen, "(%d/%d)", data->dcontent + 1, data->contents);
-                line += queueData == NULL ? 2 : 3;
-                textToFrame(line--, ALIGNED_CENTER, toScreen);
+                textToFrame(line++, ALIGNED_RIGHT, toScreen);
 
                 if(queueData != NULL)
                 {
-                    --line;
                     if(queueData->dlSize < 1024.0D)
                     {
                         multiplier = 1.0D;
@@ -677,6 +672,9 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 }
 
                 lineToFrame(line++, SCREEN_COLOR_WHITE);
+
+                sprintf(toScreen, "(%d/%d)", data->dcontent + 1, data->contents);
+                textToFrame(line, ALIGNED_CENTER, toScreen);
             }
             else
                 line = 0;
