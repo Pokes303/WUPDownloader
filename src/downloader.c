@@ -92,7 +92,7 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
     if(data->error != CURLE_OK)
         return 1;
 
-    if(dltotal > 0.1D && !isinf(dltotal) && !isnan(dltotal))
+    if(dltotal > 0.009D && !isinf(dltotal) && !isnan(dltotal))
     {
         addEntropy(&dlnow, sizeof(double));
         OSTick t = OSGetTick();
