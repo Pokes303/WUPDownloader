@@ -1115,7 +1115,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
         .dcontent = 0,
         .dlnow = 0.0D,
         .dltotal = 0.0D,
-        .eta = 0,
+        .eta = -1,
     };
 
     if(!fileExists(installDir))

@@ -149,10 +149,7 @@ void secsToTime(uint32_t seconds, char *out)
         visible = true;
     }
 
-    if(seconds || visible)
-        sprintf(out, visible ? "%02u %s " : "%u %s ", seconds, gettext("seconds"));
-    else
-        strcpy(out, "N/A");
+    sprintf(out, visible ? "%02u %s" : "%u %s", seconds, gettext("seconds"));
 }
 
 uint8_t charToByte(char c)
