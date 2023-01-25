@@ -545,7 +545,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                     if(tmp != 0.0D)
                     {
                         mbytes /= tmp; // mbyte/s
-                        mbytes = (SMOOTHING_FACTOR * oldMbytes) + ((1 - SMOOTHING_FACTOR) * mbytes);
+                        mbytes = (SMOOTHING_FACTOR * oldMbytes) + ((1.0D - SMOOTHING_FACTOR) * mbytes);
                         oldMbytes = mbytes;
                     }
                     else
