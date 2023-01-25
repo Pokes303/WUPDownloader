@@ -55,8 +55,9 @@
 #include <mbedtls/ssl.h>
 #include <mbedtls/x509_crt.h>
 
-#define USERAGENT      "NUSspli/" NUSSPLI_VERSION
-#define DLT_STACK_SIZE 0x4000
+#define USERAGENT        "NUSspli/" NUSSPLI_VERSION
+#define DLT_STACK_SIZE   0x4000
+#define SMOOTHING_FACTOR 0.2D
 
 static volatile char *ramBuf = NULL;
 static volatile size_t ramBufSize = 0;
@@ -510,6 +511,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
     double dlnow;
     double tmp;
     double have;
+    double oldHave = 0.0D;
     OSTick lastTransfair = OSGetTick();
     int frames = 1;
     uint32_t eta;
@@ -707,7 +709,11 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                     {
                         dlnow /= 1000.0D; // sample duration in seconds
                         if(dlnow != 0.0D)
+                        {
                             have /= dlnow; // mbyte/s
+                            have = SMOOTHING_FACTOR * oldHave + (1 - SMOOTHING_FACTOR) * have;
+                            oldHave = have;
+                        }
                     }
                 }
 
