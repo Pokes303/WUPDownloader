@@ -138,19 +138,19 @@ void secsToTime(uint32_t seconds, char *out)
     }
     if(hours || visible)
     {
-        sprintf(out, "%u %s ", hours, gettext("hours"));
+        sprintf(out, visible ? "%02u %s " : "%u %s ", hours, gettext("hours"));
         out += strlen(out);
         visible = true;
     }
     if(minutes || visible)
     {
-        sprintf(out, "%02u %s ", minutes, gettext("minutes"));
+        sprintf(out, visible ? "%02u %s " : "%u %s ", minutes, gettext("minutes"));
         out += strlen(out);
         visible = true;
     }
 
     if(seconds || visible)
-        sprintf(out, "%02u %s", seconds, gettext("seconds"));
+        sprintf(out, visible ? "%02u %s " : "%u %s ", seconds, gettext("seconds"));
     else
         strcpy(out, "N/A");
 }
