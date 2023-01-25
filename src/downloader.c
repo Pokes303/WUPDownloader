@@ -697,10 +697,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 sprintf(toScreen, "%.2f / %.2f %s", dlnow / multiplier, dltotal / multiplier, multiplierName);
                 textToFrame(line, 30, toScreen);
 
-                eta = (dltotal - dlnow) / have;
-                secsToTime(eta, toScreen);
-                textToFrame(line, ALIGNED_RIGHT, toScreen);
-
                 downloaded = dlnow;
                 if(have > 0.0D)
                 {
@@ -716,6 +712,9 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                         }
                     }
                 }
+                eta = (dltotal - dlnow) / have;
+                secsToTime(eta, toScreen);
+                textToFrame(line, ALIGNED_RIGHT, toScreen);
 
                 lastTransfair = ts;
                 getSpeedString(have, toScreen);
