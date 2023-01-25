@@ -505,13 +505,13 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
     double multiplier;
     char *multiplierName;
-    double downloaded = 0.0D;
+    double downloaded;
     OSTick ts;
     double dltotal;
     double dlnow;
     double tmp;
-    double have;
-    double oldHave = 0.0D;
+    double mbytes;
+    double oldMbytes = 0.0D;
     OSTick lastTransfair = OSGetTick();
     int frames = 1;
     uint32_t eta;
@@ -531,9 +531,31 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
             dlnow = cdata.dlnow;
             spinReleaseLock(cdata.lock);
 
+            mbytes = dlnow - downloaded;
+            downloaded = dlnow;
             dlnow += fileSize;
-            have = dlnow - downloaded;
 
+            // Calculate download speed
+            if(mbytes > 0.0000009D)
+            {
+                if(dltotal > 0.01D)
+                {
+                    tmp = OSTicksToMilliseconds(ts - lastTransfair); // sample duration in milliseconds
+                    tmp /= 1000.0D; // sample duration in seconds
+                    if(tmp != 0.0D)
+                    {
+                        mbytes /= tmp; // mbyte/s
+                        mbytes = (SMOOTHING_FACTOR * oldMbytes) + ((1 - SMOOTHING_FACTOR) * mbytes);
+                        oldMbytes = mbytes;
+                    }
+                    else
+                        mbytes = 0.0D;
+                }
+                else
+                    mbytes = 0.0D;
+            }
+
+            lastTransfair = ts;
             startNewFrame();
 
             if(data != NULL)
@@ -575,7 +597,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                     barToFrame(line, 0, 29, tmp / data->dltotal * 100.0D);
                     if(dltotal > 0.01D)
                     {
-                        eta = (data->dltotal - tmp) / have;
+                        eta = (data->dltotal - tmp) / mbytes;
                         if(eta)
                             data->eta = eta;
                         else
@@ -635,7 +657,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                         barToFrame(line, 0, 29, tmp / queueData->dlSize * 100.0D);
                         if(dltotal > 0.1D)
                         {
-                            eta = (queueData->dlSize - tmp) / have;
+                            eta = (queueData->dlSize - tmp) / mbytes;
                             if(eta)
                                 queueData->eta = eta;
                             else
@@ -697,27 +719,11 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 sprintf(toScreen, "%.2f / %.2f %s", dlnow / multiplier, dltotal / multiplier, multiplierName);
                 textToFrame(line, 30, toScreen);
 
-                downloaded = dlnow;
-                if(have > 0.0D)
-                {
-                    dlnow = OSTicksToMilliseconds(ts - lastTransfair); // sample duration in milliseconds
-                    if(dlnow != 0.0D)
-                    {
-                        dlnow /= 1000.0D; // sample duration in seconds
-                        if(dlnow != 0.0D)
-                        {
-                            have /= dlnow; // mbyte/s
-                            have = SMOOTHING_FACTOR * oldHave + (1 - SMOOTHING_FACTOR) * have;
-                            oldHave = have;
-                        }
-                    }
-                }
-                eta = (dltotal - dlnow) / have;
+                eta = (dltotal - dlnow) / mbytes;
                 secsToTime(eta, toScreen);
                 textToFrame(line, ALIGNED_RIGHT, toScreen);
 
-                lastTransfair = ts;
-                getSpeedString(have, toScreen);
+                getSpeedString(mbytes, toScreen);
                 textToFrame(--line, ALIGNED_RIGHT, toScreen);
                 ++line;
             }
