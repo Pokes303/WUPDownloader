@@ -36,12 +36,14 @@
     "Disabled": "Désactivé",
     "Auto resume failed downloads:": "Reprise automatique des téléchargements échoués :",
     "Notification method:": "Méthode de notification:",
+    "System settings": "Paramètres du système",
     "French": "Français",
     "None": "Aucun",
     "Europe": "Europe",
     "Japan": "Japon",
 
     "USA/Europe": "USA/Europe",
+    "USA/Japan": "USA/Japon",
     "Europe/Japan": "Europe/Japon",
     "Unknown": "Inconnu",
 
@@ -87,7 +89,7 @@
     "Do you want to change the target device to this?": "Voulez-vous changer l'appareil cible pour celui-ci ?",
     "Continue": "Continuer",
 
-    "\uE045 to start downloading": "\uE045 pour commencer le téléchargement",
+    "\uE045 to start the queue": "\uE045 pour commencer la file d'attente",
     "\uE046 to delete an item": "\uE046 pour supprimer un élément",
 
     "Install to:": "Installer vers :",
@@ -102,6 +104,7 @@
     "\uE046 to add to the queue": "\uE046 pour ajouter à la file d'attente",
     "\uE003 to uninstall": "\uE003 pour désinstaller",
 
+    "days": "jours",
     "hours": "heures",
     "minutes": "minutes",
     "seconds": "secondes",
