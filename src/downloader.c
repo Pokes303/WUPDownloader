@@ -518,7 +518,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
         {
             if(!spinTryLock(cdata.lock))
             {
-                frames = 2;
+                frames = 1;
                 continue;
             }
 
