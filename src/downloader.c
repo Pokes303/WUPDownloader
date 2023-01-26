@@ -93,21 +93,17 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
     if(data->error != CURLE_OK)
         return 1;
 
-    if(dltotal > 0.009D && !isinf(dltotal) && !isnan(dltotal))
+    OSTick t = OSGetTick();
+    if(!spinTryLock(data->lock))
     {
-        addEntropy(&dlnow, sizeof(double));
-        OSTick t = OSGetTick();
-        addEntropy(&t, sizeof(OSTick));
-
-        if(!spinTryLock(data->lock))
-            return 0;
-
         data->ts = t;
         data->dltotal = dltotal;
         data->dlnow = dlnow;
         spinReleaseLock(data->lock);
     }
 
+    addEntropy(&dlnow, sizeof(double));
+    addEntropy(&t, sizeof(OSTick));
     return 0;
 }
 
@@ -536,9 +532,9 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
             dlnow += fileSize;
 
             // Calculate download speed
-            if(bps > 0.009D)
+            if(bps != 0.0D)
             {
-                if(dltotal > 0.01D)
+                if(dltotal != 0.0D)
                 {
                     tmp = OSTicksToMilliseconds(ts - lastTransfair); // sample duration in milliseconds
                     tmp /= 1000.0D; // sample duration in seconds
@@ -596,10 +592,10 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 sprintf(toScreen, "%.2f / %.2f %s", tmp / multiplier, data->dltotal / multiplier, multiplierName);
                 textToFrame(line, 30, toScreen);
 
-                if(tmp > 0.009D)
+                if(tmp != 0.0D)
                 {
                     barToFrame(line, 0, 29, tmp / data->dltotal * 100.0D);
-                    if(dltotal > 0.01D)
+                    if(dltotal != 0.0D)
                         data->eta = (data->dltotal - tmp) / bps;
                 }
                 else
@@ -640,10 +636,10 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                     sprintf(toScreen, "%.2f / %.2f %s", tmp / multiplier, queueData->dlSize / multiplier, multiplierName);
                     textToFrame(line, 30, toScreen);
 
-                    if(tmp > 0.009D)
+                    if(tmp != 0.0D)
                     {
                         barToFrame(line, 0, 29, tmp / queueData->dlSize * 100.0D);
-                        if(dltotal > 0.1D)
+                        if(dltotal != 0.0D)
                             queueData->eta = (queueData->dlSize - tmp) / bps;
                     }
                     else
@@ -661,7 +657,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
             else
                 line = 0;
 
-            if(dltotal > 0.1D)
+            if(dltotal != 0.0D)
             {
                 if(!toRam)
                     checkForQueueErrors();
