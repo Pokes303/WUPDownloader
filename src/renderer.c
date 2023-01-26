@@ -318,9 +318,8 @@ void barToFrame(int line, int column, uint32_t width, double progress)
     rect[2]->w = rect[0]->w - 4;
 
     char text[8];
-    sprintf(text, "%d%%%%", (int)progress);
+    sprintf(text, "%d%%%%", (int)(progress * 100.0D));
 
-    progress /= 100.0D;
     progress *= rect[2]->w;
     rect[1]->w = progress;
 

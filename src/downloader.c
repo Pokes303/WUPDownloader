@@ -386,7 +386,6 @@ static void drawStatLine(int line, curl_off_t totalSize, curl_off_t currentSize,
     {
         tmp = currentSize;
         tmp /= totalSize;
-        tmp *= 100.0D;
         barToFrame(line, 0, 29, tmp);
         if(totalSize)
             *eta = (totalSize - currentSize) / bps;
