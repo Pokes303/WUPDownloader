@@ -94,7 +94,7 @@ static int progressCallback(void *rawData, curl_off_t dltotal, curl_off_t dlnow,
         return 1;
 
     OSTick t = OSGetTick();
-    if(!spinTryLock(data->lock))
+    if(spinTryLock(data->lock))
     {
         data->ts = t;
         data->dltotal = dltotal;
