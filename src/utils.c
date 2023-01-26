@@ -235,7 +235,7 @@ void showMcpProgress(McpData *data, const char *game, bool inst)
                 strcat(toScreen, " ");
                 strcat(toScreen, game);
                 textToFrame(0, 0, toScreen);
-                barToFrame(1, 0, 40, progress.sizeProgress / progress.sizeTotal);
+                barToFrame(1, 0, 40, (float)progress.sizeProgress / (float)progress.sizeTotal);
                 sprintf(toScreen, "%.2f / %.2f %s", progress.sizeProgress / multiplier, progress.sizeTotal / multiplier, multiplierName);
                 textToFrame(1, 41, toScreen);
 
