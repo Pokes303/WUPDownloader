@@ -600,23 +600,12 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 {
                     barToFrame(line, 0, 29, tmp / data->dltotal * 100.0D);
                     if(dltotal > 0.01D)
-                    {
-                        eta = (data->dltotal - tmp) / bps;
-                        if(eta)
-                            data->eta = eta;
-                        else
-                            eta = data->eta;
-                    }
-                    else
-                        eta = data->eta;
+                        data->eta = (data->dltotal - tmp) / bps;
                 }
                 else
-                {
                     barToFrame(line, 0, 29, 0.0D);
-                    eta = data->eta;
-                }
 
-                secsToTime(eta, toScreen);
+                secsToTime(data->eta, toScreen);
                 textToFrame(line++, ALIGNED_RIGHT, toScreen);
 
                 if(queueData != NULL)
@@ -655,23 +644,12 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                     {
                         barToFrame(line, 0, 29, tmp / queueData->dlSize * 100.0D);
                         if(dltotal > 0.1D)
-                        {
-                            eta = (queueData->dlSize - tmp) / bps;
-                            if(eta)
-                                queueData->eta = eta;
-                            else
-                                eta = queueData->eta;
-                        }
-                        else
-                            eta = queueData->eta;
+                            queueData->eta = (queueData->dlSize - tmp) / bps;
                     }
                     else
-                    {
                         barToFrame(line, 0, 29, 0.0D);
-                        eta = queueData->eta;
-                    }
 
-                    secsToTime(eta, toScreen);
+                    secsToTime(queueData->eta, toScreen);
                     textToFrame(line++, ALIGNED_RIGHT, toScreen);
                 }
 
