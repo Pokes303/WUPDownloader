@@ -81,7 +81,7 @@ bool proccessQueue()
     TitleData *title;
     uint64_t sizes[3] = { 0, 0, 0 };
 #ifndef NUSSPLI_LITE
-    QUEUE_DATA queueData = { .downloaded = 0.0D, .dlSize = 0.0D, .packages = 0, .current = 0, .eta = -1 };
+    QUEUE_DATA queueData = { .downloaded = 0, .dlSize = 0, .packages = 0, .current = 0, .eta = -1 };
 #endif
 
     forEachListEntry(titleQueue, title)

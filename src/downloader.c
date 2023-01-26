@@ -74,8 +74,8 @@ typedef struct
     CURLcode error;
     spinlock lock;
     OSTick ts;
-    double dltotal;
-    double dlnow;
+    curl_off_t dltotal;
+    curl_off_t dlnow;
 } curlProgressData;
 
 #define closeCancelOverlay()               \
@@ -84,7 +84,7 @@ typedef struct
         cancelOverlay = NULL;              \
     }
 
-static int progressCallback(void *rawData, double dltotal, double dlnow, double ultotal, double ulnow)
+static int progressCallback(void *rawData, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow)
 {
     curlProgressData *data = (curlProgressData *)rawData;
     if(!AppRunning(false))
@@ -102,7 +102,7 @@ static int progressCallback(void *rawData, double dltotal, double dlnow, double 
         spinReleaseLock(data->lock);
     }
 
-    addEntropy(&dlnow, sizeof(double));
+    addEntropy(&dlnow, sizeof(curl_off_t));
     addEntropy(&t, sizeof(OSTick));
     return 0;
 }
@@ -278,7 +278,7 @@ bool initDownloader()
                     ret = curl_easy_setopt(curl, CURLOPT_USERAGENT, USERAGENT);
                     if(ret == CURLE_OK)
                     {
-                        ret = curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressCallback);
+                        ret = curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, progressCallback);
                         if(ret == CURLE_OK)
                         {
                             ret = curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
@@ -474,7 +474,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 {
                     ret = curl_easy_setopt(curl, CURLOPT_WRITEDATA, (FILE *)fp);
                     if(ret == CURLE_OK)
-                        ret = curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &cdata);
+                        ret = curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &cdata);
                 }
             }
         }
@@ -501,16 +501,15 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
     double multiplier;
     char *multiplierName;
-    double downloaded;
     OSTick ts;
-    double dltotal;
-    double dlnow;
-    double tmp;
+    size_t dltotal; // We use size_t instead of curl_off_t as filesizes are limitted to 4 GB anyway,
+    size_t dlnow;
+    size_t downloaded;
+    size_t tmp;
     double bps;
     double oldBps = 0.0D;
     OSTick lastTransfair = OSGetTick();
     int frames = 1;
-    uint32_t eta;
     int line;
     while(cdata.running && AppRunning(true))
     {
@@ -534,12 +533,12 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
             // Calculate download speed
             if(bps != 0.0D)
             {
-                if(dltotal != 0.0D)
+                if(dltotal)
                 {
                     tmp = OSTicksToMilliseconds(ts - lastTransfair); // sample duration in milliseconds
-                    tmp /= 1000.0D; // sample duration in seconds
-                    if(tmp != 0.0D)
+                    if(tmp)
                     {
+                        bps *= 1000.0D; // secs to ms.
                         bps /= tmp; // byte/s
 
                         // Smoothing
@@ -568,17 +567,17 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 else
                     line = textToFrameMultiline(0, ALIGNED_CENTER, data->name, MAX_CHARS);
 
-                if(data->dltotal < 1024.0D)
+                if(data->dltotal < 1024)
                 {
                     multiplier = 1.0D;
                     multiplierName = "B";
                 }
-                else if(data->dltotal < 1024.0D * 1024.0D)
+                else if(data->dltotal < 1024 * 1024)
                 {
                     multiplier = 1 << 10;
                     multiplierName = "KB";
                 }
-                else if(data->dltotal < 1024.0D * 1024.0D * 1024.0D)
+                else if(data->dltotal < 1024 * 1024 * 1024)
                 {
                     multiplier = 1 << 20;
                     multiplierName = "MB";
@@ -592,10 +591,10 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 sprintf(toScreen, "%.2f / %.2f %s", tmp / multiplier, data->dltotal / multiplier, multiplierName);
                 textToFrame(line, 30, toScreen);
 
-                if(tmp != 0.0D)
+                if(tmp)
                 {
                     barToFrame(line, 0, 29, tmp / data->dltotal * 100.0D);
-                    if(dltotal != 0.0D)
+                    if(dltotal)
                         data->eta = (data->dltotal - tmp) / bps;
                 }
                 else
@@ -606,22 +605,22 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
                 if(queueData != NULL)
                 {
-                    if(queueData->dlSize < 1024.0D)
+                    if(queueData->dlSize < 1024)
                     {
                         multiplier = 1.0D;
                         multiplierName = "B";
                     }
-                    else if(queueData->dlSize < 1024.0D * 1024.0D)
+                    else if(queueData->dlSize < 1024 * 1024)
                     {
                         multiplier = 1 << 10;
                         multiplierName = "KB";
                     }
-                    else if(queueData->dlSize < 1024.0D * 1024.0D * 1024.0D)
+                    else if(queueData->dlSize < 1024 * 1024 * 1024)
                     {
                         multiplier = 1 << 20;
                         multiplierName = "MB";
                     }
-                    else if(queueData->dlSize < 1024.0D * 1024.0D * 1024.0D * 1024.0D)
+                    else if(queueData->dlSize < 1024llu * 1024llu * 1024llu * 1024llu)
                     {
                         multiplier = 1 << 30;
                         multiplierName = "GB";
@@ -636,10 +635,10 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                     sprintf(toScreen, "%.2f / %.2f %s", tmp / multiplier, queueData->dlSize / multiplier, multiplierName);
                     textToFrame(line, 30, toScreen);
 
-                    if(tmp != 0.0D)
+                    if(tmp)
                     {
                         barToFrame(line, 0, 29, tmp / queueData->dlSize * 100.0D);
-                        if(dltotal != 0.0D)
+                        if(dltotal)
                             queueData->eta = (queueData->dlSize - tmp) / bps;
                     }
                     else
@@ -695,8 +694,8 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 sprintf(toScreen, "%.2f / %.2f %s", dlnow / multiplier, dltotal / multiplier, multiplierName);
                 textToFrame(line, 30, toScreen);
 
-                eta = (dltotal - dlnow) / bps;
-                secsToTime(eta, toScreen);
+                tmp = (dltotal - dlnow) / bps;
+                secsToTime(tmp, toScreen);
                 textToFrame(line, ALIGNED_RIGHT, toScreen);
 
                 getSpeedString(bps, toScreen);
@@ -1091,8 +1090,8 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
         .name = titleEntry->name,
         .contents = tmd->num_contents + 1,
         .dcontent = 0,
-        .dlnow = 0.0D,
-        .dltotal = 0.0D,
+        .dlnow = 0,
+        .dltotal = 0,
         .eta = -1,
     };
 

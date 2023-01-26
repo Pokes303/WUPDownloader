@@ -28,6 +28,8 @@
 #include <titles.h>
 #include <tmd.h>
 
+#include <curl/curl.h>
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -38,8 +40,8 @@ extern "C"
         const char *name;
         uint16_t contents; // Contents count
         uint16_t dcontent; // Actual content number
-        double dlnow;
-        double dltotal;
+        curl_off_t dlnow;
+        curl_off_t dltotal;
         uint32_t eta;
         size_t cs;
     } downloadData;

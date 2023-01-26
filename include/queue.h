@@ -30,6 +30,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <curl/curl.h>
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -61,8 +63,8 @@ extern "C"
 
     typedef struct
     {
-        double downloaded;
-        double dlSize;
+        curl_off_t downloaded;
+        curl_off_t dlSize;
         uint32_t packages;
         uint32_t current;
         uint32_t eta;
