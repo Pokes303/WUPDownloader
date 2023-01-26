@@ -799,11 +799,6 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
     }
     debugPrintf("curl_easy_perform executed successfully");
 
-    double dld;
-    ret = curl_easy_getinfo(curl, CURLINFO_SIZE_DOWNLOAD, &dld);
-    if(ret != CURLE_OK)
-        dld = 0.0D;
-
     long resp;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &resp);
     if(resp == 206) // Resumed download OK
@@ -878,8 +873,13 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
     if(data != NULL)
     {
+        curl_off_t dld;
+        ret = curl_easy_getinfo(curl, CURLINFO_SIZE_DOWNLOAD_T, &dld);
+        if(ret != CURLE_OK)
+            dld = 0;
+
         if(fileSize)
-            dld += (double)fileSize;
+            dld += fileSize;
 
         data->dlnow += dld;
         if(queueData != NULL)
@@ -1079,10 +1079,10 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
         addToScreenLog("Cert skipped!");
 
     // Get .app and .h3 files
-    double as;
+    curl_off_t as;
     for(int i = 0; i < tmd->num_contents; ++i)
     {
-        as = (double)(tmd->contents[i].size);
+        as = tmd->contents[i].size;
         data.dltotal += as;
         if(tmd->contents[i].type & TMD_CONTENT_TYPE_HASHED)
         {
