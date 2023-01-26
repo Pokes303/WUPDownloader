@@ -593,7 +593,10 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
                 if(tmp)
                 {
-                    barToFrame(line, 0, 29, tmp / data->dltotal * 100.0D);
+                    multiplier = tmp;
+                    multiplier /= data->dltotal;
+                    multiplier *= 100.0D;
+                    barToFrame(line, 0, 29, multiplier);
                     if(dltotal)
                         data->eta = (data->dltotal - tmp) / bps;
                 }
@@ -637,7 +640,10 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
                     if(tmp)
                     {
-                        barToFrame(line, 0, 29, tmp / queueData->dlSize * 100.0D);
+                        multiplier = tmp;
+                        multiplier /= queueData->dlSize;
+                        multiplier *= 100.0D;
+                        barToFrame(line, 0, 29, multiplier);
                         if(dltotal)
                             queueData->eta = (queueData->dlSize - tmp) / bps;
                     }
@@ -668,7 +674,10 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 strcat(toScreen, " ");
                 strcat(toScreen, name);
                 textToFrame(line, 0, toScreen);
-                barToFrame(++line, 0, 29, dlnow / dltotal * 100.0D);
+                multiplier = dlnow;
+                multiplier /= dltotal;
+                multiplier *= 100.0D;
+                barToFrame(++line, 0, 29, multiplier);
 
                 if(dltotal < 1024.0D)
                 {
