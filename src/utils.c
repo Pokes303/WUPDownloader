@@ -88,25 +88,25 @@ void hex(uint64_t i, int digits, char *out)
     sprintf(out, x, i);
 }
 
-void getSpeedString(double bytePerSecond, char *out)
+void getSpeedString(float bytePerSecond, char *out)
 {
-    double bitPerSecond = bytePerSecond * 8.0D;
+    float bitPerSecond = bytePerSecond * 8.0f;
 
-    if(bitPerSecond < 1024.0D)
+    if(bitPerSecond < 1024.0f)
         sprintf(out, "%.2f b/s (", bitPerSecond);
-    else if(bitPerSecond < 1024.0D * 1024.0D)
-        sprintf(out, "%.2f Kb/s (", bitPerSecond / 1024.0D);
+    else if(bitPerSecond < 1024.0f * 1024.0f)
+        sprintf(out, "%.2f Kb/s (", bitPerSecond / 1024.0f);
     else
-        sprintf(out, "%.2f Mb/s (", bitPerSecond / (1024.0D * 1024.0D));
+        sprintf(out, "%.2f Mb/s (", bitPerSecond / (1024.0f * 1024.0f));
 
     out += strlen(out);
 
-    if(bytePerSecond < 1024.0D)
+    if(bytePerSecond < 1024.0f)
         sprintf(out, "%.2f B/s)", bytePerSecond);
-    else if(bytePerSecond < 1024.0D * 1024.0D)
-        sprintf(out, "%.2f KB/s)", bytePerSecond / 1024.0D);
+    else if(bytePerSecond < 1024.0f * 1024.0f)
+        sprintf(out, "%.2f KB/s)", bytePerSecond / 1024.0f);
     else
-        sprintf(out, "%.2f MB/s)", bytePerSecond / (1024.0D * 1024.0D));
+        sprintf(out, "%.2f MB/s)", bytePerSecond / (1024.0f * 1024.0f));
 }
 
 void secsToTime(uint32_t seconds, char *out)
@@ -189,8 +189,8 @@ void glueMcpData(MCPInstallTitleInfo *info, McpData *data)
 void showMcpProgress(McpData *data, const char *game, bool inst)
 {
     MCPInstallProgress progress __attribute__((__aligned__(0x40))) = { .inProgress = 0, .sizeTotal = 0 };
-    char multiplierName[3];
-    int multiplier = 0;
+    const char *multiplierName;
+    float multiplier = 0;
     char *toScreen = getToFrameBuffer();
     MCPError err;
     OSTime lastSpeedCalc = 0;
@@ -211,23 +211,23 @@ void showMcpProgress(McpData *data, const char *game, bool inst)
                 {
                     if(progress.sizeTotal < 1 << 10)
                     {
-                        multiplier = 1;
-                        strcpy(multiplierName, "B");
+                        multiplier = 1.0f;
+                        multiplierName = "B";
                     }
                     else if(progress.sizeTotal < 1 << 20)
                     {
                         multiplier = 1 << 10;
-                        strcpy(multiplierName, "KB");
+                        multiplierName = "KB";
                     }
                     else if(progress.sizeTotal < 1 << 30)
                     {
                         multiplier = 1 << 20;
-                        strcpy(multiplierName, "MB");
+                        multiplierName = "MB";
                     }
                     else
                     {
                         multiplier = 1 << 30;
-                        strcpy(multiplierName, "GB");
+                        multiplierName = "GB";
                     }
                 }
                 startNewFrame();
@@ -235,9 +235,8 @@ void showMcpProgress(McpData *data, const char *game, bool inst)
                 strcat(toScreen, " ");
                 strcat(toScreen, game);
                 textToFrame(0, 0, toScreen);
-                double prg = (double)progress.sizeProgress;
-                barToFrame(1, 0, 40, prg / progress.sizeTotal);
-                sprintf(toScreen, "%.2f / %.2f %s", prg / multiplier, ((double)progress.sizeTotal) / multiplier, multiplierName);
+                barToFrame(1, 0, 40, progress.sizeProgress / progress.sizeTotal);
+                sprintf(toScreen, "%.2f / %.2f %s", progress.sizeProgress / multiplier, progress.sizeTotal / multiplier, multiplierName);
                 textToFrame(1, 41, toScreen);
 
                 if(progress.sizeProgress != 0)
@@ -245,8 +244,8 @@ void showMcpProgress(McpData *data, const char *game, bool inst)
                     now = OSGetSystemTime();
                     if(OSTicksToMilliseconds(now - lastSpeedCalc) > 333)
                     {
-                        getSpeedString(prg - lsp, speedBuf);
-                        lsp = prg;
+                        getSpeedString(progress.sizeProgress - lsp, speedBuf);
+                        lsp = progress.sizeProgress;
                         lastSpeedCalc = now;
                     }
                     textToFrame(1, ALIGNED_RIGHT, speedBuf);

@@ -57,7 +57,7 @@
 
 #define USERAGENT        "NUSspli/" NUSSPLI_VERSION
 #define DLT_STACK_SIZE   0x4000
-#define SMOOTHING_FACTOR 0.2D
+#define SMOOTHING_FACTOR 0.2f
 
 static volatile char *ramBuf = NULL;
 static volatile size_t ramBufSize = 0;
@@ -379,9 +379,9 @@ static const char *translateCurlError(CURLcode err, const char *curlError)
     }
 }
 
-static void drawStatLine(int line, curl_off_t totalSize, curl_off_t currentSize, double bps, uint32_t *eta)
+static void drawStatLine(int line, curl_off_t totalSize, curl_off_t currentSize, float bps, uint32_t *eta)
 {
-    double tmp;
+    float tmp;
     if(currentSize)
     {
         tmp = currentSize;
@@ -396,7 +396,7 @@ static void drawStatLine(int line, curl_off_t totalSize, curl_off_t currentSize,
     char *multiplierName;
     if(totalSize < 1024)
     {
-        tmp = 1.0D;
+        tmp = 1.0f;
         multiplierName = "B";
     }
     else if(totalSize < 1024 * 1024)
@@ -469,9 +469,9 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                     {
                         sprintf(toScreen, "Download %s skipped!", name);
                         addToScreenLog(toScreen);
-                        data->dlnow += (double)fileSize;
+                        data->dlnow += fileSize;
                         if(queueData != NULL)
-                            queueData->downloaded += (double)fileSize;
+                            queueData->downloaded += fileSize;
 
                         return 0;
                     }
@@ -554,8 +554,8 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
     size_t dlnow;
     size_t downloaded;
     size_t tmp;
-    double bps;
-    double oldBps = 0.0D;
+    float bps;
+    float oldBps = 0.0D;
     int frames = 1;
     int line;
     while(cdata.running && AppRunning(true))
@@ -578,27 +578,27 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
             dlnow += fileSize;
 
             // Calculate download speed
-            if(bps != 0.0D)
+            if(bps != 0.0f)
             {
                 if(dltotal)
                 {
                     tmp = OSTicksToMilliseconds(ts - lastTransfair); // sample duration in milliseconds
                     if(tmp)
                     {
-                        bps *= 1000.0D; // secs to ms.
+                        bps *= 1000.0f; // secs to ms.
                         bps /= tmp; // byte/s
 
                         // Smoothing
-                        bps *= 1.0D - SMOOTHING_FACTOR;
+                        bps *= 1.0f - SMOOTHING_FACTOR;
                         oldBps *= SMOOTHING_FACTOR;
                         bps += oldBps;
                         oldBps = bps;
                     }
                     else
-                        bps = 0.0D;
+                        bps = 0.0f;
                 }
                 else
-                    bps = 0.0D;
+                    bps = 0.0f;
             }
 
             lastTransfair = ts;

@@ -72,7 +72,7 @@ extern "C"
     bool isHexa(char c) __attribute__((__hot__));
     void hex(uint64_t i, int digits, char *out); // ex: 000050D1
     void secsToTime(uint32_t seconds, char *out);
-    void getSpeedString(double bytePerSecond, char *out);
+    void getSpeedString(float bytePerSecond, char *out);
     void hexToByte(const char *hex, uint8_t *out);
     void glueMcpData(MCPInstallTitleInfo *info, McpData *data);
     void showMcpProgress(McpData *data, const char *game, bool inst);

@@ -290,7 +290,7 @@ void boxToFrame(int lineStart, int lineEnd)
     SDL_RenderFillRect(renderer, rect[2]);
 }
 
-void barToFrame(int line, int column, uint32_t width, double progress)
+void barToFrame(int line, int column, uint32_t width, float progress)
 {
     if(font == NULL)
         return;
@@ -318,7 +318,7 @@ void barToFrame(int line, int column, uint32_t width, double progress)
     rect[2]->w = rect[0]->w - 4;
 
     char text[8];
-    sprintf(text, "%d%%%%", (int)(progress * 100.0D));
+    sprintf(text, "%d%%%%", (int)(progress * 100.0f));
 
     progress *= rect[2]->w;
     rect[1]->w = progress;

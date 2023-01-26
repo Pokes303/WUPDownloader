@@ -92,7 +92,7 @@ extern "C"
     int textToFrameMultiline(int x, int y, const char *text, size_t len);
     void lineToFrame(int column, SCREEN_COLOR color);
     void boxToFrame(int lineStart, int lineEnd);
-    void barToFrame(int line, int column, uint32_t width, double progress);
+    void barToFrame(int line, int column, uint32_t width, float progress);
     void arrowToFrame(int line, int column);
     void checkmarkToFrame(int line, int column);
     void tabToFrame(int line, int column, const char *label, bool active);
