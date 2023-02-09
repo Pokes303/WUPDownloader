@@ -85,8 +85,6 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
 #endif
             deviceToFrame(i, SPACER, data->toUSB ? DEVICE_TYPE_USB : DEVICE_TYPE_NAND);
 
-        flagToFrame(i, SPACER + 3, data->entry == NULL ? MCP_REGION_UNKNOWN : data->entry->region);
-
         if(isDLC(data->tmd->tid))
         {
             p = strlen("[DLC] ");
