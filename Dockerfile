@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 WORKDIR /
 
 COPY --from=wiiuenv/libmocha:20220919112600f3c45c /artifacts $DEVKITPRO
-COPY --from=wiiuenv/librpxloader:20220903141341abbf92 /artifacts $DEVKITPRO
+COPY --from=wiiuenv/librpxloader:20230218170335847b9a /artifacts $DEVKITPRO
 
 # Install apt-fast
 RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \

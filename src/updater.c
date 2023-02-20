@@ -457,20 +457,27 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
     }
     else if(isAroma())
     {
-        RPXLoaderStatus rs = RPXLoader_UnmountCurrentRunningBundle();
+        RPXLoaderStatus rs = RPXLoader_GetPathOfRunningExecutable(path + strlen(NUSDIR_SD), FS_MAX_PATH - strlen(NUSDIR_SD));
         if(rs == RPX_LOADER_RESULT_SUCCESS)
         {
-            strcpy(path, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
-            err = FSARemove(getFSAClient(), path);
-            if(err != FS_ERROR_OK)
+            rs = RPXLoader_UnmountCurrentRunningBundle();
+            if(rs == RPX_LOADER_RESULT_SUCCESS)
             {
-                showUpdateErrorf("%s: %s", gettext("Error removing file"), translateFSErr(err));
-                goto updateError;
+                OSBlockMove(path, NUSDIR_SD, strlen(NUSDIR_SD), false);
+                err = FSARemove(getFSAClient(), path);
+                if(err != FS_ERROR_OK)
+                {
+                    showUpdateErrorf("%s: %s", gettext("Error removing file"), translateFSErr(err));
+                    goto updateError;
+                }
             }
+            else
+                goto aromaError;
         }
         else
         {
-            showUpdateErrorf("%s: 0x%08X", gettext("Aroma error"), rs);
+    aromaError:
+            showUpdateErrorf("%s: %s", gettext("Aroma error"), RPXLoader_GetStatusStr(rs));
             goto updateError;
         }
     }
@@ -481,10 +488,13 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
     switch(type)
     {
         case NUSSPLI_TYPE_AROMA:
-            strcpy(path, UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE);
             char *path2 = getStaticPathBuffer(0);
-            strcpy(path2, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
-            err = FSARename(getFSAClient(), path, path2);
+            strcpy(path2, UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE);
+
+            if(isChannel() || !isAroma())
+                strcpy(path, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
+
+            err = FSARename(getFSAClient(), path2, path);
             if(err != FS_ERROR_OK)
             {
                 showUpdateErrorf("%s: %s", gettext("Error moving file"), translateFSErr(err));

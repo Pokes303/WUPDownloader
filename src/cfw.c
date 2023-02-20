@@ -22,6 +22,7 @@
 
 #include <coreinit/title.h>
 #include <mocha/mocha.h>
+#include <rpxloader/rpxloader.h>
 
 #include <utils.h>
 
@@ -73,24 +74,32 @@ bool cfwValid()
                 ret = s != MOCHA_RESULT_UNSUPPORTED_API_VERSION && s != MOCHA_RESULT_UNSUPPORTED_COMMAND;
                 if(ret)
                 {
-                    for(int i = 0; i < 6; ++i)
+                    char path[FS_MAX_PATH];
+                    RPXLoaderStatus rs = RPXLoader_GetPathOfRunningExecutable(path, FS_MAX_PATH);
+                    ret = rs == RPX_LOADER_RESULT_SUCCESS;
+                    if(ret)
                     {
-                        s = Mocha_IOSUKernelRead32(addys[i], origValues + i);
-                        if(s != MOCHA_RESULT_SUCCESS)
-                            goto restoreIOSU;
+                        for(int i = 0; i < 6; ++i)
+                        {
+                            s = Mocha_IOSUKernelRead32(addys[i], origValues + i);
+                            if(s != MOCHA_RESULT_SUCCESS)
+                                goto restoreIOSU;
 
-                        s = Mocha_IOSUKernelWrite32(addys[i], i % 2 == 0 ? VALUE_A : VALUE_B);
-                        if(s != MOCHA_RESULT_SUCCESS)
-                            goto restoreIOSU;
+                            s = Mocha_IOSUKernelWrite32(addys[i], i % 2 == 0 ? VALUE_A : VALUE_B);
+                            if(s != MOCHA_RESULT_SUCCESS)
+                                goto restoreIOSU;
 
-                        continue;
-                    restoreIOSU:
-                        for(--i; i >= 0; --i)
-                            Mocha_IOSUKernelWrite32(addys[i], origValues[i]);
+                            continue;
+                        restoreIOSU:
+                            for(--i; i >= 0; --i)
+                                Mocha_IOSUKernelWrite32(addys[i], origValues[i]);
 
-                        debugPrintf("libmocha error: %s", Mocha_GetStatusStr(s));
-                        return false;
+                            debugPrintf("libmocha error: %s", Mocha_GetStatusStr(s));
+                            return false;
+                        }
                     }
+                    else
+                        debugPrintf("RPXLoader error: %s", RPXLoader_GetStatusStr(rs));
                 }
             }
         }
