@@ -1,4 +1,4 @@
-FROM wiiuenv/devkitppc:20221228 AS final
+FROM wiiuenv/devkitppc:20230218 AS final
 
 ENV DEBIAN_FRONTEND=noninteractive \
  PATH=$DEVKITPPC/bin:$PATH \
