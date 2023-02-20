@@ -476,7 +476,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
         }
         else
         {
-    aromaError:
+        aromaError:
             showUpdateErrorf("%s: %s", gettext("Aroma error"), RPXLoader_GetStatusStr(rs));
             goto updateError;
         }
