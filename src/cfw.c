@@ -83,8 +83,6 @@ bool cfwValid()
                         if(!ret)
                             debugPrintf("RPXLoader error: %s", RPXLoader_GetStatusStr(rs));
                     }
-                    else
-                        ret = true;
 
                     if(ret)
                     {
