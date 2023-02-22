@@ -24,6 +24,7 @@
 #include <mocha/mocha.h>
 #include <rpxloader/rpxloader.h>
 
+#include <state.h>
 #include <utils.h>
 
 #define VALUE_A 0xE3A00000 // mov r0, #0
@@ -74,9 +75,17 @@ bool cfwValid()
                 ret = s != MOCHA_RESULT_UNSUPPORTED_API_VERSION && s != MOCHA_RESULT_UNSUPPORTED_COMMAND;
                 if(ret)
                 {
-                    char path[FS_MAX_PATH];
-                    RPXLoaderStatus rs = RPXLoader_GetPathOfRunningExecutable(path, FS_MAX_PATH);
-                    ret = rs == RPX_LOADER_RESULT_SUCCESS;
+                    if(isAroma())
+                    {
+                        char path[FS_MAX_PATH];
+                        RPXLoaderStatus rs = RPXLoader_GetPathOfRunningExecutable(path, FS_MAX_PATH);
+                        ret = rs == RPX_LOADER_RESULT_SUCCESS;
+                        if(!ret)
+                            debugPrintf("RPXLoader error: %s", RPXLoader_GetStatusStr(rs));
+                    }
+                    else
+                        ret = true;
+
                     if(ret)
                     {
                         for(int i = 0; i < 6; ++i)
@@ -98,8 +107,6 @@ bool cfwValid()
                             return false;
                         }
                     }
-                    else
-                        debugPrintf("RPXLoader error: %s", RPXLoader_GetStatusStr(rs));
                 }
             }
         }
