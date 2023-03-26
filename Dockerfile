@@ -6,9 +6,6 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 WORKDIR /
 
-COPY --from=ghcr.io/wiiu-env/libmocha:20220919 /artifacts $DEVKITPRO
-COPY --from=ghcr.io/wiiu-env/librpxloader:20220903 /artifacts $DEVKITPRO
-
 # Install apt-fast
 RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2 && \
  /bin/bash -c "$(curl -sL https://raw.githubusercontent.com/V10lator/NUSspli/master/apt-fast/install.sh)"
@@ -26,6 +23,9 @@ RUN git clone --recursive https://github.com/yawut/libromfs-wiiu --single-branch
  cd libromfs-wiiu && \
  make -j$(nproc) && \
  make install
+
+COPY --from=ghcr.io/wiiu-env/libmocha:20220919 /artifacts $DEVKITPRO
+COPY --from=ghcr.io/wiiu-env/librpxloader:20230316 /artifacts $DEVKITPRO
 
 RUN git config --global --add safe.directory /project
 
