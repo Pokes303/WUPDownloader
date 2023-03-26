@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 WORKDIR /
 
-COPY --from=ghcr.io/wiiu-env/libmocha:20220609171227e834fa /artifacts $DEVKITPRO
+COPY --from=ghcr.io/wiiu-env/libmocha:20220919 /artifacts $DEVKITPRO
 COPY --from=ghcr.io/wiiu-env/librpxloader:20220903 /artifacts $DEVKITPRO
 
 # Install apt-fast
