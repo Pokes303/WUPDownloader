@@ -1,6 +1,6 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
- * Copyright (c) 2020-2022 V10lator <v10lator@myway.de>                    *
+ * Copyright (c) 2020-2023 V10lator <v10lator@myway.de>                    *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
@@ -38,7 +38,7 @@
 #include <thread.h>
 #include <utils.h>
 
-#define IOT_STACK_SIZE       0x400
+#define IOT_STACK_SIZE       0x1000
 #define IO_MAX_FILE_BUFFER   (1024 * 1024) // 1 MB
 #define MAX_IO_QUEUE_ENTRIES (64 * (IO_MAX_FILE_BUFFER / (1024 * 1024))) // 64 MB
 

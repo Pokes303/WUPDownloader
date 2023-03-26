@@ -1,7 +1,7 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
- * Copyright (c) 2020-2022 V10lator <v10lator@myway.de>                    *
- * Copyright (c) 2022 Xpl0itU <DaThinkingChair@protonmail.com>             *
+ * Copyright (c) 2020-2023 V10lator <v10lator@myway.de>                    *
+ * Copyright (c) 2022-2023 Xpl0itU <DaThinkingChair@protonmail.com>        *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
@@ -32,7 +32,7 @@
 #include <thread.h>
 #include <utils.h>
 
-#define RUMBLE_STACK_SIZE 0x400
+#define RUMBLE_STACK_SIZE 0x1000
 #define RUMBLE_QUEUE_SIZE 2
 #define LED_ON            1
 #define LED_OFF           0
