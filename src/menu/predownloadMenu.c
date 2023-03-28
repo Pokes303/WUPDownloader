@@ -783,7 +783,14 @@ naNedNa:
     {
         ret = addToOpQueue(entry, titleVer, folderName, dlDev, instDev);
         if(ret && autoStartQueue)
+        {
+            disableApd();
             ret = !proccessQueue();
+            if(!ret)
+                showFinishedScreen(entry->name, operation == OPERATION_DOWNLOAD_INSTALL ? FINISHING_OPERATION_INSTALL : FINISHING_OPERATION_DOWNLOAD);
+
+            enableApd();
+        }
     }
     else if(checkSystemTitleFromEntry(entry))
     {
