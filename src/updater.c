@@ -434,7 +434,8 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 
     // Uninstall currently running type/version
 #ifdef NUSSPLI_HBL
-    if(removeDirectory(UPDATE_HBL_FOLDER) != FS_ERROR_OK)
+    err = removeDirectory(UPDATE_HBL_FOLDER);
+    if(err != FS_ERROR_OK)
     {
         showUpdateErrorf("%s: %s", gettext("Error removing directory"), translateFSErr(err));
         goto updateError;
