@@ -334,6 +334,24 @@ void readInput()
     {
         vpad.trigger &= ~(VPAD_STICK_R_EMULATION_LEFT | VPAD_STICK_R_EMULATION_RIGHT | VPAD_STICK_R_EMULATION_UP | VPAD_STICK_R_EMULATION_DOWN | VPAD_BUTTON_HOME);
 
+        if(vpad.trigger & VPAD_STICK_L_EMULATION_UP)
+            vpad.trigger |= VPAD_BUTTON_UP;
+        if(vpad.trigger & VPAD_STICK_L_EMULATION_DOWN)
+            vpad.trigger |= VPAD_BUTTON_DOWN;
+        if(vpad.trigger & VPAD_STICK_L_EMULATION_LEFT)
+            vpad.trigger |= VPAD_BUTTON_LEFT;
+        if(vpad.trigger & VPAD_STICK_L_EMULATION_RIGHT)
+            vpad.trigger |= VPAD_BUTTON_RIGHT;
+
+        if(vpad.hold & VPAD_STICK_L_EMULATION_UP)
+            vpad.hold |= VPAD_BUTTON_UP;
+        if(vpad.hold & VPAD_STICK_L_EMULATION_DOWN)
+            vpad.hold |= VPAD_BUTTON_DOWN;
+        if(vpad.hold & VPAD_STICK_L_EMULATION_LEFT)
+            vpad.hold |= VPAD_BUTTON_LEFT;
+        if(vpad.hold & VPAD_STICK_L_EMULATION_RIGHT)
+            vpad.hold |= VPAD_BUTTON_RIGHT;
+
         if(vpad.trigger && kbdHidden)
             lastUsedController = CT_VPAD_0;
     }
