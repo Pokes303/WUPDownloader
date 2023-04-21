@@ -22,6 +22,7 @@
 #include <file.h>
 #include <filesystem.h>
 #include <menu/utils.h>
+#include <thread.h>
 #include <utils.h>
 
 #include <coreinit/filesystem_fsa.h>
@@ -33,6 +34,18 @@
 
 static FSAClientHandle handle;
 static NUSDEV usb = NUSDEV_NONE;
+
+static OSThread *spaceThread = NULL;
+
+static int spaceThreadMain(int argc, const char **argv)
+{
+    uint64_t freeSpace;
+    FSAGetFreeSpaceSize(getFSAClient(), NUSDIR_USB1, &freeSpace);
+    FSAGetFreeSpaceSize(getFSAClient(), NUSDIR_USB2, &freeSpace);
+    FSAGetFreeSpaceSize(getFSAClient(), NUSDIR_MLC, &freeSpace);
+    FSAGetFreeSpaceSize(getFSAClient(), NUSDIR_SD, &freeSpace);
+    return 0;
+}
 
 bool initFS(bool validCfw)
 {
@@ -64,7 +77,10 @@ bool initFS(bool validCfw)
                 if(FSAMount(handle, "/vol/external01", "/vol/app_sd", FSA_MOUNT_FLAG_BIND_MOUNT, NULL, 0) == FS_ERROR_OK)
                 {
                     if(FSAMount(handle, "/dev/slc01", "/vol/slc", FSA_MOUNT_FLAG_LOCAL_MOUNT, NULL, 0) == FS_ERROR_OK)
+                    {
+                        spaceThread = startThread("NUSspli FS Initialiszer", THREAD_PRIORITY_HIGH, 0x1000, spaceThreadMain, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_ANY);
                         return true;
+                    }
 
                     FSAUnmount(handle, "/vol/app_sd", FSA_UNMOUNT_FLAG_BIND_MOUNT);
                 }
@@ -79,8 +95,19 @@ bool initFS(bool validCfw)
     return false;
 }
 
+static void checkSpaceThread()
+{
+    if(spaceThread)
+    {
+        stopThread(spaceThread, NULL);
+        spaceThread = NULL;
+    }
+}
+
 void deinitFS(bool validCfw)
 {
+    checkSpaceThread();
+
     // TODO: Not implemented in cemu
     if(validCfw && !isCemu())
     {
@@ -108,6 +135,8 @@ NUSDEV getUSB()
 
 uint64_t getFreeSpace(NUSDEV dev)
 {
+    checkSpaceThread();
+
     uint64_t freeSpace;
     const char *nd = dev == NUSDEV_USB01 ? NUSDIR_USB1 : (dev == NUSDEV_USB02 ? NUSDIR_USB2 : (dev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC));
     return FSAGetFreeSpaceSize(getFSAClient(), (char *)nd, &freeSpace) == FS_ERROR_OK ? freeSpace : 0;
@@ -126,6 +155,7 @@ bool checkFreeSpace(NUSDEV dev, uint64_t size)
 
 uint64_t getSpace(NUSDEV dev)
 {
+
     FSADeviceInfo info;
     const char *nd = dev == NUSDEV_USB01 ? NUSDIR_USB1 : (dev == NUSDEV_USB02 ? NUSDIR_USB2 : (dev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC));
     return FSAGetDeviceInfo(getFSAClient(), nd, &info) == FS_ERROR_OK ? info.deviceSizeInSectors * info.deviceSectorSize : 0;
