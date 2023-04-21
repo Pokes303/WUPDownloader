@@ -132,6 +132,8 @@ static void drawInstallerMenuFrame(const char *name, NUSDEV dev, NUSDEV toDev, b
             break;
     }
 
+    getFreeSpaceString(toDev, toFrame + strlen(toFrame));
+
     if(usbMounted)
         textToFrame(MAX_LINES - 5, 4, toFrame);
     else

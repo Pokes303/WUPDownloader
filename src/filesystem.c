@@ -106,16 +106,27 @@ NUSDEV getUSB()
     return usb;
 }
 
-bool checkFreeSpace(NUSDEV dlDev, uint64_t size)
+uint64_t getFreeSpace(NUSDEV dev)
 {
     uint64_t freeSpace;
-    const char *nd = dlDev == NUSDEV_USB01 ? NUSDIR_USB1 : (dlDev == NUSDEV_USB02 ? NUSDIR_USB2 : (dlDev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC));
+    const char *nd = dev == NUSDEV_USB01 ? NUSDIR_USB1 : (dev == NUSDEV_USB02 ? NUSDIR_USB2 : (dev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC));
+    return FSAGetFreeSpaceSize(getFSAClient(), (char *)nd, &freeSpace) == FS_ERROR_OK ? freeSpace : 0;
+}
 
-    if(FSAGetFreeSpaceSize(getFSAClient(), (char *)nd, &freeSpace) == FS_ERROR_OK && size > freeSpace)
+bool checkFreeSpace(NUSDEV dev, uint64_t size)
+{
+    if(size > getFreeSpace(dev))
     {
-        showNoSpaceOverlay(dlDev);
+        showNoSpaceOverlay(dev);
         return false;
     }
 
     return true;
+}
+
+uint64_t getSpace(NUSDEV dev)
+{
+    FSADeviceInfo info;
+    const char *nd = dev == NUSDEV_USB01 ? NUSDIR_USB1 : (dev == NUSDEV_USB02 ? NUSDIR_USB2 : (dev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC));
+    return FSAGetDeviceInfo(getFSAClient(), nd, &info) == FS_ERROR_OK ? info.deviceSizeInSectors * info.deviceSectorSize : 0;
 }

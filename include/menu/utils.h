@@ -61,6 +61,8 @@ extern "C"
     const char *prettyDir(const char *dir);
     void showFinishedScreen(const char *titleName, FINISHING_OPERATION op);
     void showNoSpaceOverlay(NUSDEV dev);
+    void humanize(uint64_t size, char *out);
+    void getFreeSpaceString(NUSDEV dev, char *out);
 
 #ifdef __cplusplus
 }

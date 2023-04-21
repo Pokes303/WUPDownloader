@@ -189,6 +189,8 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
         case NUSDEV_MLC:
             strcat(toFrame, "NAND");
     }
+
+    getFreeSpaceString(dlDev, toFrame + strlen(toFrame));
     textToFrame(--line, 4, gettext(toFrame));
 
     strcpy(toFrame, gettext("Operation:"));
@@ -216,6 +218,9 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
             strcat(toFrame, "NAND");
             break;
     }
+
+    getFreeSpaceString(instDev, toFrame + strlen(toFrame));
+
     if(operation == OPERATION_DOWNLOAD_INSTALL)
         textToFrame(--line, 4, toFrame);
     else

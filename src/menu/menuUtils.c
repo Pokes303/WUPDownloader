@@ -30,6 +30,7 @@
 #include <coreinit/memdefaultheap.h>
 
 #include <file.h>
+#include <filesystem.h>
 #include <input.h>
 #include <list.h>
 #include <localisation.h>
@@ -419,4 +420,36 @@ void showNoSpaceOverlay(NUSDEV dev)
 
         removeErrorOverlay(ovl);
     }
+}
+void humanize(uint64_t size, char *out)
+{
+    const char *m;
+    float h = size;
+    if(size > 1024 * 1024 * 1024)
+    {
+        h /= 1024.0F * 1024.0F * 1024.0F;
+        m = "GB";
+    }
+    else if(size > 1024 * 1024)
+    {
+        h /= 1024.0F * 1024.0F;
+        m = "MB";
+    }
+    else if(size > 1024)
+    {
+        h /= 1024.0F;
+        m = "KB";
+    }
+
+    snprintf(out, 1024, "%.02f %s", h, m);
+}
+
+void getFreeSpaceString(NUSDEV dev, char *out)
+{
+    *out++ = ' ';
+    *out++ = '(';
+    humanize(getFreeSpace(dev), out);
+    strcat(out, " / ");
+    humanize(getSpace(dev), out + strlen(out));
+    strcat(out, ")");
 }
