@@ -24,5 +24,4 @@
 #include <stdbool.h>
 
 bool cfwValid();
-bool isCemu();
 void deinitCfw();

@@ -70,10 +70,6 @@ bool initFS(bool validCfw)
                 else
                     usb = NUSDEV_NONE;
 
-                // TODO: Not implemented in cemu
-                if(isCemu())
-                    return true;
-
                 if(FSAMount(handle, "/vol/external01", "/vol/app_sd", FSA_MOUNT_FLAG_BIND_MOUNT, NULL, 0) == FS_ERROR_OK)
                 {
                     if(FSAMount(handle, "/dev/slc01", "/vol/slc", FSA_MOUNT_FLAG_LOCAL_MOUNT, NULL, 0) == FS_ERROR_OK)
@@ -108,8 +104,7 @@ void deinitFS(bool validCfw)
 {
     checkSpaceThread();
 
-    // TODO: Not implemented in cemu
-    if(validCfw && !isCemu())
+    if(validCfw)
     {
         FSAUnmount(handle, "/vol/app_sd", FSA_UNMOUNT_FLAG_BIND_MOUNT);
         FSAUnmount(handle, "/vol/slc", FSA_UNMOUNT_FLAG_NONE);

@@ -105,7 +105,7 @@ void disableShutdown()
 
 bool isAroma()
 {
-    return !isCemu() && aroma;
+    return aroma;
 }
 
 #ifndef NUSSPLI_HBL

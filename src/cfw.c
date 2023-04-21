@@ -31,7 +31,6 @@
 #define VALUE_B 0xE12FFF1E // bx lr
 
 static bool mochaReady = false;
-static bool cemu = false;
 static const uint32_t addys[6] = {
     // Cached cert check
     0x05054D6C,
@@ -49,10 +48,6 @@ extern FSClient *__wut_devoptab_fs_client;
 
 bool cfwValid()
 {
-    cemu = OSGetTitleID() == 0x0000000000000000;
-    if(cemu)
-        return true;
-
     mochaReady = Mocha_InitLibrary() == MOCHA_RESULT_SUCCESS;
     bool ret = mochaReady;
     if(ret)
@@ -111,11 +106,6 @@ bool cfwValid()
     }
 
     return ret;
-}
-
-bool isCemu()
-{
-    return cemu;
 }
 
 void deinitCfw()
