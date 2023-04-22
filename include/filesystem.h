@@ -32,6 +32,7 @@ extern "C"
 #endif
 
     bool initFS(bool validCfw) __attribute__((__cold__));
+    void initFSSpace() __attribute__((__cold__));
     void deinitFS(bool validCfw) __attribute__((__cold__));
     FSAClientHandle getFSAClient() __attribute__((__hot__));
     NUSDEV getUSB();

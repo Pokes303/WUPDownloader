@@ -146,6 +146,7 @@ static void innerMain(bool validCfw)
                                                         checkStacks("main()");
                                                         if(!updateCheck())
                                                         {
+                                                            initFSSpace();
                                                             checkStacks("main");
                                                             mainMenu(); // main loop
                                                             checkStacks("main");

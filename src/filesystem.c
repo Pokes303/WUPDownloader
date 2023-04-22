@@ -47,6 +47,11 @@ static int spaceThreadMain(int argc, const char **argv)
     return 0;
 }
 
+void initFSSpace()
+{
+    spaceThread = startThread("NUSspli FS Initialiszer", THREAD_PRIORITY_MEDIUM, 0x400, spaceThreadMain, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_ANY);
+}
+
 bool initFS(bool validCfw)
 {
 #ifdef NUSSPLI_HBL
@@ -73,10 +78,7 @@ bool initFS(bool validCfw)
                 if(FSAMount(handle, "/vol/external01", "/vol/app_sd", FSA_MOUNT_FLAG_BIND_MOUNT, NULL, 0) == FS_ERROR_OK)
                 {
                     if(FSAMount(handle, "/dev/slc01", "/vol/slc", FSA_MOUNT_FLAG_LOCAL_MOUNT, NULL, 0) == FS_ERROR_OK)
-                    {
-                        spaceThread = startThread("NUSspli FS Initialiszer", THREAD_PRIORITY_MEDIUM, 0x1000, spaceThreadMain, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_ANY);
                         return true;
-                    }
 
                     FSAUnmount(handle, "/vol/app_sd", FSA_UNMOUNT_FLAG_BIND_MOUNT);
                 }
