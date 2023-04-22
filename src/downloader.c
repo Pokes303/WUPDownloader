@@ -381,10 +381,9 @@ static const char *translateCurlError(CURLcode err, const char *curlError)
 
 static void drawStatLine(int line, curl_off_t totalSize, curl_off_t currentSize, float bps, uint32_t *eta)
 {
-    float tmp;
     if(currentSize)
     {
-        tmp = currentSize;
+        float tmp = currentSize;
         tmp /= totalSize;
         barToFrame(line, 0, 29, tmp);
         if(totalSize)
@@ -393,35 +392,12 @@ static void drawStatLine(int line, curl_off_t totalSize, curl_off_t currentSize,
     else
         barToFrame(line, 0, 29, 0.0D);
 
-    char *multiplierName;
-    if(totalSize < 1024)
-    {
-        tmp = 1.0f;
-        multiplierName = "B";
-    }
-    else if(totalSize < 1024 * 1024)
-    {
-        tmp = 1 << 10;
-        multiplierName = "KB";
-    }
-    else if(totalSize < 1024 * 1024 * 1024)
-    {
-        tmp = 1 << 20;
-        multiplierName = "MB";
-    }
-    else if(totalSize < 1024llu * 1024llu * 1024llu * 1024llu)
-    {
-        tmp = 1 << 30;
-        multiplierName = "GB";
-    }
-    else
-    {
-        tmp = 1llu << 40;
-        multiplierName = "TB";
-    }
-
     char *toScreen = getToFrameBuffer();
-    sprintf(toScreen, "%.2f / %.2f %s", currentSize / tmp, totalSize / tmp, multiplierName);
+    humanize(currentSize, toScreen);
+    char *ptr = toScreen + strlen(toScreen);
+    strcpy(ptr, " / ");
+    ptr += 3;
+    humanize(totalSize, ptr);
     textToFrame(line, 30, toScreen);
 
     secsToTime(*eta, toScreen);
