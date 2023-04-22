@@ -74,7 +74,7 @@ bool initFS(bool validCfw)
                 {
                     if(FSAMount(handle, "/dev/slc01", "/vol/slc", FSA_MOUNT_FLAG_LOCAL_MOUNT, NULL, 0) == FS_ERROR_OK)
                     {
-                        spaceThread = startThread("NUSspli FS Initialiszer", THREAD_PRIORITY_HIGH, 0x1000, spaceThreadMain, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_ANY);
+                        spaceThread = startThread("NUSspli FS Initialiszer", THREAD_PRIORITY_MEDIUM, 0x1000, spaceThreadMain, 0, NULL, OS_THREAD_ATTRIB_AFFINITY_ANY);
                         return true;
                     }
 

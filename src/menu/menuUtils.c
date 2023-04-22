@@ -425,21 +425,28 @@ void humanize(uint64_t size, char *out)
 {
     const char *m;
     float h = size;
-    if(size > 1024 * 1024 * 1024)
+    if(size > 1024llu * 1024llu * 1024llu * 1024llu)
+    {
+        h /= 1024.0F * 1024.0F * 1024.0F * 1024.0F;
+        m = "TB";
+    }
+    else if(size > 1024llu * 1024llu * 1024llu)
     {
         h /= 1024.0F * 1024.0F * 1024.0F;
         m = "GB";
     }
-    else if(size > 1024 * 1024)
+    else if(size > 1024llu * 1024llu)
     {
         h /= 1024.0F * 1024.0F;
         m = "MB";
     }
-    else if(size > 1024)
+    else if(size > 1024llu)
     {
         h /= 1024.0F;
         m = "KB";
     }
+    else
+        m = "B";
 
     snprintf(out, 1024, "%.02f %s", h, m);
 }
