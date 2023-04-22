@@ -448,7 +448,7 @@ void humanize(uint64_t size, char *out)
     else
         m = "B";
 
-    snprintf(out, 1024, "%.02f %s", h, m);
+    sprintf(out, "%.02f %s", h, m);
 }
 
 void getFreeSpaceString(NUSDEV dev, char *out)

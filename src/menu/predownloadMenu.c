@@ -77,30 +77,7 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
     strcat(toFrame, "]");
     int line = textToFrameMultiline(0, ALIGNED_CENTER, toFrame, MAX_CHARS - 33); // TODO
 
-    char *bs;
-    float fsize;
-    if(size > 1024 * 1024 * 1024)
-    {
-        bs = "GB";
-        fsize = ((float)(size / 1024 / 1024)) / 1024.0F;
-    }
-    else if(size > 1024 * 1924)
-    {
-        bs = "MB";
-        fsize = ((float)(size / 1024)) / 1024.0F;
-    }
-    else if(size > 1024)
-    {
-        bs = "KB";
-        fsize = ((float)size) / 1024.0F;
-    }
-    else
-    {
-        bs = "B";
-        fsize = (float)size;
-    }
-
-    sprintf(toFrame, "%.02f %s", fsize, bs);
+    humanize(size, toFrame);
 
     textToFrame(++line, 0, gettext("Region:"));
     flagToFrame(++line, 3, entry->region);
