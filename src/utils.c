@@ -189,8 +189,6 @@ void glueMcpData(MCPInstallTitleInfo *info, McpData *data)
 void showMcpProgress(McpData *data, const char *game, bool inst)
 {
     MCPInstallProgress progress __attribute__((__aligned__(0x40))) = { .inProgress = 0, .sizeTotal = 0 };
-    const char *multiplierName;
-    float multiplier = 0;
     char *toScreen = getToFrameBuffer();
     MCPError err;
     OSTime lastSpeedCalc = 0;
@@ -207,36 +205,15 @@ void showMcpProgress(McpData *data, const char *game, bool inst)
         {
             if(progress.inProgress == 1 && progress.sizeTotal != 0 && data->err != CUSTOM_MCP_ERROR_CANCELLED)
             {
-                if(multiplier == 0)
-                {
-                    if(progress.sizeTotal < 1 << 10)
-                    {
-                        multiplier = 1.0f;
-                        multiplierName = "B";
-                    }
-                    else if(progress.sizeTotal < 1 << 20)
-                    {
-                        multiplier = 1 << 10;
-                        multiplierName = "KB";
-                    }
-                    else if(progress.sizeTotal < 1 << 30)
-                    {
-                        multiplier = 1 << 20;
-                        multiplierName = "MB";
-                    }
-                    else
-                    {
-                        multiplier = 1 << 30;
-                        multiplierName = "GB";
-                    }
-                }
                 startNewFrame();
                 strcpy(toScreen, gettext(inst ? "Installing" : "Uninstalling"));
                 strcat(toScreen, " ");
                 strcat(toScreen, game);
                 textToFrame(0, 0, toScreen);
                 barToFrame(1, 0, 40, (float)progress.sizeProgress / (float)progress.sizeTotal);
-                sprintf(toScreen, "%.2f / %.2f %s", progress.sizeProgress / multiplier, progress.sizeTotal / multiplier, multiplierName);
+                humanize(progress.sizeProgress, toScreen);
+                strcat(toScreen, " / ");
+                humanize(progress.sizeTotal, toScreen + strlen(toScreen));
                 textToFrame(1, 41, toScreen);
 
                 if(progress.sizeProgress != 0)
