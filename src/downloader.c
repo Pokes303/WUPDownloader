@@ -1035,11 +1035,11 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
         switch(tikRes)
         {
             case 2:
-                if(generateTik(installDir, titleEntry, tmd))
-                    addToScreenLog("Fake ticket created successfully");
-                else
+                if(!generateTik(installDir, titleEntry, tmd))
                     return false;
 
+                addToScreenLog("Fake ticket created successfully");
+                tikBuf->size = 0;
                 break;
             case 0:
                 fp = openFile(installDir, "w", tmdSize);

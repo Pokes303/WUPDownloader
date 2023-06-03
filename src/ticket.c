@@ -200,7 +200,7 @@ bool generateCert(const TMD *tmd, const TICKET *ticket, size_t ticketSize, const
     CETK cetk;
     OSBlockSet(&cetk, 0x00, sizeof(CETK));
 
-    if(!ticketSize)
+    if(ticketSize == 0)
     {
         generateHeader(FILE_TYPE_CERT, &cetk.header);
 
