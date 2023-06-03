@@ -276,6 +276,7 @@ retryAddingToQueue:
 
 void flushIOQueue()
 {
+    OSMemoryBarrier();
     if(queueEntries[activeWriteBuffer].file != 0)
     {
         void *ovl = addErrorOverlay("Flushing queue, please wait...");
@@ -287,9 +288,10 @@ void flushIOQueue()
 
         if(ovl != NULL)
             removeErrorOverlay(ovl);
+
+        OSMemoryBarrier();
     }
 
-    OSMemoryBarrier();
     checkForQueueErrors();
 }
 
