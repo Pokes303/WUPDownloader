@@ -195,7 +195,6 @@ static void *getCert(int id, const TMD *tmd)
         ptr += 0x300;
 
     return (void *)ptr;
-
 }
 
 bool generateCert(const TMD *tmd, const TICKET *ticket, size_t ticketSize, const char *path)
