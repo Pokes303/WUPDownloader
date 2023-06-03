@@ -244,7 +244,7 @@ bool generateCert(const TMD *tmd, const TICKET *ticket, size_t ticketSize, const
         {
             ptr = getDefaultCert();
             if(ptr == NULL)
-                return false;
+                return generateCert(tmd, NULL, 0, path);
         }
 
         uint8_t *cptr = (uint8_t *)&cetk;
