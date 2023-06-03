@@ -56,7 +56,7 @@ extern "C"
 
     bool initDownloader() __attribute__((__cold__));
     void deinitDownloader() __attribute__((__cold__));
-    int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume, QUEUE_DATA *queueData) __attribute__((__hot__));
+    int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume, QUEUE_DATA *queueData, RAMBUF *rambuf) __attribute__((__hot__));
     bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry, const char *titleVer, char *folderName, bool inst, NUSDEV dlDev, bool toUSB, bool keepFiles, QUEUE_DATA *queueData);
     RAMBUF *allocRamBuf();
     void freeRamBuf(RAMBUF *rambuf);

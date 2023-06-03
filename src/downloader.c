@@ -401,11 +401,10 @@ static void drawStatLine(int line, curl_off_t totalSize, curl_off_t currentSize,
     textToFrame(line, ALIGNED_RIGHT, toScreen);
 }
 
-int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume, QUEUE_DATA *queueData)
+int downloadFile(const char *url, char *file, downloadData *data, FileType type, bool resume, QUEUE_DATA *queueData, RAMBUF *rambuf)
 {
     // Results: 0 = OK | 1 = Error | 2 = No ticket aviable | 3 = Exit
     // Types: 0 = .app | 1 = .h3 | 2 = title.tmd | 3 = tilte.tik
-    RAMBUF *rambuf = (type & FILE_TYPE_TORAM) ? (RAMBUF *)queueData : NULL;
 
     debugPrintf("Download URL: %s", url);
     debugPrintf("Download PATH: %s", rambuf ? "<RAM>" : file);
@@ -449,7 +448,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                         return 0;
                     }
                     if(fileSize > data->cs)
-                        return downloadFile(url, file, data, type, false, queueData);
+                        return downloadFile(url, file, data, type, false, queueData, rambuf);
                 }
 
                 fp = (void *)openFile(file, "a", 0);
@@ -696,7 +695,13 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
         switch(ret)
         {
             case CURLE_RANGE_ERROR:
-                int r = downloadFile(url, file, data, type, false, queueData);
+                if(rambuf && rambuf->buf)
+                {
+                    MEMFreeToDefaultHeap(rambuf->buf);
+                    rambuf->buf = NULL;
+                    rambuf->size = 0;
+                }
+                int r = downloadFile(url, file, data, type, false, queueData, rambuf);
                 curlReuseConnection = false;
                 return r;
             case CURLE_COULDNT_RESOLVE_HOST:
@@ -764,7 +769,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
             {
                 flushIOQueue(); // We flush here so the last file is completely on disc and closed before we retry.
                 resetNetwork(); // Recover from network errors.
-                return downloadFile(url, file, data, type, resume, queueData);
+                return downloadFile(url, file, data, type, resume, queueData, rambuf);
             }
         }
         resetNetwork();
@@ -807,7 +812,15 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 if(vpad.trigger & VPAD_BUTTON_B)
                     break;
                 if(vpad.trigger & VPAD_BUTTON_Y)
-                    return downloadFile(url, file, data, type, resume, queueData);
+                {
+                    if(rambuf && rambuf->buf)
+                    {
+                        MEMFreeToDefaultHeap(rambuf->buf);
+                        rambuf->buf = NULL;
+                        rambuf->size = 0;
+                    }
+                    return downloadFile(url, file, data, type, resume, queueData, rambuf);
+                }
             }
             return 1;
         }
@@ -838,7 +851,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 if(vpad.trigger & VPAD_BUTTON_B)
                     break;
                 if(vpad.trigger & VPAD_BUTTON_Y)
-                    return downloadFile(url, file, data, type, resume, queueData);
+                    return downloadFile(url, file, data, type, resume, queueData, rambuf);
             }
             return 1;
         }
@@ -1014,7 +1027,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
     if(!fileExists(installDir))
     {
         data.cs = 0;
-        int tikRes = downloadFile(downloadUrl, installDir, &data, FILE_TYPE_TIK, false, queueData);
+        int tikRes = downloadFile(downloadUrl, installDir, &data, FILE_TYPE_TIK, false, queueData, NULL);
         switch(tikRes)
         {
             case 2:
@@ -1073,7 +1086,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
         strcpy(idpp, ".app");
 
         data.cs = tmd->contents[i].size;
-        if(downloadFile(downloadUrl, installDir, &data, FILE_TYPE_APP, true, queueData) == 1)
+        if(downloadFile(downloadUrl, installDir, &data, FILE_TYPE_APP, true, queueData, NULL) == 1)
             return false;
 
         ++data.dcontent;
@@ -1084,7 +1097,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
             strcpy(idpp, ".h3");
             data.cs = getH3size(tmd->contents[i].size);
 
-            if(downloadFile(downloadUrl, installDir, &data, FILE_TYPE_H3, true, queueData) == 1)
+            if(downloadFile(downloadUrl, installDir, &data, FILE_TYPE_H3, true, queueData, NULL) == 1)
                 return false;
 
             ++data.dcontent;

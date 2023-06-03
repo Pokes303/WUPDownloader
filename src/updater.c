@@ -110,7 +110,7 @@ bool updateCheck()
 #endif
 
     bool ret = false;
-    if(downloadFile(updateChkUrl, "JSON", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false, (QUEUE_DATA *)rambuf) == 0)
+    if(downloadFile(updateChkUrl, "JSON", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false, NULL, rambuf) == 0)
     {
         startNewFrame();
         textToFrame(0, 0, gettext("Parsing JSON"));
@@ -424,7 +424,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 
     strcat(path, NUSSPLI_DLVER ".zip");
 
-    if(downloadFile(path, "NUSspli.zip", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false, (QUEUE_DATA *)rambuf) != 0)
+    if(downloadFile(path, "NUSspli.zip", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false, NULL, rambuf) != 0)
     {
         showUpdateErrorf("%s %s", gettext("Error downloading"), path);
         goto updateError;

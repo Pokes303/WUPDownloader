@@ -410,7 +410,7 @@ downloadTMD:
         strcat(downloadUrl, titleVer);
     }
 
-    if(downloadFile(downloadUrl, "title.tmd", NULL, (FileType)(FILE_TYPE_TMD | FILE_TYPE_TORAM), false, (QUEUE_DATA *)rambuf))
+    if(downloadFile(downloadUrl, "title.tmd", NULL, (FileType)(FILE_TYPE_TMD | FILE_TYPE_TORAM), false, NULL, rambuf))
     {
         freeRamBuf(rambuf);
         debugPrintf("Error downloading TMD");
