@@ -202,7 +202,7 @@ extern "C"
     WUT_CHECK_SIZE(CETK, 0x0140 + sizeof(CA3_PPKI_CERT) + sizeof(XSC_PPKI_CERT) + sizeof(CP8_PPKI_CERT));
 
     bool generateTik(const char *path, const TitleEntry *titleEntry, const TMD *tmd);
-    bool generateCert(const char *path);
+    bool generateCert(const TMD *tmd, const TICKET *ticket, size_t ticketSize, const char *path);
     void generateFakeTicket();
     void deleteTicket(uint64_t tid);
     bool hasMagicHeader(const TICKET *ticket);

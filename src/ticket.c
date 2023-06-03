@@ -22,6 +22,7 @@
 #include <ticket.h>
 
 #include <crypto.h>
+#include <downloader.h>
 #include <file.h>
 #include <filesystem.h>
 #include <input.h>
@@ -71,6 +72,9 @@ WUT_CHECK_OFFSET(TICKET_HEADER_SECTION, 0x18, unk06);
 WUT_CHECK_SIZE(TICKET_HEADER_SECTION, 0x98);
 
 static const uint8_t magic_header[10] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09 };
+#ifndef NUSSPLI_LITE
+static uint8_t default_cert[0x300] = { 0xff };
+#endif
 
 static void generateHeader(FileType type, NUS_HEADER *out)
 {
@@ -157,39 +161,100 @@ bool generateTik(const char *path, const TitleEntry *titleEntry, const TMD *tmd)
 }
 
 #ifndef NUSSPLI_LITE
+static uint8_t *getDefaultCert()
+{
+    if(default_cert[0] == 0xff)
+    {
+        RAMBUF *rambuf = allocRamBuf();
+        if(rambuf == NULL)
+            return NULL;
 
-bool generateCert(const char *path)
+        if(downloadFile(DOWNLOAD_URL "000500101000400a/cetk", "OSv10 title.tik", NULL, FILE_TYPE_TIK | FILE_TYPE_TORAM, false, NULL, rambuf) != 0)
+        {
+            freeRamBuf(rambuf);
+            return NULL;
+        }
+
+        if(rambuf->size < 0x350 + 0x300) // TODO
+        {
+            freeRamBuf(rambuf);
+            return NULL;
+        }
+
+        OSBlockMove(default_cert, rambuf->buf + 0x350, 0x300, false);
+    }
+
+    return default_cert;
+}
+
+static void *getCert(int id, const TMD *tmd)
+{
+    const uint8_t *ptr = (uint8_t *)tmd;
+    ptr += 0xB04 + (0x30 * tmd->num_contents);
+    if(id == 0)
+        ptr += 0x300;
+
+    return (void *)ptr;
+
+}
+
+bool generateCert(const TMD *tmd, const TICKET *ticket, size_t ticketSize, const char *path)
 {
     CETK cetk;
     OSBlockSet(&cetk, 0x00, sizeof(CETK));
 
-    generateHeader(FILE_TYPE_CERT, &cetk.header);
+    if(!ticketSize)
+    {
+        generateHeader(FILE_TYPE_CERT, &cetk.header);
 
-    OSBlockMove(cetk.cert1.issuer, "Root-CA00000003", strlen("Root-CA00000003"), false);
-    OSBlockMove(cetk.cert1.type, "CP0000000b", strlen("CP0000000b"), false);
+        OSBlockMove(cetk.cert1.issuer, "Root-CA00000003", strlen("Root-CA00000003"), false);
+        OSBlockMove(cetk.cert1.type, "CP0000000b", strlen("CP0000000b"), false);
 
-    OSBlockMove(cetk.cert2.issuer, "Root", strlen("Root"), false);
-    OSBlockMove(cetk.cert2.type, "CA00000003", strlen("CA00000003"), false);
+        OSBlockMove(cetk.cert2.issuer, "Root", strlen("Root"), false);
+        OSBlockMove(cetk.cert2.type, "CA00000003", strlen("CA00000003"), false);
 
-    OSBlockMove(cetk.cert3.issuer, "Root-CA00000003", strlen("Root-CA00000003"), false);
-    OSBlockMove(cetk.cert3.type, "XS0000000c", strlen("XS0000000c"), false);
+        OSBlockMove(cetk.cert3.issuer, "Root-CA00000003", strlen("Root-CA00000003"), false);
+        OSBlockMove(cetk.cert3.type, "XS0000000c", strlen("XS0000000c"), false);
 
-    osslBytes(&cetk.cert1.sig, sizeof(cetk.cert1.sig));
-    osslBytes(&cetk.cert1.cert, sizeof(cetk.cert1.cert));
-    osslBytes(&cetk.cert2.sig, sizeof(cetk.cert2.sig));
-    osslBytes(&cetk.cert2.cert, sizeof(cetk.cert2.cert));
-    osslBytes(&cetk.cert3.sig, sizeof(cetk.cert3.sig));
+        osslBytes(&cetk.cert1.sig, sizeof(cetk.cert1.sig));
+        osslBytes(&cetk.cert1.cert, sizeof(cetk.cert1.cert));
+        osslBytes(&cetk.cert2.sig, sizeof(cetk.cert2.sig));
+        osslBytes(&cetk.cert2.cert, sizeof(cetk.cert2.cert));
+        osslBytes(&cetk.cert3.sig, sizeof(cetk.cert3.sig));
 
-    cetk.cert1.version = 0x01;
-    cetk.cert1.unknown_01 = 0x00010001;
-    cetk.cert1.unknown_02 = 0x00010003;
+        cetk.cert1.version = 0x01;
+        cetk.cert1.unknown_01 = 0x00010001;
+        cetk.cert1.unknown_02 = 0x00010003;
 
-    cetk.cert2.version = 0x01;
-    cetk.cert2.unknown_01 = 0x00010001;
-    cetk.cert2.unknown_02 = 0x00010004;
+        cetk.cert2.version = 0x01;
+        cetk.cert2.unknown_01 = 0x00010001;
+        cetk.cert2.unknown_02 = 0x00010004;
 
-    cetk.cert3.version = 0x01;
-    cetk.cert3.unknown_01 = 0x00010001;
+        cetk.cert3.version = 0x01;
+        cetk.cert3.unknown_01 = 0x00010001;
+    }
+    else
+    {
+        const uint8_t *ptr;
+        if(ticketSize >= 0x350 + 0x300) // TODO
+        {
+            ptr = (uint8_t *)ticket;
+            ptr += 0x350;
+        }
+        else
+        {
+            ptr = getDefaultCert();
+            if(ptr == NULL)
+                return false;
+        }
+
+        uint8_t *cptr = (uint8_t *)&cetk;
+        OSBlockMove(cptr, getCert(0, tmd), 0x400, false);
+        cptr += 0x400;
+        OSBlockMove(cptr, getCert(1, tmd), 0x300, false);
+        cptr += 0x300;
+        OSBlockMove(cptr, ptr, 0x300, false);
+    }
 
     FSAFileHandle cert = openFile(path, "w", 0);
     if(cert == 0)
@@ -267,7 +332,7 @@ gftEntry:
             strcat(dir, "title.");
             char *ptr = dir + strlen(dir);
             strcpy(ptr, "cert");
-            if(!generateCert(dir))
+            if(!generateCert(tmd, NULL, 0, dir))
                 break;
 
             const TitleEntry *entry = getTitleEntryByTid(tmd->tid);

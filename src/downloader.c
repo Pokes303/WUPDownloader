@@ -1026,8 +1026,14 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 
     if(!fileExists(installDir))
     {
+        RAMBUF *tikBuf = allocRamBuf();
+        if(tikBuf == NULL)
+        {
+            return false;
+        }
+
         data.cs = 0;
-        int tikRes = downloadFile(downloadUrl, installDir, &data, FILE_TYPE_TIK, false, queueData, NULL);
+        int tikRes = downloadFile(downloadUrl, installDir, &data, FILE_TYPE_TIK | FILE_TYPE_TORAM, false, queueData, tikBuf);
         switch(tikRes)
         {
             case 2:
@@ -1038,31 +1044,45 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 
                 break;
             case 1:
+                freeRamBuf(tikBuf);
                 return false;
             default:
                 break;
         }
+
+        fp = openFile(installDir, "w", tmdSize);
+        if(fp == 0)
+        {
+            freeRamBuf(tikBuf);
+            showErrorFrame("Can't save title.tmd file!");
+            return false;
+        }
+
+        addToIOQueue(tikBuf->buf, 1, tikBuf->size, fp);
+        addToIOQueue(NULL, 0, 0, fp);
+
+        ++data.dcontent;
+        strcpy(idp, "title.cert");
+        if(!fileExists(installDir))
+        {
+            if(generateCert(tmd, (TICKET *)tikBuf->buf, tikBuf->size, installDir))
+                addToScreenLog("Cert created!");
+            else
+            {
+                freeRamBuf(tikBuf);
+                return false;
+            }
+        }
+        else
+            addToScreenLog("Cert skipped!");
+
+        freeRamBuf(tikBuf);
     }
     else
         addToScreenLog("title.tik skipped!");
 
     if(!AppRunning(true))
         return false;
-
-    ++data.dcontent;
-    strcpy(idp, "title.cert");
-    if(!fileExists(installDir))
-    {
-        if(generateCert(installDir))
-            addToScreenLog("Cert created!");
-        else
-            return false;
-
-        if(!AppRunning(true))
-            return false;
-    }
-    else
-        addToScreenLog("Cert skipped!");
 
     // Get .app and .h3 files
     curl_off_t as;
