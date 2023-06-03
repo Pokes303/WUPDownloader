@@ -163,33 +163,31 @@ bool generateTik(const char *path, const TitleEntry *titleEntry, const TMD *tmd)
 #ifndef NUSSPLI_LITE
 static uint8_t *getDefaultCert()
 {
+    uint8_t *ret = NULL;
     if(default_cert[0] == 0xff)
     {
         RAMBUF *rambuf = allocRamBuf();
-        if(rambuf == NULL)
-            return NULL;
-
-        if(downloadFile(DOWNLOAD_URL "000500101000400a/cetk", "OSv10 title.tik", NULL, FILE_TYPE_TIK | FILE_TYPE_TORAM, false, NULL, rambuf) != 0)
+        if(rambuf != NULL)
         {
-            freeRamBuf(rambuf);
-            return NULL;
-        }
+            if(downloadFile(DOWNLOAD_URL "000500101000400a/cetk", "OSv10 title.tik", NULL, FILE_TYPE_TIK | FILE_TYPE_TORAM, false, NULL, rambuf) == 0)
+            {
+                if(rambuf->size >= 0x350 + 0x300) // TODO
+                {
+                    OSBlockMove(default_cert, rambuf->buf + 0x350, 0x300, false);
+                    ret = default_cert;
+                }
+            }
 
-        if(rambuf->size < 0x350 + 0x300) // TODO
-        {
             freeRamBuf(rambuf);
-            return NULL;
         }
-
-        OSBlockMove(default_cert, rambuf->buf + 0x350, 0x300, false);
     }
 
-    return default_cert;
+    return ret;
 }
 
 static void *getCert(int id, const TMD *tmd)
 {
-    const uint8_t *ptr = (uint8_t *)tmd;
+    const uint8_t *ptr = (const uint8_t *)tmd;
     ptr += 0xB04 + (0x30 * tmd->num_contents);
     if(id == 0)
         ptr += 0x300;
