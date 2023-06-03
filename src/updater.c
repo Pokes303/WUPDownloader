@@ -71,8 +71,6 @@
 #define NUSSPLI_DLVER ""
 #endif
 
-static RAMBUF *rambuf;
-
 static void showUpdateError(const char *msg)
 {
     enableShutdown();
@@ -94,7 +92,7 @@ bool updateCheck()
     if(!updateCheckEnabled())
         return false;
 
-    rambuf = allocRamBuf();
+    RAMBUF *rambuf = allocRamBuf();
     if(rambuf == NULL)
         return false;
 
@@ -175,6 +173,12 @@ bool updateCheck()
     return ret;
 }
 
+typedef struct
+{
+    RAMBUF *rambuf;
+    long index;
+} ZIP_META;
+
 static voidpf ZCALLBACK nus_zopen(voidpf opaque, const char *filename, int mode)
 {
     // STUB
@@ -183,8 +187,9 @@ static voidpf ZCALLBACK nus_zopen(voidpf opaque, const char *filename, int mode)
 
 static uLong ZCALLBACK nus_zread(voidpf opaque, voidpf stream, void *buf, uLong size)
 {
-    OSBlockMove(buf, rambuf->buf + *((long *)(stream)), size, false);
-    *((long *)(stream)) += size;
+    ZIP_META *meta = (ZIP_META *)stream;
+    OSBlockMove(buf, meta->rambuf->buf + meta->index, size, false);
+    meta->index += size;
     return size;
 }
 
@@ -196,21 +201,22 @@ static uLong ZCALLBACK nus_zwrite(voidpf opaque, voidpf stream, const void *buf,
 
 static long ZCALLBACK nus_ztell(voidpf opaque, voidpf stream)
 {
-    return *((long *)(stream));
+    return ((ZIP_META *)stream)->index;
 }
 
 static long ZCALLBACK nus_zseek(voidpf opaque, voidpf stream, uLong offset, int origin)
 {
+    ZIP_META *meta = (ZIP_META *)stream;
     switch(origin)
     {
         case ZLIB_FILEFUNC_SEEK_CUR:
-            *((long *)(stream)) += offset;
+            meta->index += offset;
             break;
         case ZLIB_FILEFUNC_SEEK_END:
-            *((long *)(stream)) = rambuf->size + offset;
+            meta->index = meta->rambuf->size + offset;
             break;
         case ZLIB_FILEFUNC_SEEK_SET:
-            *((long *)(stream)) = offset;
+            meta->index = offset;
             break;
     }
 
@@ -223,9 +229,9 @@ static int ZCALLBACK nus_zstub(voidpf opaque, voidpf stream)
     return 0;
 }
 
-static bool unzipUpdate()
+static bool unzipUpdate(RAMBUF *rambuf)
 {
-    long zPos = 0;
+    ZIP_META meta = { .rambuf = rambuf, .index = 0 };
     zlib_filefunc_def rbfd = {
         .zopen_file = nus_zopen,
         .zread_file = nus_zread,
@@ -234,10 +240,10 @@ static bool unzipUpdate()
         .zseek_file = nus_zseek,
         .zclose_file = nus_zstub,
         .zerror_file = nus_zstub,
-        .opaque = NULL
+        .opaque = NULL,
     };
     bool ret = false;
-    unzFile zip = unzOpen2((const char *)&zPos, &rbfd);
+    unzFile zip = unzOpen2((const char *)&meta, &rbfd);
     if(zip != NULL)
     {
         unz_global_info zipInfo;
@@ -377,7 +383,7 @@ static inline void showUpdateFrame()
 
 void update(const char *newVersion, NUSSPLI_TYPE type)
 {
-    rambuf = allocRamBuf();
+    RAMBUF *rambuf = allocRamBuf();
     if(rambuf == NULL)
         return;
 
