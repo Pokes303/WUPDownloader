@@ -1028,9 +1028,7 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
     {
         RAMBUF *tikBuf = allocRamBuf();
         if(tikBuf == NULL)
-        {
             return false;
-        }
 
         data.cs = 0;
         int tikRes = downloadFile(downloadUrl, installDir, &data, FILE_TYPE_TIK | FILE_TYPE_TORAM, false, queueData, tikBuf);
@@ -1043,23 +1041,22 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
                     return false;
 
                 break;
-            case 1:
+            case 0:
+                fp = openFile(installDir, "w", tmdSize);
+                if(fp == 0)
+                {
+                    freeRamBuf(tikBuf);
+                    showErrorFrame("Can't save title.tmd file!");
+                    return false;
+                }
+
+                addToIOQueue(tikBuf->buf, 1, tikBuf->size, fp);
+                addToIOQueue(NULL, 0, 0, fp);
+                break;
+            default:
                 freeRamBuf(tikBuf);
                 return false;
-            default:
-                break;
         }
-
-        fp = openFile(installDir, "w", tmdSize);
-        if(fp == 0)
-        {
-            freeRamBuf(tikBuf);
-            showErrorFrame("Can't save title.tmd file!");
-            return false;
-        }
-
-        addToIOQueue(tikBuf->buf, 1, tikBuf->size, fp);
-        addToIOQueue(NULL, 0, 0, fp);
 
         ++data.dcontent;
         strcpy(idp, "title.cert");
