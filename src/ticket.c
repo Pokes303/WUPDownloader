@@ -190,7 +190,7 @@ static uint8_t *getDefaultCert()
 static void *getCert(int id, const TMD *tmd)
 {
     const uint8_t *ptr = (const uint8_t *)tmd;
-    ptr += 0xB04 + (0x30 * tmd->num_contents);
+    ptr += sizeof(TMD) + (sizeof(TMD_CONTENT) * tmd->num_contents);
     if(id == 0)
         ptr += 0x300;
 
