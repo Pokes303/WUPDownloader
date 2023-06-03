@@ -135,8 +135,7 @@ extern "C"
         uint8_t cert[0x200];
         WUT_UNKNOWN_BYTES(0x3C);
         char issuer[0x40];
-        WUT_UNKNOWN_BYTES(3);
-        uint8_t version;
+        uint32_t version;
         char type[0x40];
         uint8_t sig[0x100];
         WUT_UNKNOWN_BYTES(0x04);
@@ -145,7 +144,7 @@ extern "C"
     } CA3_PPKI_CERT;
     WUT_CHECK_OFFSET(CA3_PPKI_CERT, 0x0004, cert);
     WUT_CHECK_OFFSET(CA3_PPKI_CERT, 0x0240, issuer);
-    WUT_CHECK_OFFSET(CA3_PPKI_CERT, 0x0283, version);
+    WUT_CHECK_OFFSET(CA3_PPKI_CERT, 0x0280, version);
     WUT_CHECK_OFFSET(CA3_PPKI_CERT, 0x0284, type);
     WUT_CHECK_OFFSET(CA3_PPKI_CERT, 0x02C4, sig);
     WUT_CHECK_OFFSET(CA3_PPKI_CERT, 0x03C8, unknown_02);
@@ -157,8 +156,7 @@ extern "C"
         uint8_t cert[0x100];
         WUT_UNKNOWN_BYTES(0x3C);
         char issuer[0x40];
-        WUT_UNKNOWN_BYTES(3);
-        uint8_t version;
+        uint32_t version;
         char type[0x40];
         uint8_t sig[0x100];
         WUT_UNKNOWN_BYTES(0x04);
@@ -167,7 +165,7 @@ extern "C"
     } XSC_PPKI_CERT;
     WUT_CHECK_OFFSET(XSC_PPKI_CERT, 0x0004, cert);
     WUT_CHECK_OFFSET(XSC_PPKI_CERT, 0x0140, issuer);
-    WUT_CHECK_OFFSET(XSC_PPKI_CERT, 0x0183, version);
+    WUT_CHECK_OFFSET(XSC_PPKI_CERT, 0x0180, version);
     WUT_CHECK_OFFSET(XSC_PPKI_CERT, 0x0184, type);
     WUT_CHECK_OFFSET(XSC_PPKI_CERT, 0x01C4, sig);
     WUT_CHECK_OFFSET(XSC_PPKI_CERT, 0x02C8, unknown_02);
@@ -179,8 +177,7 @@ extern "C"
         uint8_t cert[0x100];
         WUT_UNKNOWN_BYTES(0x3C);
         char issuer[0x40];
-        WUT_UNKNOWN_BYTES(3);
-        uint8_t version;
+        uint32_t version;
         char type[0x40];
         uint8_t sig[0x100];
         WUT_UNKNOWN_BYTES(0x04);
@@ -189,7 +186,7 @@ extern "C"
     } CP8_PPKI_CERT;
     WUT_CHECK_OFFSET(CP8_PPKI_CERT, 0x0004, cert);
     WUT_CHECK_OFFSET(CP8_PPKI_CERT, 0x0140, issuer);
-    WUT_CHECK_OFFSET(CP8_PPKI_CERT, 0x0183, version);
+    WUT_CHECK_OFFSET(CP8_PPKI_CERT, 0x0180, version);
     WUT_CHECK_OFFSET(CP8_PPKI_CERT, 0x0184, type);
     WUT_CHECK_OFFSET(CP8_PPKI_CERT, 0x01C4, sig);
     WUT_CHECK_OFFSET(CP8_PPKI_CERT, 0x02C8, unknown_02);
