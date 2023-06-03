@@ -48,6 +48,7 @@ static bool addToOpQueue(const TitleEntry *entry, const char *dir, TMD *tmd, NUS
 
     titleInfo->tmd = tmd;
 #ifndef NUSSPLI_LITE
+    titleInfo->rambuf = NULL;
     titleInfo->operation = OPERATION_INSTALL;
 #endif
     titleInfo->entry = entry;

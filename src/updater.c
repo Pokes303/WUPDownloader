@@ -71,6 +71,8 @@
 #define NUSSPLI_DLVER ""
 #endif
 
+static RAMBUF *rambuf;
+
 static void showUpdateError(const char *msg)
 {
     enableShutdown();
@@ -92,6 +94,10 @@ bool updateCheck()
     if(!updateCheckEnabled())
         return false;
 
+    rambuf = allocRamBuf();
+    if(rambuf == NULL)
+        return false;
+
     const char *updateChkUrl =
 #ifdef NUSSPLI_HBL
         UPDATE_CHECK_URL "h";
@@ -104,7 +110,7 @@ bool updateCheck()
 #endif
 
     bool ret = false;
-    if(downloadFile(updateChkUrl, "JSON", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false, NULL) == 0)
+    if(downloadFile(updateChkUrl, "JSON", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false, (QUEUE_DATA *)rambuf) == 0)
     {
         startNewFrame();
         textToFrame(0, 0, gettext("Parsing JSON"));
@@ -112,7 +118,7 @@ bool updateCheck()
         drawFrame();
         showFrame();
 
-        json_t *json = json_loadb(getRamBuf(), getRamBufSize(), 0, NULL);
+        json_t *json = json_loadb(rambuf->buf, rambuf->size, 0, NULL);
         if(json != NULL)
         {
             json_t *jsonObj = json_object_get(json, "s");
@@ -165,7 +171,7 @@ bool updateCheck()
     else
         debugPrintf("Error downloading %s", updateChkUrl);
 
-    clearRamBuf();
+    freeRamBuf(rambuf);
     return ret;
 }
 
@@ -177,7 +183,7 @@ static voidpf ZCALLBACK nus_zopen(voidpf opaque, const char *filename, int mode)
 
 static uLong ZCALLBACK nus_zread(voidpf opaque, voidpf stream, void *buf, uLong size)
 {
-    OSBlockMove(buf, getRamBuf() + *((long *)(stream)), size, false);
+    OSBlockMove(buf, rambuf->buf + *((long *)(stream)), size, false);
     *((long *)(stream)) += size;
     return size;
 }
@@ -201,7 +207,7 @@ static long ZCALLBACK nus_zseek(voidpf opaque, voidpf stream, uLong offset, int 
             *((long *)(stream)) += offset;
             break;
         case ZLIB_FILEFUNC_SEEK_END:
-            *((long *)(stream)) = getRamBufSize() + offset;
+            *((long *)(stream)) = rambuf->size + offset;
             break;
         case ZLIB_FILEFUNC_SEEK_SET:
             *((long *)(stream)) = offset;
@@ -371,6 +377,10 @@ static inline void showUpdateFrame()
 
 void update(const char *newVersion, NUSSPLI_TYPE type)
 {
+    rambuf = allocRamBuf();
+    if(rambuf == NULL)
+        return;
+
     disableShutdown();
     showUpdateFrame();
     removeDirectory(UPDATE_TEMP_FOLDER);
@@ -414,22 +424,17 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 
     strcat(path, NUSSPLI_DLVER ".zip");
 
-    if(downloadFile(path, "NUSspli.zip", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false, NULL) != 0)
+    if(downloadFile(path, "NUSspli.zip", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false, (QUEUE_DATA *)rambuf) != 0)
     {
-        clearRamBuf();
         showUpdateErrorf("%s %s", gettext("Error downloading"), path);
         goto updateError;
     }
 
     showUpdateFrame();
 
-    if(!unzipUpdate())
-    {
-        clearRamBuf();
+    if(!unzipUpdate(rambuf))
         goto updateError;
-    }
 
-    clearRamBuf();
     bool toUSB = getUSB() != NUSDEV_NONE;
 
     // Uninstall currently running type/version
@@ -518,12 +523,14 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
             break;
     }
 
+    freeRamBuf(rambuf);
     removeDirectory(UPDATE_TEMP_FOLDER);
     enableShutdown();
     showFinishedScreen("Update", FINISHING_OPERATION_INSTALL);
     return;
 
 updateError:
+    freeRamBuf(rambuf);
     removeDirectory(UPDATE_TEMP_FOLDER);
     enableShutdown();
 }

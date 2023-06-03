@@ -51,6 +51,7 @@ extern "C"
         TMD *tmd;
 #ifndef NUSSPLI_LITE
         size_t tmdSize;
+        void *rambuf; // TODO
         OPERATION operation;
 #endif
         const TitleEntry *entry;

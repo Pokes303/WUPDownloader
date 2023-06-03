@@ -59,9 +59,6 @@
 #define DLT_STACK_SIZE   0x8000
 #define SMOOTHING_FACTOR 0.2f
 
-static volatile char *ramBuf = NULL;
-static volatile size_t ramBufSize = 0;
-
 static CURL *curl;
 static char curlError[CURL_ERROR_SIZE];
 static bool curlReuseConnection = true;
@@ -408,13 +405,13 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 {
     // Results: 0 = OK | 1 = Error | 2 = No ticket aviable | 3 = Exit
     // Types: 0 = .app | 1 = .h3 | 2 = title.tmd | 3 = tilte.tik
-    bool toRam = (type & FILE_TYPE_TORAM) == FILE_TYPE_TORAM;
+    RAMBUF *rambuf = (type & FILE_TYPE_TORAM) ? (RAMBUF *)queueData : NULL;
 
     debugPrintf("Download URL: %s", url);
-    debugPrintf("Download PATH: %s", toRam ? "<RAM>" : file);
+    debugPrintf("Download PATH: %s", rambuf ? "<RAM>" : file);
 
     char *name;
-    if(toRam)
+    if(rambuf)
         name = file;
     else
     {
@@ -427,9 +424,9 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
     char *toScreen = getToFrameBuffer();
     void *fp;
     size_t fileSize;
-    if(toRam)
+    if(rambuf)
     {
-        fp = (void *)open_memstream((char **)&ramBuf, (size_t *)&ramBufSize);
+        fp = (void *)open_memstream(&rambuf->buf, &rambuf->size);
         fileSize = 0;
     }
     else
@@ -494,7 +491,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
             ret = curl_easy_setopt(curl, CURLOPT_RESUME_FROM_LARGE, (curl_off_t)fileSize);
             if(ret == CURLE_OK)
             {
-                ret = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, toRam ? fwrite : (size_t(*)(const void *, size_t, size_t, FILE *))addToIOQueue);
+                ret = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, rambuf ? fwrite : (size_t(*)(const void *, size_t, size_t, FILE *))addToIOQueue);
                 if(ret == CURLE_OK)
                 {
                     ret = curl_easy_setopt(curl, CURLOPT_WRITEDATA, (FILE *)fp);
@@ -507,7 +504,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
     if(ret != CURLE_OK)
     {
-        if(toRam)
+        if(rambuf)
             fclose((FILE *)fp);
         else
             addToIOQueue(NULL, 0, 0, (FSAFileHandle)fp);
@@ -605,7 +602,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
             if(dltotal)
             {
-                if(!toRam)
+                if(!rambuf)
                     checkForQueueErrors();
 
                 frames = 60;
@@ -670,7 +667,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
     debugPrintf("curl_easy_perform() returned: %d", ret);
 
-    if(toRam)
+    if(rambuf)
         fclose((FILE *)fp);
     else
         addToIOQueue(NULL, 0, 0, (FSAFileHandle)fp);
@@ -680,7 +677,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
     if(ret != CURLE_OK)
     {
-        debugPrintf("curl_easy_perform returned an error: %s (%d/%d)\nFile: %s", curlError, ret, cdata.error, toRam ? "<RAM>" : file);
+        debugPrintf("curl_easy_perform returned an error: %s (%d/%d)\nFile: %s", curlError, ret, cdata.error, rambuf ? "<RAM>" : file);
 
         if(ret == CURLE_ABORTED_BY_CALLBACK)
         {
@@ -783,7 +780,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
     debugPrintf("The download returned: %u", resp);
     if(resp != 200)
     {
-        if(!toRam)
+        if(!rambuf)
         {
             flushIOQueue();
             char *newFile = getStaticPathBuffer(2);
@@ -820,7 +817,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
         }
         else
         {
-            sprintf(toScreen, "%s: %ld\n%s: %s\n\n", gettext("The download returned a result different to 200 (OK)"), resp, gettext("File"), toRam ? file : prettyDir(file));
+            sprintf(toScreen, "%s: %ld\n%s: %s\n\n", gettext("The download returned a result different to 200 (OK)"), resp, gettext("File"), rambuf ? file : prettyDir(file));
             if(resp == 400)
             {
                 strcat(toScreen, gettext("Request failed. Try again"));
@@ -1113,22 +1110,21 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
 }
 #endif
 
-char *getRamBuf()
+RAMBUF *allocRamBuf()
 {
-    return (char *)ramBuf;
+    RAMBUF *ret = MEMAllocFromDefaultHeap(sizeof(RAMBUF));
+    if(ret == NULL)
+        return NULL;
+
+    ret->buf = NULL;
+    ret->size = 0;
+    return ret;
 }
 
-size_t getRamBufSize()
+void freeRamBuf(RAMBUF *rambuf)
 {
-    return ramBufSize;
-}
+    if(rambuf->buf != NULL)
+        MEMFreeToDefaultHeap(rambuf->buf);
 
-void clearRamBuf()
-{
-    if(ramBuf != NULL)
-    {
-        ramBufSize = 0;
-        MEMFreeToDefaultHeap((void *)ramBuf);
-        ramBuf = NULL;
-    }
+    MEMFreeToDefaultHeap(rambuf);
 }

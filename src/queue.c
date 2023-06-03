@@ -71,7 +71,13 @@ static inline void removeFQ(TitleData *title)
     if(title != NULL)
     {
         removeFromList(titleQueue, title);
-        MEMFreeToDefaultHeap(title->tmd);
+#ifndef NUSSPLI_LITE
+        if(title->rambuf != NULL)
+            freeRamBuf(title->rambuf);
+        else
+#endif
+            MEMFreeToDefaultHeap(title->tmd);
+
         MEMFreeToDefaultHeap(title);
     }
 }
@@ -181,7 +187,13 @@ bool removeFromQueue(uint32_t index)
     if(title == NULL)
         return false;
 
-    MEMFreeToDefaultHeap(title->tmd);
+#ifndef NUSSPLI_LITE
+    if(title->rambuf != NULL)
+        freeRamBuf(title->rambuf);
+    else
+#endif
+        MEMFreeToDefaultHeap(title->tmd);
+
     MEMFreeToDefaultHeap(title);
     return true;
 }

@@ -341,31 +341,26 @@ static inline void switchDownloadDevice(NUSDEV *dev)
     setDlToUSB(toUSB);
 }
 
-static bool addToOpQueue(const TitleEntry *entry, const char *titleVer, const char *folderName, NUSDEV dlDev, NUSDEV instDev)
+static bool addToOpQueue(RAMBUF *rambuf, const TitleEntry *entry, const char *titleVer, const char *folderName, NUSDEV dlDev, NUSDEV instDev)
 {
     TitleData *titleInfo = MEMAllocFromDefaultHeap(sizeof(TitleData));
     int ret = false;
     if(titleInfo != NULL)
     {
-        titleInfo->tmd = MEMAllocFromDefaultHeap(getRamBufSize());
-        if(titleInfo->tmd != NULL)
-        {
-            OSBlockMove(titleInfo->tmd, getRamBuf(), getRamBufSize(), false);
-            titleInfo->tmdSize = getRamBufSize();
-            titleInfo->entry = entry;
-            strcpy(titleInfo->titleVer, titleVer);
-            strcpy(titleInfo->folderName, folderName);
-            titleInfo->operation = operation;
-            titleInfo->dlDev = dlDev;
-            titleInfo->toUSB = instDev & NUSDEV_USB;
-            titleInfo->keepFiles = keepFiles;
+        titleInfo->tmd = (TMD *)rambuf->buf;
+        titleInfo->tmdSize = rambuf->size;
+        titleInfo->rambuf = rambuf;
+        titleInfo->entry = entry;
+        strcpy(titleInfo->titleVer, titleVer);
+        strcpy(titleInfo->folderName, folderName);
+        titleInfo->operation = operation;
+        titleInfo->dlDev = dlDev;
+        titleInfo->toUSB = instDev & NUSDEV_USB;
+        titleInfo->keepFiles = keepFiles;
 
-            ret = addToQueue(titleInfo);
-            if(ret == 1)
-                return true;
-
-            MEMFreeToDefaultHeap(titleInfo->tmd);
-        }
+        ret = addToQueue(titleInfo);
+        if(ret == 1)
+            return true;
 
         MEMFreeToDefaultHeap(titleInfo);
     }
@@ -375,6 +370,8 @@ static bool addToOpQueue(const TitleEntry *entry, const char *titleVer, const ch
 
 bool predownloadMenu(const TitleEntry *entry)
 {
+    RAMBUF *rambuf = NULL;
+
     MCPTitleListType titleList __attribute__((__aligned__(0x40)));
     bool installed = isInstalled(entry, &titleList);
     NUSDEV usbMounted = getUSB();
@@ -393,7 +390,13 @@ bool predownloadMenu(const TitleEntry *entry)
     bool autoStartQueue = false;
 
 downloadTMD:
-    clearRamBuf();
+    if(rambuf != NULL)
+        freeRamBuf(rambuf);
+
+    rambuf = allocRamBuf();
+    if(rambuf == NULL)
+        return true;
+
     hex(entry->tid, 16, tid);
 
     debugPrintf("Downloading TMD...");
@@ -407,20 +410,19 @@ downloadTMD:
         strcat(downloadUrl, titleVer);
     }
 
-    if(downloadFile(downloadUrl, "title.tmd", NULL, (FileType)(FILE_TYPE_TMD | FILE_TYPE_TORAM), false, NULL))
+    if(downloadFile(downloadUrl, "title.tmd", NULL, (FileType)(FILE_TYPE_TMD | FILE_TYPE_TORAM), false, (QUEUE_DATA *)rambuf))
     {
-        clearRamBuf();
+        freeRamBuf(rambuf);
         debugPrintf("Error downloading TMD");
         saveConfig(false);
         return true;
     }
 
-    tmd = (TMD *)getRamBuf();
-    if(verifyTmd(tmd, getRamBufSize()) != TMD_STATE_GOOD)
+    tmd = (TMD *)rambuf->buf;
+    if(verifyTmd(tmd, rambuf->size) != TMD_STATE_GOOD)
     {
-        clearRamBuf();
+        freeRamBuf(rambuf);
         saveConfig(false);
-
         showErrorFrame(gettext("Invalid title.tmd file!"));
         return true;
     }
@@ -456,7 +458,7 @@ naNedNa:
 
             if(vpad.trigger & VPAD_BUTTON_B)
             {
-                clearRamBuf();
+                freeRamBuf(rambuf);
                 saveConfig(false);
                 return true;
             }
@@ -515,7 +517,7 @@ naNedNa:
 
             if(installed && vpad.trigger & VPAD_BUTTON_Y)
             {
-                clearRamBuf();
+                freeRamBuf(rambuf);
                 saveConfig(false);
                 deinstall(&titleList, entry->name, false, false);
                 return false;
@@ -584,7 +586,6 @@ naNedNa:
                     if(vpad.trigger & VPAD_BUTTON_A)
                     {
                         removeErrorOverlay(ovl);
-                        clearRamBuf();
                         entry = te;
                         goto downloadTMD;
                     }
@@ -665,10 +666,10 @@ naNedNa:
                                 goto exitPDM;
                             }
 
-                            if(!addToOpQueue(entry, titleVer, folderName, dlDev, instDev))
+                            if(!addToOpQueue(rambuf, entry, titleVer, folderName, dlDev, instDev))
                                 goto exitPDM;
 
-                            clearRamBuf();
+                            rambuf = NULL;
                             entry = te;
                             autoAddToQueue = true;
 
@@ -719,10 +720,10 @@ naNedNa:
                                 goto exitPDM;
                             }
 
-                            if(!addToOpQueue(entry, titleVer, folderName, dlDev, instDev))
+                            if(!addToOpQueue(rambuf, entry, titleVer, folderName, dlDev, instDev))
                                 goto exitPDM;
 
-                            clearRamBuf();
+                            rambuf = NULL;
                             entry = te;
                             autoAddToQueue = true;
 
@@ -763,21 +764,25 @@ naNedNa:
 
     if(toQueue)
     {
-        ret = addToOpQueue(entry, titleVer, folderName, dlDev, instDev);
-        if(ret && autoStartQueue)
+        ret = addToOpQueue(rambuf, entry, titleVer, folderName, dlDev, instDev);
+        if(ret)
         {
-            disableApd();
-            ret = !proccessQueue();
-            if(!ret)
-                showFinishedScreen(entry->name, operation == OPERATION_DOWNLOAD_INSTALL ? FINISHING_OPERATION_INSTALL : FINISHING_OPERATION_DOWNLOAD);
+            rambuf = NULL;
+            if(autoStartQueue)
+            {
+                disableApd();
+                ret = !proccessQueue();
+                if(!ret)
+                    showFinishedScreen(entry->name, operation == OPERATION_DOWNLOAD_INSTALL ? FINISHING_OPERATION_INSTALL : FINISHING_OPERATION_DOWNLOAD);
 
-            enableApd();
+                enableApd();
+            }
         }
     }
     else if(checkSystemTitleFromEntry(entry))
     {
         disableApd();
-        ret = !downloadTitle(tmd, getRamBufSize(), entry, titleVer, folderName, operation == OPERATION_DOWNLOAD_INSTALL, dlDev, instDev & NUSDEV_USB, keepFiles, NULL);
+        ret = !downloadTitle(tmd, rambuf->size, entry, titleVer, folderName, operation == OPERATION_DOWNLOAD_INSTALL, dlDev, instDev & NUSDEV_USB, keepFiles, NULL);
         if(!ret)
             showFinishedScreen(entry->name, operation == OPERATION_DOWNLOAD_INSTALL ? FINISHING_OPERATION_INSTALL : FINISHING_OPERATION_DOWNLOAD);
 
@@ -787,7 +792,9 @@ naNedNa:
         ret = true;
 
 exitPDM:
-    clearRamBuf();
+    if(rambuf)
+        freeRamBuf(rambuf);
+
     return ret;
 }
 
