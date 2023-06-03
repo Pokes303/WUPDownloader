@@ -131,44 +131,42 @@ extern "C"
 
     typedef struct WUT_PACKED
     {
-        uint32_t unknown_01;
-        uint8_t cert[0x200];
+        uint32_t sig_type;
+        uint8_t sig[0x200];
         WUT_UNKNOWN_BYTES(0x3C);
         char issuer[0x40];
         uint32_t version;
         char type[0x40];
-        uint8_t sig[0x100];
-        WUT_UNKNOWN_BYTES(0x04);
-        uint32_t unknown_02;
+        uint8_t cert[0x104];
+        uint32_t unknown_01;
         WUT_UNKNOWN_BYTES(0x34);
     } CA3_PPKI_CERT;
-    WUT_CHECK_OFFSET(CA3_PPKI_CERT, 0x0004, cert);
+    WUT_CHECK_OFFSET(CA3_PPKI_CERT, 0x0004, sig);
     WUT_CHECK_OFFSET(CA3_PPKI_CERT, 0x0240, issuer);
     WUT_CHECK_OFFSET(CA3_PPKI_CERT, 0x0280, version);
     WUT_CHECK_OFFSET(CA3_PPKI_CERT, 0x0284, type);
-    WUT_CHECK_OFFSET(CA3_PPKI_CERT, 0x02C4, sig);
-    WUT_CHECK_OFFSET(CA3_PPKI_CERT, 0x03C8, unknown_02);
+    WUT_CHECK_OFFSET(CA3_PPKI_CERT, 0x02C4, cert);
+    WUT_CHECK_OFFSET(CA3_PPKI_CERT, 0x03C8, unknown_01);
     WUT_CHECK_SIZE(CA3_PPKI_CERT, 0x400);
 
     typedef struct WUT_PACKED
     {
-        uint32_t unknown_01;
-        uint8_t cert[0x100];
+        uint32_t sig_type;
+        uint8_t sig[0x100];
         WUT_UNKNOWN_BYTES(0x3C);
         char issuer[0x40];
         uint32_t version;
         char type[0x40];
-        uint8_t sig[0x100];
-        WUT_UNKNOWN_BYTES(0x04);
-        uint32_t unknown_02;
+        uint8_t cert[0x104];
+        uint32_t unknown_01;
         WUT_UNKNOWN_BYTES(0x34);
     } OTHER_PPKI_CERT;
-    WUT_CHECK_OFFSET(OTHER_PPKI_CERT, 0x0004, cert);
+    WUT_CHECK_OFFSET(OTHER_PPKI_CERT, 0x0004, sig);
     WUT_CHECK_OFFSET(OTHER_PPKI_CERT, 0x0140, issuer);
     WUT_CHECK_OFFSET(OTHER_PPKI_CERT, 0x0180, version);
     WUT_CHECK_OFFSET(OTHER_PPKI_CERT, 0x0184, type);
-    WUT_CHECK_OFFSET(OTHER_PPKI_CERT, 0x01C4, sig);
-    WUT_CHECK_OFFSET(OTHER_PPKI_CERT, 0x02C8, unknown_02);
+    WUT_CHECK_OFFSET(OTHER_PPKI_CERT, 0x01C4, cert);
+    WUT_CHECK_OFFSET(OTHER_PPKI_CERT, 0x02C8, unknown_01);
     WUT_CHECK_SIZE(OTHER_PPKI_CERT, 0x300);
 
     typedef struct WUT_PACKED

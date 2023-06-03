@@ -221,17 +221,17 @@ bool generateCert(const TMD *tmd, const TICKET *ticket, size_t ticketSize, const
         osslBytes(&cetk.cert2.cert, sizeof(cetk.cert2.cert));
         osslBytes(&cetk.cert3.sig, sizeof(cetk.cert3.sig));
 
-        cetk.cert1.version = 0x01;
-        cetk.cert1.unknown_01 = 0x00010003;
-        cetk.cert1.unknown_02 = 0x00010001;
+        cetk.cert1.sig_type = 0x00010003;
+        cetk.cert1.version = 0x00000001;
+        cetk.cert1.unknown_01 = 0x00010001;
 
-        cetk.cert2.version = 0x01;
-        cetk.cert2.unknown_01 = 0x00010004;
-        cetk.cert2.unknown_02 = 0x00010001;
+        cetk.cert2.sig_type = 0x00010004;
+        cetk.cert2.version = 0x00000001;
+        cetk.cert2.unknown_01= 0x00010001;
 
-        cetk.cert3.version = 0x01;
-        cetk.cert3.unknown_01 = 0x00010004;
-        cetk.cert2.unknown_02 = 0x00010001;
+        cetk.cert3.sig_type = 0x00010004;
+        cetk.cert3.version = 0x00000001;
+        cetk.cert2.unknown_01 = 0x00010001;
 
         // Overrite header
         OSBlockSet(&cetk, 0x00, sizeof(NUS_HEADER));
