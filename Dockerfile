@@ -1,9 +1,9 @@
-FROM ghcr.io/wiiu-env/devkitppc:20230326
+FROM ghcr.io/wiiu-env/devkitppc:20230420
 
 ENV DEBIAN_FRONTEND=noninteractive \
  PATH=$DEVKITPPC/bin:$PATH \
  WUT_ROOT=$DEVKITPRO/wut \
- CURL_VER=8.0.1
+ CURL_VER=8.1.2
 
 WORKDIR /
 
@@ -58,7 +58,7 @@ PKG_CONFIG=$DEVKITPRO/portlibs/wiiu/bin/powerpc-eabi-pkg-config && \
  cd ../.. && \
  rm -rf curl
 
-COPY --from=ghcr.io/wiiu-env/libmocha:20220919 /artifacts $DEVKITPRO
+COPY --from=ghcr.io/wiiu-env/libmocha:20230417 /artifacts $DEVKITPRO
 COPY --from=ghcr.io/wiiu-env/librpxloader:20230316 /artifacts $DEVKITPRO
 
 RUN git config --global --add safe.directory /project

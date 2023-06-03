@@ -41,8 +41,6 @@
 
 // WIP. This need a better implementation
 
-extern FSClient *__wut_devoptab_fs_client;
-
 VPADStatus vpad;
 static const KPADStatus kpad[4];
 static const Swkbd_ControllerInfo controllerInfo = {
@@ -258,6 +256,9 @@ bool SWKBD_Init()
 {
     debugPrintf("SWKBD_Init()");
 
+    if(FSAddClient(createArg.fsClient, 0) != FS_STATUS_OK)
+        return false;
+
     createArg.workMemory = MEMAllocFromDefaultHeap(Swkbd_GetWorkMemorySize(0));
     if(createArg.workMemory == NULL)
         return false;
@@ -287,7 +288,6 @@ bool SWKBD_Init()
             break;
     }
 
-    createArg.fsClient = __wut_devoptab_fs_client;
     if(Swkbd_Create(&createArg))
     {
         OSBlockSet(&appearArg, 0, sizeof(Swkbd_AppearArg));
@@ -320,6 +320,7 @@ void SWKBD_Shutdown()
 {
     Swkbd_Destroy();
     MEMFreeToDefaultHeap(createArg.workMemory);
+    FSDelClient(createArg.fsClient, 0);
 }
 
 void readInput()
