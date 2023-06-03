@@ -264,8 +264,14 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
             case 0xFFFBF43F:
                 strcat(toScreen, gettext("Possible missing or bad title.tik file"));
                 break;
+            case 0xFFFBF440:
+                strcat(toScreen, gettext("Missing title.cert file"));
+                break;
             case 0xFFFBF441:
                 strcat(toScreen, gettext("Possible incorrect console for DLC title.tik file"));
+                break;
+            case 0xFFFBF442:
+                strcat(toScreen, gettext("Invalid title.cert file"));
                 break;
             case 0xFFFCFFE4:
                 strcat(toScreen, gettext("Not enough free space on target device"));
