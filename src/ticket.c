@@ -73,7 +73,7 @@ WUT_CHECK_SIZE(TICKET_HEADER_SECTION, 0x98);
 
 static const uint8_t magic_header[10] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09 };
 #ifndef NUSSPLI_LITE
-static uint8_t default_cert[0x300] = { 0xff };
+static uint8_t default_cert[sizeof(OTHER_PPKI_CERT)] = { 0xff };
 #endif
 
 static void generateHeader(FileType type, NUS_HEADER *out)
@@ -171,9 +171,9 @@ static uint8_t *getDefaultCert()
         {
             if(downloadFile(DOWNLOAD_URL "000500101000400a/cetk", "OSv10 title.tik", NULL, FILE_TYPE_TIK | FILE_TYPE_TORAM, false, NULL, rambuf) == 0)
             {
-                if(rambuf->size >= 0x350 + 0x300) // TODO
+                if(rambuf->size >= 0x350 + sizeof(OTHER_PPKI_CERT)) // TODO
                 {
-                    OSBlockMove(default_cert, rambuf->buf + 0x350, 0x300, false);
+                    OSBlockMove(default_cert, rambuf->buf + 0x350, sizeof(OTHER_PPKI_CERT), false);
                     ret = default_cert;
                 }
             }
@@ -192,7 +192,7 @@ static void *getCert(int id, const TMD *tmd)
     const uint8_t *ptr = (const uint8_t *)tmd;
     ptr += sizeof(TMD) + (sizeof(TMD_CONTENT) * tmd->num_contents);
     if(id == 0)
-        ptr += sizeof(XSC_PPKI_CERT);
+        ptr += sizeof(OTHER_PPKI_CERT);
 
     return (void *)ptr;
 }
@@ -240,7 +240,7 @@ bool generateCert(const TMD *tmd, const TICKET *ticket, size_t ticketSize, const
     else
     {
         const uint8_t *ptr;
-        if(ticketSize >= 0x350 + 0x300) // TODO
+        if(ticketSize >= 0x350 + sizeof(OTHER_PPKI_CERT)) // TODO
         {
             ptr = (uint8_t *)ticket;
             ptr += 0x350;
@@ -253,8 +253,8 @@ bool generateCert(const TMD *tmd, const TICKET *ticket, size_t ticketSize, const
         }
 
         OSBlockMove(&cetk.cert1, getCert(0, tmd), sizeof(CA3_PPKI_CERT), false);
-        OSBlockMove(&cetk.cert2, getCert(1, tmd), sizeof(XSC_PPKI_CERT), false);
-        OSBlockMove(&cetk.cert3, ptr, sizeof(CP8_PPKI_CERT), false);
+        OSBlockMove(&cetk.cert2, getCert(1, tmd), sizeof(OTHER_PPKI_CERT), false);
+        OSBlockMove(&cetk.cert3, ptr, sizeof(OTHER_PPKI_CERT), false);
     }
 
     FSAFileHandle cert = openFile(path, "w", 0);

@@ -162,45 +162,24 @@ extern "C"
         WUT_UNKNOWN_BYTES(0x04);
         uint32_t unknown_02;
         WUT_UNKNOWN_BYTES(0x34);
-    } XSC_PPKI_CERT;
-    WUT_CHECK_OFFSET(XSC_PPKI_CERT, 0x0004, cert);
-    WUT_CHECK_OFFSET(XSC_PPKI_CERT, 0x0140, issuer);
-    WUT_CHECK_OFFSET(XSC_PPKI_CERT, 0x0180, version);
-    WUT_CHECK_OFFSET(XSC_PPKI_CERT, 0x0184, type);
-    WUT_CHECK_OFFSET(XSC_PPKI_CERT, 0x01C4, sig);
-    WUT_CHECK_OFFSET(XSC_PPKI_CERT, 0x02C8, unknown_02);
-    WUT_CHECK_SIZE(XSC_PPKI_CERT, 0x300);
-
-    typedef struct WUT_PACKED
-    {
-        uint32_t unknown_01;
-        uint8_t cert[0x100];
-        WUT_UNKNOWN_BYTES(0x3C);
-        char issuer[0x40];
-        uint32_t version;
-        char type[0x40];
-        uint8_t sig[0x100];
-        WUT_UNKNOWN_BYTES(0x04);
-        uint32_t unknown_02;
-        WUT_UNKNOWN_BYTES(0x34);
-    } CP8_PPKI_CERT;
-    WUT_CHECK_OFFSET(CP8_PPKI_CERT, 0x0004, cert);
-    WUT_CHECK_OFFSET(CP8_PPKI_CERT, 0x0140, issuer);
-    WUT_CHECK_OFFSET(CP8_PPKI_CERT, 0x0180, version);
-    WUT_CHECK_OFFSET(CP8_PPKI_CERT, 0x0184, type);
-    WUT_CHECK_OFFSET(CP8_PPKI_CERT, 0x01C4, sig);
-    WUT_CHECK_OFFSET(CP8_PPKI_CERT, 0x02C8, unknown_02);
-    WUT_CHECK_SIZE(CP8_PPKI_CERT, 0x300);
+    } OTHER_PPKI_CERT;
+    WUT_CHECK_OFFSET(OTHER_PPKI_CERT, 0x0004, cert);
+    WUT_CHECK_OFFSET(OTHER_PPKI_CERT, 0x0140, issuer);
+    WUT_CHECK_OFFSET(OTHER_PPKI_CERT, 0x0180, version);
+    WUT_CHECK_OFFSET(OTHER_PPKI_CERT, 0x0184, type);
+    WUT_CHECK_OFFSET(OTHER_PPKI_CERT, 0x01C4, sig);
+    WUT_CHECK_OFFSET(OTHER_PPKI_CERT, 0x02C8, unknown_02);
+    WUT_CHECK_SIZE(OTHER_PPKI_CERT, 0x300);
 
     typedef struct WUT_PACKED
     {
         CA3_PPKI_CERT cert1;
-        XSC_PPKI_CERT cert2;
-        CP8_PPKI_CERT cert3;
+        OTHER_PPKI_CERT cert2;
+        OTHER_PPKI_CERT cert3;
     } CETK;
     WUT_CHECK_OFFSET(CETK, sizeof(CA3_PPKI_CERT), cert2);
-    WUT_CHECK_OFFSET(CETK, sizeof(CA3_PPKI_CERT) + sizeof(XSC_PPKI_CERT), cert3);
-    WUT_CHECK_SIZE(CETK, sizeof(CA3_PPKI_CERT) + sizeof(XSC_PPKI_CERT) + sizeof(CP8_PPKI_CERT));
+    WUT_CHECK_OFFSET(CETK, sizeof(CA3_PPKI_CERT) + sizeof(OTHER_PPKI_CERT), cert3);
+    WUT_CHECK_SIZE(CETK, sizeof(CA3_PPKI_CERT) + (sizeof(OTHER_PPKI_CERT) * 2));
 
     bool generateTik(const char *path, const TitleEntry *titleEntry, const TMD *tmd);
     bool generateCert(const TMD *tmd, const TICKET *ticket, size_t ticketSize, const char *path);
