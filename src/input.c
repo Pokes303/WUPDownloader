@@ -41,6 +41,7 @@
 
 // WIP. This need a better implementation
 
+FSClient swkbdFsclient;
 VPADStatus vpad;
 static const KPADStatus kpad[4];
 static const Swkbd_ControllerInfo controllerInfo = {
@@ -256,12 +257,16 @@ bool SWKBD_Init()
 {
     debugPrintf("SWKBD_Init()");
 
+    createArg.fsClient = &swkbdFsclient;
     if(FSAddClient(createArg.fsClient, 0) != FS_STATUS_OK)
         return false;
 
     createArg.workMemory = MEMAllocFromDefaultHeap(Swkbd_GetWorkMemorySize(0));
     if(createArg.workMemory == NULL)
+    {
+        FSDelClient(createArg.fsClient, 0);
         return false;
+    }
 
     OSBlockSet(swkbd_msg, 0, sizeof(OSMessage) * SWKBD_QUEUE_SIZE);
     OSInitMessageQueueEx(&swkbd_queue, swkbd_msg, SWKBD_QUEUE_SIZE, "NUSspli SWKBD calc queue");
@@ -313,6 +318,7 @@ bool SWKBD_Init()
     }
 
     MEMFreeToDefaultHeap(createArg.workMemory);
+    FSDelClient(createArg.fsClient, 0);
     return false;
 }
 
