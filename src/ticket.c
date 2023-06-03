@@ -181,6 +181,8 @@ static uint8_t *getDefaultCert()
             freeRamBuf(rambuf);
         }
     }
+    else
+        return default_cert;
 
     return ret;
 }
