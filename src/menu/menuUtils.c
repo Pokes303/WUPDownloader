@@ -55,7 +55,7 @@ void addToScreenLog(const char *str, ...)
     }
 
     char *line;
-    if(getListSize(logList) == MAX_LINES - 2)
+    if(getListSize(logList) == MAX_LINES)
         line = wrapFirstEntry(logList);
     else
     {
@@ -89,18 +89,28 @@ void clearScreenLog()
 
 void writeScreenLog(int line)
 {
-    lineToFrame(line, SCREEN_COLOR_WHITE);
+    int i;
+    if(line != -1)
+    {
+        lineToFrame(line, SCREEN_COLOR_WHITE);
+        i = line;
+    }
+    else
+        i = 1;
+
     if(logList == NULL)
         return;
 
     char *text;
-    int i = line;
     forEachListEntry(logList, text)
     {
         if(i == 1)
             textToFrame(++line, 0, text);
         else
             --i;
+
+        if(line > MAX_LINES - 2)
+            break;
     }
 }
 

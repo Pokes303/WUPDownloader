@@ -26,6 +26,7 @@
 #include <menu/config.h>
 #include <menu/installer.h>
 #include <menu/insttitlebrowser.h>
+#include <menu/logs.h>
 #include <menu/main.h>
 #include <menu/titlebrowser.h>
 #include <menu/utils.h>
@@ -68,6 +69,7 @@ static void drawMainMenuFrame()
 #endif
     textToFrame(line++, 4, gettext("Uninstall a title"));
     textToFrame(line++, 4, gettext("Options"));
+    textToFrame(line++, 4, gettext("Logs"));
 
     textToFrame(7, MAX_CHARS - 27, gettext("Developers:"));
     textToFrame(8, MAX_CHARS - 26, "• DaThinkingChair");
@@ -142,6 +144,13 @@ void mainMenu()
 #endif
                     configMenu();
                     break;
+#ifndef NUSSPLI_LITE
+                case 16:
+#else
+                case 14:
+#endif
+                    logsMenu();
+                    break;
             }
 
             redraw = true;
@@ -149,9 +158,9 @@ void mainMenu()
         else if(vpad.trigger & VPAD_BUTTON_DOWN)
         {
 #ifndef NUSSPLI_LITE
-            if(++cursorPos == 16)
+            if(++cursorPos == 17)
 #else
-            if(++cursorPos == 14)
+            if(++cursorPos == 15)
 #endif
                 cursorPos = 11;
 
@@ -161,9 +170,9 @@ void mainMenu()
         {
             if(--cursorPos == 10)
 #ifndef NUSSPLI_LITE
-                cursorPos = 15;
+                cursorPos = 16;
 #else
-                cursorPos = 13;
+                cursorPos = 14;
 #endif
 
             redraw = true;
