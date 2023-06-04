@@ -23,9 +23,11 @@
 #include <file.h>
 #include <filesystem.h>
 #include <ioQueue.h>
+#include <renderer.h>
 #include <staticMem.h>
 #include <tmd.h>
 #include <utils.h>
+#include <menu/utils.h>
 
 #include <dirent.h>
 #include <stdbool.h>
@@ -193,6 +195,8 @@ size_t getFilesize(const char *path)
 
 size_t readFileNew(const char *path, void **buffer)
 {
+    char *toScreen = getToFrameBuffer();
+    toScreen[0] = '\0';
     size_t filesize = getFilesize(path);
     if(filesize != -1)
     {
@@ -211,7 +215,7 @@ size_t readFileNew(const char *path, void **buffer)
                     return filesize;
                 }
 
-                debugPrintf("Error reading %s: %s!", path, translateFSErr(err));
+                sprintf(toScreen, "Error reading %s: %s!", path, translateFSErr(err));
                 MEMFreeToDefaultHeap(*buffer);
             }
             else
@@ -220,12 +224,15 @@ size_t readFileNew(const char *path, void **buffer)
             FSACloseFile(getFSAClient(), handle);
         }
         else
-            debugPrintf("Error opening %s: %s!", path, translateFSErr(err));
+            sprintf(toScreen, "Error opening %s: %s!", path, translateFSErr(err));
     }
     else
-        debugPrintf("Error getting filesize for %s!", path);
+        sprintf(toScreen, "Error getting filesize for %s!", path);
 
     *buffer = NULL;
+    if(toScreen[0] != '\0')
+        addToScreenLog(toScreen);
+
     return 0;
 }
 
@@ -249,6 +256,8 @@ size_t readFile(const char *path, void **buffer)
     if(strncmp("romfs:/", path, strlen("romfs:/")) != 0)
         return readFileNew(path, buffer);
 
+    char *toScreen = getToFrameBuffer();
+    toScreen[0] = '\0';
     FILE *file = fopen(path, "rb");
     if(file != NULL)
     {
@@ -264,21 +273,24 @@ size_t readFile(const char *path, void **buffer)
                     return filesize;
                 }
 
-                debugPrintf("Error reading %s!", path);
+                sprintf(toScreen, "Error reading %s!", path);
                 MEMFreeToDefaultHeap(*buffer);
             }
             else
-                debugPrintf("Error creating buffer!");
+                sprintf(toScreen, "Error creating buffer!");
         }
         else
-            debugPrintf("Error getting filesize for %s!", path);
+            sprintf(toScreen, "Error getting filesize for %s!", path);
 
         fclose(file);
     }
     else
-        debugPrintf("Error opening %s!", path);
+        sprintf(toScreen, "Error opening %s!", path);
 
     *buffer = NULL;
+    if(toScreen[0] != '\0')
+        addToScreenLog(toScreen);
+
     return 0;
 }
 #endif

@@ -172,16 +172,17 @@ bool initConfig()
     if(!fileExists(CONFIG_PATH))
     {
         addToScreenLog("Config file not found, using defaults!");
-        changed = true; // trigger a save on app exit
-        intSetMenuLanguage(menuLang);
-        return true;
+        goto error;
     }
 
     OSTime t = OSGetTime();
     void *buf;
     size_t bufSize = readFile(CONFIG_PATH, &buf);
     if(buf == NULL)
-        return false;
+    {
+        addToScreenLog("Error loading config file, using defaults!");
+        goto error;
+    }
 
 #ifdef NUSSPLI_DEBUG
     json_error_t jerr;
@@ -306,6 +307,11 @@ bool initConfig()
     addEntropy(&t, sizeof(OSTime));
 
     addToScreenLog("Config file loaded!");
+    return true;
+
+error:
+    changed = true; // trigger a save on app exit
+    intSetMenuLanguage();
     return true;
 }
 
