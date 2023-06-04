@@ -68,7 +68,6 @@
 #define NOTIF_NONE     "None"
 
 static bool changed = false;
-static bool saveFailed = false;
 static bool checkForUpdates = true;
 static bool autoResume = true;
 static Swkbd_LanguageType lang = Swkbd_LanguageType__Invalid;
@@ -381,9 +380,6 @@ static inline bool setValue(json_t *config, const char *key, json_t *value)
 bool saveConfig(bool force)
 {
     debugPrintf("saveConfig()");
-    if(saveFailed)
-        return false;
-
     if(!changed && !force)
         return true;
 
