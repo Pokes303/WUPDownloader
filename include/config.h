@@ -49,8 +49,8 @@ extern "C"
         NOTIF_METHOD_LED = 0x02,
     } NOTIF_METHOD;
 
-    bool initConfig();
-    bool saveConfig(bool force);
+    void initConfig();
+    void saveConfig(bool force);
     bool updateCheckEnabled();
     void setUpdateCheck(bool enabled);
     bool autoResumeEnabled();

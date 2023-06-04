@@ -134,7 +134,7 @@ Swkbd_LanguageType stringToLanguageType(const char *lang)
     return Swkbd_LanguageType__Invalid;
 }
 
-bool initConfig()
+void initConfig()
 {
     debugPrintf("Initializing config file...");
 
@@ -194,9 +194,7 @@ bool initConfig()
         MEMFreeToDefaultHeap(buf);
         debugPrintf("json_loadb() failed: %s!", jerr.text);
         addToScreenLog("Error parsing config file, using defaults!");
-        changed = true; // trigger a save on app exit
-        intSetMenuLanguage();
-        return true;
+        goto error;
     }
 
     json_t *configEntry = json_object_get(json, "File Version");
@@ -306,12 +304,11 @@ bool initConfig()
     addEntropy(&t, sizeof(OSTime));
 
     addToScreenLog("Config file loaded!");
-    return true;
+    return;
 
 error:
     changed = true; // trigger a save on app exit
     intSetMenuLanguage();
-    return true;
 }
 
 const char *getLanguageString(Swkbd_LanguageType language)
@@ -377,14 +374,13 @@ static inline bool setValue(json_t *config, const char *key, json_t *value)
     return ret;
 }
 
-bool saveConfig(bool force)
+void saveConfig(bool force)
 {
     debugPrintf("saveConfig()");
     if(!changed && !force)
-        return true;
+        return;
 
     json_t *config = json_object();
-    bool ret = false;
     if(config != NULL)
     {
         json_t *value = json_integer(CONFIG_VERSION);
@@ -429,7 +425,6 @@ bool saveConfig(bool force)
                                                     addToIOQueue(json, 1, entropy, f);
                                                     addToIOQueue(NULL, 0, 0, f);
                                                     changed = false;
-                                                    ret = true;
                                                 }
                                                 else
                                                     showErrorFrame(gettext("Couldn't save config file!\nYour SD card might be write locked."));
@@ -453,7 +448,7 @@ bool saveConfig(bool force)
     else
         debugPrintf("config == NULL");
 
-    return ret;
+    return;
 }
 
 bool updateCheckEnabled()

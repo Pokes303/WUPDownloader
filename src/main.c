@@ -135,42 +135,37 @@ static void innerMain(bool validCfw)
                                         if(initIOThread())
                                         {
                                             drawLoadingScreen("I/O thread initialized!", "Loading config...");
-                                            if(initConfig())
+                                            initConfig();
+                                            drawLoadingScreen("Config loaded!", "Loading SWKBD...");
+                                            if(SWKBD_Init())
                                             {
-                                                drawLoadingScreen("Config loaded!", "Loading SWKBD...");
-                                                if(SWKBD_Init())
+                                                drawLoadingScreen("SWKBD initialized!", "Loading menu...");
+                                                if(initQueue())
                                                 {
-                                                    drawLoadingScreen("SWKBD initialized!", "Loading menu...");
-                                                    if(initQueue())
+                                                    checkStacks("main()");
+                                                    if(!updateCheck())
                                                     {
-                                                        checkStacks("main()");
-                                                        if(!updateCheck())
-                                                        {
-                                                            initFSSpace();
-                                                            checkStacks("main");
-                                                            mainMenu(); // main loop
-                                                            checkStacks("main");
-                                                            debugPrintf("Deinitializing libraries...");
-                                                        }
-                                                        else
-                                                            drawByeFrame();
-
-                                                        shutdownQueue();
+                                                        initFSSpace();
+                                                        checkStacks("main");
+                                                        mainMenu(); // main loop
+                                                        checkStacks("main");
+                                                        debugPrintf("Deinitializing libraries...");
                                                     }
                                                     else
-                                                        lerr = "Couldn't initialize queue!";
+                                                        drawByeFrame();
 
-                                                    SWKBD_Shutdown();
-                                                    debugPrintf("SWKBD closed");
+                                                    shutdownQueue();
                                                 }
                                                 else
-                                                    lerr = "Couldn't initialize SWKBD!";
+                                                    lerr = "Couldn't initialize queue!";
 
-                                                saveConfig(false);
+                                                SWKBD_Shutdown();
+                                                debugPrintf("SWKBD closed");
                                             }
                                             else
-                                                lerr = "Couldn't load config file!\n\nMost likely your SD card is write locked!";
+                                                lerr = "Couldn't initialize SWKBD!";
 
+                                            saveConfig(false);
                                             shutdownIOThread();
                                             debugPrintf("I/O thread closed");
                                         }
