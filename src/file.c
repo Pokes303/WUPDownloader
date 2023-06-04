@@ -23,11 +23,11 @@
 #include <file.h>
 #include <filesystem.h>
 #include <ioQueue.h>
+#include <menu/utils.h>
 #include <renderer.h>
 #include <staticMem.h>
 #include <tmd.h>
 #include <utils.h>
-#include <menu/utils.h>
 
 #include <dirent.h>
 #include <stdbool.h>
