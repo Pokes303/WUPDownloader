@@ -404,7 +404,7 @@ void deleteTicket(uint64_t tid)
     // Loop through all the folder inside of the ticket bucket
     while(FSAReadDir(getFSAClient(), dir, &entry) == FS_ERROR_OK)
     {
-        if(entry.name[0] == '.' || !(entry.info.flags & FS_STAT_DIRECTORY) || strlen(entry.name) != 4)
+        if(!(entry.info.flags & FS_STAT_DIRECTORY) || strlen(entry.name) != 4)
         {
             debugPrintf("Sanity check failed on %s", entry.name);
             continue;
@@ -419,7 +419,7 @@ void deleteTicket(uint64_t tid)
             // Loop through all the subfolders
             while(FSAReadDir(getFSAClient(), dir2, &entry) == FS_ERROR_OK)
             {
-                if(entry.name[0] == '.' || (entry.info.flags & FS_STAT_DIRECTORY) || strlen(entry.name) != 12) // TODO: entry.info.flags & FS_STAT_FILE is false for some reason
+                if((entry.info.flags & FS_STAT_DIRECTORY) || strlen(entry.name) != 12) // TODO: entry.info.flags & FS_STAT_FILE is false for some reason
                 {
                     debugPrintf("Sanity check failed on %s", entry.name);
                     continue;

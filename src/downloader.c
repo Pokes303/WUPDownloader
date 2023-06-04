@@ -212,9 +212,6 @@ bool initDownloader()
         FSADirectoryEntry entry;
         while(FSAReadDir(getFSAClient(), dir, &entry) == FS_ERROR_OK)
         {
-            if(entry.name[0] == '.')
-                continue;
-
             strcpy(ptr, entry.name);
 #else
         for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))

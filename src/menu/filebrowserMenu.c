@@ -136,7 +136,7 @@ refreshDirList:
         size_t len;
         FSADirectoryEntry entry;
         while(FSAReadDir(getFSAClient(), dir, &entry) == FS_ERROR_OK)
-            if(entry.info.flags & FS_STAT_DIRECTORY && entry.name[0] != '.') // Check if it's a directory
+            if(entry.info.flags & FS_STAT_DIRECTORY) // Check if it's a directory
             {
                 len = strlen(entry.name);
                 name = MEMAllocFromDefaultHeap(len + 2);
