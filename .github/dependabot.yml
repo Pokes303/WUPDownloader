@@ -14,3 +14,9 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+
+  # GitHub Acrions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
