@@ -75,9 +75,6 @@ FSError removeDirectory(const char *path)
         FSADirectoryEntry entry;
         while(FSAReadDir(getFSAClient(), dir, &entry) == FS_ERROR_OK)
         {
-            if(entry.name[0] == '.')
-                continue;
-
             strcpy(inSentence, entry.name);
             if(entry.info.flags & FS_STAT_DIRECTORY)
                 ret = removeDirectory(newPath);
@@ -142,9 +139,6 @@ FSError moveDirectory(const char *src, const char *dest)
             FSADirectoryEntry entry;
             while(ret == FS_ERROR_OK && FSAReadDir(getFSAClient(), dir, &entry) == FS_ERROR_OK)
             {
-                if(entry.name[0] == '.')
-                    continue;
-
                 len = strlen(entry.name);
                 OSBlockMove(inSrc, entry.name, ++len, false);
                 OSBlockMove(inDest, entry.name, len, false);
