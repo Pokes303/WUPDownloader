@@ -104,11 +104,9 @@ static inline SDL_Rect *createRect()
         ++line;                                               \
         line *= FONT_SIZE;                                    \
         line -= 7;                                            \
-        text.w = FC_GetWidth(font, str);                      \
-        text.h = FONT_SIZE;                                   \
-        text.y = line;                                        \
+        int w = FC_GetWidth(font, str);                       \
                                                               \
-        if(maxWidth != 0 && text.w > maxWidth)                \
+        if(maxWidth != 0 && w > maxWidth)                     \
         {                                                     \
             size_t i = strlen(str);                           \
             char *lineBuffer = (char *)getStaticLineBuffer(); \
@@ -122,14 +120,14 @@ static inline SDL_Rect *createRect()
             *--tmp = '.';                                     \
                                                               \
             char *tmp2;                                       \
-            text.w = FC_GetWidth(font, lineBuffer);           \
-            while(text.w > maxWidth)                          \
+            w = FC_GetWidth(font, lineBuffer);                \
+            while(w > maxWidth)                               \
             {                                                 \
                 tmp2 = tmp;                                   \
                 *--tmp = '.';                                 \
                 ++tmp2;                                       \
                 *++tmp2 = '\0';                               \
-                text.w = FC_GetWidth(font, lineBuffer);       \
+                w = FC_GetWidth(font, lineBuffer);            \
             }                                                 \
                                                               \
             if(*--tmp == ' ')                                 \
@@ -144,14 +142,14 @@ static inline SDL_Rect *createRect()
         switch(column)                                        \
         {                                                     \
             case ALIGNED_CENTER:                              \
-                text.x = (SCREEN_WIDTH >> 1) - (text.w >> 1); \
+                column = (SCREEN_WIDTH >> 1) - (w >> 1);      \
                 break;                                        \
             case ALIGNED_RIGHT:                               \
-                text.x = SCREEN_WIDTH - text.w - FONT_SIZE;   \
+                column = SCREEN_WIDTH - w - FONT_SIZE;        \
                 break;                                        \
             default:                                          \
                 column *= spaceWidth;                         \
-                text.x = column + FONT_SIZE;                  \
+                column += FONT_SIZE;                          \
         }                                                     \
     }
 
@@ -160,9 +158,8 @@ void textToFrameCut(int line, int column, const char *str, int maxWidth)
     if(font == NULL)
         return;
 
-    SDL_Rect text;
     internalTextToFrame();
-    FC_DrawBox(font, renderer, text, str);
+    FC_Draw(font, renderer, column, line, str);
 }
 
 void textToFrameColoredCut(int line, int column, const char *str, SCREEN_COLOR color, int maxWidth)
@@ -170,9 +167,8 @@ void textToFrameColoredCut(int line, int column, const char *str, SCREEN_COLOR c
     if(font == NULL)
         return;
 
-    SDL_Rect text;
     internalTextToFrame();
-    FC_DrawBoxColor(font, renderer, text, color, str);
+    FC_DrawColor(font, renderer, column, line, color, str);
 }
 
 int textToFrameMultiline(int x, int y, const char *text, size_t len)
@@ -461,17 +457,16 @@ void tabToFrame(int line, int column, const char *label, bool active)
     SDL_QueryTexture(tabTex, NULL, NULL, &(curRect->w), &(curRect->h));
     SDL_RenderCopy(renderer, tabTex, NULL, curRect);
 
-    SDL_Rect rect = { .x = curRect->x + (curRect->w >> 1), .y = line + 20, .w = curRect->w, .h = curRect->h };
-    rect.x -= FC_GetWidth(font, label) >> 1;
-    rect.y -= FONT_SIZE >> 1;
+    column = curRect->x + (curRect->w >> 1) - (FC_GetWidth(font, label) >> 1);
+    line += 20 - (FONT_SIZE >> 1);
 
     if(active)
     {
-        FC_DrawBox(font, renderer, rect, label);
+        FC_Draw(font, renderer, column, line, label);
         return;
     }
 
-    FC_DrawBoxColor(font, renderer, rect, SCREEN_COLOR_WHITE_TRANSP, label);
+    FC_DrawColor(font, renderer, column, line, SCREEN_COLOR_WHITE_TRANSP, label);
 }
 
 void *addErrorOverlay(const char *err)
@@ -995,10 +990,8 @@ void drawKeyboard(bool tv)
 {
     predrawFrame();
 
-    if(tv)
-        Swkbd_DrawTV();
-    else
-        Swkbd_DrawDRC();
+    Swkbd_DrawDRC();
+    Swkbd_DrawTV();
 
     postdrawFrame();
     showFrame();
