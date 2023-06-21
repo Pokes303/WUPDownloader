@@ -21,6 +21,7 @@
 #include <stdbool.h>
 
 #include <coreinit/mcp.h>
+#include <coreinit/thread.h>
 
 #include <crypto.h>
 #include <deinstaller.h>
