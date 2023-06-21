@@ -990,8 +990,10 @@ void drawKeyboard(bool tv)
 {
     predrawFrame();
 
-    Swkbd_DrawDRC();
-    Swkbd_DrawTV();
+    if(tv)
+        Swkbd_DrawTV();
+    else
+        Swkbd_DrawDRC();
 
     postdrawFrame();
     showFrame();
