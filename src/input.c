@@ -94,48 +94,45 @@ static int calcThreadMain(int argc, const char **argv)
 
 static void SWKBD_Render(SWKBD_Args *args, KeyboardChecks check)
 {
-    if(args->globalMaxlength != -1)
+    char *inputFormString = Swkbd_GetInputFormString();
+    if(inputFormString != NULL)
     {
-        char *inputFormString = Swkbd_GetInputFormString();
-        if(inputFormString != NULL)
+        size_t len = strlen(inputFormString);
+        if(len != 0 && check != CHECK_NONE && check != CHECK_NUMERICAL)
         {
-            size_t len = strlen(inputFormString);
-            if(len != 0 && check != CHECK_NONE && check != CHECK_NUMERICAL)
+            checkingFunction cf;
+            switch(check)
             {
-                checkingFunction cf;
-                switch(check)
-                {
-                    case CHECK_HEXADECIMAL:
-                        cf = &isHexa;
-                        break;
-                    case CHECK_ALPHANUMERICAL:
-                        cf = &isAllowedInFilename;
-                        break;
-                    case CHECK_URL:
-                        cf = &isUrl;
-                        break;
-                    default:
-                        // DEAD CODE
-                        debugPrintf("0xDEADC0DE: %d", check);
-                        return;
-                }
-
-                for(len = 0; inputFormString[len] != '\0'; ++len)
-                    if(!cf(inputFormString[len]))
-                    {
-                        inputFormString[len] = '\0';
-                        Swkbd_SetInputFormString(inputFormString);
-                        break;
-                    }
+                case CHECK_HEXADECIMAL:
+                    cf = &isHexa;
+                    break;
+                case CHECK_ALPHANUMERICAL:
+                    cf = &isAllowedInFilename;
+                    break;
+                case CHECK_URL:
+                    cf = &isUrl;
+                    break;
+                default:
+                    // DEAD CODE
+                    debugPrintf("0xDEADC0DE: %d", check);
+                    return;
             }
 
-            args->okButtonEnabled = args->globalLimit ? len == args->globalMaxlength : len <= args->globalMaxlength;
+            for(len = 0; inputFormString[len] != '\0'; ++len)
+                if(!cf(inputFormString[len]))
+                {
+                    inputFormString[len] = '\0';
+                    Swkbd_SetInputFormString(inputFormString);
+                    break;
+                }
         }
-        else
-            args->okButtonEnabled = false;
 
-        Swkbd_SetEnableOkButton(args->okButtonEnabled);
+        args->okButtonEnabled = args->globalLimit ? len == args->globalMaxlength : len <= args->globalMaxlength;
     }
+    else
+        args->okButtonEnabled = false;
+
+    Swkbd_SetEnableOkButton(args->okButtonEnabled);
 
     Swkbd_Calc(&controllerInfo);
 
@@ -220,9 +217,6 @@ static bool SWKBD_Show(SWKBD_Args *args, KeyboardLayout layout, KeyboardType typ
         return false;
 
     args->globalLimit = limit;
-    args->okButtonEnabled = limit || maxlength == -1;
-    Swkbd_SetEnableOkButton(args->okButtonEnabled);
-
     VPADSetSensorBar(VPAD_CHAN_0, true);
 
     debugPrintf("nn::swkbd::AppearInputForm success");
@@ -529,6 +523,9 @@ void readInput()
 bool showKeyboard(KeyboardLayout layout, KeyboardType type, char *output, KeyboardChecks check, int maxlength, bool limit, const char *input, const char *okStr)
 {
     debugPrintf("Initialising SWKBD");
+
+    if(maxlength < 1)
+        return false;
 
     SWKBD_Args args;
 
