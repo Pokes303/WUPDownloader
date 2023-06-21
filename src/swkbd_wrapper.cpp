@@ -86,15 +86,11 @@ void Swkbd_SetInputFormString(const char *str)
         return;
     }
 
-    auto *cppStr = (char16_t *)MEMAllocFromDefaultHeap(sizeof(char16_t) * ++len);
-    if(cppStr == nullptr)
-        return;
-
+    char16_t cppStr[++len];
     for(size_t i = 0; i < len; i++)
         cppStr[i] = str[i];
 
     nn::swkbd::SetInputFormString(cppStr);
-    MEMFreeToDefaultHeap(cppStr);
 }
 
 void Swkbd_SetInputFormString16(const char16_t *str)
