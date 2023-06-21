@@ -45,9 +45,10 @@ endif
 #-------------------------------------------------------------------------------
 
 CFLAGS		:=	$(MACHDEP) -Ofast -flto=auto -fno-fat-lto-objects \
-				-fuse-linker-plugin -pipe -D__WIIU__ -D__WUT__ \
+				-fuse-linker-plugin -fipa-pta -pipe \
+				-D__WIIU__ -D__WUT__ -DIOAPI_NO_64 \
 				-DNUSSPLI_VERSION=\"$(NUSSPLI_VERSION)\" \
-				-DIOAPI_NO_64 -Wno-trigraphs $(ROMFS_CFLAGS)
+				-Wno-trigraphs $(ROMFS_CFLAGS)
 
 ifeq ($(strip $(HBL)), 1)
 CFLAGS		+=	-DNUSSPLI_HBL
