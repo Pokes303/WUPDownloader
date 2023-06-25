@@ -46,6 +46,8 @@ endif
 
 CFLAGS		:=	$(MACHDEP) -Ofast -flto=auto -fno-fat-lto-objects \
 				-fuse-linker-plugin -fipa-pta -pipe \
+				-Wall -Wextra -Wundef -Wshadow -Wpointer-arith \
+				-Wcast-align  \
 				-D__WIIU__ -D__WUT__ -DIOAPI_NO_64 \
 				-DNUSSPLI_VERSION=\"$(NUSSPLI_VERSION)\" \
 				-Wno-trigraphs $(ROMFS_CFLAGS)
