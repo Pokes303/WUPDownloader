@@ -61,33 +61,33 @@ static void drawMainMenuFrame()
 
     int line = 11;
 #ifndef NUSSPLI_LITE
-    textToFrame(line++, 4, gettext("Download content"));
+    textToFrame(line++, 4, localise("Download content"));
 #endif
-    textToFrame(line++, 4, gettext("Install content"));
+    textToFrame(line++, 4, localise("Install content"));
 #ifndef NUSSPLI_LITE
-    textToFrame(line++, 4, gettext("Generate a fake <title.tik> file"));
+    textToFrame(line++, 4, localise("Generate a fake <title.tik> file"));
 #endif
-    textToFrame(line++, 4, gettext("Uninstall a title"));
-    textToFrame(line++, 4, gettext("Options"));
-    textToFrame(line++, 4, gettext("Logs"));
+    textToFrame(line++, 4, localise("Uninstall a title"));
+    textToFrame(line++, 4, localise("Options"));
+    textToFrame(line++, 4, localise("Logs"));
 
-    textToFrame(7, MAX_CHARS - 27, gettext("Developers:"));
+    textToFrame(7, MAX_CHARS - 27, localise("Developers:"));
     textToFrame(8, MAX_CHARS - 26, "• DaThinkingChair");
     textToFrame(9, MAX_CHARS - 26, "• Pokes303");
     textToFrame(10, MAX_CHARS - 26, "• V10lator");
 
-    textToFrame(12, MAX_CHARS - 27, gettext("Thanks to:"));
+    textToFrame(12, MAX_CHARS - 27, localise("Thanks to:"));
     textToFrame(13, MAX_CHARS - 26, "• E1ite007");
     textToFrame(14, MAX_CHARS - 26, "• SDL");
     textToFrame(15, MAX_CHARS - 26, "• WUP installer");
 
-    textToFrame(17, MAX_CHARS - 27, gettext("Beta testers:"));
+    textToFrame(17, MAX_CHARS - 27, localise("Beta testers:"));
     textToFrame(18, MAX_CHARS - 26, "• jacobsson");
     textToFrame(19, MAX_CHARS - 26, "• LuckyDingo");
     textToFrame(20, MAX_CHARS - 26, "• Vague Rant");
 
     lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
-    textToFrame(MAX_LINES - 1, ALIGNED_CENTER, gettext("Press " BUTTON_HOME " or " BUTTON_B " to exit"));
+    textToFrame(MAX_LINES - 1, ALIGNED_CENTER, localise("Press " BUTTON_HOME " or " BUTTON_B " to exit"));
 
     drawFrame();
 }

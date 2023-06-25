@@ -52,25 +52,25 @@ static void drawTBMenuFrame(const TITLE_CATEGORY tab, const size_t pos, const si
     startNewFrame();
 
     // Games, Updates, DLC, Demos, All
-    const char *tabLabels[5] = { gettext("Games"), gettext("Updates"), gettext("DLC"), gettext("Demos"), gettext("All") };
-    for(int i = 0; i < 5; ++i)
+    const char *tabLabels[5] = { localise("Games"), localise("Updates"), localise("DLC"), localise("Demos"), localise("All") };
+    for(uint32_t i = 0; i < 5; ++i)
         tabToFrame(0, i, tabLabels[i], i == tab);
 
     boxToFrame(1, MAX_LINES - 3);
 
     char *toFrame = getToFrameBuffer();
-    strcpy(toFrame, gettext("Press " BUTTON_A " to select"));
+    strcpy(toFrame, localise("Press " BUTTON_A " to select"));
     strcat(toFrame, " || ");
-    strcat(toFrame, gettext(BUTTON_B " to return"));
+    strcat(toFrame, localise(BUTTON_B " to return"));
     strcat(toFrame, " || ");
-    strcat(toFrame, gettext(BUTTON_X " to enter a title ID"));
+    strcat(toFrame, localise(BUTTON_X " to enter a title ID"));
     textToFrame(MAX_LINES - 2, ALIGNED_CENTER, toFrame);
 
-    strcpy(toFrame, gettext(BUTTON_Y " to search"));
+    strcpy(toFrame, localise(BUTTON_Y " to search"));
     if(getListSize(getTitleQueue()))
     {
         strcat(toFrame, " || ");
-        strcat(toFrame, gettext(BUTTON_MINUS " to open the queue"));
+        strcat(toFrame, localise(BUTTON_MINUS " to open the queue"));
     }
 
     textToFrame(MAX_LINES - 1, ALIGNED_CENTER, toFrame);
@@ -385,7 +385,7 @@ loop:
         {
             char oldSearch[sizeof(search)];
             strcpy(oldSearch, search);
-            showKeyboard(KEYBOARD_LAYOUT_NORMAL, KEYBOARD_TYPE_NORMAL, search, CHECK_NONE, 128, false, search, gettext("Search"));
+            showKeyboard(KEYBOARD_LAYOUT_NORMAL, KEYBOARD_TYPE_NORMAL, search, CHECK_NONE, 128, false, search, localise("Search"));
             if(strcmp(oldSearch, search) != 0)
             {
                 cursor = pos = 0;
@@ -427,7 +427,7 @@ loop:
         return;
     }
 
-    if(predownloadMenu(entry))
+    if(predownloadMenu(entry)) // entry is initialised
         goto loop;
 
     MEMFreeToDefaultHeap(filteredTitleEntries);

@@ -213,7 +213,7 @@ static void innerMain(bool validCfw)
                 }
 
                 shutdownRenderer();
-                gettextCleanUp();
+                locCleanUp();
                 debugPrintf("SDL closed");
             }
 

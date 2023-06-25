@@ -192,7 +192,7 @@ size_t readFileNew(const char *path, void **buffer)
     char *toScreen = getToFrameBuffer();
     toScreen[0] = '\0';
     size_t filesize = getFilesize(path);
-    if(filesize != -1)
+    if(filesize != (size_t)-1)
     {
         FSAFileHandle handle;
         path = getStaticPathBuffer(0); // getFilesize() setted it for us

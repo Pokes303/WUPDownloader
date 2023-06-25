@@ -62,6 +62,9 @@ static inline const char *getFun(uint32_t addy)
 
 static int exceptionHandlerThread(int argc, const char **argv)
 {
+    (void)argc;
+    (void)argv;
+
     char buf[CRASH_BUFSIZE];
     snprintf(buf, CRASH_BUFSIZE,
         "An error has occured. Press POWER for 4 seconds to shutdown.\n"
@@ -141,7 +144,7 @@ static inline bool internalExceptionHandler(OSContext *ctx)
         case 1:
             aff = OS_THREAD_ATTRIB_AFFINITY_CPU1;
             break;
-        case 2:
+        default:
             aff = OS_THREAD_ATTRIB_AFFINITY_CPU2;
             break;
     }
@@ -171,6 +174,7 @@ static BOOL proExceptionHandler(OSContext *ctx)
 
 static BOOL defaultExceptionHandler(OSContext *ctx)
 {
+    (void)ctx;
     return false;
 }
 

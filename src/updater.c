@@ -111,7 +111,7 @@ bool updateCheck()
     if(downloadFile(updateChkUrl, "JSON", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false, NULL, rambuf) == 0)
     {
         startNewFrame();
-        textToFrame(0, 0, gettext("Parsing JSON"));
+        textToFrame(0, 0, localise("Parsing JSON"));
         writeScreenLog(1);
         drawFrame();
         showFrame();
@@ -151,10 +151,10 @@ bool updateCheck()
                         break;
                     case 3: // TODO
                     case 4:
-                        showUpdateError(gettext("Internal server error!"));
+                        showUpdateError(localise("Internal server error!"));
                         break;
                     default: // TODO
-                        showUpdateErrorf("%s: %d", gettext("Invalid state value"), json_integer_value(jsonObj));
+                        showUpdateErrorf("%s: %d", localise("Invalid state value"), json_integer_value(jsonObj));
                         break;
                 }
             }
@@ -182,11 +182,14 @@ typedef struct
 static voidpf ZCALLBACK nus_zopen(voidpf opaque, const char *filename, int mode)
 {
     // STUB
+    (void)opaque;
+    (void)mode;
     return (voidpf)filename;
 }
 
 static uLong ZCALLBACK nus_zread(voidpf opaque, voidpf stream, void *buf, uLong size)
 {
+    (void)opaque;
     ZIP_META *meta = (ZIP_META *)stream;
     OSBlockMove(buf, meta->rambuf->buf + meta->index, size, false);
     meta->index += size;
@@ -196,16 +199,21 @@ static uLong ZCALLBACK nus_zread(voidpf opaque, voidpf stream, void *buf, uLong 
 static uLong ZCALLBACK nus_zwrite(voidpf opaque, voidpf stream, const void *buf, uLong size)
 {
     // STUB
+    (void)opaque;
+    (void)stream;
+    (void)buf;
     return size;
 }
 
 static long ZCALLBACK nus_ztell(voidpf opaque, voidpf stream)
 {
+    (void)opaque;
     return ((ZIP_META *)stream)->index;
 }
 
 static long ZCALLBACK nus_zseek(voidpf opaque, voidpf stream, uLong offset, int origin)
 {
+    (void)opaque;
     ZIP_META *meta = (ZIP_META *)stream;
     switch(origin)
     {
@@ -226,6 +234,8 @@ static long ZCALLBACK nus_zseek(voidpf opaque, voidpf stream, uLong offset, int 
 static int ZCALLBACK nus_zstub(voidpf opaque, voidpf stream)
 {
     // STUB
+    (void)opaque;
+    (void)stream;
     return 0;
 }
 
@@ -262,7 +272,7 @@ static bool unzipUpdate(RAMBUF *rambuf)
                 char *lastSlash;
                 char *lspp;
                 FSAFileHandle file;
-                size_t extracted;
+                int extracted;
                 ret = true;
 
                 do
@@ -298,7 +308,7 @@ static bool unzipUpdate(RAMBUF *rambuf)
 
                                 if(!createDirRecursive(fileName))
                                 {
-                                    showUpdateErrorf("%s: %s", gettext("Error creating directory"), prettyDir(fileName));
+                                    showUpdateErrorf("%s: %s", localise("Error creating directory"), prettyDir(fileName));
                                     ret = false;
                                 }
                             }
@@ -316,16 +326,16 @@ static bool unzipUpdate(RAMBUF *rambuf)
                                         extracted = unzReadCurrentFile(zip, buf, IO_BUFSIZE);
                                         if(extracted < 0)
                                         {
-                                            showUpdateErrorf("%s: %s", gettext("Error extracting file"), prettyDir(fileName));
+                                            showUpdateErrorf("%s: %s", localise("Error extracting file"), prettyDir(fileName));
                                             ret = false;
                                             break;
                                         }
 
                                         if(extracted != 0)
                                         {
-                                            if(addToIOQueue(buf, 1, extracted, file) != extracted)
+                                            if(addToIOQueue(buf, 1, extracted, file) != (size_t)extracted)
                                             {
-                                                showUpdateErrorf("%s: %s", gettext("Error writing file"), prettyDir(fileName));
+                                                showUpdateErrorf("%s: %s", localise("Error writing file"), prettyDir(fileName));
                                                 ret = false;
                                                 break;
                                             }
@@ -338,7 +348,7 @@ static bool unzipUpdate(RAMBUF *rambuf)
                                 }
                                 else
                                 {
-                                    showUpdateErrorf("%s: %s", gettext("Error opening file"), prettyDir(fileName));
+                                    showUpdateErrorf("%s: %s", localise("Error opening file"), prettyDir(fileName));
                                     ret = false;
                                 }
                             }
@@ -347,13 +357,13 @@ static bool unzipUpdate(RAMBUF *rambuf)
                         }
                         else
                         {
-                            showUpdateError(gettext("Error opening zip file"));
+                            showUpdateError(localise("Error opening zip file"));
                             ret = false;
                         }
                     }
                     else
                     {
-                        showUpdateError(gettext("Error extracting zip"));
+                        showUpdateError(localise("Error extracting zip"));
                         ret = false;
                     }
                 } while(ret && unzGoToNextFile(zip) == UNZ_OK);
@@ -362,12 +372,12 @@ static bool unzipUpdate(RAMBUF *rambuf)
             }
         }
         else
-            showUpdateError(gettext("Error getting zip info"));
+            showUpdateError(localise("Error getting zip info"));
 
         unzClose(zip);
     }
     else
-        showUpdateError(gettext("Error opening zip!"));
+        showUpdateError(localise("Error opening zip!"));
 
     return ret;
 }
@@ -375,7 +385,7 @@ static bool unzipUpdate(RAMBUF *rambuf)
 static inline void showUpdateFrame()
 {
     startNewFrame();
-    textToFrame(0, 0, gettext("Updating, please wait..."));
+    textToFrame(0, 0, localise("Updating, please wait..."));
     writeScreenLog(1);
     drawFrame();
     showFrame();
@@ -394,7 +404,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
     if(err != FS_ERROR_OK)
     {
         char *toScreen = getToFrameBuffer();
-        strcpy(toScreen, gettext("Error creating temporary directory!"));
+        strcpy(toScreen, localise("Error creating temporary directory!"));
         strcat(toScreen, "\n\n");
         strcat(toScreen, translateFSErr(err));
 
@@ -432,7 +442,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
 
     if(downloadFile(path, "NUSspli.zip", NULL, FILE_TYPE_JSON | FILE_TYPE_TORAM, false, NULL, rambuf) != 0)
     {
-        showUpdateErrorf("%s %s", gettext("Error downloading"), path);
+        showUpdateErrorf("%s %s", localise("Error downloading"), path);
         goto updateError;
     }
 
@@ -448,7 +458,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
     err = removeDirectory(UPDATE_HBL_FOLDER);
     if(err != FS_ERROR_OK)
     {
-        showUpdateErrorf("%s: %s", gettext("Error removing directory"), translateFSErr(err));
+        showUpdateErrorf("%s: %s", localise("Error removing directory"), translateFSErr(err));
         goto updateError;
     }
 #else
@@ -458,7 +468,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
         MCPError e = MCP_GetOwnTitleInfo(mcpHandle, &ownInfo);
         if(e != 0)
         {
-            showUpdateErrorf("%s: %#010x", gettext("Error getting own title info"), e);
+            showUpdateErrorf("%s: %#010x", localise("Error getting own title info"), e);
             goto updateError;
         }
 
@@ -479,7 +489,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
                 err = FSARemove(getFSAClient(), path);
                 if(err != FS_ERROR_OK)
                 {
-                    showUpdateErrorf("%s: %s", gettext("Error removing file"), translateFSErr(err));
+                    showUpdateErrorf("%s: %s", localise("Error removing file"), translateFSErr(err));
                     goto updateError;
                 }
             }
@@ -489,7 +499,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
         else
         {
         aromaError:
-            showUpdateErrorf("%s: %s", gettext("Aroma error"), RPXLoader_GetStatusStr(rs));
+            showUpdateErrorf("%s: %s", localise("Aroma error"), RPXLoader_GetStatusStr(rs));
             goto updateError;
         }
     }
@@ -509,7 +519,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
             err = FSARename(getFSAClient(), path2, path);
             if(err != FS_ERROR_OK)
             {
-                showUpdateErrorf("%s: %s", gettext("Error moving file"), translateFSErr(err));
+                showUpdateErrorf("%s: %s", localise("Error moving file"), translateFSErr(err));
                 goto updateError;
             }
             break;
@@ -523,7 +533,7 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
             err = moveDirectory(UPDATE_TEMP_FOLDER "NUSspli", UPDATE_HBL_FOLDER);
             if(err != FS_ERROR_OK)
             {
-                showUpdateErrorf("%s: %s", gettext("Error moving directory"), translateFSErr(err));
+                showUpdateErrorf("%s: %s", localise("Error moving directory"), translateFSErr(err));
                 goto updateError;
             }
             break;

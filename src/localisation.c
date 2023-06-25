@@ -85,7 +85,7 @@ static void addMSG(const char *msgid, const char *msgstr)
     MEMFreeToDefaultHeap(msg);
 }
 
-void gettextCleanUp()
+void locCleanUp()
 {
     if(baseMSG != NULL)
     {
@@ -98,9 +98,9 @@ void gettextCleanUp()
     }
 }
 
-bool gettextLoadLanguage(const char *langFile)
+bool locLoadLanguage(const char *langFile)
 {
-    gettextCleanUp();
+    locCleanUp();
     baseMSG = createList();
     if(baseMSG == NULL)
         return false;
@@ -152,7 +152,7 @@ bool gettextLoadLanguage(const char *langFile)
     return ret;
 }
 
-const char *gettext(const char *msgid)
+const char *localise(const char *msgid)
 {
     if(baseMSG != NULL)
     {

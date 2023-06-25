@@ -54,6 +54,8 @@ static volatile uint32_t entropy;
 
 int NUSrng(void *data, unsigned char *out, size_t outlen)
 {
+    (void)data;
+
     --out;
     ++outlen;
 
@@ -92,7 +94,7 @@ void addEntropy(void *e, size_t l)
     while(--l32)
     {
         rngRun();
-        entropy ^= *++buf32;
+        entropy ^= *++buf32; // Not uninitialised!
     }
 
     while(--l)

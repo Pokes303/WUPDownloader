@@ -39,6 +39,9 @@ static OSThread *spaceThread = NULL;
 
 static int spaceThreadMain(int argc, const char **argv)
 {
+    (void)argc;
+    (void)argv;
+
     uint64_t freeSpace;
     FSAGetFreeSpaceSize(getFSAClient(), NUSDIR_USB1, &freeSpace);
     FSAGetFreeSpaceSize(getFSAClient(), NUSDIR_USB2, &freeSpace);

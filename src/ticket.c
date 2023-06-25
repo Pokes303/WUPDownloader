@@ -133,7 +133,7 @@ bool generateTik(const char *path, const TitleEntry *titleEntry, const TMD *tmd)
     if(tik == 0)
     {
         char *err = getStaticScreenBuffer();
-        sprintf(err, "%s\n%s", gettext("Could not open path"), prettyDir(path));
+        sprintf(err, "%s\n%s", localise("Could not open path"), prettyDir(path));
         showErrorFrame(err);
         return false;
     }
@@ -261,7 +261,7 @@ bool generateCert(const TMD *tmd, const TICKET *ticket, size_t ticketSize, const
     if(cert == 0)
     {
         char *err = getStaticScreenBuffer();
-        sprintf(err, "%s\n%s", gettext("Could not open path"), prettyDir(path));
+        sprintf(err, "%s\n%s", localise("Could not open path"), prettyDir(path));
         showErrorFrame(err);
         return false;
     }
@@ -277,12 +277,12 @@ static void drawTicketFrame(uint64_t titleID)
     hex(titleID, 16, tid);
 
     startNewFrame();
-    textToFrame(0, 0, gettext("Title ID:"));
+    textToFrame(0, 0, localise("Title ID:"));
     textToFrame(1, 3, tid);
 
     int line = MAX_LINES - 1;
-    textToFrame(line--, 0, gettext("Press " BUTTON_B " to return"));
-    textToFrame(line--, 0, gettext("Press " BUTTON_A " to continue"));
+    textToFrame(line--, 0, localise("Press " BUTTON_B " to return"));
+    textToFrame(line--, 0, localise("Press " BUTTON_A " to continue"));
     lineToFrame(line, SCREEN_COLOR_WHITE);
     drawFrame();
 }
@@ -290,10 +290,10 @@ static void drawTicketFrame(uint64_t titleID)
 static void drawTicketGenFrame(const char *dir)
 {
     colorStartNewFrame(SCREEN_COLOR_D_GREEN);
-    textToFrame(0, 0, gettext("Fake ticket generated on:"));
+    textToFrame(0, 0, localise("Fake ticket generated on:"));
     textToFrame(1, 0, prettyDir(dir));
 
-    textToFrame(3, 0, gettext("Press any key to return"));
+    textToFrame(3, 0, localise("Press any key to return"));
     drawFrame();
 }
 void generateFakeTicket()
@@ -308,7 +308,7 @@ gftEntry:
     tmd = getTmd(dir);
     if(tmd == NULL)
     {
-        showErrorFrame(gettext("Invalid title.tmd file!"));
+        showErrorFrame(localise("Invalid title.tmd file!"));
         return;
     }
 
@@ -326,7 +326,7 @@ gftEntry:
         if(vpad.trigger & VPAD_BUTTON_A)
         {
             startNewFrame();
-            textToFrame(0, 0, gettext("Generating fake ticket..."));
+            textToFrame(0, 0, localise("Generating fake ticket..."));
             drawFrame();
             showFrame();
 
@@ -516,7 +516,7 @@ void deleteTicket(uint64_t tid)
 
 bool hasMagicHeader(const TICKET *ticket)
 {
-    for(int i = 0; i < sizeof(magic_header); ++i)
+    for(size_t i = 0; i < sizeof(magic_header); ++i)
         if(ticket->header.magic_header[i] != magic_header[i])
             return false;
 

@@ -37,11 +37,11 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool
 {
     startNewFrame();
     char *toFrame = getToFrameBuffer();
-    strcpy(toFrame, gettext("Uninstalling"));
+    strcpy(toFrame, localise("Uninstalling"));
     strcat(toFrame, " ");
     strcat(toFrame, name);
     textToFrame(0, 0, toFrame);
-    textToFrame(1, 0, gettext("Preparing..."));
+    textToFrame(1, 0, localise("Preparing..."));
     writeScreenLog(2);
     drawFrame();
     showFrame();

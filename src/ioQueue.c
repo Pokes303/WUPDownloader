@@ -65,6 +65,9 @@ static bool queueStalled = false;
 
 static int ioThreadMain(int argc, const char **argv)
 {
+    (void)argc;
+    (void)argv;
+
     FSError err;
     uint32_t asl = activeWriteBuffer;
     WriteQueueEntry *entry = queueEntries + asl;

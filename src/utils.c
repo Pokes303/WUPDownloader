@@ -132,24 +132,24 @@ void secsToTime(uint32_t seconds, char *out)
 
     if(days)
     {
-        sprintf(out, "%u %s ", days, gettext("days"));
+        sprintf(out, "%u %s ", days, localise("days"));
         out += strlen(out);
         visible = true;
     }
     if(hours || visible)
     {
-        sprintf(out, visible ? "%02u %s " : "%u %s ", hours, gettext("hours"));
+        sprintf(out, visible ? "%02u %s " : "%u %s ", hours, localise("hours"));
         out += strlen(out);
         visible = true;
     }
     if(minutes || visible)
     {
-        sprintf(out, visible ? "%02u %s " : "%u %s ", minutes, gettext("minutes"));
+        sprintf(out, visible ? "%02u %s " : "%u %s ", minutes, localise("minutes"));
         out += strlen(out);
         visible = true;
     }
 
-    sprintf(out, visible ? "%02u %s" : "%u %s", seconds, gettext("seconds"));
+    sprintf(out, visible ? "%02u %s" : "%u %s", seconds, localise("seconds"));
 }
 
 uint8_t charToByte(char c)
@@ -206,7 +206,7 @@ void showMcpProgress(McpData *data, const char *game, bool inst)
             if(progress.inProgress == 1 && progress.sizeTotal != 0 && data->err != CUSTOM_MCP_ERROR_CANCELLED)
             {
                 startNewFrame();
-                strcpy(toScreen, gettext(inst ? "Installing" : "Uninstalling"));
+                strcpy(toScreen, localise(inst ? "Installing" : "Uninstalling"));
                 strcat(toScreen, " ");
                 strcat(toScreen, game);
                 textToFrame(0, 0, toScreen);
@@ -243,7 +243,7 @@ void showMcpProgress(McpData *data, const char *game, bool inst)
             {
                 if(vpad.trigger & VPAD_BUTTON_B)
                 {
-                    sprintf(toScreen, "%s\n\n" BUTTON_A " %s || " BUTTON_B " %s", gettext("Do you really want to cancel?"), gettext("Yes"), gettext("No"));
+                    sprintf(toScreen, "%s\n\n" BUTTON_A " %s || " BUTTON_B " %s", localise("Do you really want to cancel?"), localise("Yes"), localise("No"));
                     ovl = addErrorOverlay(toScreen);
                 }
             }
@@ -256,8 +256,8 @@ void showMcpProgress(McpData *data, const char *game, bool inst)
                     inst = false;
 
                     startNewFrame();
-                    textToFrame(0, 0, gettext("Cancelling installation."));
-                    textToFrame(1, 0, gettext("Please wait..."));
+                    textToFrame(0, 0, localise("Cancelling installation."));
+                    textToFrame(1, 0, localise("Please wait..."));
                     writeScreenLog(2);
                     drawFrame();
                     showFrame();

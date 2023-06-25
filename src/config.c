@@ -81,14 +81,14 @@ static NOTIF_METHOD notifSetting = NOTIF_METHOD_RUMBLE | NOTIF_METHOD_LED;
 
 #define LOCALE_PATH      ROMFS_PATH "locale/"
 #define LOCALE_EXTENSION ".json"
-static inline const char *getLocalisationFile(Swkbd_LanguageType lang)
+static inline const char *getLocalisationFile(Swkbd_LanguageType language)
 {
-    if(lang == Swkbd_LanguageType__English)
+    if(language == Swkbd_LanguageType__English)
         return NULL;
 
     char *ret = getStaticPathBuffer(2);
     OSBlockMove(ret, LOCALE_PATH, strlen(LOCALE_PATH), false);
-    strcpy(ret + strlen(LOCALE_PATH), getLanguageString(lang));
+    strcpy(ret + strlen(LOCALE_PATH), getLanguageString(language));
     strcat(ret + strlen(LOCALE_PATH), LOCALE_EXTENSION);
 
     return ret;
@@ -96,39 +96,39 @@ static inline const char *getLocalisationFile(Swkbd_LanguageType lang)
 
 static inline void intSetMenuLanguage()
 {
-    gettextCleanUp();
+    locCleanUp();
     const char *path = getLocalisationFile(menuLang == Swkbd_LanguageType__Invalid ? sysLang : menuLang);
     if(path != NULL)
-        gettextLoadLanguage(path);
+        locLoadLanguage(path);
 }
 
-Swkbd_LanguageType stringToLanguageType(const char *lang)
+Swkbd_LanguageType stringToLanguageType(const char *language)
 {
-    if(strcmp(lang, LANG_JAP) == 0)
+    if(strcmp(language, LANG_JAP) == 0)
         return Swkbd_LanguageType__Japanese;
-    if(strcmp(lang, LANG_ENG) == 0)
+    if(strcmp(language, LANG_ENG) == 0)
         return Swkbd_LanguageType__English;
-    if(strcmp(lang, LANG_FRE) == 0)
+    if(strcmp(language, LANG_FRE) == 0)
         return Swkbd_LanguageType__French;
-    if(strcmp(lang, LANG_GER) == 0)
+    if(strcmp(language, LANG_GER) == 0)
         return Swkbd_LanguageType__German;
-    if(strcmp(lang, LANG_ITA) == 0)
+    if(strcmp(language, LANG_ITA) == 0)
         return Swkbd_LanguageType__Italian;
-    if(strcmp(lang, LANG_SPA) == 0)
+    if(strcmp(language, LANG_SPA) == 0)
         return Swkbd_LanguageType__Spanish;
-    if(strcmp(lang, LANG_CHI) == 0)
+    if(strcmp(language, LANG_CHI) == 0)
         return Swkbd_LanguageType__Chinese1;
-    if(strcmp(lang, LANG_KOR) == 0)
+    if(strcmp(language, LANG_KOR) == 0)
         return Swkbd_LanguageType__Korean;
-    if(strcmp(lang, LANG_DUT) == 0)
+    if(strcmp(language, LANG_DUT) == 0)
         return Swkbd_LanguageType__Dutch;
-    if(strcmp(lang, LANG_POR) == 0)
+    if(strcmp(language, LANG_POR) == 0)
         return Swkbd_LanguageType__Portuguese;
-    if(strcmp(lang, LANG_POR_BR) == 0)
+    if(strcmp(language, LANG_POR_BR) == 0)
         return Swkbd_LanguageType__Portuguese_BR;
-    if(strcmp(lang, LANG_RUS) == 0)
+    if(strcmp(language, LANG_RUS) == 0)
         return Swkbd_LanguageType__Russian;
-    if(strcmp(lang, LANG_TCH) == 0)
+    if(strcmp(language, LANG_TCH) == 0)
         return Swkbd_LanguageType__Chinese2;
 
     return Swkbd_LanguageType__Invalid;
@@ -410,7 +410,7 @@ void saveConfig(bool force)
                                     if(setValue(config, "Notification method", value))
                                     {
                                         uint32_t entropy;
-                                        osslBytes((unsigned char *)&entropy, 4);
+                                        NUSrng(NULL, (unsigned char *)&entropy, 4);
                                         value = json_integer(entropy);
                                         if(setValue(config, "Seed", value))
                                         {
@@ -427,7 +427,7 @@ void saveConfig(bool force)
                                                     changed = false;
                                                 }
                                                 else
-                                                    showErrorFrame(gettext("Couldn't save config file!\nYour SD card might be write locked."));
+                                                    showErrorFrame(localise("Couldn't save config file!\nYour SD card might be write locked."));
 
                                                 MEMFreeToDefaultHeap(json);
                                             }
@@ -530,12 +530,12 @@ Swkbd_LanguageType getMenuLanguage()
     return menuLang;
 }
 
-void setMenuLanguage(Swkbd_LanguageType lang)
+void setMenuLanguage(Swkbd_LanguageType language)
 {
-    if(menuLang == lang)
+    if(menuLang == language)
         return;
 
-    menuLang = lang;
+    menuLang = language;
     intSetMenuLanguage();
     changed = true;
 }

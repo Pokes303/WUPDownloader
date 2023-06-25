@@ -125,11 +125,11 @@ void drawErrorFrame(const char *text, ErrorOptions option)
     {
         l = strchr(text, '\n');
         ++line;
-        size = l == NULL ? strlen(text) : (l - text);
+        size = l == NULL ? strlen(text) : (size_t)(l - text);
         if(size > 0)
         {
             char tmp[size + 1];
-            for(int i = 0; i < size; ++i)
+            for(size_t i = 0; i < size; ++i)
                 tmp[i] = text[i];
 
             tmp[size] = '\0';
@@ -142,17 +142,17 @@ void drawErrorFrame(const char *text, ErrorOptions option)
     line = MAX_LINES;
 
     if(option == ANY_RETURN)
-        textToFrame(--line, 0, gettext("Press any key to return"));
+        textToFrame(--line, 0, localise("Press any key to return"));
     else
     {
         if(option & B_RETURN)
-            textToFrame(--line, 0, gettext("Press " BUTTON_B " to return"));
+            textToFrame(--line, 0, localise("Press " BUTTON_B " to return"));
 
         if(option & Y_RETRY)
-            textToFrame(--line, 0, gettext("Press " BUTTON_Y " to retry"));
+            textToFrame(--line, 0, localise("Press " BUTTON_Y " to retry"));
 
         if(option & A_CONTINUE)
-            textToFrame(--line, 0, gettext("Press " BUTTON_A " to continue"));
+            textToFrame(--line, 0, localise("Press " BUTTON_A " to continue"));
     }
 
     lineToFrame(--line, SCREEN_COLOR_WHITE);
@@ -227,9 +227,9 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region)
     char *toFrame = getToFrameBuffer();
     sprintf(toFrame,
         "%s\n\n" BUTTON_A " %s || " BUTTON_B "%s",
-        gettext("This is a reliable way to brick your console!\nAre you sure you want to do that?"),
-        gettext("Yes"),
-        gettext("No"));
+        localise("This is a reliable way to brick your console!\nAre you sure you want to do that?"),
+        localise("Yes"),
+        localise("No"));
 
     void *ovl = addErrorOverlay(toFrame);
     if(ovl == NULL)
@@ -254,9 +254,9 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region)
     {
         sprintf(toFrame,
             "%s\n\n" BUTTON_A " %s || " BUTTON_B "%s",
-            gettext("Are you really sure you want to brick your Wii U?"),
-            gettext("Yes"),
-            gettext("No"));
+            localise("Are you really sure you want to brick your Wii U?"),
+            localise("Yes"),
+            localise("No"));
 
         ovl = addErrorOverlay(toFrame);
         if(ovl == NULL)
@@ -281,9 +281,9 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region)
     {
         sprintf(toFrame,
             "%s\n\n" BUTTON_A " %s || " BUTTON_B "%s",
-            gettext("You're on your own doing this,\ndo you understand the consequences?"),
-            gettext("Yes"),
-            gettext("No"));
+            localise("You're on your own doing this,\ndo you understand the consequences?"),
+            localise("Yes"),
+            localise("No"));
 
         ovl = addErrorOverlay(toFrame);
         if(ovl == NULL)
@@ -365,16 +365,16 @@ void showFinishedScreen(const char *titleName, FINISHING_OPERATION op)
     switch(op)
     {
         case FINISHING_OPERATION_INSTALL:
-            text = gettext("Installed successfully!");
+            text = localise("Installed successfully!");
             break;
         case FINISHING_OPERATION_DEINSTALL:
-            text = gettext("Uninstalled successfully!");
+            text = localise("Uninstalled successfully!");
             break;
         case FINISHING_OPERATION_DOWNLOAD:
-            text = gettext("Downloaded successfully!");
+            text = localise("Downloaded successfully!");
             break;
         case FINISHING_OPERATION_QUEUE:
-            text = gettext("Queue finished successfully!");
+            text = localise("Queue finished successfully!");
             break;
     }
 
@@ -415,7 +415,7 @@ void showNoSpaceOverlay(NUSDEV dev)
     }
 
     char *toFrame = getToFrameBuffer();
-    sprintf(toFrame, "%s  %s\n\n%s", gettext("Not enough free space on"), nd, gettext("Press any key to return"));
+    sprintf(toFrame, "%s  %s\n\n%s", localise("Not enough free space on"), nd, localise("Press any key to return")); // nd is initialised!
 
     void *ovl = addErrorOverlay(toFrame);
     if(ovl != NULL)

@@ -62,11 +62,11 @@ static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
     return MCP_GetTitleInfo(mcpHandle, entry->tid, out) == 0;
 }
 
-static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t size, bool installed, const char *folderName, bool usbMounted, NUSDEV dlDev, NUSDEV instDev)
+static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t size, bool installed, const char *folderName, NUSDEV dlDev, NUSDEV instDev)
 {
     startNewFrame();
 
-    textToFrame(0, 0, gettext("Name:"));
+    textToFrame(0, 0, localise("Name:"));
 
     char *toFrame = getToFrameBuffer();
     strcpy(toFrame, entry->name);
@@ -79,32 +79,32 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 
     humanize(size, toFrame);
 
-    textToFrame(++line, 0, gettext("Region:"));
+    textToFrame(++line, 0, localise("Region:"));
     flagToFrame(++line, 3, entry->region);
-    textToFrame(line, 7, gettext(getFormattedRegion(entry->region)));
+    textToFrame(line, 7, localise(getFormattedRegion(entry->region)));
 
-    textToFrame(++line, 0, gettext("Size:"));
+    textToFrame(++line, 0, localise("Size:"));
     textToFrame(++line, 3, toFrame);
 
-    strcpy(toFrame, gettext("Provided title version"));
+    strcpy(toFrame, localise("Provided title version"));
     strcat(toFrame, " [");
-    strcat(toFrame, gettext("Only numbers"));
+    strcat(toFrame, localise("Only numbers"));
     strcat(toFrame, "]:");
     textToFrame(++line, 0, toFrame);
 
     if(titleVer[0] == '\0')
     {
         toFrame[0] = '<';
-        strcpy(toFrame + 1, gettext("LATEST"));
+        strcpy(toFrame + 1, localise("LATEST"));
         strcat(toFrame, ">");
         textToFrame(++line, 3, toFrame);
     }
     else
         textToFrame(++line, 3, titleVer);
 
-    strcpy(toFrame, gettext("Custom folder name"));
+    strcpy(toFrame, localise("Custom folder name"));
     strcat(toFrame, " [");
-    strcat(toFrame, gettext("ASCII only"));
+    strcat(toFrame, localise("ASCII only"));
     strcat(toFrame, "]:");
     textToFrame(++line, 0, toFrame);
     textToFrame(++line, 3, folderName);
@@ -113,23 +113,23 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 
     arrowToFrame(cursorPos, 0);
 
-    strcpy(toFrame, gettext(BUTTON_MINUS " to add to the queue"));
+    strcpy(toFrame, localise(BUTTON_MINUS " to add to the queue"));
     if(installed)
     {
         strcat(toFrame, " || ");
-        strcat(toFrame, gettext(BUTTON_Y " to uninstall"));
+        strcat(toFrame, localise(BUTTON_Y " to uninstall"));
     }
     textToFrame(--line, ALIGNED_CENTER, toFrame);
 
-    strcpy(toFrame, gettext("Press " BUTTON_B " to return"));
+    strcpy(toFrame, localise("Press " BUTTON_B " to return"));
     strcat(toFrame, " || ");
-    strcat(toFrame, gettext(BUTTON_PLUS " to start"));
+    strcat(toFrame, localise(BUTTON_PLUS " to start"));
     textToFrame(--line, ALIGNED_CENTER, toFrame);
 
     lineToFrame(--line, SCREEN_COLOR_WHITE);
 
-    textToFrame(--line, 4, gettext("Set custom name to the download folder"));
-    textToFrame(--line, 4, gettext("Set title version"));
+    textToFrame(--line, 4, localise("Set custom name to the download folder"));
+    textToFrame(--line, 4, localise("Set title version"));
 
     if(operation == OPERATION_DOWNLOAD)
         keepFiles = true;
@@ -144,15 +144,15 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
         }
     }
 
-    strcpy(toFrame, gettext("Keep downloaded files:"));
+    strcpy(toFrame, localise("Keep downloaded files:"));
     strcat(toFrame, " ");
-    strcat(toFrame, gettext(keepFiles ? "Yes" : "No"));
+    strcat(toFrame, localise(keepFiles ? "Yes" : "No"));
     if(dlDev == NUSDEV_SD && operation == OPERATION_DOWNLOAD_INSTALL)
-        textToFrame(--line, 4, gettext(toFrame));
+        textToFrame(--line, 4, localise(toFrame));
     else
-        textToFrameColored(--line, 4, gettext(toFrame), SCREEN_COLOR_WHITE_TRANSP);
+        textToFrameColored(--line, 4, localise(toFrame), SCREEN_COLOR_WHITE_TRANSP);
 
-    strcpy(toFrame, gettext("Download to:"));
+    strcpy(toFrame, localise("Download to:"));
     strcat(toFrame, " ");
     switch((int)dlDev)
     {
@@ -168,22 +168,22 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
     }
 
     getFreeSpaceString(dlDev, toFrame + strlen(toFrame));
-    textToFrame(--line, 4, gettext(toFrame));
+    textToFrame(--line, 4, localise(toFrame));
 
-    strcpy(toFrame, gettext("Operation:"));
+    strcpy(toFrame, localise("Operation:"));
     strcat(toFrame, " ");
     switch((int)operation)
     {
         case OPERATION_DOWNLOAD:
-            strcat(toFrame, gettext("Download only"));
+            strcat(toFrame, localise("Download only"));
             break;
         case OPERATION_DOWNLOAD_INSTALL:
-            strcat(toFrame, gettext("Install"));
+            strcat(toFrame, localise("Install"));
             break;
     }
     textToFrame(--line, 4, toFrame);
 
-    strcpy(toFrame, gettext("Install to:"));
+    strcpy(toFrame, localise("Install to:"));
     strcat(toFrame, " ");
     switch((int)instDev)
     {
@@ -211,15 +211,15 @@ static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint6
 static void *drawPDWrongDeviceFrame(NUSDEV dev)
 {
     char *toFrame = getToFrameBuffer();
-    strcpy(toFrame, gettext("The main game is installed to"));
+    strcpy(toFrame, localise("The main game is installed to"));
     strcat(toFrame, " ");
     strcat(toFrame, dev & NUSDEV_USB ? "USB" : "NAND");
     strcat(toFrame, "\n");
     strcat(toFrame, "Do you want to change the target device to this?");
     strcat(toFrame, "\n\n" BUTTON_A " ");
-    strcat(toFrame, gettext("Yes"));
+    strcat(toFrame, localise("Yes"));
     strcat(toFrame, " || " BUTTON_B " ");
-    strcat(toFrame, gettext("No"));
+    strcat(toFrame, localise("No"));
 
     return addErrorOverlay(toFrame);
 }
@@ -229,11 +229,11 @@ static void *drawPDMainGameFrame(const TitleEntry *entry)
     char *toFrame = getToFrameBuffer();
     strcpy(toFrame, entry->name);
     strcat(toFrame, "\n");
-    strcat(toFrame, gettext(isDLC(entry->tid) ? "is DLC." : (isUpdate(entry->tid) ? "is a update." : "is a demo.")));
+    strcat(toFrame, localise(isDLC(entry->tid) ? "is DLC." : (isUpdate(entry->tid) ? "is a update." : "is a demo.")));
     strcat(toFrame, "\n\n" BUTTON_A " ");
-    strcat(toFrame, gettext(operation == OPERATION_DOWNLOAD_INSTALL ? "Install main game" : "Download main game"));
+    strcat(toFrame, localise(operation == OPERATION_DOWNLOAD_INSTALL ? "Install main game" : "Download main game"));
     strcat(toFrame, " || " BUTTON_B " ");
-    strcat(toFrame, gettext("Continue"));
+    strcat(toFrame, localise("Continue"));
 
     return addErrorOverlay(toFrame);
 }
@@ -243,11 +243,11 @@ static void *drawPDUpdateFrame(const TitleEntry *entry)
     char *toFrame = getToFrameBuffer();
     strcpy(toFrame, entry->name);
     strcat(toFrame, "\n");
-    strcat(toFrame, gettext("Has an update available."));
+    strcat(toFrame, localise("Has an update available."));
     strcat(toFrame, "\n\n" BUTTON_A " ");
-    strcat(toFrame, gettext(operation == OPERATION_DOWNLOAD_INSTALL ? "Install the update, too" : "Download the update, too"));
+    strcat(toFrame, localise(operation == OPERATION_DOWNLOAD_INSTALL ? "Install the update, too" : "Download the update, too"));
     strcat(toFrame, " || " BUTTON_B " ");
-    strcat(toFrame, gettext("Continue"));
+    strcat(toFrame, localise("Continue"));
 
     return addErrorOverlay(toFrame);
 }
@@ -423,7 +423,7 @@ downloadTMD:
     {
         freeRamBuf(rambuf);
         saveConfig(false);
-        showErrorFrame(gettext("Invalid title.tmd file!"));
+        showErrorFrame(localise("Invalid title.tmd file!"));
         return true;
     }
 
@@ -451,7 +451,7 @@ naNedNa:
 
             if(redraw)
             {
-                drawPDMenuFrame(entry, titleVer, dls, installed, folderName, usbMounted, dlDev, instDev);
+                drawPDMenuFrame(entry, titleVer, dls, installed, folderName, dlDev, instDev);
                 redraw = false;
             }
             showFrame();
@@ -533,7 +533,7 @@ naNedNa:
     {
         if(dlDev == NUSDEV_MLC)
         {
-            void *ovl = addErrorOverlay(gettext(
+            void *ovl = addErrorOverlay(localise(
                 "Downloading to NAND is dangerous,\n"
                 "it could brick your Wii U!\n\n"
 
@@ -743,7 +743,7 @@ naNedNa:
     }
 
     startNewFrame();
-    textToFrame(0, 0, gettext("Preparing the download of"));
+    textToFrame(0, 0, localise("Preparing the download of"));
     textToFrame(1, 3, entry->name);
     writeScreenLog(2);
     drawFrame();

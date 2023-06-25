@@ -70,7 +70,7 @@ static bool addToOpQueue(const TitleEntry *entry, const char *dir, TMD *tmd, NUS
 static void drawInstallerMenuFrame(const char *name, NUSDEV dev, NUSDEV toDev, bool usbMounted, bool keepFiles, MCPRegion region, const TMD *tmd)
 {
     startNewFrame();
-    textToFrame(0, 0, gettext("Name:"));
+    textToFrame(0, 0, localise("Name:"));
 
     char *toFrame = getToFrameBuffer();
     strcpy(toFrame, name);
@@ -87,17 +87,17 @@ static void drawInstallerMenuFrame(const char *name, NUSDEV dev, NUSDEV toDev, b
 
     humanize(size, toFrame);
 
-    textToFrame(++line, 0, gettext("Region:"));
+    textToFrame(++line, 0, localise("Region:"));
     flagToFrame(++line, 3, region);
-    textToFrame(line, 7, gettext(getFormattedRegion(region)));
+    textToFrame(line, 7, localise(getFormattedRegion(region)));
 
-    textToFrame(++line, 0, gettext("Size:"));
+    textToFrame(++line, 0, localise("Size:"));
     textToFrame(++line, 3, toFrame);
 
     lineToFrame(MAX_LINES - 6, SCREEN_COLOR_WHITE);
     arrowToFrame(cursorPos, 0);
 
-    strcpy(toFrame, gettext("Install to:"));
+    strcpy(toFrame, localise("Install to:"));
     strcat(toFrame, " ");
     switch((int)toDev)
     {
@@ -117,22 +117,22 @@ static void drawInstallerMenuFrame(const char *name, NUSDEV dev, NUSDEV toDev, b
     else
         textToFrameColored(MAX_LINES - 5, 4, toFrame, SCREEN_COLOR_WHITE_TRANSP);
 
-    strcpy(toFrame, gettext("Keep downloaded files:"));
+    strcpy(toFrame, localise("Keep downloaded files:"));
     strcat(toFrame, " ");
-    strcat(toFrame, gettext(keepFiles ? "Yes" : "No"));
+    strcat(toFrame, localise(keepFiles ? "Yes" : "No"));
     if(dev == NUSDEV_SD)
-        textToFrame(MAX_LINES - 4, 4, gettext(toFrame));
+        textToFrame(MAX_LINES - 4, 4, localise(toFrame));
     else
-        textToFrameColored(MAX_LINES - 4, 4, gettext(toFrame), SCREEN_COLOR_WHITE_TRANSP);
+        textToFrameColored(MAX_LINES - 4, 4, localise(toFrame), SCREEN_COLOR_WHITE_TRANSP);
 
     lineToFrame(MAX_LINES - 3, SCREEN_COLOR_WHITE);
 
-    strcpy(toFrame, gettext("Press " BUTTON_B " to return"));
+    strcpy(toFrame, localise("Press " BUTTON_B " to return"));
     strcat(toFrame, " || ");
-    strcat(toFrame, gettext(BUTTON_PLUS " to start"));
+    strcat(toFrame, localise(BUTTON_PLUS " to start"));
     textToFrame(MAX_LINES - 2, ALIGNED_CENTER, toFrame);
 
-    textToFrame(MAX_LINES - 1, ALIGNED_CENTER, gettext(BUTTON_MINUS " to add to the queue"));
+    textToFrame(MAX_LINES - 1, ALIGNED_CENTER, localise(BUTTON_MINUS " to add to the queue"));
 
     drawFrame();
 }
@@ -174,7 +174,7 @@ refreshDir:
     tmd = getTmd(dir);
     if(tmd == NULL)
     {
-        showErrorFrame(gettext("Invalid title.tmd file!"));
+        showErrorFrame(localise("Invalid title.tmd file!"));
         goto grabNewDir;
     }
 

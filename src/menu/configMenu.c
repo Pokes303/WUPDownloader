@@ -46,35 +46,35 @@ static void drawConfigMenu()
     startNewFrame();
     char *toScreen = getToFrameBuffer();
 
-    strcpy(toScreen, gettext("Language:"));
+    strcpy(toScreen, localise("Language:"));
     strcat(toScreen, " ");
-    strcat(toScreen, gettext(getLanguageString(getMenuLanguage())));
+    strcat(toScreen, localise(getLanguageString(getMenuLanguage())));
     textToFrame(0, 4, toScreen);
 
-    strcpy(toScreen, gettext("Online updates:"));
+    strcpy(toScreen, localise("Online updates:"));
     strcat(toScreen, " ");
-    strcat(toScreen, gettext(updateCheckEnabled() ? "Enabled" : "Disabled"));
+    strcat(toScreen, localise(updateCheckEnabled() ? "Enabled" : "Disabled"));
     textToFrame(1, 4, toScreen);
 
-    strcpy(toScreen, gettext("Auto resume failed downloads:"));
+    strcpy(toScreen, localise("Auto resume failed downloads:"));
     strcat(toScreen, " ");
-    strcat(toScreen, gettext(autoResumeEnabled() ? "Enabled" : "Disabled"));
+    strcat(toScreen, localise(autoResumeEnabled() ? "Enabled" : "Disabled"));
     textToFrame(2, 4, toScreen);
 
-    strcpy(toScreen, gettext("Notification method:"));
+    strcpy(toScreen, localise("Notification method:"));
     strcat(toScreen, " ");
-    strcat(toScreen, gettext(getNotificationString(getNotificationMethod())));
+    strcat(toScreen, localise(getNotificationString(getNotificationMethod())));
     textToFrame(3, 4, toScreen);
 
 #ifndef NUSSPLI_LITE
-    strcpy(toScreen, gettext("Region:"));
+    strcpy(toScreen, localise("Region:"));
     strcat(toScreen, " ");
-    strcat(toScreen, gettext(getFormattedRegion(getRegion())));
+    strcat(toScreen, localise(getFormattedRegion(getRegion())));
     textToFrame(4, 4, toScreen);
 #endif
 
     lineToFrame(MAX_LINES - 2, SCREEN_COLOR_WHITE);
-    textToFrame(MAX_LINES - 1, ALIGNED_CENTER, gettext("Press " BUTTON_B " to return"));
+    textToFrame(MAX_LINES - 1, ALIGNED_CENTER, localise("Press " BUTTON_B " to return"));
 
     arrowToFrame(cursorPos, 0);
 

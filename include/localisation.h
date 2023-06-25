@@ -28,9 +28,9 @@ extern "C"
 {
 #endif
 
-    bool gettextLoadLanguage(const char *langFile);
-    void gettextCleanUp() __attribute__((__cold__));
-    const char *gettext(const char *msg) __attribute__((__hot__));
+    bool locLoadLanguage(const char *langFile);
+    void locCleanUp() __attribute__((__cold__));
+    const char *localise(const char *msg) __attribute__((__hot__));
 
 #ifdef __cplusplus
 }

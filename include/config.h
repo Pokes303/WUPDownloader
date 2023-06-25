@@ -68,7 +68,7 @@ extern "C"
     NOTIF_METHOD getNotificationMethod();
     void setNotificationMethod(NOTIF_METHOD method);
     Swkbd_LanguageType getMenuLanguage();
-    void setMenuLanguage(Swkbd_LanguageType lang);
+    void setMenuLanguage(Swkbd_LanguageType language);
 
 #ifdef __cplusplus
 }

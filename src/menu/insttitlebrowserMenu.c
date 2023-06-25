@@ -157,6 +157,9 @@ static volatile INST_META *getInstalledTitle(size_t index, bool block)
 
 static int asyncTitleLoader(int argc, const char **argv)
 {
+    (void)argc;
+    (void)argv;
+
     size_t min = MAX_ITITLEBROWSER_LINES >> 1;
     size_t max = ititleEntrySize - 1;
     size_t cur;
@@ -175,7 +178,7 @@ static int asyncTitleLoader(int argc, const char **argv)
                 goto asyncExit;
         }
 
-        getInstalledTitle(cur, false);
+        getInstalledTitle(cur, false); // cur is initialised, don't listen to the compiler!
     }
 
 asyncExit:
@@ -188,9 +191,9 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
     boxToFrame(0, MAX_LINES - 2);
 
     char *toFrame = getToFrameBuffer();
-    strcpy(toFrame, gettext("Press " BUTTON_A " to delete"));
+    strcpy(toFrame, localise("Press " BUTTON_A " to delete"));
     strcat(toFrame, " || ");
-    strcat(toFrame, gettext(BUTTON_B " to return"));
+    strcat(toFrame, localise(BUTTON_B " to return"));
     textToFrame(MAX_LINES - 1, ALIGNED_CENTER, toFrame);
 
     size_t max = ititleEntrySize - pos;
@@ -444,20 +447,20 @@ loopEntry:
     {
         volatile INST_META *im = installedTitles + cursor + pos;
         char *toFrame = getToFrameBuffer();
-        strcpy(toFrame, gettext("Do you really want to uninstall"));
+        strcpy(toFrame, localise("Do you really want to uninstall"));
         strcat(toFrame, "\n");
         strcat(toFrame, (char *)im->name);
         strcat(toFrame, "\n");
-        strcat(toFrame, gettext("from your"));
+        strcat(toFrame, localise("from your"));
         strcat(toFrame, " ");
         strcat(toFrame, im->dt == DEVICE_TYPE_USB ? "USB" : im->dt == DEVICE_TYPE_NAND ? "NAND"
-                                                                                       : gettext("unknown"));
+                                                                                       : localise("unknown"));
         strcat(toFrame, " ");
-        strcat(toFrame, gettext("drive?"));
+        strcat(toFrame, localise("drive?"));
         strcat(toFrame, "\n\n" BUTTON_A " ");
-        strcat(toFrame, gettext("Yes"));
+        strcat(toFrame, localise("Yes"));
         strcat(toFrame, " || " BUTTON_B " ");
-        strcat(toFrame, gettext("No"));
+        strcat(toFrame, localise("No"));
 
         void *r = addErrorOverlay(toFrame);
         if(r == NULL)
@@ -478,7 +481,7 @@ loopEntry:
 
         removeErrorOverlay(r);
 
-        if(checkSystemTitle(entry->titleId, MCP_REGION_UNKNOWN) && AppRunning(true))
+        if(checkSystemTitle(entry->titleId, MCP_REGION_UNKNOWN) && AppRunning(true)) // entry is initialised, the compiler just can't follow
             deinstall(entry, (const char *)im->name, false, false);
         else
             goto loopEntry;

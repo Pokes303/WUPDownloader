@@ -83,6 +83,9 @@ typedef struct
 
 static int progressCallback(void *rawData, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow)
 {
+    (void)ultotal;
+    (void)ulnow;
+
     curlProgressData *data = (curlProgressData *)rawData;
     if(!AppRunning(false))
         data->error = CURLE_ABORTED_BY_CALLBACK;
@@ -106,6 +109,9 @@ static int progressCallback(void *rawData, curl_off_t dltotal, curl_off_t dlnow,
 
 static int initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
 {
+    (void)ptr;
+    (void)type;
+
     int o = 1;
 
     // Activate WinScale
@@ -169,8 +175,11 @@ static int initSocket(void *ptr, curl_socket_t socket, curlsocktype type)
     return CURL_SOCKOPT_OK;
 }
 
-static CURLcode ssl_ctx_init(CURL *curl, void *sslctx, void *parm)
+static CURLcode ssl_ctx_init(CURL *cu, void *sslctx, void *parm)
 {
+    (void)cu;
+    (void)parm;
+
     mbedtls_ssl_conf_rng((mbedtls_ssl_config *)sslctx, NUSrng, NULL);
     return CURLE_OK;
 }
@@ -237,7 +246,7 @@ bool initDownloader()
                 if(tmp != NULL)
                     OSBlockMove(blob.data, tmp, oldcertsize, false);
 
-                OSBlockMove(blob.data + oldcertsize, buf, bufsize, false);
+                OSBlockMove(((uint8_t *)blob.data) + oldcertsize, buf, bufsize, false);
             }
             else
             {
@@ -341,13 +350,16 @@ void deinitDownloader()
 
 static int dlThreadMain(int argc, const char **argv)
 {
+    (void)argc;
+    (void)argv;
+
     debugPrintf("Download thread spawned!");
     int ret = curl_easy_perform(curl);
     ((curlProgressData *)argv[0])->running = false;
     return ret;
 }
 
-static const char *translateCurlError(CURLcode err, const char *curlError)
+static const char *translateCurlError(CURLcode err, const char *error)
 {
     switch(err)
     {
@@ -372,7 +384,7 @@ static const char *translateCurlError(CURLcode err, const char *curlError)
         case CURLE_OUT_OF_MEMORY:
             return "Internal error";
         default:
-            return curlError[0] == '\0' ? "Unknown libcurl error" : curlError;
+            return error[0] == '\0' ? "Unknown libcurl error" : error;
     }
 }
 
@@ -490,7 +502,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
             ret = curl_easy_setopt(curl, CURLOPT_RESUME_FROM_LARGE, (curl_off_t)fileSize);
             if(ret == CURLE_OK)
             {
-                ret = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, rambuf ? fwrite : (size_t(*)(const void *, size_t, size_t, FILE *))addToIOQueue);
+                ret = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, rambuf ? fwrite : (size_t(*)(const void *, size_t, size_t, FILE *))addToIOQueue); // This rises a compiler warning but that's fine
                 if(ret == CURLE_OK)
                 {
                     ret = curl_easy_setopt(curl, CURLOPT_WRITEDATA, (FILE *)fp);
@@ -524,7 +536,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
     OSTick lastTransfair = OSGetTick();
     size_t dltotal; // We use size_t instead of curl_off_t as filesizes are limitted to 4 GB anyway,
     size_t dlnow;
-    size_t downloaded;
+    size_t downloaded = 0;
     size_t tmp;
     float bps;
     float oldBps = 0.0D;
@@ -607,7 +619,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 frames = 60;
                 dltotal += fileSize;
 
-                strcpy(toScreen, gettext("Downloading"));
+                strcpy(toScreen, localise("Downloading"));
                 strcat(toScreen, " ");
                 strcat(toScreen, name);
                 textToFrame(line, 0, toScreen);
@@ -620,7 +632,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
             else
             {
                 frames = 1;
-                strcpy(toScreen, gettext("Preparing"));
+                strcpy(toScreen, localise("Preparing"));
                 strcat(toScreen, " ");
                 strcat(toScreen, name);
                 textToFrame(line++, 0, toScreen);
@@ -636,11 +648,11 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
         {
             if(vpad.trigger & VPAD_BUTTON_B)
             {
-                strcpy(toScreen, gettext("Do you really want to cancel?"));
+                strcpy(toScreen, localise("Do you really want to cancel?"));
                 strcat(toScreen, "\n\n" BUTTON_A " ");
-                strcat(toScreen, gettext("Yes"));
+                strcat(toScreen, localise("Yes"));
                 strcat(toScreen, " || " BUTTON_B " ");
-                strcat(toScreen, gettext("No"));
+                strcat(toScreen, localise("No"));
                 cancelOverlay = addErrorOverlay(toScreen);
             }
         }
@@ -734,7 +746,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
             frames = os;
             strcat(toScreen, "\n\n");
             p = toScreen + strlen(toScreen);
-            const char *pt = gettext("Next try in _ seconds.");
+            const char *pt = localise("Next try in _ seconds.");
             strcpy(p, pt);
             const char *n = strchr(pt, '_');
             p += n - pt;
@@ -755,7 +767,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
                 s = frames / 60;
                 if(s != os)
                 {
-                    *p = '1' + s;
+                    *p = '1' + s; // p is initialised
                     os = s;
                     drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
                 }
@@ -795,9 +807,9 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
 
         if(resp == 404 && (type & FILE_TYPE_TMD) == FILE_TYPE_TMD) // Title.tmd not found
         {
-            strcpy(toScreen, gettext("The download of title.tmd failed with error: 404"));
+            strcpy(toScreen, localise("The download of title.tmd failed with error: 404"));
             strcat(toScreen, "\n\n");
-            strcat(toScreen, gettext("The title cannot be found on the NUS, maybe the provided title ID doesn't exists or\nthe TMD was deleted"));
+            strcat(toScreen, localise("The title cannot be found on the NUS, maybe the provided title ID doesn't exists or\nthe TMD was deleted"));
             drawErrorFrame(toScreen, B_RETURN | Y_RETRY);
 
             while(AppRunning(true))
@@ -830,10 +842,10 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
         }
         else
         {
-            sprintf(toScreen, "%s: %ld\n%s: %s\n\n", gettext("The download returned a result different to 200 (OK)"), resp, gettext("File"), rambuf ? file : prettyDir(file));
+            sprintf(toScreen, "%s: %ld\n%s: %s\n\n", localise("The download returned a result different to 200 (OK)"), resp, localise("File"), rambuf ? file : prettyDir(file));
             if(resp == 400)
             {
-                strcat(toScreen, gettext("Request failed. Try again"));
+                strcat(toScreen, localise("Request failed. Try again"));
                 strcat(toScreen, "\n\n");
             }
 
@@ -890,10 +902,9 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
     strcat(downloadUrl, "/");
 
     if(folderName[0] == '\0')
-    {
-        for(int i = 0; i < strlen(titleEntry->name); ++i)
+        for(size_t i = 0; i < strlen(titleEntry->name); ++i)
             folderName[i] = isAllowedInFilename(titleEntry->name[i]) ? titleEntry->name[i] : '_';
-    }
+
     strcpy(folderName + strlen(titleEntry->name), " [");
     strcat(folderName, tid);
     strcat(folderName, "]");
@@ -909,8 +920,8 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
     if(!dirExists(installDir))
     {
         debugPrintf("Creating directory \"%s\"", installDir);
-        FSStatus err = createDirectory(installDir);
-        if(err == FS_STATUS_OK)
+        FSError err = createDirectory(installDir);
+        if(err == FS_ERROR_OK)
             addToScreenLog("Install directory successfully created");
         else
         {
@@ -930,8 +941,8 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
     if(!dirExists(installDir))
     {
         debugPrintf("Creating directory \"%s\"", installDir);
-        FSStatus err = createDirectory(installDir);
-        if(err == FS_STATUS_OK)
+        FSError err = createDirectory(installDir);
+        if(err == FS_ERROR_OK)
             addToScreenLog("Download directory successfully created");
         else
         {

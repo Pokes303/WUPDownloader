@@ -48,7 +48,7 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
     boxToFrame(0, MAX_LINES - 3);
 
     char *toScreen = getToFrameBuffer();
-    int i = 0;
+    size_t i = 0;
     int p;
     TitleData *data;
     MCPRegion region;
@@ -116,11 +116,11 @@ static void drawQueueMenu(LIST *titleQueue, size_t cursor, size_t pos)
             break;
     }
 
-    textToFrame(MAX_LINES - 2, ALIGNED_CENTER, gettext("Press " BUTTON_B " to return"));
+    textToFrame(MAX_LINES - 2, ALIGNED_CENTER, localise("Press " BUTTON_B " to return"));
 
-    strcpy(toScreen, gettext(BUTTON_PLUS " to start the queue"));
+    strcpy(toScreen, localise(BUTTON_PLUS " to start the queue"));
     strcat(toScreen, " || ");
-    strcat(toScreen, gettext(BUTTON_MINUS " to delete an item"));
+    strcat(toScreen, localise(BUTTON_MINUS " to delete an item"));
     textToFrame(MAX_LINES - 1, ALIGNED_CENTER, toScreen);
 
     drawFrame();

@@ -196,7 +196,7 @@ int textToFrameMultiline(int x, int y, const char *text, size_t len)
         {
             o = *i;
             *i = '\0';
-            if(FC_GetWidth(font, p) / spaceWidth <= len)
+            if(((size_t)FC_GetWidth(font, p) / spaceWidth) <= len)
             {
                 t = strrchr(p, ' ');
                 if(t != NULL)

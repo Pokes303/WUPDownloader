@@ -42,13 +42,13 @@ static void drawUpdateMenuFrame(const char *newVersion)
 
     textToFrame(4, ALIGNED_CENTER, NUSSPLI_COPYRIGHT);
 
-    textToFrame(7, 0, gettext("Update available!"));
+    textToFrame(7, 0, localise("Update available!"));
     lineToFrame(MAX_LINES - 3, SCREEN_COLOR_WHITE);
-    strcpy(toScreen, gettext("Press " BUTTON_A " to update to"));
+    strcpy(toScreen, localise("Press " BUTTON_A " to update to"));
     strcat(toScreen, " ");
     strcat(toScreen, newVersion);
     textToFrame(MAX_LINES - 2, 0, toScreen);
-    textToFrame(MAX_LINES - 1, 0, gettext("Press " BUTTON_B " to cancel"));
+    textToFrame(MAX_LINES - 1, 0, localise("Press " BUTTON_B " to cancel"));
     drawFrame();
 }
 

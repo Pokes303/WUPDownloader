@@ -81,6 +81,9 @@ typedef bool (*checkingFunction)(char);
 
 static int calcThreadMain(int argc, const char **argv)
 {
+    (void)argc;
+    (void)argv;
+
     OSMessage msg;
     do
     {
@@ -127,7 +130,7 @@ static void SWKBD_Render(SWKBD_Args *args, KeyboardChecks check)
                 }
         }
 
-        args->okButtonEnabled = args->globalLimit ? len == args->globalMaxlength : len <= args->globalMaxlength;
+        args->okButtonEnabled = args->globalLimit ? len == args->globalMaxlength : len <= args->globalMaxlength; // This rises a harmless compiler warning
     }
     else
         args->okButtonEnabled = false;

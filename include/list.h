@@ -227,6 +227,7 @@ extern "C"
     static inline void *wrapLastEntry(LIST *list)
     {
         // TODO
+        (void)list;
         return NULL;
     }
 
