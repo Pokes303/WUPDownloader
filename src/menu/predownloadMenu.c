@@ -370,8 +370,6 @@ static bool addToOpQueue(RAMBUF *rambuf, const TitleEntry *entry, const char *ti
     return ret;
 }
 
-
-
 bool predownloadMenu(const TitleEntry *entry)
 {
     RAMBUF *rambuf = NULL;
@@ -392,7 +390,7 @@ bool predownloadMenu(const TitleEntry *entry)
     if(dlDev == NUSDEV_NONE)
         dlDev = usbMounted && dlToUSBenabled() ? usbMounted : NUSDEV_SD;
     if(instDev == NUSDEV_NONE)
-       instDev = usbMounted ? usbMounted : NUSDEV_MLC;
+        instDev = usbMounted ? usbMounted : NUSDEV_MLC;
 
 downloadTMD:
     if(rambuf != NULL)
