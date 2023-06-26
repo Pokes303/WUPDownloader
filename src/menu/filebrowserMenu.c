@@ -42,7 +42,9 @@
 
 #define MAX_FILEBROWSER_LINES (MAX_LINES - 5)
 
-static void drawFBMenuFrame(const char *path, LIST *folders, size_t pos, const size_t cursor, const NUSDEV activeDevice, bool usbMounted, bool showQueue)
+static NUSDEV activeDevice;
+
+static void drawFBMenuFrame(const char *path, LIST *folders, size_t pos, const size_t cursor, bool usbMounted, bool showQueue)
 {
     startNewFrame();
     textToFrame(0, 6, localise("Select a folder:"));
@@ -106,7 +108,7 @@ char *fileBrowserMenu(bool showQueue)
 
     size_t cursor, pos;
     NUSDEV usbMounted = getUSB();
-    NUSDEV activeDevice = usbMounted ? NUSDEV_USB : NUSDEV_SD;
+    activeDevice = usbMounted ? NUSDEV_USB : NUSDEV_SD;
     bool mov;
     FSADirectoryHandle dir;
     bool ret = false;
@@ -178,7 +180,7 @@ refreshDirList:
         if(redraw)
         {
             sQ = showQueue ? getListSize(getTitleQueue()) : false;
-            drawFBMenuFrame(path, folders, pos, cursor, activeDevice, usbMounted, sQ);
+            drawFBMenuFrame(path, folders, pos, cursor, usbMounted, sQ);
             redraw = false;
         }
         showFrame();
