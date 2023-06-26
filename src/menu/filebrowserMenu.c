@@ -42,7 +42,7 @@
 
 #define MAX_FILEBROWSER_LINES (MAX_LINES - 5)
 
-static NUSDEV activeDevice;
+static NUSDEV activeDevice = NUSDEV_NONE;
 
 static void drawFBMenuFrame(const char *path, LIST *folders, size_t pos, const size_t cursor, bool usbMounted, bool showQueue)
 {
@@ -107,13 +107,14 @@ char *fileBrowserMenu(bool showQueue)
         return false;
 
     size_t cursor, pos;
-    NUSDEV usbMounted = getUSB();
-    activeDevice = usbMounted ? NUSDEV_USB : NUSDEV_SD;
     bool mov;
     FSADirectoryHandle dir;
     bool ret = false;
     char *path = getStaticPathBuffer(2);
     bool sQ;
+    NUSDEV usbMounted = getUSB();
+    if(activeDevice == NUSDEV_NONE)
+        activeDevice = usbMounted ? NUSDEV_USB : NUSDEV_SD;
 
 refreshVOlList:
     strcpy(path, (activeDevice & NUSDEV_USB) ? (usbMounted == NUSDEV_USB01 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC));
