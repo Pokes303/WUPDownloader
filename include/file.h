@@ -84,6 +84,7 @@ extern "C"
     bool createDirRecursive(const char *dir) __attribute__((__hot__));
     const char *translateFSErr(FSError err) __attribute__((__cold__));
     size_t getFilesize(const char *path) __attribute__((__hot__));
+    NUSDEV getDevFromPath(const char *path);
 #ifdef NUSSPLI_HBL
     size_t readFile(const char *path, void **buffer) __attribute__((__hot__));
 #else

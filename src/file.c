@@ -539,3 +539,17 @@ const char *translateFSErr(FSError err)
     sprintf(ret, "Unknown error: %s (%d)", FSAGetStatusStr(err), err);
     return ret;
 }
+
+NUSDEV getDevFromPath(const char *path)
+{
+    if(strncmp(NUSDIR_SD, path, strlen(NUSDIR_SD)) == 0)
+        return NUSDEV_SD;
+    if(strncmp(NUSDIR_USB1, path, strlen(NUSDIR_USB1)) == 0)
+        return NUSDEV_USB01;
+    if(strncmp(NUSDIR_USB2, path, strlen(NUSDIR_USB2)) == 0)
+        return NUSDEV_USB02;
+    if(strncmp(NUSDIR_MLC, path, strlen(NUSDIR_MLC)) == 0)
+        return NUSDEV_MLC;
+
+    return NUSDEV_NONE;
+}

@@ -137,20 +137,6 @@ static void drawInstallerMenuFrame(const char *name, NUSDEV dev, NUSDEV toDev, b
     drawFrame();
 }
 
-static NUSDEV getDevFromPath(const char *path)
-{
-    if(strncmp(NUSDIR_SD, path, strlen(NUSDIR_SD)) == 0)
-        return NUSDEV_SD;
-    if(strncmp(NUSDIR_USB1, path, strlen(NUSDIR_USB1)) == 0)
-        return NUSDEV_USB01;
-    if(strncmp(NUSDIR_USB2, path, strlen(NUSDIR_USB2)) == 0)
-        return NUSDEV_USB02;
-    if(strncmp(NUSDIR_MLC, path, strlen(NUSDIR_MLC)) == 0)
-        return NUSDEV_MLC;
-
-    return NUSDEV_NONE;
-}
-
 void installerMenu()
 {
     const char *dir = fileBrowserMenu(true);
