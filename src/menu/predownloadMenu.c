@@ -51,6 +51,8 @@
 static int cursorPos = 15;
 static OPERATION operation = OPERATION_DOWNLOAD_INSTALL;
 static bool keepFiles = true;
+static NUSDEV dlDev = NUSDEV_NONE;
+static NUSDEV instDev = NUSDEV_NONE;
 
 static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
 {
@@ -62,7 +64,7 @@ static inline bool isInstalled(const TitleEntry *entry, MCPTitleListType *out)
     return MCP_GetTitleInfo(mcpHandle, entry->tid, out) == 0;
 }
 
-static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t size, bool installed, const char *folderName, NUSDEV dlDev, NUSDEV instDev)
+static void drawPDMenuFrame(const TitleEntry *entry, const char *titleVer, uint64_t size, bool installed, const char *folderName)
 {
     startNewFrame();
 
@@ -264,18 +266,18 @@ static inline void changeFolderName(char *buf)
         buf[0] = '\0';
 }
 
-static inline void switchInstallDevice(NUSDEV *dev)
+static inline void switchInstallDevice()
 {
-    switch((int)*dev)
+    switch((int)instDev)
     {
         case NUSDEV_USB01:
         case NUSDEV_USB02:
-            *dev = NUSDEV_MLC;
+            instDev = NUSDEV_MLC;
             break;
         case NUSDEV_MLC:
-            *dev = getUSB();
-            if(!*dev)
-                *dev = NUSDEV_MLC;
+            instDev = getUSB();
+            if(!instDev)
+                instDev = NUSDEV_MLC;
             break;
     }
 }
@@ -293,25 +295,25 @@ static inline void switchOperation()
     }
 }
 
-static inline void switchDownloadDevice(NUSDEV *dev)
+static inline void switchDownloadDevice()
 {
     bool toUSB = false;
 
     if(vpad.trigger & VPAD_BUTTON_LEFT)
     {
-        switch((int)*dev)
+        switch((int)dlDev)
         {
             case NUSDEV_USB01:
             case NUSDEV_USB02:
-                *dev = NUSDEV_MLC;
+                dlDev = NUSDEV_MLC;
                 break;
             case NUSDEV_MLC:
-                *dev = NUSDEV_SD;
+                dlDev = NUSDEV_SD;
                 break;
             case NUSDEV_SD:
-                *dev = getUSB();
-                if(!*dev)
-                    *dev = NUSDEV_MLC;
+                dlDev = getUSB();
+                if(!dlDev)
+                    dlDev = NUSDEV_MLC;
                 else
                     toUSB = true;
                 break;
@@ -319,19 +321,19 @@ static inline void switchDownloadDevice(NUSDEV *dev)
     }
     else
     {
-        switch((int)*dev)
+        switch((int)dlDev)
         {
             case NUSDEV_USB01:
             case NUSDEV_USB02:
-                *dev = NUSDEV_SD;
+                dlDev = NUSDEV_SD;
                 break;
             case NUSDEV_SD:
-                *dev = NUSDEV_MLC;
+                dlDev = NUSDEV_MLC;
                 break;
             case NUSDEV_MLC:
-                *dev = getUSB();
-                if(!*dev)
-                    *dev = NUSDEV_SD;
+                dlDev = getUSB();
+                if(!dlDev)
+                    dlDev = NUSDEV_SD;
                 else
                     toUSB = true;
                 break;
@@ -341,7 +343,7 @@ static inline void switchDownloadDevice(NUSDEV *dev)
     setDlToUSB(toUSB);
 }
 
-static bool addToOpQueue(RAMBUF *rambuf, const TitleEntry *entry, const char *titleVer, const char *folderName, NUSDEV dlDev, NUSDEV instDev)
+static bool addToOpQueue(RAMBUF *rambuf, const TitleEntry *entry, const char *titleVer, const char *folderName)
 {
     TitleData *titleInfo = MEMAllocFromDefaultHeap(sizeof(TitleData));
     int ret = false;
@@ -368,15 +370,13 @@ static bool addToOpQueue(RAMBUF *rambuf, const TitleEntry *entry, const char *ti
     return ret;
 }
 
+
+
 bool predownloadMenu(const TitleEntry *entry)
 {
     RAMBUF *rambuf = NULL;
-
     MCPTitleListType titleList __attribute__((__aligned__(0x40)));
     bool installed = isInstalled(entry, &titleList);
-    NUSDEV usbMounted = getUSB();
-    NUSDEV dlDev = usbMounted && dlToUSBenabled() ? usbMounted : NUSDEV_SD;
-    NUSDEV instDev = usbMounted ? usbMounted : NUSDEV_MLC;
     char folderName[FS_MAX_PATH - 11];
     char titleVer[33];
     folderName[0] = titleVer[0] = '\0';
@@ -388,6 +388,11 @@ bool predownloadMenu(const TitleEntry *entry)
     char downloadUrl[256];
     bool autoAddToQueue = false;
     bool autoStartQueue = false;
+    NUSDEV usbMounted = getUSB();
+    if(dlDev == NUSDEV_NONE)
+        dlDev = usbMounted && dlToUSBenabled() ? usbMounted : NUSDEV_SD;
+    if(instDev == NUSDEV_NONE)
+       instDev = usbMounted ? usbMounted : NUSDEV_MLC;
 
 downloadTMD:
     if(rambuf != NULL)
@@ -451,7 +456,7 @@ naNedNa:
 
             if(redraw)
             {
-                drawPDMenuFrame(entry, titleVer, dls, installed, folderName, dlDev, instDev);
+                drawPDMenuFrame(entry, titleVer, dls, installed, folderName);
                 redraw = false;
             }
             showFrame();
@@ -469,13 +474,13 @@ naNedNa:
                 {
                     case 15: // TODO: Change hardcoded numbers to something prettier
                         if(operation == OPERATION_DOWNLOAD_INSTALL)
-                            switchInstallDevice(&instDev);
+                            switchInstallDevice();
                         break;
                     case 16:
                         switchOperation();
                         break;
                     case 17:
-                        switchDownloadDevice(&dlDev);
+                        switchDownloadDevice();
                         break;
                     case 18:
                         if(dlDev == NUSDEV_SD && operation == OPERATION_DOWNLOAD_INSTALL)
@@ -666,7 +671,7 @@ naNedNa:
                                 goto exitPDM;
                             }
 
-                            if(!addToOpQueue(rambuf, entry, titleVer, folderName, dlDev, instDev))
+                            if(!addToOpQueue(rambuf, entry, titleVer, folderName))
                                 goto exitPDM;
 
                             rambuf = NULL;
@@ -720,7 +725,7 @@ naNedNa:
                                 goto exitPDM;
                             }
 
-                            if(!addToOpQueue(rambuf, entry, titleVer, folderName, dlDev, instDev))
+                            if(!addToOpQueue(rambuf, entry, titleVer, folderName))
                                 goto exitPDM;
 
                             rambuf = NULL;
@@ -764,7 +769,7 @@ naNedNa:
 
     if(toQueue)
     {
-        ret = addToOpQueue(rambuf, entry, titleVer, folderName, dlDev, instDev);
+        ret = addToOpQueue(rambuf, entry, titleVer, folderName);
         if(ret)
         {
             rambuf = NULL;
