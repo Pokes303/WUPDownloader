@@ -43,6 +43,7 @@
 #define MAX_FILEBROWSER_LINES (MAX_LINES - 5)
 
 static NUSDEV activeDevice = NUSDEV_NONE;
+static char presavedPath[FS_MAX_PATH];
 
 static void drawFBMenuFrame(const char *path, LIST *folders, size_t pos, const size_t cursor, bool usbMounted, bool showQueue)
 {
@@ -104,7 +105,7 @@ char *fileBrowserMenu(bool showQueue)
 {
     LIST *folders = createList();
     if(folders == NULL)
-        return false;
+        return NULL;
 
     size_t cursor, pos;
     bool mov;
