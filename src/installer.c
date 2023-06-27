@@ -110,7 +110,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
         if(toUsb ? dev & NUSDEV_USB : dev == NUSDEV_MLC)
             flushIOQueue();
 
-        if(!checkFreeSpace(getDevFromPath(path), size))
+        if(!checkFreeSpace(toUsb ? getUSB() : NUSDEV_MLC, size))
             return !(AppRunning(true));
 
         // Fix tickets of broken NUSspli versions
