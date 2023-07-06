@@ -71,9 +71,9 @@ bool initFS(bool validCfw)
 
             if(Mocha_UnlockFSClientEx(handle) == MOCHA_RESULT_SUCCESS)
             {
-                if(dirExists(NUSDIR_USB1 "usr"))
+                if(dirExists(NUSDIR_USB1))
                     usb = NUSDEV_USB01;
-                else if(dirExists(NUSDIR_USB2 "usr"))
+                else if(dirExists(NUSDIR_USB2))
                     usb = NUSDEV_USB02;
                 else
                     usb = NUSDEV_NONE;
