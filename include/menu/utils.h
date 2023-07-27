@@ -54,10 +54,10 @@ extern "C"
     void writeScreenLog(int line);
     void drawErrorFrame(const char *text, ErrorOptions option);
     void showErrorFrame(const char *text);
-    bool checkSystemTitle(uint64_t tid, MCPRegion region);
-    bool checkSystemTitleFromEntry(const TitleEntry *entry);
-    bool checkSystemTitleFromTid(uint64_t tid);
-    bool checkSystemTitleFromListType(MCPTitleListType *entry);
+    bool checkSystemTitle(uint64_t tid, MCPRegion region, bool deinstall);
+    bool checkSystemTitleFromEntry(const TitleEntry *entry, bool deinstall);
+    bool checkSystemTitleFromTid(uint64_t tid, bool deinstall);
+    bool checkSystemTitleFromListType(MCPTitleListType *entry, bool deinstall);
     const char *prettyDir(const char *dir);
     void showFinishedScreen(const char *titleName, FINISHING_OPERATION op);
     void showNoSpaceOverlay(NUSDEV dev);

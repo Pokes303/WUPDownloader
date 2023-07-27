@@ -520,10 +520,13 @@ naNedNa:
 
             if(installed && vpad.trigger & VPAD_BUTTON_Y)
             {
-                freeRamBuf(rambuf);
-                saveConfig(false);
-                deinstall(&titleList, entry->name, false, false);
-                return false;
+                if(checkSystemTitleFromListType(&titleList, true))
+                {
+                    freeRamBuf(rambuf);
+                    saveConfig(false);
+                    deinstall(&titleList, entry->name, false, false);
+                    return false;
+                }
             }
         }
     }
@@ -782,7 +785,7 @@ naNedNa:
             }
         }
     }
-    else if(checkSystemTitleFromEntry(entry))
+    else if(checkSystemTitleFromEntry(entry, false))
     {
         disableApd();
         ret = !downloadTitle(tmd, rambuf->size, entry, titleVer, folderName, operation == OPERATION_DOWNLOAD_INSTALL, dlDev, instDev & NUSDEV_USB, keepFiles, NULL);

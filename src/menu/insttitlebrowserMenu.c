@@ -481,7 +481,7 @@ loopEntry:
 
         removeErrorOverlay(r);
 
-        if(checkSystemTitle(entry->titleId, MCP_REGION_UNKNOWN) && AppRunning(true)) // entry is initialised, the compiler just can't follow
+        if(checkSystemTitleFromListType(entry, true) && AppRunning(true)) // entry is initialised, the compiler just can't follow
             deinstall(entry, (const char *)im->name, false, false);
         else
             goto loopEntry;

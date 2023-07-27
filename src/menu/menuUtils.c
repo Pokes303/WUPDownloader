@@ -182,7 +182,7 @@ void showErrorFrame(const char *text)
     }
 }
 
-bool checkSystemTitle(uint64_t tid, MCPRegion region)
+bool checkSystemTitle(uint64_t tid, MCPRegion region, bool deinstall)
 {
     switch(getTidHighFromTid(tid))
     {
@@ -194,34 +194,37 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region)
             return true;
     }
 
-    MCPSysProdSettings settings __attribute__((__aligned__(0x40)));
-    MCPError err = MCP_GetSysProdSettings(mcpHandle, &settings);
-    if(err)
+    if(!deinstall)
     {
-        debugPrintf("Error reading settings: %d!", err);
-        settings.game_region = 0;
-    }
+        MCPSysProdSettings settings __attribute__((__aligned__(0x40)));
+        MCPError err = MCP_GetSysProdSettings(mcpHandle, &settings);
+        if(err)
+        {
+            debugPrintf("Error reading settings: %d!", err);
+            settings.game_region = 0;
+        }
 
-    debugPrintf("Console region: 0x%08X", settings.game_region);
-    debugPrintf("Title region: 0x%08X", region);
-    switch(settings.game_region)
-    {
-        case MCP_REGION_EUROPE:
-            if(region & MCP_REGION_EUROPE)
+        debugPrintf("Console region: 0x%08X", settings.game_region);
+        debugPrintf("Title region: 0x%08X", region);
+        switch(settings.game_region)
+        {
+            case MCP_REGION_EUROPE:
+                if(region & MCP_REGION_EUROPE)
+                    return true;
+                break;
+            case MCP_REGION_USA:
+                if(region & MCP_REGION_USA)
+                    return true;
+                break;
+            case MCP_REGION_JAPAN:
+                if(region & MCP_REGION_JAPAN)
+                    return true;
+                break;
+            default:
+                // TODO: MCP_REGION_CHINA, MCP_REGION_KOREA, MCP_REGION_TAIWAN
+                debugPrintf("Unknwon region: %d", settings.game_region);
                 return true;
-            break;
-        case MCP_REGION_USA:
-            if(region & MCP_REGION_USA)
-                return true;
-            break;
-        case MCP_REGION_JAPAN:
-            if(region & MCP_REGION_JAPAN)
-                return true;
-            break;
-        default:
-            // TODO: MCP_REGION_CHINA, MCP_REGION_KOREA, MCP_REGION_TAIWAN
-            debugPrintf("Unknwon region: %d", settings.game_region);
-            return true;
+        }
     }
 
     char *toFrame = getToFrameBuffer();
@@ -307,21 +310,21 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region)
     return ret;
 }
 
-bool checkSystemTitleFromEntry(const TitleEntry *entry)
+bool checkSystemTitleFromEntry(const TitleEntry *entry, bool deinstall)
 {
-    return checkSystemTitle(entry->tid, entry->region);
+    return checkSystemTitle(entry->tid, entry->region, deinstall);
 }
 
-bool checkSystemTitleFromTid(uint64_t tid)
+bool checkSystemTitleFromTid(uint64_t tid, bool deinstall)
 {
     const TitleEntry *entry = getTitleEntryByTid(tid);
-    return entry == NULL ? true : checkSystemTitle(tid, entry->region);
+    return entry == NULL ? true : checkSystemTitle(tid, entry->region, deinstall);
 }
 
-bool checkSystemTitleFromListType(MCPTitleListType *entry)
+bool checkSystemTitleFromListType(MCPTitleListType *entry, bool deinstall)
 {
     const TitleEntry *e = getTitleEntryByTid(entry->titleId);
-    return e == NULL ? true : checkSystemTitle(entry->titleId, e->region);
+    return e == NULL ? true : checkSystemTitle(entry->titleId, e->region, deinstall);
 }
 
 const char *prettyDir(const char *dir)

@@ -195,7 +195,7 @@ refreshDir:
 
         if(vpad.trigger & VPAD_BUTTON_PLUS)
         {
-            if(checkSystemTitleFromTid(tmd->tid))
+            if(checkSystemTitleFromTid(tmd->tid, false))
             {
                 disableApd();
                 if(install(nd, false, dev, dir, toDev & NUSDEV_USB, keepFiles, tmd))
