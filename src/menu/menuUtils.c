@@ -226,7 +226,7 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region)
 
     char *toFrame = getToFrameBuffer();
     sprintf(toFrame,
-        "%s\n\n" BUTTON_A " %s || " BUTTON_B "%s",
+        "%s\n\n" BUTTON_A " %s || " BUTTON_B " %s",
         localise("This is a reliable way to brick your console!\nAre you sure you want to do that?"),
         localise("Yes"),
         localise("No"));
@@ -253,7 +253,7 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region)
     if(ret)
     {
         sprintf(toFrame,
-            "%s\n\n" BUTTON_A " %s || " BUTTON_B "%s",
+            "%s\n\n" BUTTON_A " %s || " BUTTON_B " %s",
             localise("Are you really sure you want to brick your Wii U?"),
             localise("Yes"),
             localise("No"));
@@ -280,7 +280,7 @@ bool checkSystemTitle(uint64_t tid, MCPRegion region)
     if(ret)
     {
         sprintf(toFrame,
-            "%s\n\n" BUTTON_A " %s || " BUTTON_B "%s",
+            "%s\n\n" BUTTON_A " %s || " BUTTON_B " %s",
             localise("You're on your own doing this,\ndo you understand the consequences?"),
             localise("Yes"),
             localise("No"));
