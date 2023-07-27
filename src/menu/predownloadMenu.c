@@ -539,12 +539,18 @@ naNedNa:
     {
         if(dlDev == NUSDEV_MLC)
         {
-            void *ovl = addErrorOverlay(localise(
-                "Downloading to NAND is dangerous,\n"
-                "it could brick your Wii U!\n\n"
+            char *txt = getToFrameBuffer();
+            sprintf(txt,
+                "%s\n\n" BUTTON_A " %s || " BUTTON_B " %s",
+                localise(
+                    "Downloading to NAND is dangerous,\n"
+                    "it could brick your Wii U!\n\n"
 
-                "Are you sure you want to do this?"));
+                    "Are you sure you want to do this?"),
+                localise("Yes"),
+                localise("No"));
 
+            void *ovl = addErrorOverlay(txt);
             if(ovl == NULL)
                 goto exitPDM;
 
