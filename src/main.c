@@ -145,7 +145,9 @@ static void innerMain(bool validCfw)
                                                     checkStacks("main()");
                                                     if(!updateCheck())
                                                     {
+#ifndef NUSSPLI_LITE
                                                         initFSSpace();
+#endif
                                                         checkStacks("main");
                                                         mainMenu(); // main loop
                                                         checkStacks("main");
