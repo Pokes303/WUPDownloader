@@ -100,50 +100,55 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
     writeScreenLog(2);
     drawFrame();
     showFrame();
+    flushIOQueue(); // Make sure all game files are on disc
 
+    TMD *tmd2;
     if(tmd != NULL)
+        tmd2 = (TMD *)tmd;
+    else
     {
-        uint64_t size = 0;
-        for(uint16_t i = 0; i < tmd->num_contents; ++i)
-            size += tmd->contents[i].size;
+        tmd2 = getTmd(path);
+        if(tmd2 == NULL)
+            goto noTmd;
+    }
 
-        if(toUsb ? dev & NUSDEV_USB : dev == NUSDEV_MLC)
-            flushIOQueue();
+    uint64_t size = 0;
+    for(uint16_t i = 0; i < tmd2->num_contents; ++i)
+        size += tmd2->contents[i].size;
 
-        if(!checkFreeSpace(toUsb ? getUSB() : NUSDEV_MLC, size))
-            return !(AppRunning(true));
+    if(!checkFreeSpace(toUsb ? getUSB() : NUSDEV_MLC, size))
+        return !(AppRunning(true));
 
-        // Fix tickets of broken NUSspli versions
-        if(isDLC(tmd->tid))
+    // Fix tickets of broken NUSspli versions
+    if(isDLC(tmd2->tid))
+    {
+        char *tikPath = getStaticPathBuffer(1);
+        size_t s = strlen(path);
+        OSBlockMove(tikPath, path, s, false);
+        OSBlockMove(tikPath + s, "title.tik", strlen("title.tik") + 1, false);
+
+        TICKET *tik;
+        s = readFile(tikPath, (void **)&tik);
+        if(tik != NULL && hasMagicHeader(tik) && strcmp(tik->header.app, "NUSspli") == 0)
         {
-            char *tikPath = getStaticPathBuffer(1);
-            size_t s = strlen(path);
-            OSBlockMove(tikPath, path, s, false);
-            OSBlockMove(tikPath + s, "title.tik", strlen("title.tik") + 1, false);
-
-            TICKET *tik;
-            s = readFile(tikPath, (void **)&tik);
-            if(tik != NULL && hasMagicHeader(tik) && strcmp(tik->header.app, "NUSspli") == 0)
+            char *needle = strstr(tik->header.app_version, ".");
+            if(needle)
             {
-                char *needle = strstr(tik->header.app_version, ".");
-                if(needle)
+                *needle = '\0';
+                if(atoi(tik->header.app_version) == 1) // Major version
                 {
-                    *needle = '\0';
-                    if(atoi(tik->header.app_version) == 1) // Major version
-                    {
-                        char *betaNeedle = strstr(++needle, "-");
-                        if(betaNeedle)
-                            *betaNeedle = '\0';
+                    char *betaNeedle = strstr(++needle, "-");
+                    if(betaNeedle)
+                        *betaNeedle = '\0';
 
-                        int minor = atoi(needle);
-                        if(minor >= 113 && minor < 125)
-                        {
-                            debugPrintf("Broken ticket detected, fixing...");
-                            if(generateTik(tikPath, getTitleEntryByTid(tmd->tid), tmd))
-                                return install(game, hasDeps, dev, path, toUsb, keepFiles, tmd);
-                            else
-                                debugPrintf("Error fixing ticket!");
-                        }
+                    int minor = atoi(needle);
+                    if(minor >= 113 && minor < 125)
+                    {
+                        debugPrintf("Broken ticket detected, fixing...");
+                        if(generateTik(tikPath, getTitleEntryByTid(tmd2->tid), tmd2))
+                            return install(game, hasDeps, dev, path, toUsb, keepFiles, tmd2);
+                        else
+                            debugPrintf("Error fixing ticket!");
                     }
                 }
             }
@@ -151,9 +156,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
     }
 
     MCPInstallTitleInfo info __attribute__((__aligned__(0x40)));
-
     McpData data;
-    flushIOQueue(); // Make sure all game files are on disc
 
     // Let's see if MCP is able to parse the TMD...
     OSTime t = OSGetSystemTime();
@@ -165,6 +168,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
         switch(data.err)
         {
             case 0xfffbf3e2:
+noTmd:
                 sprintf(toScreen, "%s \"%s\"", localise("No title.tmd found at"), path);
                 break;
             case 0xfffbfc17:
@@ -301,6 +305,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
         return false;
     }
 
+    claimSpace(toUsb ? getUSB() : NUSDEV_MLC, size);
     addToScreenLog("Installation finished!");
 
     if(!keepFiles && dev == NUSDEV_SD)

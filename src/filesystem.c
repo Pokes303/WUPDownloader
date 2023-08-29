@@ -34,7 +34,7 @@
 
 static FSAClientHandle handle;
 static NUSDEV usb = NUSDEV_NONE;
-
+static uint64_t spaceMap[4] = { 0, 0, 0, 0 };
 static OSThread *spaceThread = NULL;
 
 static int spaceThreadMain(int argc, const char **argv)
@@ -133,13 +133,31 @@ NUSDEV getUSB()
     return usb;
 }
 
+void claimSpace(NUSDEV dev, uint64_t size)
+{
+    spaceMap[dev] += size;
+}
+
+void freeSpace(NUSDEV dev, uint64_t size)
+{
+    if(size > spaceMap[dev])
+        spaceMap[dev] = 0;
+    else
+        spaceMap[dev] -= size;
+}
+
 uint64_t getFreeSpace(NUSDEV dev)
 {
     checkSpaceThread();
 
-    uint64_t freeSpace;
     const char *nd = dev == NUSDEV_USB01 ? NUSDIR_USB1 : (dev == NUSDEV_USB02 ? NUSDIR_USB2 : (dev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC));
-    return FSAGetFreeSpaceSize(getFSAClient(), (char *)nd, &freeSpace) == FS_ERROR_OK ? freeSpace : 0;
+    uint64_t freeSpace;
+
+    if(FSAGetFreeSpaceSize(getFSAClient(), (char *)nd, &freeSpace) != FS_ERROR_OK)
+        return 0;
+
+    freeSpace -= spaceMap[dev];
+    return freeSpace;
 }
 
 bool checkFreeSpace(NUSDEV dev, uint64_t size)

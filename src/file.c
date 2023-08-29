@@ -431,12 +431,12 @@ static bool fixTMD(const char *path, TMD *tmd, size_t size)
 TMD *getTmd(const char *dir)
 {
     size_t s = strlen(dir);
-    char *path = MEMAllocFromDefaultHeap(s + (strlen("title.tmd") + 1));
+    char *path = MEMAllocFromDefaultHeap(s + (strlen("/title.tmd") + 1));
     TMD *tmd = NULL;
     if(path != NULL)
     {
         OSBlockMove(path, dir, s, false);
-        OSBlockMove(path + s, "title.tmd", strlen("title.tmd") + 1, false);
+        OSBlockMove(path + s, "/title.tmd", strlen("/title.tmd") + 1, false);
 
         s = readFile(path, (void **)&tmd);
         if(tmd != NULL)

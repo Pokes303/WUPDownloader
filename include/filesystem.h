@@ -36,6 +36,8 @@ extern "C"
     void deinitFS(bool validCfw) __attribute__((__cold__));
     FSAClientHandle getFSAClient() __attribute__((__hot__));
     NUSDEV getUSB();
+    void claimSpace(NUSDEV dev, uint64_t size);
+    void freeSpace(NUSDEV dev, uint64_t size);
     uint64_t getFreeSpace(NUSDEV dev);
     bool checkFreeSpace(NUSDEV dev, uint64_t size);
     uint64_t getSpace(NUSDEV dev);

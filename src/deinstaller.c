@@ -25,6 +25,7 @@
 
 #include <crypto.h>
 #include <deinstaller.h>
+#include <filesystem.h>
 #include <localisation.h>
 #include <menu/utils.h>
 #include <osdefs.h>
@@ -75,6 +76,8 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool
     enableShutdown();
     t = OSGetTick() - t;
     addEntropy(&t, sizeof(OSTick));
+
+    //TODO: freeSpace(getDevFromPath(title->path), size);
     addToScreenLog("Deinstallation finished!");
 
     if(!skipEnd)
