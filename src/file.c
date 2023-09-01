@@ -289,6 +289,45 @@ size_t readFile(const char *path, void **buffer)
 }
 #endif
 
+size_t getDirsize(const char *path)
+{
+    char *newPath = MEMAllocFromDefaultHeapEx(FS_MAX_PATH, 0x40);
+    if(newPath == NULL)
+        return NULL;
+
+    size_t ret = 0;
+    size_t start = strlen(path);
+    if(start == 0)
+        goto getDirsizeEnd;
+
+    strcpy(newPath, path);
+    if(newPath[start - 1] != '/')
+    {
+        newPath[start++] = '/';
+        newPath[start] = '\0';
+    }
+
+    OSTime t = OSGetTime();
+    FSADirectoryHandle dir;
+    FSADirectoryEntry entry;
+
+    if(FSAOpenDir(getFSAClient(), path, &dir) == FS_ERROR_OK)
+    {
+        while(ret == FS_ERROR_OK && FSAReadDir(getFSAClient(), dir, &entry) == FS_ERROR_OK)
+        {
+            strcpy(newPath + start, entry.name);
+            ret += entry.info.flags & FS_STAT_DIRECTORY ? getDirsize(newPath) : entry.info.size;
+        }
+    }
+
+    t = OSGetTime() - t;
+    addEntropy(&t, sizeof(OSTime));
+
+getDirsizeEnd:
+    MEMFreeToDefaultHeap(newPath);
+    return ret;
+}
+
 // This uses informations from https://github.com/Maschell/nuspacker
 TMD_STATE verifyTmd(const TMD *tmd, size_t size)
 {

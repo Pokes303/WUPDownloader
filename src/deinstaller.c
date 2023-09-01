@@ -47,6 +47,7 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool
     drawFrame();
     showFrame();
 
+    size_t titleSize = getDirsize(title->path);
     MCPInstallTitleInfo info __attribute__((__aligned__(0x40)));
     McpData data;
     glueMcpData(&info, &data);
@@ -77,7 +78,7 @@ bool deinstall(MCPTitleListType *title, const char *name, bool channelHaxx, bool
     t = OSGetTick() - t;
     addEntropy(&t, sizeof(OSTick));
 
-    //TODO: freeSpace(getDevFromPath(title->path), size);
+    freeSpace(getDevFromPath(title->path), titleSize);
     addToScreenLog("Deinstallation finished!");
 
     if(!skipEnd)
