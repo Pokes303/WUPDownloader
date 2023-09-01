@@ -168,7 +168,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
         switch(data.err)
         {
             case 0xfffbf3e2:
-noTmd:
+            noTmd:
                 sprintf(toScreen, "%s \"%s\"", localise("No title.tmd found at"), path);
                 break;
             case 0xfffbfc17:
