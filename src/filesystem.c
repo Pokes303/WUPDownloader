@@ -34,7 +34,7 @@
 
 static FSAClientHandle handle;
 static NUSDEV usb = NUSDEV_NONE;
-static uint64_t spaceMap[4] = { 0, 0, 0, 0 };
+static int64_t spaceMap[4] = { 0, 0, 0, 0 };
 static OSThread *spaceThread = NULL;
 
 static int spaceThreadMain(int argc, const char **argv)
@@ -140,10 +140,7 @@ void claimSpace(NUSDEV dev, uint64_t size)
 
 void freeSpace(NUSDEV dev, uint64_t size)
 {
-    if(size > spaceMap[dev])
-        spaceMap[dev] = 0;
-    else
-        spaceMap[dev] -= size;
+    spaceMap[dev] -= size;
 }
 
 uint64_t getFreeSpace(NUSDEV dev)
