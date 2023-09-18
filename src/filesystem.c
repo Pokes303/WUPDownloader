@@ -100,8 +100,11 @@ static void checkSpaceThread()
 {
     if(spaceThread)
     {
+        void *ovl = addErrorOverlay("Flushing queue, please wait...");
         stopThread(spaceThread, NULL);
         spaceThread = NULL;
+        if(ovl != NULL)
+            removeErrorOverlay(ovl);
     }
 }
 
