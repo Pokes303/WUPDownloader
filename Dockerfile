@@ -61,6 +61,7 @@ PKG_CONFIG=$DEVKITPRO/portlibs/wiiu/bin/powerpc-eabi-pkg-config && \
 COPY --from=ghcr.io/wiiu-env/libmocha:20230621 /artifacts $DEVKITPRO
 COPY --from=ghcr.io/wiiu-env/librpxloader:20230621 /artifacts $DEVKITPRO
 
-RUN git config --global --add safe.directory /project
+RUN git config --global --add safe.directory /project && \
+  gitconfig --global --add safe.directory /project/SDL_FontCache
 
 WORKDIR /project
