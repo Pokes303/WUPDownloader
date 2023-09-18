@@ -32,9 +32,11 @@
 
 #include <stdbool.h>
 
+#define SPACEMAP_INVALID 9999
+
 static FSAClientHandle handle;
 static NUSDEV usb = NUSDEV_NONE;
-static int64_t spaceMap[4] = { 0, 0, 0, 0 };
+static int64_t spaceMap[2] = { 0, 0 };
 static OSThread *spaceThread = NULL;
 
 static int spaceThreadMain(int argc, const char **argv)
@@ -136,14 +138,29 @@ NUSDEV getUSB()
     return usb;
 }
 
+static inline uint32_t remapNusdev(NUSDEV dev)
+{
+    if(dev & NUSDEV_USB)
+        return 0;
+
+    if(dev == NUSDEV_MLC)
+        return 1;
+
+    return SPACEMAP_INVALID; // Invalid
+}
+
 void claimSpace(NUSDEV dev, uint64_t size)
 {
-    spaceMap[dev] += size;
+    uint32_t i = remapNusdev(dev);
+    if(i != SPACEMAP_INVALID)
+        spaceMap[i] += size;
 }
 
 void freeSpace(NUSDEV dev, uint64_t size)
 {
-    spaceMap[dev] -= size;
+    uint32_t i = remapNusdev(dev);
+    if(i != 2)
+        spaceMap[i] -= size;
 }
 
 uint64_t getFreeSpace(NUSDEV dev)
@@ -156,7 +173,10 @@ uint64_t getFreeSpace(NUSDEV dev)
     if(FSAGetFreeSpaceSize(getFSAClient(), (char *)nd, &freeSpace) != FS_ERROR_OK)
         return 0;
 
-    freeSpace -= spaceMap[dev];
+    uint32_t i = remapNusdev(dev);
+    if(i != SPACEMAP_INVALID)
+        freeSpace -= spaceMap[i];
+
     return freeSpace;
 }
 
@@ -173,7 +193,6 @@ bool checkFreeSpace(NUSDEV dev, uint64_t size)
 
 uint64_t getSpace(NUSDEV dev)
 {
-
     FSADeviceInfo info;
     const char *nd = dev == NUSDEV_USB01 ? NUSDIR_USB1 : (dev == NUSDEV_USB02 ? NUSDIR_USB2 : (dev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC));
     return FSAGetDeviceInfo(getFSAClient(), nd, &info) == FS_ERROR_OK ? info.deviceSizeInSectors * info.deviceSectorSize : 0;
