@@ -62,6 +62,7 @@ COPY --from=ghcr.io/wiiu-env/libmocha:20230621 /artifacts $DEVKITPRO
 COPY --from=ghcr.io/wiiu-env/librpxloader:20230621 /artifacts $DEVKITPRO
 
 RUN git config --global --add safe.directory /project && \
-  git config --global --add safe.directory /project/SDL_FontCache
+  git config --global --add safe.directory /project/SDL_FontCache && \
+  git config --global --add safe.directory /project/zlib
 
 WORKDIR /project
