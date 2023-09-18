@@ -165,7 +165,8 @@ void freeSpace(NUSDEV dev, uint64_t size)
 
 uint64_t getFreeSpace(NUSDEV dev)
 {
-    checkSpaceThread();
+    if(dev == NUSDEV_SD)
+        checkSpaceThread();
 
     const char *nd = dev == NUSDEV_USB01 ? NUSDIR_USB1 : (dev == NUSDEV_USB02 ? NUSDIR_USB2 : (dev == NUSDEV_SD ? NUSDIR_SD : NUSDIR_MLC));
     uint64_t freeSpace;

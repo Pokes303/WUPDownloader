@@ -119,6 +119,9 @@ char *fileBrowserMenu(bool showQueue)
 
 refreshVOlList:
     strcpy(path, (activeDevice & NUSDEV_USB) ? (usbMounted == NUSDEV_USB01 ? INSTALL_DIR_USB1 : INSTALL_DIR_USB2) : (activeDevice == NUSDEV_SD ? INSTALL_DIR_SD : INSTALL_DIR_MLC));
+    if(activeDevice == NUSDEV_SD)
+        getFreeSpace(activeDevice); // To show the waiting for SD overlay
+
 refreshDirList:
     OSTime t = OSGetTime();
     clearList(folders, true);
