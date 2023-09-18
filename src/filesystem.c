@@ -100,7 +100,7 @@ static void checkSpaceThread()
 {
     if(spaceThread)
     {
-        void *ovl = addErrorOverlay("Flushing queue, please wait...");
+        void *ovl = addErrorOverlay("Waiting for SD card...");
         stopThread(spaceThread, NULL);
         spaceThread = NULL;
         if(ovl != NULL)
