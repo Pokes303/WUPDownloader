@@ -21,7 +21,9 @@
 #include <cfw.h>
 #include <file.h>
 #include <filesystem.h>
+#include <localisation.h>
 #include <menu/utils.h>
+#include <renderer.h>
 #include <thread.h>
 #include <utils.h>
 
@@ -102,7 +104,7 @@ static void checkSpaceThread()
 {
     if(spaceThread)
     {
-        void *ovl = addErrorOverlay("Waiting for SD card...");
+        void *ovl = addErrorOverlay(localise("Preparing. This might take some time. Please be patient."));
         stopThread(spaceThread, NULL);
         spaceThread = NULL;
         if(ovl != NULL)
