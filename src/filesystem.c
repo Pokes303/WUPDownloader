@@ -161,7 +161,7 @@ void claimSpace(NUSDEV dev, uint64_t size)
 void freeSpace(NUSDEV dev, uint64_t size)
 {
     uint32_t i = remapNusdev(dev);
-    if(i != 2)
+    if(i != SPACEMAP_INVALID)
         spaceMap[i] -= size;
 }
 
