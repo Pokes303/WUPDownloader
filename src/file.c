@@ -318,6 +318,8 @@ size_t getDirsize(const char *path)
             strcpy(newPath + start, entry.name);
             ret += entry.info.flags & FS_STAT_DIRECTORY ? getDirsize(newPath) : entry.info.size;
         }
+
+        FSACloseDir(getFSAClient(), dir);
     }
 
     t = OSGetTime() - t;
