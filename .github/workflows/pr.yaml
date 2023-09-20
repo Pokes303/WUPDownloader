@@ -11,7 +11,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
       - name: clang-format
         run: |
           git submodule update --init --recursive
@@ -24,7 +24,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
       - name: build artifacts
         run: |
           docker build . -t builder
