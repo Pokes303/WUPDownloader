@@ -35,6 +35,7 @@
 #include <ioQueue.h>
 #include <localisation.h>
 #include <menu/utils.h>
+#include <no-intro.h>
 #include <renderer.h>
 #include <state.h>
 #include <staticMem.h>
@@ -107,7 +108,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
         tmd2 = (TMD *)tmd;
     else
     {
-        tmd2 = getTmd(path);
+        tmd2 = getTmd(path, false);
         if(tmd2 == NULL)
             goto noTmd;
     }
@@ -119,16 +120,32 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
     if(!checkFreeSpace(toUsb ? getUSB() : NUSDEV_MLC, size))
         return !(AppRunning(true));
 
+    // No-intro
+    char *tmpPath = getStaticPathBuffer(1);
+    size_t s = strlen(path);
+    OSBlockMove(tmpPath, path, s, false);
+    OSBlockMove(tmpPath + s, "title.tmd", strlen("title.tmd") + 1, false);
+    NO_INTRO_DATA *noIntro;
+    if(fileExists(tmpPath))
+        noIntro = NULL;
+    else
+    {
+        noIntro = transformNoIntro(path);
+        if(noIntro == NULL)
+        {
+            const char *err = localise("Error transforming no-image set");
+            addToScreenLog("Installation failed!");
+            showErrorFrame(err);
+            return false;
+        }
+    }
+
     // Fix tickets of broken NUSspli versions
     if(isDLC(tmd2->tid))
     {
-        char *tikPath = getStaticPathBuffer(1);
-        size_t s = strlen(path);
-        OSBlockMove(tikPath, path, s, false);
-        OSBlockMove(tikPath + s, "title.tik", strlen("title.tik") + 1, false);
-
+        OSBlockMove(tmpPath + s, "title.tik", strlen("title.tik") + 1, false);
         TICKET *tik;
-        s = readFile(tikPath, (void **)&tik);
+        s = readFile(tmpPath, (void **)&tik);
         if(tik != NULL && hasMagicHeader(tik) && strcmp(tik->header.app, "NUSspli") == 0)
         {
             char *needle = strstr(tik->header.app_version, ".");
@@ -145,8 +162,13 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
                     if(minor >= 113 && minor < 125)
                     {
                         debugPrintf("Broken ticket detected, fixing...");
-                        if(generateTik(tikPath, getTitleEntryByTid(tmd2->tid), tmd2))
+                        if(generateTik(tmpPath, getTitleEntryByTid(tmd2->tid), tmd2))
+                        {
+                            if(noIntro != NULL)
+                                revertNoIntro(noIntro);
+
                             return install(game, hasDeps, dev, path, toUsb, keepFiles, tmd2);
+                        }
                         else
                             debugPrintf("Error fixing ticket!");
                     }
@@ -165,6 +187,9 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
     addEntropy(&t, sizeof(OSTime));
     if(data.err != 0)
     {
+        if(noIntro != NULL)
+            revertNoIntro(noIntro);
+
         switch(data.err)
         {
             case 0xfffbf3e2:
@@ -192,7 +217,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
         debugPrintf(toScreen);
         addToScreenLog("Installation failed!");
         showErrorFrame(toScreen);
-        goto installError;
+        return false;
     }
 
     // Allright, let's set if we want to install to USB or NAND
@@ -207,10 +232,13 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 
     if(data.err != 0)
     {
+        if(noIntro != NULL)
+            revertNoIntro(noIntro);
+
         const char *err = localise(toUsb ? "Error opening USB device" : "Error opening internal memory");
         addToScreenLog("Installation failed!");
         showErrorFrame(err);
-        goto installError;
+        return false;
     }
 
     // Just some debugging stuff
@@ -226,12 +254,15 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
 
     if(err != 0)
     {
+        if(noIntro != NULL)
+            revertNoIntro(noIntro);
+
         sprintf(toScreen, "%s \"%s\": %#010x", localise("Error starting async installation of"), path, data.err);
         debugPrintf(toScreen);
         addToScreenLog("Installation failed!");
         showErrorFrame(toScreen);
         enableShutdown();
-        goto installError;
+        return false;
     }
 
     showMcpProgress(&data, game, true);
@@ -242,6 +273,9 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
     // MCP thread finished. Let's see if we got any error - TODO: This is a 1:1 copy&paste from WUP Installer GX2 which itself stole it from WUP Installer Y mod which got it from WUP Installer minor edit by Nexocube who got it from WUP installer JHBL Version by Dimrok who portet it from the ASM of WUP Installer. So I think it's time for something new... ^^
     if(data.err != 0)
     {
+        if(keepFiles && noIntro != NULL)
+            revertNoIntro(noIntro);
+
         debugPrintf("Installation failed with result: %#010x", data.err);
         strcpy(toScreen, localise("Installation failed!"));
         strcat(toScreen, "\n\n");
@@ -306,6 +340,10 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
     }
 
     claimSpace(toUsb ? getUSB() : NUSDEV_MLC, size);
+
+    if(keepFiles && noIntro != NULL)
+        revertNoIntro(noIntro);
+
     addToScreenLog("Installation finished!");
 
     if(!keepFiles && dev == NUSDEV_SD)
@@ -322,7 +360,4 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
     }
 
     return true;
-
-installError:
-    return false;
 }

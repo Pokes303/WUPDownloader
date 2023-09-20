@@ -301,11 +301,11 @@ void generateFakeTicket()
     char *dir;
     TMD *tmd;
 gftEntry:
-    dir = fileBrowserMenu(false);
+    dir = fileBrowserMenu(false, false);
     if(dir == NULL || !AppRunning(true))
         return;
 
-    tmd = getTmd(dir);
+    tmd = getTmd(dir, false);
     if(tmd == NULL)
     {
         showErrorFrame(localise("Invalid title.tmd file!"));

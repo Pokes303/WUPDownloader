@@ -101,7 +101,7 @@ static void drawFBMenuFrame(const char *path, LIST *folders, size_t pos, const s
     drawFrame();
 }
 
-char *fileBrowserMenu(bool showQueue)
+char *fileBrowserMenu(bool showQueue, bool allowNoIntro)
 {
     LIST *folders = createList();
     if(folders == NULL)
@@ -221,6 +221,15 @@ refreshDirList:
                 path[pos] = '\0';
                 if(ret)
                     goto exitFileBrowserMenu;
+                else if(allowNoIntro)
+                {
+                    // No intro
+                    strcpy(path + pos, "tmd");
+                    ret = fileExists(path);
+                    path[pos] = '\0';
+                    if(ret)
+                        goto exitFileBrowserMenu;
+                }
 
                 goto refreshDirList;
             }

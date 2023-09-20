@@ -1,6 +1,6 @@
 /***************************************************************************
  * This file is part of NUSspli.                                           *
- * Copyright (c) 2020 V10lator <v10lator@myway.de>                         *
+ * Copyright (c) 2023 V10lator <v10lator@myway.de>                         *
  *                                                                         *
  * This program is free software; you can redistribute it and/or modify    *
  * it under the terms of the GNU General Public License as published by    *
@@ -20,6 +20,9 @@
 
 #include <wut-fixups.h>
 
+#include <ticket.h>
+#include <tmd.h>
+
 #include <stdbool.h>
 
 #ifdef __cplusplus
@@ -27,7 +30,15 @@ extern "C"
 {
 #endif
 
-    char *fileBrowserMenu(bool showQueue, bool allowNoIntro);
+    typedef struct
+    {
+        char *path;
+        bool hadTicket;
+    } NO_INTRO_DATA;
+
+    void destroyNoIntroData(NO_INTRO_DATA *data);
+    void revertNoIntro(NO_INTRO_DATA *data);
+    NO_INTRO_DATA *transformNoIntro(const char *path);
 
 #ifdef __cplusplus
 }

@@ -469,17 +469,23 @@ static bool fixTMD(const char *path, TMD *tmd, size_t size)
     return false;
 }
 
-TMD *getTmd(const char *dir)
+TMD *getTmd(const char *dir, bool allowNoIntro)
 {
-    size_t s = strlen(dir);
-    char *path = MEMAllocFromDefaultHeap(s + (strlen("/title.tmd") + 1));
+    size_t ss = strlen(dir);
+    char *path = MEMAllocFromDefaultHeap(ss + (strlen("/title.tmd") + 1));
     TMD *tmd = NULL;
     if(path != NULL)
     {
-        OSBlockMove(path, dir, s, false);
-        OSBlockMove(path + s, "/title.tmd", strlen("/title.tmd") + 1, false);
+        OSBlockMove(path, dir, ss, false);
+        OSBlockMove(path + ss, "/title.tmd", strlen("/title.tmd") + 1, false);
 
-        s = readFile(path, (void **)&tmd);
+        size_t s = readFile(path, (void **)&tmd);
+        if(tmd == NULL && allowNoIntro)
+        {
+            OSBlockMove(path + ss, "/tmd", strlen("/tmd") + 1, false);
+            s = readFile(path, (void **)&tmd);
+        }
+
         if(tmd != NULL)
         {
             switch(verifyTmd(tmd, s))

@@ -92,7 +92,7 @@ size_t readFileNew(const char *path, void **buffer) __attribute__((__hot__));
 #define readFile(path, buffer) readFileNew(path, buffer)
 #endif
     size_t getDirsize(const char *path);
-    TMD *getTmd(const char *dir);
+    TMD *getTmd(const char *dir, bool allowNoIntro);
     TMD_STATE verifyTmd(const TMD *tmd, size_t size) __attribute__((__hot__));
 
 #ifdef __cplusplus

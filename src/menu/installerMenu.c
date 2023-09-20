@@ -139,7 +139,7 @@ static void drawInstallerMenuFrame(const char *name, NUSDEV dev, NUSDEV toDev, b
 
 void installerMenu()
 {
-    const char *dir = fileBrowserMenu(true);
+    const char *dir = fileBrowserMenu(true, true);
     if(dir == NULL || !AppRunning(true))
         return;
 
@@ -157,7 +157,7 @@ void installerMenu()
     bool redraw;
 
 refreshDir:
-    tmd = getTmd(dir);
+    tmd = getTmd(dir, true);
     if(tmd == NULL)
     {
         showErrorFrame(localise("Invalid title.tmd file!"));
@@ -257,7 +257,7 @@ grabNewDir:
     if(!AppRunning(true))
         return;
 
-    dir = fileBrowserMenu(true);
+    dir = fileBrowserMenu(true, true);
     if(dir != NULL)
         goto refreshDir;
 }
