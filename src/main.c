@@ -201,7 +201,7 @@ static void innerMain(const char *cfwError)
                         lerr = "Couldn't initialize Crypto!";
                 }
                 else
-                    lerr = "Unsupported environment.\nEither you're not using Tiramisu/Aroma or your Tiramisu version is out of date."; //TODO: Add cfwError to this.
+                    lerr = (char *)cfwError;
 
                 if(lerr != NULL)
                 {

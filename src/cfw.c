@@ -32,6 +32,8 @@
 #define VALUE_A 0xE3A00000 // mov r0, #0
 #define VALUE_B 0xE12FFF1E // bx lr
 
+#define CFW_ERR "Unsupported environment.\nEither you're not using Tiramisu/Aroma or your Tiramisu version is out of date.\n\n"
+
 static bool mochaReady = false;
 static const uint32_t addys[6] = {
     // Cached cert check
@@ -50,9 +52,12 @@ static char cfwError[1024] = { '\0' }; // TODO
 
 static void printCfwError(const char *str, ...)
 {
+    size_t l = strlen(CFW_ERR);
+    OSBlockMove(cfwError, CFW_ERR, l, false);
+
     va_list va;
     va_start(va, str);
-    vsnprintf(cfwError, 1024 - 1, str, va);
+    vsnprintf(cfwError + l, (1024 - 1) - l, str, va);
     va_end(va);
 }
 
