@@ -46,12 +46,14 @@ static uint32_t origValues[6];
 
 bool cfwValid()
 {
-    mochaReady = Mocha_InitLibrary() == MOCHA_RESULT_SUCCESS;
+    MochaUtilsStatus s = Mocha_InitLibrary();
+    mochaReady = s == MOCHA_RESULT_SUCCESS;
     bool ret = mochaReady;
     if(ret)
     {
         WiiUConsoleOTP otp;
-        ret = Mocha_ReadOTP(&otp) == MOCHA_RESULT_SUCCESS;
+        s = Mocha_ReadOTP(&otp);
+        ret = s == MOCHA_RESULT_SUCCESS;
         if(ret)
         {
             MochaRPXLoadInfo info = {
@@ -61,7 +63,7 @@ bool cfwValid()
                 .path = "dummy"
             };
 
-            MochaUtilsStatus s = Mocha_LaunchRPX(&info);
+            s = Mocha_LaunchRPX(&info);
             ret = s != MOCHA_RESULT_UNSUPPORTED_API_VERSION && s != MOCHA_RESULT_UNSUPPORTED_COMMAND;
             if(ret)
             {
@@ -96,8 +98,14 @@ bool cfwValid()
                     }
                 }
             }
+            else
+                debugPrintf("Can't dummy load RPX: %s", Mocha_GetStatusStr(s));
         }
+        else
+            debugPrintf("Can't acces OTP: %s", Mocha_GetStatusStr(s));
     }
+    else
+        debugPrintf("Can't init libmocha: 0x%8X", s);
 
     return ret;
 }
