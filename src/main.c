@@ -77,7 +77,7 @@ static void drawLoadingScreen(const char *toScreenLog, const char *loadingMsg)
     drawFrame();
 }
 
-static void innerMain(bool validCfw)
+static void innerMain(const char *cfwError)
 {
     OSThread *mainThread = OSGetCurrentThread();
     OSSetThreadName(mainThread, "NUSspli");
@@ -85,7 +85,7 @@ static void innerMain(bool validCfw)
     OSSetThreadStackUsage(mainThread);
 #endif
 
-    if(validCfw)
+    if(!cfwError)
     {
         addEntropy(&(mainThread->id), sizeof(uint16_t));
         addEntropy(mainThread->stackStart, 4);
@@ -98,13 +98,13 @@ static void innerMain(bool validCfw)
 
     if(initStaticMem())
     {
-        if(initFS(validCfw))
+        if(initFS(!cfwError))
         {
             if(initRenderer())
             {
                 readInput(); // bug #95
                 char *lerr = NULL;
-                if(validCfw)
+                if(!cfwError)
                 {
                     if(OSSetThreadPriority(mainThread, THREAD_PRIORITY_HIGH))
                         addToScreenLog("Changed main thread priority!");
@@ -201,7 +201,7 @@ static void innerMain(bool validCfw)
                         lerr = "Couldn't initialize Crypto!";
                 }
                 else
-                    lerr = "Unsupported environment.\nEither you're not using Tiramisu/Aroma or your Tiramisu version is out of date.";
+                    lerr = "Unsupported environment.\nEither you're not using Tiramisu/Aroma or your Tiramisu version is out of date."; //TODO: Add cfwError to this.
 
                 if(lerr != NULL)
                 {
@@ -219,7 +219,7 @@ static void innerMain(bool validCfw)
                 debugPrintf("SDL closed");
             }
 
-            deinitFS(validCfw);
+            deinitFS(!cfwError);
             debugPrintf("Filesystem closed");
         }
         else
@@ -243,7 +243,8 @@ int main()
     bool jailbreaking;
     uint64_t tid = OSGetTitleID();
 #endif
-    if(cfwValid())
+    const char *cfwError = cfwValid();
+    if(!cfwError)
     {
 #ifdef NUSSPLI_HBL
         jailbreaking = !isAroma() && (tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004A000; // Mii Maker
@@ -252,11 +253,11 @@ int main()
 
         if(!jailbreaking)
 #endif
-            innerMain(true);
+            innerMain(NULL);
     }
     else
     {
-        innerMain(false);
+        innerMain(cfwError);
 #ifdef NUSSPLI_HBL
         jailbreaking = false;
 #endif

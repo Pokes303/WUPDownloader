@@ -23,5 +23,5 @@
 
 #include <stdbool.h>
 
-bool cfwValid();
+const char *cfwValid();
 void deinitCfw();

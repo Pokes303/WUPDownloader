@@ -18,7 +18,9 @@
 
 #include <wut-fixups.h>
 
+#include <stdarg.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include <coreinit/title.h>
 #include <mocha/mocha.h>
@@ -44,70 +46,79 @@ static const uint32_t addys[6] = {
 };
 static uint32_t origValues[6];
 
-bool cfwValid()
+static char cfwError[1024] = { '\0' }; // TODO
+
+static void printCfwError(const char *str, ...)
+{
+    va_list va;
+    va_start(va, str);
+    vsnprintf(cfwError, 1024 - 1, str, va);
+    va_end(va);
+}
+
+const char *cfwValid()
 {
     MochaUtilsStatus s = Mocha_InitLibrary();
     mochaReady = s == MOCHA_RESULT_SUCCESS;
-    bool ret = mochaReady;
-    if(ret)
+    if(!mochaReady)
     {
-        WiiUConsoleOTP otp;
-        s = Mocha_ReadOTP(&otp);
-        ret = s == MOCHA_RESULT_SUCCESS;
-        if(ret)
-        {
-            MochaRPXLoadInfo info = {
-                .target = 0xDEADBEEF,
-                .filesize = 0,
-                .fileoffset = 0,
-                .path = "dummy"
-            };
-
-            s = Mocha_LaunchRPX(&info);
-            ret = s != MOCHA_RESULT_UNSUPPORTED_API_VERSION && s != MOCHA_RESULT_UNSUPPORTED_COMMAND;
-            if(ret)
-            {
-                if(isAroma())
-                {
-                    char path[FS_MAX_PATH];
-                    RPXLoaderStatus rs = RPXLoader_GetPathOfRunningExecutable(path, FS_MAX_PATH);
-                    ret = rs == RPX_LOADER_RESULT_SUCCESS;
-                    if(!ret)
-                        debugPrintf("RPXLoader error: %s", RPXLoader_GetStatusStr(rs));
-                }
-
-                if(ret)
-                {
-                    for(int i = 0; i < 6; ++i)
-                    {
-                        s = Mocha_IOSUKernelRead32(addys[i], origValues + i);
-                        if(s != MOCHA_RESULT_SUCCESS)
-                            goto restoreIOSU;
-
-                        s = Mocha_IOSUKernelWrite32(addys[i], i % 2 == 0 ? VALUE_A : VALUE_B);
-                        if(s != MOCHA_RESULT_SUCCESS)
-                            goto restoreIOSU;
-
-                        continue;
-                    restoreIOSU:
-                        for(--i; i >= 0; --i)
-                            Mocha_IOSUKernelWrite32(addys[i], origValues[i]);
-
-                        debugPrintf("libmocha error: %s", Mocha_GetStatusStr(s));
-                        return false;
-                    }
-                }
-            }
-            else
-                debugPrintf("Can't dummy load RPX: %s", Mocha_GetStatusStr(s));
-        }
-        else
-            debugPrintf("Can't acces OTP: %s", Mocha_GetStatusStr(s));
+        printCfwError("Can't init libmocha: 0x%8X", s);
+        return cfwError;
     }
-    else
-        debugPrintf("Can't init libmocha: 0x%8X", s);
 
-    return ret;
+    WiiUConsoleOTP otp;
+    s = Mocha_ReadOTP(&otp);
+    if(s != MOCHA_RESULT_SUCCESS)
+    {
+        printCfwError("Can't acces OTP: %s", Mocha_GetStatusStr(s));
+        return cfwError;
+    }
+
+    MochaRPXLoadInfo info = {
+        .target = 0xDEADBEEF,
+        .filesize = 0,
+        .fileoffset = 0,
+        .path = "dummy"
+    };
+
+    s = Mocha_LaunchRPX(&info);
+    if(s == MOCHA_RESULT_UNSUPPORTED_API_VERSION || s == MOCHA_RESULT_UNSUPPORTED_COMMAND)
+    {
+        printCfwError("Can't dummy load RPX: %s", Mocha_GetStatusStr(s));
+        return cfwError;
+    }
+
+    if(isAroma())
+    {
+        char path[FS_MAX_PATH];
+        RPXLoaderStatus rs = RPXLoader_GetPathOfRunningExecutable(path, FS_MAX_PATH);
+        if(!rs != RPX_LOADER_RESULT_SUCCESS)
+        {
+            printCfwError("RPXLoader error: %s", RPXLoader_GetStatusStr(rs));
+            return cfwError;
+        }
+    }
+
+    for(int i = 0; i < 6; ++i)
+    {
+        s = Mocha_IOSUKernelRead32(addys[i], origValues + i);
+        if(s != MOCHA_RESULT_SUCCESS)
+            goto restoreIOSU;
+
+        s = Mocha_IOSUKernelWrite32(addys[i], i % 2 == 0 ? VALUE_A : VALUE_B);
+        if(s != MOCHA_RESULT_SUCCESS)
+            goto restoreIOSU;
+
+        continue;
+    restoreIOSU:
+        for(--i; i >= 0; --i)
+            Mocha_IOSUKernelWrite32(addys[i], origValues[i]);
+
+        printCfwError("libmocha error: %s", Mocha_GetStatusStr(s));
+        return cfwError;
+    }
+
+    return NULL;
 }
 
 void deinitCfw()
