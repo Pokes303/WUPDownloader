@@ -85,7 +85,7 @@ static void innerMain(const char *cfwError)
     OSSetThreadStackUsage(mainThread);
 #endif
 
-    if(!cfwError)
+    if(cfwError == NULL)
     {
         addEntropy(&(mainThread->id), sizeof(uint16_t));
         addEntropy(mainThread->stackStart, 4);
@@ -98,13 +98,13 @@ static void innerMain(const char *cfwError)
 
     if(initStaticMem())
     {
-        if(initFS(!cfwError))
+        if(initFS(cfwError == NULL))
         {
             if(initRenderer())
             {
                 readInput(); // bug #95
                 char *lerr = NULL;
-                if(!cfwError)
+                if(cfwError == NULL)
                 {
                     if(OSSetThreadPriority(mainThread, THREAD_PRIORITY_HIGH))
                         addToScreenLog("Changed main thread priority!");
@@ -219,7 +219,7 @@ static void innerMain(const char *cfwError)
                 debugPrintf("SDL closed");
             }
 
-            deinitFS(!cfwError);
+            deinitFS(cfwError == NULL);
             debugPrintf("Filesystem closed");
         }
         else
@@ -244,7 +244,7 @@ int main()
     uint64_t tid = OSGetTitleID();
 #endif
     const char *cfwError = cfwValid();
-    if(!cfwError)
+    if(cfwError == NULL)
     {
 #ifdef NUSSPLI_HBL
         jailbreaking = !isAroma() && (tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004A000; // Mii Maker

@@ -23,6 +23,8 @@
 #include <stdio.h>
 
 #include <coreinit/title.h>
+#include <coreinit/memdefaultheap.h>
+#include <coreinit/memory.h>
 #include <mocha/mocha.h>
 #include <rpxloader/rpxloader.h>
 
@@ -47,11 +49,14 @@ static const uint32_t addys[6] = {
     0x05052C48,
 };
 static uint32_t origValues[6];
-
-static char cfwError[1024] = { '\0' }; // TODO
+static char *cfwError = NULL;
 
 static void printCfwError(const char *str, ...)
 {
+    cfwError = MEMAllocFromDefaultHeap(sizeof(char) * 1024);
+    if(cfwError == NULL)
+        return;
+
     size_t l = strlen(CFW_ERR);
     OSBlockMove(cfwError, CFW_ERR, l, false);
 
@@ -135,4 +140,7 @@ void deinitCfw()
 
         Mocha_DeInitLibrary();
     }
+
+    if(cfwError != NULL)
+        MEMFreeToDefaultHeap(cfwError);
 }
