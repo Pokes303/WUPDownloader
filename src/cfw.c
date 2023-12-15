@@ -97,7 +97,7 @@ const char *cfwValid()
     {
         char path[FS_MAX_PATH];
         RPXLoaderStatus rs = RPXLoader_GetPathOfRunningExecutable(path, FS_MAX_PATH);
-        if(!rs != RPX_LOADER_RESULT_SUCCESS)
+        if(rs != RPX_LOADER_RESULT_SUCCESS)
         {
             printCfwError("RPXLoader error: %s", RPXLoader_GetStatusStr(rs));
             return cfwError;
