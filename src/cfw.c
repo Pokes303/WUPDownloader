@@ -48,6 +48,7 @@ static const uint32_t addys[6] = {
     0x05052C44,
     0x05052C48,
 };
+static int oi = 0;
 static uint32_t origValues[6];
 static char *cfwError = NULL;
 
@@ -99,20 +100,20 @@ const char *cfwValid()
             return printCfwError("RPXLoader error: %s", RPXLoader_GetStatusStr(rs));
     }
 
-    for(int i = 0; i < 6; ++i)
+    for(; oi < 6; ++oi)
     {
-        s = Mocha_IOSUKernelRead32(addys[i], origValues + i);
+        s = Mocha_IOSUKernelRead32(addys[oi], origValues + oi);
         if(s != MOCHA_RESULT_SUCCESS)
             goto restoreIOSU;
 
-        s = Mocha_IOSUKernelWrite32(addys[i], i % 2 == 0 ? VALUE_A : VALUE_B);
+        s = Mocha_IOSUKernelWrite32(addys[oi], oi % 2 == 0 ? VALUE_A : VALUE_B);
         if(s != MOCHA_RESULT_SUCCESS)
             goto restoreIOSU;
 
         continue;
     restoreIOSU:
-        for(--i; i >= 0; --i)
-            Mocha_IOSUKernelWrite32(addys[i], origValues[i]);
+        for(--oi; oi >= 0; --oi)
+            Mocha_IOSUKernelWrite32(addys[oi], origValues[oi]);
 
         return printCfwError("libmocha error: %s", Mocha_GetStatusStr(s));
     }
@@ -124,7 +125,7 @@ void deinitCfw()
 {
     if(mochaReady)
     {
-        for(int i = 0; i < 6; ++i)
+        for(int i = 0; i < oi; ++i)
             Mocha_IOSUKernelWrite32(addys[i], origValues[i]);
 
         Mocha_DeInitLibrary();
