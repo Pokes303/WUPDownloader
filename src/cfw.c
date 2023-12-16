@@ -51,7 +51,7 @@ static const uint32_t addys[6] = {
 static uint32_t origValues[6];
 static char *cfwError = NULL;
 
-static char *printCfwError(const char *str, ...)
+static const char *printCfwError(const char *str, ...)
 {
     cfwError = MEMAllocFromDefaultHeap(sizeof(char) * 1024);
     if(cfwError == NULL)
