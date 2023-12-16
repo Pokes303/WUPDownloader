@@ -36,9 +36,9 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           docker build . -t builder
-          echo ${{ secrets.ENC_KEY }} > encryptKeyWith
       - name: Build artifacts
         run: |
+          echo ${{ secrets.ENC_KEY }} > encryptKeyWith
           docker run --rm -v ${PWD}:/project builder python3 build.py
           cat version.txt >> $GITHUB_OUTPUT
         id: version
