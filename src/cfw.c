@@ -22,9 +22,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include <coreinit/title.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
+#include <coreinit/title.h>
 #include <mocha/mocha.h>
 #include <rpxloader/rpxloader.h>
 
