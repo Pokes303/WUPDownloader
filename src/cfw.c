@@ -51,11 +51,11 @@ static const uint32_t addys[6] = {
 static uint32_t origValues[6];
 static char *cfwError = NULL;
 
-static void printCfwError(const char *str, ...)
+static char *printCfwError(const char *str, ...)
 {
     cfwError = MEMAllocFromDefaultHeap(sizeof(char) * 1024);
     if(cfwError == NULL)
-        return;
+        return CFW_ERR;
 
     size_t l = strlen(CFW_ERR);
     OSBlockMove(cfwError, CFW_ERR, l, false);
@@ -64,6 +64,8 @@ static void printCfwError(const char *str, ...)
     va_start(va, str);
     vsnprintf(cfwError + l, (1024 - 1) - l, str, va);
     va_end(va);
+
+    return cfwError;
 }
 
 const char *cfwValid()
@@ -71,18 +73,12 @@ const char *cfwValid()
     MochaUtilsStatus s = Mocha_InitLibrary();
     mochaReady = s == MOCHA_RESULT_SUCCESS;
     if(!mochaReady)
-    {
-        printCfwError("Can't init libmocha: 0x%8X", s);
-        return cfwError;
-    }
+        return printCfwError("Can't init libmocha: 0x%8X", s);
 
     WiiUConsoleOTP otp;
     s = Mocha_ReadOTP(&otp);
     if(s != MOCHA_RESULT_SUCCESS)
-    {
-        printCfwError("Can't acces OTP: %s", Mocha_GetStatusStr(s));
-        return cfwError;
-    }
+        return printCfwError("Can't acces OTP: %s", Mocha_GetStatusStr(s));
 
     MochaRPXLoadInfo info = {
         .target = 0xDEADBEEF,
@@ -93,20 +89,14 @@ const char *cfwValid()
 
     s = Mocha_LaunchRPX(&info);
     if(s == MOCHA_RESULT_UNSUPPORTED_API_VERSION || s == MOCHA_RESULT_UNSUPPORTED_COMMAND)
-    {
-        printCfwError("Can't dummy load RPX: %s", Mocha_GetStatusStr(s));
-        return cfwError;
-    }
+        return printCfwError("Can't dummy load RPX: %s", Mocha_GetStatusStr(s));
 
     if(isAroma())
     {
         char path[FS_MAX_PATH];
         RPXLoaderStatus rs = RPXLoader_GetPathOfRunningExecutable(path, FS_MAX_PATH);
         if(rs != RPX_LOADER_RESULT_SUCCESS)
-        {
-            printCfwError("RPXLoader error: %s", RPXLoader_GetStatusStr(rs));
-            return cfwError;
-        }
+            return printCfwError("RPXLoader error: %s", RPXLoader_GetStatusStr(rs));
     }
 
     for(int i = 0; i < 6; ++i)
@@ -124,8 +114,7 @@ const char *cfwValid()
         for(--i; i >= 0; --i)
             Mocha_IOSUKernelWrite32(addys[i], origValues[i]);
 
-        printCfwError("libmocha error: %s", Mocha_GetStatusStr(s));
-        return cfwError;
+        return printCfwError("libmocha error: %s", Mocha_GetStatusStr(s));
     }
 
     return NULL;
