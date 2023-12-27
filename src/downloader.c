@@ -395,7 +395,7 @@ static const char *translateCurlError(CURLcode err, const char *error)
         case CURLE_OUT_OF_MEMORY:
             return "Internal error";
         default:
-            return error[0] == '\0' ? "Unknown libcurl error" : error;
+            return error[0] == '\0' ? curl_easy_strerror(err) : error;
     }
 }
 
