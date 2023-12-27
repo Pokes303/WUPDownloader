@@ -272,37 +272,48 @@ bool initDownloader()
         curl = curl_easy_init();
         if(curl != NULL)
         {
+            CURLoption opt;
 #ifdef NUSSPLI_DEBUG
             curlError[0] = '\0';
-            ret = curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curlError);
+            opt = CURLOPT_ERRORBUFFER;
+            ret = curl_easy_setopt(curl, opt, curlError);
             if(ret == CURLE_OK)
             {
 #endif
-                ret = curl_easy_setopt(curl, CURLOPT_SOCKOPTFUNCTION, initSocket);
+                opt = CURLOPT_SOCKOPTFUNCTION;
+                ret = curl_easy_setopt(curl, opt, initSocket);
                 if(ret == CURLE_OK)
                 {
-                    ret = curl_easy_setopt(curl, CURLOPT_USERAGENT, USERAGENT);
+                    opt = CURLOPT_USERAGENT;
+                    ret = curl_easy_setopt(curl, opt, USERAGENT);
                     if(ret == CURLE_OK)
                     {
-                        ret = curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, progressCallback);
+                        opt = CURLOPT_XFERINFOFUNCTION;
+                        ret = curl_easy_setopt(curl, opt, progressCallback);
                         if(ret == CURLE_OK)
                         {
-                            ret = curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+                            opt = CURLOPT_NOPROGRESS;
+                            ret = curl_easy_setopt(curl, opt, 0L);
                             if(ret == CURLE_OK)
                             {
-                                ret = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+                                opt = CURLOPT_FOLLOWLOCATION;
+                                ret = curl_easy_setopt(curl, opt, 1L);
                                 if(ret == CURLE_OK)
                                 {
-                                    ret = curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, ssl_ctx_init);
+                                    opt = CURLOPT_SSL_CTX_FUNCTION;
+                                    ret = curl_easy_setopt(curl, opt, ssl_ctx_init);
                                     if(ret == CURLE_OK)
                                     {
-                                        ret = curl_easy_setopt(curl, CURLOPT_CAINFO_BLOB, blob);
+                                        opt = CURLOPT_CAINFO_BLOB;
+                                        ret = curl_easy_setopt(curl, opt, blob);
                                         if(ret == CURLE_OK)
                                         {
-                                            ret = curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1L);
+                                            opt = CURLOPT_LOW_SPEED_LIMIT;
+                                            ret = curl_easy_setopt(curl, opt, 1L);
                                             if(ret == CURLE_OK)
                                             {
-                                                ret = curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 60L);
+                                                opt = CURLOPT_LOW_SPEED_TIME;
+                                                ret = curl_easy_setopt(curl, opt, 60L);
                                                 if(ret == CURLE_OK)
                                                 {
                                                     if(blob.data != NULL)
@@ -320,7 +331,7 @@ bool initDownloader()
                 }
 #ifdef NUSSPLI_DEBUG
             }
-            debugPrintf("curl_easy_setopt() failed: %s (%d)", curlError, ret);
+            debugPrintf("curl_easy_setopt() failed: %s (%u / %d)", curlError, opt, ret);
 #endif
             curl_easy_cleanup(curl);
             curl = NULL;
@@ -487,27 +498,35 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
     };
     spinCreateLock((cdata.lock), SPINLOCK_FREE);
 
-    CURLcode ret = curl_easy_setopt(curl, CURLOPT_URL, url);
+    CURLoption opt = CURLOPT_URL;
+    CURLcode ret = curl_easy_setopt(curl, opt, url);
     if(ret == CURLE_OK)
     {
+        opt = CURLOPT_FRESH_CONNECT;
         if(curlReuseConnection)
-            ret = curl_easy_setopt(curl, CURLOPT_FRESH_CONNECT, 0L);
+            ret = curl_easy_setopt(curl, opt, 0L);
         else
         {
-            ret = curl_easy_setopt(curl, CURLOPT_FRESH_CONNECT, 1L);
+            ret = curl_easy_setopt(curl, opt, 1L);
             curlReuseConnection = true;
         }
         if(ret == CURLE_OK)
         {
-            ret = curl_easy_setopt(curl, CURLOPT_RESUME_FROM_LARGE, (curl_off_t)fileSize);
+            opt = CURLOPT_RESUME_FROM_LARGE;
+            ret = curl_easy_setopt(curl, opt, (curl_off_t)fileSize);
             if(ret == CURLE_OK)
             {
-                ret = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, rambuf ? fwrite : (size_t(*)(const void *, size_t, size_t, FILE *))addToIOQueue); // This rises a compiler warning but that's fine
+                opt = CURLOPT_WRITEFUNCTION;
+                ret = curl_easy_setopt(curl, opt, rambuf ? fwrite : (size_t(*)(const void *, size_t, size_t, FILE *))addToIOQueue); // This rises a compiler warning but that's fine
                 if(ret == CURLE_OK)
                 {
-                    ret = curl_easy_setopt(curl, CURLOPT_WRITEDATA, (FILE *)fp);
+                    opt = CURLOPT_WRITEDATA;
+                    ret = curl_easy_setopt(curl, opt, (FILE *)fp);
                     if(ret == CURLE_OK)
-                        ret = curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &cdata);
+                    {
+                        opt = CURLOPT_XFERINFODATA;
+                        ret = curl_easy_setopt(curl, opt, &cdata);
+                    }
                 }
             }
         }
@@ -520,7 +539,7 @@ int downloadFile(const char *url, char *file, downloadData *data, FileType type,
         else
             addToIOQueue(NULL, 0, 0, (FSAFileHandle)fp);
 
-        debugPrintf("curl_easy_setopt error: %s (%d / %ud)", curlError, ret, fileSize);
+        debugPrintf("curl_easy_setopt error: %s (%d / %u / %ud)", curlError, ret, opt, fileSize);
         return 1;
     }
 
