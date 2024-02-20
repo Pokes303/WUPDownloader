@@ -62,7 +62,6 @@ static Swkbd_AppearArg appearArg;
 static OSMessageQueue swkbd_queue;
 static OSMessage swkbd_msg[SWKBD_QUEUE_SIZE];
 
-uint32_t oh[4] = { 0, 0, 0, 0 }; // Need to track last hold event for some 3rd party Wiimoted
 static OSTime lastButtonPress = 0;
 
 typedef struct
@@ -365,6 +364,7 @@ void readInput()
     uint32_t controllerType;
     int32_t controllerProbe;
     uint32_t oldV, oldH;
+    uint32_t tv;
     KPADStatus *kps = ((KPADStatus *)kpad) + 4;
     KPADError kerr;
     int i = 4;
@@ -390,35 +390,36 @@ void readInput()
         if(controllerType == WPAD_EXT_PRO_CONTROLLER || // With a simple input like ours we're able to handle Wii u pro as Wii classic controllers.
             controllerType == WPAD_EXT_CLASSIC || controllerType == WPAD_EXT_MPLUS_CLASSIC)
         {
-            if(kps->classic.trigger)
+            tv = kps->classic.trigger;
+            if(tv)
             {
-                if(kps->classic.trigger & WPAD_CLASSIC_BUTTON_A)
+                if(tv & WPAD_CLASSIC_BUTTON_A)
                     vpad.trigger |= VPAD_BUTTON_A;
-                if(kps->classic.trigger & WPAD_CLASSIC_BUTTON_B)
+                if(tv & WPAD_CLASSIC_BUTTON_B)
                     vpad.trigger |= VPAD_BUTTON_B;
-                if(kps->classic.trigger & WPAD_CLASSIC_BUTTON_X)
+                if(tv & WPAD_CLASSIC_BUTTON_X)
                     vpad.trigger |= VPAD_BUTTON_X;
-                if(kps->classic.trigger & WPAD_CLASSIC_BUTTON_Y)
+                if(tv & WPAD_CLASSIC_BUTTON_Y)
                     vpad.trigger |= VPAD_BUTTON_Y;
-                if(kps->classic.trigger & WPAD_CLASSIC_BUTTON_UP)
+                if(tv & WPAD_CLASSIC_BUTTON_UP)
                     vpad.trigger |= VPAD_BUTTON_UP;
-                if(kps->classic.trigger & WPAD_CLASSIC_BUTTON_DOWN)
+                if(tv & WPAD_CLASSIC_BUTTON_DOWN)
                     vpad.trigger |= VPAD_BUTTON_DOWN;
-                if(kps->classic.trigger & WPAD_CLASSIC_BUTTON_LEFT)
+                if(tv & WPAD_CLASSIC_BUTTON_LEFT)
                     vpad.trigger |= VPAD_BUTTON_LEFT;
-                if(kps->classic.trigger & WPAD_CLASSIC_BUTTON_RIGHT)
+                if(tv & WPAD_CLASSIC_BUTTON_RIGHT)
                     vpad.trigger |= VPAD_BUTTON_RIGHT;
-                if(kps->classic.trigger & WPAD_CLASSIC_BUTTON_PLUS)
+                if(tv & WPAD_CLASSIC_BUTTON_PLUS)
                     vpad.trigger |= VPAD_BUTTON_PLUS;
-                if(kps->classic.trigger & WPAD_CLASSIC_BUTTON_MINUS)
+                if(tv & WPAD_CLASSIC_BUTTON_MINUS)
                     vpad.trigger |= VPAD_BUTTON_MINUS;
-                if(kps->classic.trigger & WPAD_CLASSIC_BUTTON_R)
+                if(tv & WPAD_CLASSIC_BUTTON_R)
                     vpad.trigger |= VPAD_BUTTON_R;
-                if(kps->classic.trigger & WPAD_CLASSIC_BUTTON_L)
+                if(tv & WPAD_CLASSIC_BUTTON_L)
                     vpad.trigger |= VPAD_BUTTON_L;
-                if(kps->classic.trigger & WPAD_CLASSIC_BUTTON_ZR)
+                if(tv & WPAD_CLASSIC_BUTTON_ZR)
                     vpad.trigger |= VPAD_BUTTON_ZR;
-                if(kps->classic.trigger & WPAD_CLASSIC_BUTTON_ZL)
+                if(tv & WPAD_CLASSIC_BUTTON_ZL)
                     vpad.trigger |= VPAD_BUTTON_ZL;
 
                 if(kbdHidden && vpad.trigger != oldV)
@@ -427,15 +428,16 @@ void readInput()
                 cont = true;
             }
 
-            if(kps->classic.hold)
+            tv = kps->classic.hold;
+            if(tv)
             {
-                if(kps->classic.hold & WPAD_CLASSIC_BUTTON_UP)
+                if(tv & WPAD_CLASSIC_BUTTON_UP)
                     vpad.hold |= VPAD_BUTTON_UP;
-                if(kps->classic.hold & WPAD_CLASSIC_BUTTON_DOWN)
+                if(tv & WPAD_CLASSIC_BUTTON_DOWN)
                     vpad.hold |= VPAD_BUTTON_DOWN;
-                if(kps->classic.hold & WPAD_CLASSIC_BUTTON_LEFT)
+                if(tv & WPAD_CLASSIC_BUTTON_LEFT)
                     vpad.hold |= VPAD_BUTTON_LEFT;
-                if(kps->classic.hold & WPAD_CLASSIC_BUTTON_RIGHT)
+                if(tv & WPAD_CLASSIC_BUTTON_RIGHT)
                     vpad.hold |= VPAD_BUTTON_RIGHT;
 
                 if(kbdHidden && vpad.hold != oldH)
@@ -448,53 +450,51 @@ void readInput()
                 continue;
         }
 
-        if(kps->trigger)
+        tv = kps->trigger;
+        if(tv)
         {
-            if((kps->trigger & WPAD_BUTTON_A) && !(oh[i] & WPAD_BUTTON_A))
+            if(tv & WPAD_BUTTON_A)
                 vpad.trigger |= VPAD_BUTTON_A;
-            if((kps->trigger & WPAD_BUTTON_B) && !(oh[i] & WPAD_BUTTON_B))
+            if(tv & WPAD_BUTTON_B)
                 vpad.trigger |= VPAD_BUTTON_B;
-            if((kps->trigger & WPAD_BUTTON_1) && !(oh[i] & WPAD_BUTTON_1))
+            if(tv & WPAD_BUTTON_1)
                 vpad.trigger |= VPAD_BUTTON_X;
-            if((kps->trigger & WPAD_BUTTON_2) && !(oh[i] & WPAD_BUTTON_2))
+            if(tv & WPAD_BUTTON_2)
                 vpad.trigger |= VPAD_BUTTON_Y;
-            if((kps->trigger & WPAD_BUTTON_UP) && !(oh[i] & WPAD_BUTTON_UP))
+            if(tv & WPAD_BUTTON_UP)
                 vpad.trigger |= VPAD_BUTTON_UP;
-            if((kps->trigger & WPAD_BUTTON_DOWN) && !(oh[i] & WPAD_BUTTON_DOWN))
+            if(tv & WPAD_BUTTON_DOWN)
                 vpad.trigger |= VPAD_BUTTON_DOWN;
-            if((kps->trigger & WPAD_BUTTON_LEFT) && !(oh[i] & WPAD_BUTTON_LEFT))
+            if(tv & WPAD_BUTTON_LEFT)
                 vpad.trigger |= VPAD_BUTTON_LEFT;
-            if((kps->trigger & WPAD_BUTTON_RIGHT) && !(oh[i] & WPAD_BUTTON_RIGHT))
+            if(tv & WPAD_BUTTON_RIGHT)
                 vpad.trigger |= VPAD_BUTTON_RIGHT;
-            if((kps->trigger & WPAD_BUTTON_PLUS) && !(oh[i] & WPAD_BUTTON_PLUS))
+            if(tv & WPAD_BUTTON_PLUS)
                 vpad.trigger |= VPAD_BUTTON_PLUS;
-            if((kps->trigger & WPAD_BUTTON_MINUS) && !(oh[i] & WPAD_BUTTON_MINUS))
+            if(tv & WPAD_BUTTON_MINUS)
                 vpad.trigger |= VPAD_BUTTON_MINUS;
-            if((kps->trigger & WPAD_BUTTON_Z) && !(oh[i] & WPAD_BUTTON_Z))
+            if(tv & WPAD_BUTTON_Z)
                 vpad.trigger |= VPAD_BUTTON_ZR;
-            if((kps->trigger & WPAD_BUTTON_C) && !(oh[i] & WPAD_BUTTON_C))
+            if(tv & WPAD_BUTTON_C)
                 vpad.trigger |= VPAD_BUTTON_ZL;
 
             if(kbdHidden && vpad.trigger != oldV)
                 lastUsedController = i;
         }
 
-        if(kps->hold)
-        {
-            if(kps->hold & WPAD_BUTTON_UP)
-                vpad.hold |= VPAD_BUTTON_UP;
-            if(kps->hold & WPAD_BUTTON_DOWN)
-                vpad.hold |= VPAD_BUTTON_DOWN;
-            if(kps->hold & WPAD_BUTTON_LEFT)
-                vpad.hold |= VPAD_BUTTON_LEFT;
-            if(kps->hold & WPAD_BUTTON_RIGHT)
-                vpad.hold |= VPAD_BUTTON_RIGHT;
+        tv = kps->hold;
+        if(tv & WPAD_BUTTON_UP)
+            vpad.hold |= VPAD_BUTTON_UP;
+        if(tv & WPAD_BUTTON_DOWN)
+            vpad.hold |= VPAD_BUTTON_DOWN;
+        if(tv & WPAD_BUTTON_LEFT)
+            vpad.hold |= VPAD_BUTTON_LEFT;
+        if(tv & WPAD_BUTTON_RIGHT)
+            vpad.hold |= VPAD_BUTTON_RIGHT;
 
-            if(kbdHidden && vpad.hold != oldH)
-                lastUsedController = i;
-        }
+        if(kbdHidden && vpad.hold != oldH)
+            lastUsedController = i;
 
-        oh[i] = kps->hold;
         continue;
 
     kpadReadError:
