@@ -1072,11 +1072,11 @@ bool downloadTitle(const TMD *tmd, size_t tmdSize, const TitleEntry *titleEntry,
                 tikBuf->size = 0;
                 break;
             case 0:
-                fp = openFile(installDir, "w", tmdSize);
+                fp = openFile(installDir, "w", tikBuf->size);
                 if(fp == 0)
                 {
                     freeRamBuf(tikBuf);
-                    showErrorFrame("Can't save title.tmd file!");
+                    showErrorFrame("Can't save title.tik file!");
                     return false;
                 }
 
