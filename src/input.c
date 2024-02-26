@@ -36,7 +36,7 @@
 #include <padscore/wpad.h>
 #include <vpad/input.h>
 
-#define CT_STACK_SIZE    0x1000
+#define CT_STACK_SIZE    0x2000
 #define SWKBD_QUEUE_SIZE 8
 
 // WIP. This need a better implementation
