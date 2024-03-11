@@ -24,6 +24,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <coreinit/mcp.h>
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -60,6 +62,8 @@ bool isChannel();
 #endif
     bool AppRunning(bool mainthread) __attribute__((__hot__));
     uint32_t homeButtonCallback(void *dummy);
+    void launchTitle(MCPTitleListType *title) __attribute__((__cold__));
+    bool launchingTitle() __attribute__((__cold__));
 
 #ifdef __cplusplus
 }

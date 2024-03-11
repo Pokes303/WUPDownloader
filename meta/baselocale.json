@@ -2,7 +2,7 @@
     "Download content": "Download content",
     "Install content": "Install content",
     "Generate a fake <title.tik> file": "Generate a fake <title.tik> file",
-    "Uninstall a title": "Uninstall a title",
+    "Browse installed titles": "Browse installed titles",
     "Options": "Options",
     "Press \uE044 or \uE001 to exit": "Press \uE044 or \uE001 to exit",
     "Developers:": "Developers:",
@@ -23,7 +23,8 @@
     "\uE002 to switch to USB": "\uE002 to switch to USB",
     "Searching on": "Searching on",
 
-    "Press \uE000 to delete": "Press \uE000 to delete",
+    "Press \uE045 to launch":  "Press \uE045 to launch",
+    "\uE046 to delete": "\uE046 to delete",
 
     "Press \uE000 to continue": "Press \uE000 to continue",
     "Press \uE001 to return": "Press \uE001 to return",

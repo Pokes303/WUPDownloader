@@ -67,7 +67,7 @@ static void drawMainMenuFrame()
 #ifndef NUSSPLI_LITE
     textToFrame(line++, 4, localise("Generate a fake <title.tik> file"));
 #endif
-    textToFrame(line++, 4, localise("Uninstall a title"));
+    textToFrame(line++, 4, localise("Browse installed titles"));
     textToFrame(line++, 4, localise("Options"));
     textToFrame(line++, 4, localise("Logs"));
 

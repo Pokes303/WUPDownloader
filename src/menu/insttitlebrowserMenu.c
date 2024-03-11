@@ -191,7 +191,9 @@ static void drawITBMenuFrame(const size_t pos, const size_t cursor)
     boxToFrame(0, MAX_LINES - 2);
 
     char *toFrame = getToFrameBuffer();
-    strcpy(toFrame, localise("Press " BUTTON_A " to delete"));
+    strcpy(toFrame, localise("Press " BUTTON_PLUS " to launch"));
+    strcat(toFrame, " || ");
+    strcat(toFrame, localise(BUTTON_MINUS " to delete"));
     strcat(toFrame, " || ");
     strcat(toFrame, localise(BUTTON_B " to return"));
     textToFrame(MAX_LINES - 1, ALIGNED_CENTER, toFrame);
@@ -301,7 +303,13 @@ loopEntry:
         }
         showFrame();
 
-        if(vpad.trigger & VPAD_BUTTON_A)
+        if(vpad.trigger & VPAD_BUTTON_PLUS)
+        {
+            launchTitle(ititleEntries + cursor + pos);
+            goto instExit;
+        }
+
+        if(vpad.trigger & VPAD_BUTTON_MINUS)
         {
             entry = ititleEntries + cursor + pos;
             break;

@@ -28,8 +28,10 @@
 
 #include <coreinit/energysaver.h>
 #include <coreinit/foreground.h>
+#include <coreinit/mcp.h>
 #include <coreinit/time.h>
 #include <coreinit/title.h>
+#include <nn/acp/client.h>
 #include <proc_ui/procui.h>
 #include <rpxloader/rpxloader.h>
 
@@ -45,6 +47,7 @@ static bool channel;
 static bool aroma;
 static bool apdEnabled;
 static uint32_t apdDisabledCount = 0;
+static bool launching = false;
 
 void enableApd()
 {
@@ -142,6 +145,7 @@ void initState()
 
     ProcUIRegisterCallback(PROCUI_CALLBACK_HOME_BUTTON_DENIED, &homeButtonCallback, NULL, 100);
     OSEnableHomeButtonMenu(false);
+    ACPInitialize();
 
     aroma = RPXLoader_InitLibrary() == RPX_LOADER_RESULT_SUCCESS;
 #ifndef NUSSPLI_HBL
@@ -176,6 +180,7 @@ void deinitState()
     }
 
     deinitExceptionHandler();
+    ACPFinalize();
 }
 
 bool AppRunning(bool mainthread)
@@ -203,4 +208,16 @@ bool AppRunning(bool mainthread)
     }
 
     return true;
+}
+
+void launchTitle(MCPTitleListType *title)
+{
+    launching = true;
+    ACPAssignTitlePatch(title);
+    _SYSLaunchTitleWithStdArgsInNoSplash(title->titleId, NULL);
+}
+
+bool launchingTitle()
+{
+    return launching;
 }
