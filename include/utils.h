@@ -27,8 +27,8 @@
 
 #include <coreinit/mcp.h>
 
-#define NAPI_URL                   "https://napi.nbg01.v10lator.de/v2/"
-#define NUSSPLI_COPYRIGHT          "© 2020-2023 V10lator <v10lator@myway.de>"
+#define NAPI_URL                   "https://napi.v10lator.de/v2/"
+#define NUSSPLI_COPYRIGHT          "© 2020-2024 V10lator <v10lator@myway.de>"
 
 #define CUSTOM_MCP_ERROR_EOM       ((int)0xDEAD0001)
 #define CUSTOM_MCP_ERROR_CANCELLED ((int)0xDEAD0002)

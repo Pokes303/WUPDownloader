@@ -42,7 +42,7 @@ if len(wuhbtool) == 0:
     wuhbtool = "wuhbtool"
 
 checkAndDeleteFile("src/gtitles.c")
-urllib.request.urlretrieve("https://napi.nbg01.v10lator.de/db", "src/gtitles.c")
+urllib.request.urlretrieve("https://napi.v10lator.de/db", "src/gtitles.c")
 
 checkAndDeleteDir("NUStmp")
 checkAndDeleteDir("out")
