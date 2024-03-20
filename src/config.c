@@ -235,6 +235,15 @@ void initConfig()
 
     intSetMenuLanguage();
 
+    configEntry = json_object_get(json, "Check for updates");
+    if(configEntry != NULL && json_is_boolean(configEntry))
+        checkForUpdates = json_is_true(configEntry);
+    else
+    {
+        addToScreenLog("Update check setting not found!");
+        changed = true;
+    }
+
     configEntry = json_object_get(json, "Auto resume failed downloads");
     if(configEntry != NULL && json_is_boolean(configEntry))
         autoResume = json_is_true(configEntry);
