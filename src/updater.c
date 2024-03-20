@@ -524,9 +524,7 @@ bool update(const char *newVersion, NUSSPLI_TYPE type)
             }
             break;
         case NUSSPLI_TYPE_CHANNEL:
-            strcpy(path, UPDATE_TEMP_FOLDER);
-            strcpy(path + strlen(UPDATE_TEMP_FOLDER), "NUSspli");
-
+            strcpy(path, UPDATE_TEMP_FOLDER "NUSspli/");
             install("Update", false, NUSDEV_SD, path, toUSB, true, NULL);
             break;
         case NUSSPLI_TYPE_HBL:

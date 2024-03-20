@@ -34,6 +34,8 @@ extern "C"
     {
         char *path;
         bool hadTicket;
+        bool tmdFound;
+        uint32_t ac;
     } NO_INTRO_DATA;
 
     void destroyNoIntroData(NO_INTRO_DATA *data);

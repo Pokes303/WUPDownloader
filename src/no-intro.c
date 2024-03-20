@@ -161,6 +161,8 @@ NO_INTRO_DATA *transformNoIntro(const char *path)
 
     data->path = newPath;
     data->hadTicket = false;
+    data->tmdFound = false;
+    data->ac = 0;
 
     while(FSAReadDir(getFSAClient(), dir, &entry) == FS_ERROR_OK)
     {
@@ -182,6 +184,8 @@ NO_INTRO_DATA *transformNoIntro(const char *path)
                 revertNoIntro(data);
                 return NULL;
             }
+
+            data->tmdFound = true;
         }
         else if(strcmp(entry.name, "cetk") == 0)
         {
@@ -215,11 +219,19 @@ NO_INTRO_DATA *transformNoIntro(const char *path)
                 revertNoIntro(data);
                 return NULL;
             }
+
+            data->ac++;
         }
     }
 
     FSACloseDir(getFSAClient(), dir);
     MEMFreeToDefaultHeap(pathTo);
+
+    if(!data->tmdFound || !data->ac)
+    {
+        revertNoIntro(data);
+        return NULL;
+    }
 
     *fromP = '\0';
 
