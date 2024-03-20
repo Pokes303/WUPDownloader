@@ -200,71 +200,11 @@ bool initDownloader()
 {
     initNetwork();
 
-    char *fn = getStaticPathBuffer(2);
-    strcpy(fn, ROMFS_PATH "ca-certificates/");
-    struct curl_blob blob = { .data = NULL, .len = 0, .flags = CURL_BLOB_COPY };
-
-#ifndef NUSSPLI_HBL
-    FSADirectoryHandle dir;
-    if(FSAOpenDir(getFSAClient(), fn, &dir) == FS_ERROR_OK)
-#else
-    DIR *dir = opendir(fn);
-    if(dir != NULL)
-#endif
-    {
-        char *ptr = fn + strlen(fn);
-        void *buf;
-        size_t bufsize;
-        size_t oldcertsize = 0;
-        void *tmp;
-#ifndef NUSSPLI_HBL
-        FSADirectoryEntry entry;
-        while(FSAReadDir(getFSAClient(), dir, &entry) == FS_ERROR_OK)
-        {
-            if(entry.name[0] == '.') // TODO: Aroma bug
-                continue;
-
-            strcpy(ptr, entry.name);
-#else
-        for(struct dirent *entry = readdir(dir); entry != NULL; entry = readdir(dir))
-        {
-            if(entry->d_name[0] == '.')
-                continue;
-
-            strcpy(ptr, entry->d_name);
-#endif
-            bufsize = readFile(fn, &buf);
-            if(buf == NULL)
-                continue;
-
-            oldcertsize = blob.len;
-            blob.len += bufsize;
-            tmp = blob.data;
-            blob.data = MEMAllocFromDefaultHeap(blob.len);
-            if(blob.data != NULL)
-            {
-                if(tmp != NULL)
-                    OSBlockMove(blob.data, tmp, oldcertsize, false);
-
-                OSBlockMove(((uint8_t *)blob.data) + oldcertsize, buf, bufsize, false);
-            }
-            else
-            {
-                blob.data = tmp;
-                blob.len = oldcertsize;
-            }
-
-            MEMFreeToDefaultHeap(buf);
-        }
-
-#ifndef NUSSPLI_HBL
-        FSACloseDir(getFSAClient(), dir);
-#else
-        closedir(dir);
-#endif
-    }
-    else
-        debugPrintf("Error opening %s!", fn);
+    void *buf;
+    struct curl_blob blob = { .data = NULL, .flags = CURL_BLOB_COPY };
+    blob.len = readFile(ROMFS_PATH "ca-certs.pem", &blob.data);
+    if(blob.data == NULL)
+        return false;
 
     CURLcode ret = curl_global_init(CURL_GLOBAL_DEFAULT & ~(CURL_GLOBAL_SSL));
     if(ret == CURLE_OK)

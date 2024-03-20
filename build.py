@@ -44,6 +44,9 @@ if len(wuhbtool) == 0:
 checkAndDeleteFile("src/gtitles.c")
 urllib.request.urlretrieve("https://napi.v10lator.de/db", "src/gtitles.c")
 
+checkAndDeleteFile("data/ca-certs.pem");
+urllib.request.urlretrieve("https://ccadb.my.salesforce-sites.com/mozilla/IncludedRootsPEMTxt?TrustBitsInclude=Websites", "data/ca-certs.pem");
+
 checkAndDeleteDir("NUStmp")
 checkAndDeleteDir("out")
 
