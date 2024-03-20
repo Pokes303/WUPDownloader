@@ -391,11 +391,11 @@ static inline void showUpdateFrame()
     showFrame();
 }
 
-void update(const char *newVersion, NUSSPLI_TYPE type)
+bool update(const char *newVersion, NUSSPLI_TYPE type)
 {
     RAMBUF *rambuf = allocRamBuf();
     if(rambuf == NULL)
-        return;
+        return true;
 
     disableShutdown();
     showUpdateFrame();
@@ -543,10 +543,11 @@ void update(const char *newVersion, NUSSPLI_TYPE type)
     removeDirectory(UPDATE_TEMP_FOLDER);
     enableShutdown();
     showFinishedScreen("Update", FINISHING_OPERATION_INSTALL);
-    return;
+    return true;
 
 updateError:
     freeRamBuf(rambuf);
     removeDirectory(UPDATE_TEMP_FOLDER);
     enableShutdown();
+    return false;
 }

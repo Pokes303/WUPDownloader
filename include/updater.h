@@ -35,7 +35,7 @@ extern "C"
     } NUSSPLI_TYPE;
 
     bool updateCheck();
-    void update(const char *newVersion, NUSSPLI_TYPE type) __attribute__((__cold__));
+    bool update(const char *newVersion, NUSSPLI_TYPE type) __attribute__((__cold__));
 
 #ifdef __cplusplus
 }
