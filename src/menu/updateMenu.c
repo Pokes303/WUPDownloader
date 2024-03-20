@@ -66,7 +66,17 @@ bool updateMenu(const char *newVersion, NUSSPLI_TYPE type)
         showFrame();
 
         if(vpad.trigger & VPAD_BUTTON_A)
-            return update(newVersion, type);
+        {
+            if(update(newVersion, type))
+            {
+#ifndef NUSSPLI_HBL
+                relaunch();
+#endif
+                return true;
+            }
+            else
+                break;
+        }
         if(vpad.trigger & VPAD_BUTTON_B)
             break;
     }

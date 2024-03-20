@@ -217,6 +217,12 @@ void launchTitle(MCPTitleListType *title)
     _SYSLaunchTitleWithStdArgsInNoSplash(title->titleId, NULL);
 }
 
+void relaunch()
+{
+    launching = true;
+    SYSRelaunchTitle(0, NULL);
+}
+
 bool launchingTitle()
 {
     return launching;

@@ -63,6 +63,7 @@ bool isChannel();
     bool AppRunning(bool mainthread) __attribute__((__hot__));
     uint32_t homeButtonCallback(void *dummy);
     void launchTitle(MCPTitleListType *title) __attribute__((__cold__));
+    void relaunch() __attribute__((__cold__));
     bool launchingTitle() __attribute__((__cold__));
 
 #ifdef __cplusplus
