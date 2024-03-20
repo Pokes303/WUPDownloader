@@ -2,7 +2,7 @@
     "Download content": "Descargar contenido",
     "Install content": "Instalar contenido",
     "Generate a fake <title.tik> file": "Generar un archivo <title.tik> fake",
-    "Uninstall a title": "Desinstalar un título",
+    "Browse installed titles": "Explorar los títulos instalados",
     "Options": "Opciones",
     "Press \uE044 or \uE001 to exit": "Pulsa \uE044 o \uE001 para salir",
     "Developers:": "Desarrolladores:",
@@ -24,6 +24,7 @@
     "\uE002 to switch to USB": "\uE002 para ir a USB",
     "Searching on": "Buscando en",
 
+    "Press \uE045 to launch":  "Pulse \uE045 para iniciar",
     "\uE046 to delete": "\uE046 para desinstalar",
 
     "Press \uE000 to continue": "Pulsa \uE000 para continuar",
