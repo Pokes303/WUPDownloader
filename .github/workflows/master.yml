@@ -84,20 +84,6 @@ jobs:
           name: NUSspli-${{ steps.version.outputs.version }}-Channel-DEBUG
           path: out/Channel-DEBUG/*
           if-no-files-found: error
-      - name: Upload HBL version
-        if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') && (contains(github.event.head_commit.message, '-ALPHA') || contains(github.event.head_commit.message, '-BETA')) }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: NUSspli-${{ steps.version.outputs.version }}-HBL
-          path: out/HBL/*
-          if-no-files-found: warn
-      - name: Upload HBL debug version
-        if: ${{ startsWith(github.event.head_commit.message, 'v') && contains(github.event.head_commit.message, '.') && !endsWith(github.event.head_commit.message, '.') && (contains(github.event.head_commit.message, '-ALPHA') || contains(github.event.head_commit.message, '-BETA')) }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: NUSspli-${{ steps.version.outputs.version }}-HBL-DEBUG
-          path: out/HBL-DEBUG/*
-          if-no-files-found: error
       - name: Get previous tag
         run: echo "previous_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo '')" >> $GITHUB_ENV
       - name: Generate changelog
@@ -122,7 +108,5 @@ jobs:
             zips/NUSspli-${{ steps.version.outputs.version }}-Aroma-DEBUG.zip
             zips/NUSspli-${{ steps.version.outputs.version }}-Channel.zip
             zips/NUSspli-${{ steps.version.outputs.version }}-Channel-DEBUG.zip
-            zips/NUSspli-${{ steps.version.outputs.version }}-HBL.zip
-            zips/NUSspli-${{ steps.version.outputs.version }}-HBL-DEBUG.zip
             zips/NUSspli-${{ steps.version.outputs.version }}-Lite.zip
             zips/NUSspli-${{ steps.version.outputs.version }}-Lite-DEBUG.zip

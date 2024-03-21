@@ -30,16 +30,6 @@ DATA		:=
 INCLUDES	:=	include \
 				zlib/contrib/minizip
 
-ifeq ($(strip $(HBL)), 1)
-ROMFS		:=	data
-include $(PORTLIBS_PATH)/wiiu/share/romfs-wiiu.mk
-else
-ROMFS_CFLAGS	:=
-ROMFS_LIBS	:=
-ROMFS_TARGET	:=
-endif
-
-
 #-------------------------------------------------------------------------------
 # options for code generation
 #-------------------------------------------------------------------------------
@@ -49,12 +39,7 @@ CFLAGS		:=	$(MACHDEP) -Ofast -flto=auto -fno-fat-lto-objects \
 				-Wall -Wextra -Wundef -Wshadow -Wpointer-arith \
 				-Wcast-align  \
 				-D__WIIU__ -D__WUT__ -DIOAPI_NO_64 \
-				-DNUSSPLI_VERSION=\"$(NUSSPLI_VERSION)\" \
-				-Wno-trigraphs $(ROMFS_CFLAGS)
-
-ifeq ($(strip $(HBL)), 1)
-CFLAGS		+=	-DNUSSPLI_HBL
-endif
+				-Wno-trigraphs
 
 ifeq ($(strip $(LITE)), 1)
 CFLAGS		+=	-DNUSSPLI_LITE
@@ -64,7 +49,7 @@ CXXFLAGS	:=	$(CFLAGS) -std=c++20 -fpermissive
 ASFLAGS		:=	-g $(ARCH)
 LDFLAGS		:=	-g $(ARCH) $(RPXSPECS) $(CFLAGS) -Wl,-Map,$(notdir $*.map)
 
-LIBS		:=	-lcurl -lnghttp2 -lmbedtls -lmbedx509 -lmbedcrypto `$(PREFIX)pkg-config --libs SDL2_mixer SDL2_ttf SDL2_image harfbuzz jansson` -lwut -lmocha -lrpxloader $(ROMFS_LIBS)
+LIBS		:=	-lcurl -lnghttp2 -lmbedtls -lmbedx509 -lmbedcrypto `$(PREFIX)pkg-config --libs SDL2_mixer SDL2_ttf SDL2_image harfbuzz jansson` -lwut -lmocha -lrpxloader
 
 #-------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level
@@ -82,7 +67,6 @@ ifneq ($(BUILD),$(notdir $(CURDIR)))
 
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
 export TOPDIR	:=	$(CURDIR)
-NUSSPLI_VERSION	:=	$(shell grep \<version\> meta/hbl/meta.xml | sed 's/.*<version>//' | sed 's/<\/.*//')
 
 .PHONY: debug release real clean all
 
@@ -94,7 +78,7 @@ real:
 	@rm -f zlib/contrib/minizip/iowin* zlib/contrib/minizip/mini* zlib/contrib/minizip/zip.? zlib/contrib/minizip/mztools.? zlib/contrib/minizip/configure.ac zlib/contrib/minizip/Makefile zlib/contrib/minizip/Makefile.am zlib/contrib/minizip/*.com zlib/contrib/minizip/*.txt
 	@cd SDL_FontCache && for patch in $(TOPDIR)/SDL_FontCache-patches/*.patch; do echo Applying $$patch && git apply $$patch; done || true
 	@[ -d $(BUILD) ] || mkdir -p $(BUILD)
-	@$(MAKE) -C $(BUILD) -f $(CURDIR)/Makefile BUILD=$(BUILD) NUSSPLI_VERSION=$(NUSSPLI_VERSION) $(MAKE_CMD)
+	@$(MAKE) -C $(BUILD) -f $(CURDIR)/Makefile BUILD=$(BUILD) $(MAKE_CMD)
 
 #-------------------------------------------------------------------------------
 clean:
@@ -137,7 +121,7 @@ endif
 
 OFILES_BIN	:=	$(addsuffix .o,$(BINFILES))
 OFILES_SRC	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
-OFILES 		:=	$(OFILES_BIN) $(OFILES_SRC) $(ROMFS_TARGET)
+OFILES 		:=	$(OFILES_BIN) $(OFILES_SRC)
 HFILES_BIN	:=	$(addsuffix .h,$(subst .,_,$(BINFILES)))
 
 INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(TOPDIR)/$(dir)) \

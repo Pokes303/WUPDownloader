@@ -2,6 +2,7 @@
 
 import os
 import shutil
+import subprocess
 import urllib.request
 import xml.etree.cElementTree as ET
 
@@ -25,7 +26,15 @@ opener = urllib.request.build_opener()
 opener.addheaders = [("User-agent", "NUSspliBuilder/2.1")]
 urllib.request.install_opener(opener)
 
-version = ET.ElementTree(file="meta/hbl/meta.xml").getroot().findtext("version")
+vf = open("include/utils.h", "r")
+lines = vf.readlines();
+vf.close();
+
+for line in lines:
+    if line.find("#define NUSSPLI_VERSION") != -1:
+        break
+
+version = line.split()[2][1:-1]
 github = open("version.txt", "w")
 github.write(f"version={version}\n")
 github.close()
@@ -60,16 +69,16 @@ os.system(f"SDL2/setup.sh")
 
 editionList = ["-DEBUG", ""]
 extList = [".rpx", ".zip", ".wuhb"]
-pkgList = ["Aroma", "HBL", "Channel", "Lite"]
+pkgList = ["Aroma", "Channel", "Lite"]
 for edition in editionList:
-    for ext in extList:  
+    for ext in extList:
         checkAndDeleteFile(f"NUSspli-{version}{edition}{ext}")
 for edition in editionList:
     for ext in extList:
         for pkg in pkgList:
             checkAndDeleteFile(f"zips/NUSspli-{version}-{pkg}{edition}{ext}")
 
-tmpArray = ["out/Aroma-DEBUG", "out/Lite-DEBUG", "out/Channel-DEBUG", "out/HBL-DEBUG/NUSspli", "NUStmp/code"]
+tmpArray = ["out/Aroma-DEBUG", "out/Lite-DEBUG", "out/Channel-DEBUG", "NUStmp/code"]
 for path in tmpArray:
     os.makedirs(path)
 os.makedirs("zips", exist_ok=True)
@@ -107,15 +116,3 @@ if not isBeta:
     shutil.make_archive(f"zips/NUSspli-{version}-Lite", "zip", "out/Lite", ".")
 
 shutil.rmtree("NUStmp")
-os.system("make clean && make HBL=1 -j$(nproc) debug")
-tmpArray = ["NUSspli.rpx", "meta/hbl/meta.xml", "meta/hbl/icon.png"]
-for file in tmpArray:
-    shutil.copy(file, "out/HBL-DEBUG/NUSspli")
-shutil.make_archive(f"zips/NUSspli-{version}-HBL-DEBUG", "zip", "out/HBL-DEBUG", ".")
-
-if not isBeta:
-    os.system("make clean && make HBL=1 -j$(nproc) release")
-    os.makedirs("out/HBL/NUSspli")
-    for file in tmpArray:
-        shutil.copy(file, "out/HBL/NUSspli")
-    shutil.make_archive(f"zips/NUSspli-{version}-HBL", "zip", "out/HBL", ".")
