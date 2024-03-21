@@ -3,7 +3,7 @@ FROM ghcr.io/wiiu-env/devkitppc:20231112
 ENV DEBIAN_FRONTEND=noninteractive \
  PATH=$DEVKITPPC/bin:$PATH \
  WUT_ROOT=$DEVKITPRO/wut \
- CURL_VER=8.5.0 \
+ CURL_VER=8.6.0 \
  NGHTTP2_VER=1.60.0
 
 WORKDIR /
