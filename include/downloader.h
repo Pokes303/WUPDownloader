@@ -52,7 +52,7 @@ extern "C"
         size_t size;
     } RAMBUF;
 
-#define DOWNLOAD_URL "https://ccs.shop.wii.com/ccs/download/"
+#define DOWNLOAD_URL "http://ccs.shop.wii.com/ccs/download/"
 
     bool initDownloader() __attribute__((__cold__));
     void deinitDownloader() __attribute__((__cold__));
