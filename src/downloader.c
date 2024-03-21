@@ -198,8 +198,7 @@ static void resetNetwork()
         cr = ACGetCloseStatus(nnres);
         if(cr.value == -1) // FAILED
             return;
-    }
-    while(cr.value != 0); // SUCCESS. A value of 1 means processing, so we're not handling it.
+    } while(cr.value != 0); // SUCCESS. A value of 1 means processing, so we're not handling it.
 
     // Close AC library
     uint32_t c = 0;
@@ -221,7 +220,7 @@ closeAClib:
             ACInitialize();
 
     // Connect to network
-    for( ; c < 1024; c++)
+    for(; c < 1024; c++)
     {
         nnres = ACConnect();
         if(nnres.value == 0)
