@@ -186,15 +186,50 @@ static CURLcode ssl_ctx_init(CURL *cu, void *sslctx, void *parm)
 
 #define initNetwork() (curlReuseConnection = false)
 
-// We call AC functions here without calling ACInitialize() / ACFinalize() as WUT should call these for us.
-#define resetNetwork()                                      \
-    {                                                       \
-        ACConfigId networkCfg;                              \
-        if(NNResult_IsSuccess(ACGetStartupId(&networkCfg))) \
-            ACConnectWithConfigId(networkCfg);              \
-                                                            \
-        initNetwork();                                      \
+// We're not using WUTs NNResult_IsSuccess() / NNResult_IsFailure() here as it's wrong
+static void resetNetwork()
+{
+    debugPrintf("Resetting network!");
+    // Disconnect from network
+    NNResult nnres = ACClose();
+    NNResult cr;
+    do
+    {
+        cr = ACGetCloseStatus(nnres);
+        if(cr.value == -1) // FAILED
+            return;
     }
+    while(cr.value != 0); // SUCCESS. A value of 1 means processing, so we're not handling it.
+
+    // Close AC library
+    uint32_t c = 0;
+closeAClib:
+    ACFinalize();
+    c++;
+
+    // Reopen AC library
+    nnres = ACInitialize();
+    if(nnres.value != 0) // Already initialised
+    {
+        ACFinalize(); // we close two times here to revert out init as well as whatever did it before
+        goto closeAClib;
+    }
+
+    // Set init counter to what it was before
+    if(--c)
+        while(c--)
+            ACInitialize();
+
+    // Connect to network
+    for( ; c < 1024; c++)
+    {
+        nnres = ACConnect();
+        if(nnres.value == 0)
+            break;
+    }
+
+    initNetwork();
+}
 
 bool initDownloader()
 {
