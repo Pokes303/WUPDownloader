@@ -73,6 +73,7 @@ RUN wget https://curl.se/download/curl-$CURL_VER.tar.xz && \
 --disable-socketpair \
 --disable-ntlm-wb \
 --with-nghttp2=$DEVKITPRO/portlibs/wiiu/ \
+--without-libpsl \
 CFLAGS="-mcpu=750 -meabi -mhard-float -Ofast -ffunction-sections -fdata-sections" \
 CXXFLAGS="-mcpu=750 -meabi -mhard-float -Ofast -ffunction-sections -fdata-sections" \
 CPPFLAGS="-D__WIIU__ -D__WUT__ -I$DEVKITPRO/wut/include" \
