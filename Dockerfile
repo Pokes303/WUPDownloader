@@ -3,7 +3,8 @@ FROM ghcr.io/wiiu-env/devkitppc:20231112
 ENV DEBIAN_FRONTEND=noninteractive \
  PATH=$DEVKITPPC/bin:$PATH \
  WUT_ROOT=$DEVKITPRO/wut \
- CURL_VER=8.5.0
+ CURL_VER=8.5.0 \
+ NGHTTP2_VER=1.60.0
 
 WORKDIR /
 
@@ -25,6 +26,35 @@ RUN git clone --recursive https://github.com/yawut/libromfs-wiiu --single-branch
  make -j$(nproc) && \
  make install
 
+# Install nghttp2 for HTTP/2 support (WUT don't include this)
+RUN wget https://github.com/nghttp2/nghttp2/releases/download/v1.60.0/nghttp2-$NGHTTP2_VER.tar.xz && \
+  mkdir nghttp2 && \
+  tar xf nghttp2-$NGHTTP2_VER.tar.xz -C nghttp2/ --strip-components=1 && \
+  rm -f nghttp2-$NGHTTP2_VER.tar.xz && \
+  cd nghttp2 && \
+  autoreconf -fi && \
+  automake && \
+  autoconf && \
+  ./configure  \
+--enable-lib-only \
+--prefix=$DEVKITPRO/portlibs/wiiu/ \
+--enable-static \
+--disable-threads \
+--host=powerpc-eabi \
+CFLAGS="-mcpu=750 -meabi -mhard-float -Ofast -ffunction-sections -fdata-sections" \
+CXXFLAGS="-mcpu=750 -meabi -mhard-float -Ofast -ffunction-sections -fdata-sections" \
+CPPFLAGS="-D__WIIU__ -D__WUT__ -I$DEVKITPRO/wut/include" \
+LDFLAGS="-L$DEVKITPRO/wut/lib" \
+LIBS="-lwut -lm" \
+CC=$DEVKITPPC/bin/powerpc-eabi-gcc \
+AR=$DEVKITPPC/bin/powerpc-eabi-ar \
+RANLIB=$DEVKITPPC/bin/powerpc-eabi-ranlib \
+PKG_CONFIG=$DEVKITPRO/portlibs/wiiu/bin/powerpc-eabi-pkg-config && \
+  make -j$(nproc) && \
+  make -j$(nproc) install && \
+  cd .. && \
+  rm -rf nghttp2
+
 # Install libCURL since WUT doesn't ship with the latest version
 RUN wget https://curl.se/download/curl-$CURL_VER.tar.xz && \
  mkdir /curl && \
@@ -42,6 +72,7 @@ RUN wget https://curl.se/download/curl-$CURL_VER.tar.xz && \
 --disable-unix-sockets \
 --disable-socketpair \
 --disable-ntlm-wb \
+--with-nghttp2=$DEVKITPRO/portlibs/wiiu/ \
 CFLAGS="-mcpu=750 -meabi -mhard-float -Ofast -ffunction-sections -fdata-sections" \
 CXXFLAGS="-mcpu=750 -meabi -mhard-float -Ofast -ffunction-sections -fdata-sections" \
 CPPFLAGS="-D__WIIU__ -D__WUT__ -I$DEVKITPRO/wut/include" \
