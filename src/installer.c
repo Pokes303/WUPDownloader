@@ -197,11 +197,7 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
                 sprintf(toScreen, "%s \"%s\"", localise("No title.tmd found at"), path);
                 break;
             case 0xfffbfc17:
-                sprintf(toScreen,
-                    "%s \"%s\""
-                    ,
-                    localise("Internal error installing"), path
-                );
+                sprintf(toScreen, "%s \"%s\"", localise("Internal error installing"), path);
                 break;
             default:
                 sprintf(toScreen, "%s \"%s\" %s: %#010x", localise("Error getting info for"), path, localise("from MCP"), data.err);
