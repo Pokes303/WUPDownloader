@@ -47,6 +47,12 @@ urllib.request.urlretrieve("https://napi.v10lator.de/db", "src/gtitles.c")
 checkAndDeleteFile("data/ca-certs.pem");
 urllib.request.urlretrieve("https://ccadb.my.salesforce-sites.com/mozilla/IncludedRootsPEMTxt?TrustBitsInclude=Websites", "data/ca-certs.pem");
 
+checkAndDeleteFile("data/nintendo.pem");
+urllib.request.urlretrieve("https://certs.larsenv.xyz/0005001B10054000/scerts/CACERT_NINTEND_BUNDLE.pem", "data/nintendo.pem");
+
+os.system(f"cat data/nintendo.pem >> data/ca-certs.pem");
+checkAndDeleteFile("data/nintendo.pem");
+
 checkAndDeleteDir("NUStmp")
 checkAndDeleteDir("out")
 
