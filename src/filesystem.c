@@ -30,8 +30,6 @@
 #include <coreinit/filesystem_fsa.h>
 #include <mocha/mocha.h>
 
-#include <romfs-wiiu.h>
-
 #include <stdbool.h>
 
 #define SPACEMAP_INVALID 9999
