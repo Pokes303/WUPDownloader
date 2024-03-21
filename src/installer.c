@@ -199,15 +199,8 @@ bool install(const char *game, bool hasDeps, NUSDEV dev, const char *path, bool 
             case 0xfffbfc17:
                 sprintf(toScreen,
                     "%s \"%s\""
-#ifdef NUSSPLI_HBL
-                    "\n%s"
-#endif
                     ,
                     localise("Internal error installing"), path
-#ifdef NUSSPLI_HBL
-                    ,
-                    localise("We're supporting HBL on Tiramisu only!")
-#endif
                 );
                 break;
             default:

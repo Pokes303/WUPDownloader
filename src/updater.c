@@ -56,7 +56,6 @@
 #define UPDATE_CHECK_URL    NAPI_URL "s?t="
 #define UPDATE_DOWNLOAD_URL "https://github.com/V10lator/NUSspli/releases/download/v"
 #define UPDATE_TEMP_FOLDER  NUSDIR_SD "NUSspli_temp/"
-#define UPDATE_HBL_FOLDER   NUSDIR_SD "wiiu/apps/NUSspli"
 #define UPDATE_AROMA_FOLDER NUSDIR_SD "wiiu/apps/"
 
 #ifndef NUSSPLI_LITE
@@ -97,14 +96,10 @@ bool updateCheck()
         return false;
 
     const char *updateChkUrl =
-#ifdef NUSSPLI_HBL
-        UPDATE_CHECK_URL "h";
-#else
 #ifdef NUSSPLI_LITE
         UPDATE_CHECK_URL "l";
 #else
         !isChannel() && isAroma() ? UPDATE_CHECK_URL "a" : UPDATE_CHECK_URL "c";
-#endif
 #endif
 
     bool ret = false;
@@ -131,11 +126,8 @@ bool updateCheck()
                         const char *newVer = json_string_value(json_object_get(json, "v"));
                         ret = newVer != NULL;
                         if(ret)
-#ifdef NUSSPLI_HBL
-                            ret = updateMenu(newVer, NUSSPLI_TYPE_HBL);
-#else
                             ret = updateMenu(newVer, isAroma() ? NUSSPLI_TYPE_AROMA : NUSSPLI_TYPE_CHANNEL);
-#endif
+
                         break;
                     case 2: // Type deprecated, update to what the server suggests
                         const char *nv = json_string_value(json_object_get(json, "v"));
@@ -430,9 +422,6 @@ bool update(const char *newVersion, NUSSPLI_TYPE type)
         case NUSSPLI_TYPE_CHANNEL:
             strcat(path, "-Channel");
             break;
-        case NUSSPLI_TYPE_HBL:
-            strcat(path, "-HBL");
-            break;
         default:
             showUpdateError("Internal error!");
             goto updateError;
@@ -454,14 +443,6 @@ bool update(const char *newVersion, NUSSPLI_TYPE type)
     bool toUSB = getUSB() != NUSDEV_NONE;
 
     // Uninstall currently running type/version
-#ifdef NUSSPLI_HBL
-    err = removeDirectory(UPDATE_HBL_FOLDER);
-    if(err != FS_ERROR_OK)
-    {
-        showUpdateErrorf("%s: %s", localise("Error removing directory"), translateFSErr(err));
-        goto updateError;
-    }
-#else
     if(isChannel())
     {
         MCPTitleListType ownInfo __attribute__((__aligned__(0x40)));
@@ -503,7 +484,6 @@ bool update(const char *newVersion, NUSSPLI_TYPE type)
             goto updateError;
         }
     }
-#endif
 
     // Install new type/version
     flushIOQueue();
@@ -526,14 +506,6 @@ bool update(const char *newVersion, NUSSPLI_TYPE type)
         case NUSSPLI_TYPE_CHANNEL:
             strcpy(path, UPDATE_TEMP_FOLDER "NUSspli/");
             install("Update", false, NUSDEV_SD, path, toUSB, true, NULL);
-            break;
-        case NUSSPLI_TYPE_HBL:
-            err = moveDirectory(UPDATE_TEMP_FOLDER "NUSspli", UPDATE_HBL_FOLDER);
-            if(err != FS_ERROR_OK)
-            {
-                showUpdateErrorf("%s: %s", localise("Error moving directory"), translateFSErr(err));
-                goto updateError;
-            }
             break;
     }
 

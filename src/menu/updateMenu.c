@@ -69,9 +69,7 @@ bool updateMenu(const char *newVersion, NUSSPLI_TYPE type)
         {
             if(update(newVersion, type))
             {
-#ifndef NUSSPLI_HBL
                 relaunch();
-#endif
                 return true;
             }
             else

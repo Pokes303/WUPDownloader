@@ -39,10 +39,8 @@
 
 volatile APP_STATE app;
 static bool shutdownEnabled = true;
-#ifndef NUSSPLI_HBL
 #ifndef NUSSPLI_LITE
 static bool channel;
-#endif
 #endif
 static bool aroma;
 static bool apdEnabled;
@@ -111,13 +109,11 @@ bool isAroma()
     return aroma;
 }
 
-#ifndef NUSSPLI_HBL
 #ifndef NUSSPLI_LITE
 bool isChannel()
 {
     return channel;
 }
-#endif
 #endif
 
 uint32_t homeButtonCallback(void *dummy)
@@ -148,10 +144,8 @@ void initState()
     ACPInitialize();
 
     aroma = RPXLoader_InitLibrary() == RPX_LOADER_RESULT_SUCCESS;
-#ifndef NUSSPLI_HBL
 #ifndef NUSSPLI_LITE
     channel = OSGetTitleID() == 0x0005000010155373;
-#endif
 #endif
 
     uint32_t ime;

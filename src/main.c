@@ -28,7 +28,6 @@
 #include <input.h>
 #include <installer.h>
 #include <ioQueue.h>
-#include <jailbreak.h>
 #include <localisation.h>
 #include <menu/download.h>
 #include <menu/main.h>
@@ -77,7 +76,7 @@ static void drawLoadingScreen(const char *toScreenLog, const char *loadingMsg)
     drawFrame();
 }
 
-static void innerMain(const char *cfwError)
+static void innerMain()
 {
     OSThread *mainThread = OSGetCurrentThread();
     OSSetThreadName(mainThread, "NUSspli");
@@ -85,6 +84,7 @@ static void innerMain(const char *cfwError)
     OSSetThreadStackUsage(mainThread);
 #endif
 
+    const char *cfwError = cfwValid();
     if(cfwError == NULL)
     {
         addEntropy(&(mainThread->id), sizeof(uint16_t));
@@ -238,30 +238,7 @@ static void innerMain(const char *cfwError)
 int main()
 {
     initState();
-
-#ifdef NUSSPLI_HBL
-    bool jailbreaking;
-    uint64_t tid = OSGetTitleID();
-#endif
-    const char *cfwError = cfwValid();
-    if(cfwError == NULL)
-    {
-#ifdef NUSSPLI_HBL
-        jailbreaking = !isAroma() && (tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004A000; // Mii Maker
-        if(jailbreaking)
-            jailbreaking = jailbreak();
-
-        if(!jailbreaking)
-#endif
-            innerMain(NULL);
-    }
-    else
-    {
-        innerMain(cfwError);
-#ifdef NUSSPLI_HBL
-        jailbreaking = false;
-#endif
-    }
+    innerMain();
 
     deinitCfw();
 
@@ -274,25 +251,7 @@ int main()
     if(app != APP_STATE_STOPPED)
     {
         if(!launchingTitle())
-        {
-#ifdef NUSSPLI_HBL
-            if(isAroma())
-                SYSLaunchMenu();
-            else if(!jailbreaking)
-            {
-                if((tid & 0xFFFFFFFFFFFFF0FF) == 0x000500101004E000) // Health & Safety
-                {
-                    tid &= 0xFFFFFFFFFFFF0FFF;
-                    tid |= 0x000000000000A000;
-                    _SYSLaunchTitleWithStdArgsInNoSplash(tid, NULL);
-                }
-                else
-                    SYSRelaunchTitle(0, NULL);
-            }
-#else
             SYSLaunchMenu();
-#endif
-        }
 
         if(app == APP_STATE_HOME)
         {

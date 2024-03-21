@@ -30,8 +30,7 @@ extern "C"
     typedef enum
     {
         NUSSPLI_TYPE_AROMA = 0,
-        NUSSPLI_TYPE_CHANNEL = 1,
-        NUSSPLI_TYPE_HBL = 2
+        NUSSPLI_TYPE_CHANNEL = 1
     } NUSSPLI_TYPE;
 
     bool updateCheck();

@@ -20,12 +20,6 @@ RUN apt-fast -y --no-install-recommends update && \
 RUN apt-fast -y install --no-install-recommends autoconf automake libtool openjdk-11-jre-headless && \
  apt-fast clean
 
-# Install the requirements to build the homebrew
-RUN git clone --recursive https://github.com/yawut/libromfs-wiiu --single-branch && \
- cd libromfs-wiiu && \
- make -j$(nproc) && \
- make install
-
 # Install nghttp2 for HTTP/2 support (WUT don't include this)
 RUN wget https://github.com/nghttp2/nghttp2/releases/download/v1.60.0/nghttp2-$NGHTTP2_VER.tar.xz && \
   mkdir nghttp2 && \

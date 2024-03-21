@@ -187,7 +187,7 @@ size_t getFilesize(const char *path)
     return stat.size;
 }
 
-size_t readFileNew(const char *path, void **buffer)
+size_t readFile(const char *path, void **buffer)
 {
     char *toScreen = getToFrameBuffer();
     toScreen[0] = '\0';
@@ -229,65 +229,6 @@ size_t readFileNew(const char *path, void **buffer)
 
     return 0;
 }
-
-#ifdef NUSSPLI_HBL
-static size_t getFilesizeOld(FILE *fp)
-{
-    struct stat info;
-    OSTime t = OSGetTime();
-
-    if(fstat(fileno(fp), &info) == -1)
-        return -1;
-
-    t = OSGetTime() - t;
-    addEntropy(&t, sizeof(OSTime));
-
-    return (size_t)(info.st_size);
-}
-
-size_t readFile(const char *path, void **buffer)
-{
-    if(strncmp("romfs:/", path, strlen("romfs:/")) != 0)
-        return readFileNew(path, buffer);
-
-    char *toScreen = getToFrameBuffer();
-    toScreen[0] = '\0';
-    FILE *file = fopen(path, "rb");
-    if(file != NULL)
-    {
-        size_t filesize = getFilesizeOld(file);
-        if(filesize != -1)
-        {
-            *buffer = MEMAllocFromDefaultHeapEx(FS_ALIGN(filesize), 0x40);
-            if(*buffer != NULL)
-            {
-                if(fread(*buffer, filesize, 1, file) == 1)
-                {
-                    fclose(file);
-                    return filesize;
-                }
-
-                sprintf(toScreen, "Error reading %s!", path);
-                MEMFreeToDefaultHeap(*buffer);
-            }
-            else
-                sprintf(toScreen, "Error creating buffer!");
-        }
-        else
-            sprintf(toScreen, "Error getting filesize for %s!", path);
-
-        fclose(file);
-    }
-    else
-        sprintf(toScreen, "Error opening %s!", path);
-
-    *buffer = NULL;
-    if(toScreen[0] != '\0')
-        addToScreenLog(toScreen);
-
-    return 0;
-}
-#endif
 
 size_t getDirsize(const char *path)
 {

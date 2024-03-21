@@ -61,9 +61,6 @@ void initFSSpace()
 
 bool initFS(bool validCfw)
 {
-#ifdef NUSSPLI_HBL
-    romfsInit();
-#endif
 
     if(FSAInit() == FS_ERROR_OK)
     {
@@ -124,10 +121,6 @@ void deinitFS(bool validCfw)
 
     FSADelClient(handle);
     FSAShutdown();
-
-#ifdef NUSSPLI_HBL
-    romfsExit();
-#endif
 }
 
 FSAClientHandle getFSAClient()
