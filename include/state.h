@@ -50,10 +50,7 @@ extern "C"
     void disableApd();
     void enableShutdown();
     void disableShutdown();
-    bool isAroma();
-#ifdef NUSSPLI_LITE
-#define isChannel() false
-#else
+#ifndef NUSSPLI_LITE
 bool isChannel();
 #endif
     bool AppRunning(bool mainthread) __attribute__((__hot__));

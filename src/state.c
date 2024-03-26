@@ -104,11 +104,6 @@ void disableShutdown()
     debugPrintf("Home key disabled!");
 }
 
-bool isAroma()
-{
-    return aroma;
-}
-
 #ifndef NUSSPLI_LITE
 bool isChannel()
 {

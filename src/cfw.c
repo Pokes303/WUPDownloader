@@ -92,13 +92,17 @@ const char *cfwValid()
     if(s == MOCHA_RESULT_UNSUPPORTED_API_VERSION || s == MOCHA_RESULT_UNSUPPORTED_COMMAND)
         return printCfwError("Can't dummy load RPX: %s", Mocha_GetStatusStr(s));
 
-    if(isAroma() && !isChannel())
+#ifndef NUSSPLI_LITE
+    if(!isChannel())
     {
+#endif
         char path[FS_MAX_PATH];
         RPXLoaderStatus rs = RPXLoader_GetPathOfRunningExecutable(path, FS_MAX_PATH);
         if(rs != RPX_LOADER_RESULT_SUCCESS)
             return printCfwError("RPXLoader error: %s", RPXLoader_GetStatusStr(rs));
+#ifndef NUSSPLI_LITE
     }
+#endif
 
     for(; oi < 6; ++oi)
     {

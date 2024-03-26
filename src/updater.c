@@ -99,7 +99,7 @@ bool updateCheck()
 #ifdef NUSSPLI_LITE
         UPDATE_CHECK_URL "l";
 #else
-        !isChannel() && isAroma() ? UPDATE_CHECK_URL "a" : UPDATE_CHECK_URL "c";
+        !isChannel() ? UPDATE_CHECK_URL "a" : UPDATE_CHECK_URL "c";
 #endif
 
     bool ret = false;
@@ -126,8 +126,11 @@ bool updateCheck()
                         const char *newVer = json_string_value(json_object_get(json, "v"));
                         ret = newVer != NULL;
                         if(ret)
-                            ret = updateMenu(newVer, isAroma() ? NUSSPLI_TYPE_AROMA : NUSSPLI_TYPE_CHANNEL);
-
+#ifdef NUSSPLI_LITE
+                            ret = updateMenu(newVer, NUSSPLI_TYPE_AROMA);
+#else
+                            ret = updateMenu(newVer, !isChannel() ? NUSSPLI_TYPE_AROMA : NUSSPLI_TYPE_CHANNEL);
+#endif
                         break;
                     case 2: // Type deprecated, update to what the server suggests
                         const char *nv = json_string_value(json_object_get(json, "v"));
@@ -443,6 +446,7 @@ bool update(const char *newVersion, NUSSPLI_TYPE type)
     bool toUSB = getUSB() != NUSDEV_NONE;
 
     // Uninstall currently running type/version
+#ifndef NUSSPLI_LITE
     if(isChannel())
     {
         MCPTitleListType ownInfo __attribute__((__aligned__(0x40)));
@@ -458,8 +462,9 @@ bool update(const char *newVersion, NUSSPLI_TYPE type)
 
         deinstall(&ownInfo, "NUSspli v" NUSSPLI_VERSION, true, false);
     }
-    else if(isAroma())
+    else
     {
+#endif
         RPXLoaderStatus rs = RPXLoader_GetPathOfRunningExecutable(path + strlen(NUSDIR_SD), FS_MAX_PATH - strlen(NUSDIR_SD));
         if(rs == RPX_LOADER_RESULT_SUCCESS)
         {
@@ -483,18 +488,24 @@ bool update(const char *newVersion, NUSSPLI_TYPE type)
             showUpdateErrorf("%s: %s", localise("Aroma error"), RPXLoader_GetStatusStr(rs));
             goto updateError;
         }
+#ifndef NUSSPLI_LITE
     }
+#endif
 
     // Install new type/version
     flushIOQueue();
+#ifndef NUSSPLI_LITE
     switch(type)
     {
         case NUSSPLI_TYPE_AROMA:
+#endif
             char *path2 = getStaticPathBuffer(0);
             strcpy(path2, UPDATE_TEMP_FOLDER UPDATE_AROMA_FILE);
 
-            if(isChannel() || !isAroma())
+#ifndef NUSSPLI_LITE
+            if(isChannel()) // On Aroma the path is the path of the currently running wuhb file already. On Channel we have to set it to default.
                 strcpy(path, UPDATE_AROMA_FOLDER UPDATE_AROMA_FILE);
+#endif
 
             err = FSARename(getFSAClient(), path2, path);
             if(err != FS_ERROR_OK)
@@ -502,12 +513,14 @@ bool update(const char *newVersion, NUSSPLI_TYPE type)
                 showUpdateErrorf("%s: %s", localise("Error moving file"), translateFSErr(err));
                 goto updateError;
             }
+#ifndef NUSSPLI_LITE
             break;
         case NUSSPLI_TYPE_CHANNEL:
             strcpy(path, UPDATE_TEMP_FOLDER "NUSspli/");
             install("Update", false, NUSDEV_SD, path, toUSB, true, NULL);
             break;
     }
+#endif
 
     freeRamBuf(rambuf);
     removeDirectory(UPDATE_TEMP_FOLDER);
