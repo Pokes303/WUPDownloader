@@ -27,7 +27,7 @@
 
 #include <coreinit/mcp.h>
 
-#define NUSSPLI_VERSION            "1.147"
+#define NUSSPLI_VERSION            "1.148"
 
 #define NAPI_URL                   "https://napi.v10lator.de/v2/"
 #define NUSSPLI_COPYRIGHT          "© 2020-2024 V10lator <v10lator@myway.de>"
