@@ -25,10 +25,6 @@ To install the app, download and unzip the contents of the [latest release](http
 - Move the folder to (SD:/install/) and install it with WUPInstaller.
 - Run it from the HOME Menu.
 
-### HBL
-- Move the folder to (SD:/wiiu/apps/).
-- Run the app from HBL through Browserhax or any exploit you want.
-
 # Building
 - Use `docker build -t nussplibuilder .` to build the container
 - Use `docker run --rm -v ${PWD}:/project nussplibuilder python3 build.py` to build NUSspli
