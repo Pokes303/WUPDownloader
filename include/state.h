@@ -51,7 +51,7 @@ extern "C"
     void enableShutdown();
     void disableShutdown();
 #ifndef NUSSPLI_LITE
-bool isChannel();
+    bool isChannel();
 #endif
     bool AppRunning(bool mainthread) __attribute__((__hot__));
     uint32_t homeButtonCallback(void *dummy);
