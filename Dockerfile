@@ -17,11 +17,11 @@ RUN apt-fast -y --no-install-recommends update && \
  apt-fast -y --no-install-recommends upgrade
 
 # Install the requirements to package the homebrew
-RUN apt-fast -y install --no-install-recommends autoconf automake libtool openjdk-11-jre-headless && \
+RUN apt-fast -y install --no-install-recommends autoconf automake libtool openjdk-11-jre-headless python3-pycurl && \
  apt-fast clean
 
 # Install nghttp2 for HTTP/2 support (WUT don't include this)
-RUN wget https://github.com/nghttp2/nghttp2/releases/download/v1.60.0/nghttp2-$NGHTTP2_VER.tar.xz && \
+RUN curl -LO https://github.com/nghttp2/nghttp2/releases/download/v1.60.0/nghttp2-$NGHTTP2_VER.tar.xz && \
   mkdir nghttp2 && \
   tar xf nghttp2-$NGHTTP2_VER.tar.xz -C nghttp2/ --strip-components=1 && \
   rm -f nghttp2-$NGHTTP2_VER.tar.xz && \
@@ -50,7 +50,7 @@ PKG_CONFIG=$DEVKITPRO/portlibs/wiiu/bin/powerpc-eabi-pkg-config && \
   rm -rf nghttp2
 
 # Install libCURL since WUT doesn't ship with the latest version
-RUN wget https://curl.se/download/curl-$CURL_VER.tar.xz && \
+RUN curl -LO https://curl.se/download/curl-$CURL_VER.tar.xz && \
  mkdir /curl && \
  tar xJf curl-$CURL_VER.tar.xz -C /curl --strip-components=1 && \
  rm -f curl-$CURL_VER.tar.xz && \

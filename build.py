@@ -1,9 +1,9 @@
 #!/bin/env python
 
 import os
+import pycurl
 import shutil
 import subprocess
-import urllib.request
 import xml.etree.cElementTree as ET
 
 nuspacker = "../nuspacker/NUSPacker.jar"    # Set path to NUSPacker.jar here. will be downloaded if empty or not found
@@ -21,6 +21,16 @@ def checkAndDeleteDir(dir):
     if os.path.exists(dir):
         print(f"Deleting {dir}")
         shutil.rmtree(dir)
+
+def cDownload(url, file):
+    with open(file, 'wb') as f:
+        c = pycurl.Curl()
+        c.setopt(c.URL, url)
+        c.setopt(c.WRITEDATA, f)
+        c.setopt(c.FOLLOWLOCATION, True)
+        c.setopt(c.USERAGENT, "NUSspliBuilder/2.2")
+        c.perform()
+        c.close()
 
 opener = urllib.request.build_opener()
 opener.addheaders = [("User-agent", "NUSspliBuilder/2.1")]
@@ -40,7 +50,7 @@ github.write(f"version={version}\n")
 github.close()
 
 if len(nuspacker) == 0 or not os.path.exists(nuspacker):
-    urllib.request.urlretrieve("https://github.com/Maschell/nuspacker/raw/master/NUSPacker.jar", "nuspacker.jar")
+    cDownload("https://github.com/Maschell/nuspacker/raw/master/NUSPacker.jar", "nuspacker.jar")
     nuspacker = "nuspacker.jar"
 
 isBeta = False
@@ -51,13 +61,13 @@ if len(wuhbtool) == 0:
     wuhbtool = "wuhbtool"
 
 checkAndDeleteFile("src/gtitles.c")
-urllib.request.urlretrieve("https://napi.v10lator.de/db", "src/gtitles.c")
+cDownload("https://napi.v10lator.de/db", "src/gtitles.c")
 
 checkAndDeleteFile("data/ca-certs.pem");
-urllib.request.urlretrieve("https://ccadb.my.salesforce-sites.com/mozilla/IncludedRootsPEMTxt?TrustBitsInclude=Websites", "data/ca-certs.pem");
+cDownload("https://ccadb.my.salesforce-sites.com/mozilla/IncludedRootsPEMTxt?TrustBitsInclude=Websites", "data/ca-certs.pem");
 
 checkAndDeleteFile("data/nintendo.pem");
-urllib.request.urlretrieve("https://certs.larsenv.xyz/0005001B10054000/scerts/CACERT_NINTEND_BUNDLE.pem", "data/nintendo.pem");
+cDownload("https://certs.larsenv.xyz/0005001B10054000/scerts/CACERT_NINTEND_BUNDLE.pem", "data/nintendo.pem");
 
 os.system(f"cat data/nintendo.pem >> data/ca-certs.pem");
 checkAndDeleteFile("data/nintendo.pem");
