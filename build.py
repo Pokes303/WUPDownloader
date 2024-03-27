@@ -32,10 +32,6 @@ def cDownload(url, file):
         c.perform()
         c.close()
 
-opener = urllib.request.build_opener()
-opener.addheaders = [("User-agent", "NUSspliBuilder/2.1")]
-urllib.request.install_opener(opener)
-
 vf = open("include/utils.h", "r")
 lines = vf.readlines();
 vf.close();
