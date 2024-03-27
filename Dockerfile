@@ -1,4 +1,6 @@
 FROM ghcr.io/wiiu-env/devkitppc:20231112
+COPY --from=ghcr.io/wiiu-env/libmocha:20230621 /artifacts $DEVKITPRO
+COPY --from=ghcr.io/wiiu-env/librpxloader:20230621 /artifacts $DEVKITPRO
 
 ENV DEBIAN_FRONTEND=noninteractive \
  PATH=$DEVKITPPC/bin:$PATH \
@@ -21,10 +23,9 @@ RUN apt-fast -y install --no-install-recommends autoconf automake libtool openjd
  apt-fast clean
 
 # Install nghttp2 for HTTP/2 support (WUT don't include this)
-RUN curl -LO https://github.com/nghttp2/nghttp2/releases/download/v1.60.0/nghttp2-$NGHTTP2_VER.tar.xz && \
+RUN curl -LO https://github.com/nghttp2/nghttp2/releases/download/v$NGHTTP2_VER/nghttp2-$NGHTTP2_VER.tar.xz && \
   mkdir nghttp2 && \
   tar xf nghttp2-$NGHTTP2_VER.tar.xz -C nghttp2/ --strip-components=1 && \
-  rm -f nghttp2-$NGHTTP2_VER.tar.xz && \
   cd nghttp2 && \
   autoreconf -fi && \
   automake && \
@@ -44,16 +45,14 @@ CC=$DEVKITPPC/bin/powerpc-eabi-gcc \
 AR=$DEVKITPPC/bin/powerpc-eabi-ar \
 RANLIB=$DEVKITPPC/bin/powerpc-eabi-ranlib \
 PKG_CONFIG=$DEVKITPRO/portlibs/wiiu/bin/powerpc-eabi-pkg-config && \
-  make -j$(nproc) && \
   make -j$(nproc) install && \
   cd .. && \
-  rm -rf nghttp2
+  rm -rf nghttp2 nghttp2-$NGHTTP2_VER.tar.xz
 
 # Install libCURL since WUT doesn't ship with the latest version
 RUN curl -LO https://curl.se/download/curl-$CURL_VER.tar.xz && \
  mkdir /curl && \
  tar xJf curl-$CURL_VER.tar.xz -C /curl --strip-components=1 && \
- rm -f curl-$CURL_VER.tar.xz && \
  cd curl && \
  autoreconf -fi && ./configure \
 --prefix=$DEVKITPRO/portlibs/wiiu/ \
@@ -82,10 +81,7 @@ PKG_CONFIG=$DEVKITPRO/portlibs/wiiu/bin/powerpc-eabi-pkg-config && \
  cd ../include && \
  make -j$(nproc) install && \
  cd ../.. && \
- rm -rf curl
-
-COPY --from=ghcr.io/wiiu-env/libmocha:20230621 /artifacts $DEVKITPRO
-COPY --from=ghcr.io/wiiu-env/librpxloader:20230621 /artifacts $DEVKITPRO
+ rm -rf curl curl-$CURL_VER.tar.xz
 
 RUN git config --global --add safe.directory /project && \
   git config --global --add safe.directory /project/SDL_FontCache && \
