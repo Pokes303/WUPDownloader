@@ -290,10 +290,15 @@ bool initDownloader()
                                                 ret = curl_easy_setopt(curl, opt, 60L);
                                                 if(ret == CURLE_OK)
                                                 {
-                                                    if(blob.data != NULL)
-                                                        MEMFreeToDefaultHeap(blob.data);
+                                                    opt = CURLOPT_ACCEPT_ENCODING;
+                                                    ret = curl_easy_setopt(curl, opt, "");
+                                                    if(ret == CURLE_OK)
+                                                    {
+                                                        if(blob.data != NULL)
+                                                            MEMFreeToDefaultHeap(blob.data);
 
-                                                    return true;
+                                                        return true;
+                                                    }
                                                 }
                                             }
                                         }

@@ -5,6 +5,7 @@ COPY --from=ghcr.io/wiiu-env/librpxloader:20230621 /artifacts $DEVKITPRO
 ENV DEBIAN_FRONTEND=noninteractive \
  PATH=$DEVKITPPC/bin:$PATH \
  WUT_ROOT=$DEVKITPRO/wut \
+ BROTLI_VER=1.1.0 \
  CURL_VER=8.6.0 \
  NGHTTP2_VER=1.60.0
 
@@ -49,6 +50,26 @@ PKG_CONFIG=$DEVKITPRO/portlibs/wiiu/bin/powerpc-eabi-pkg-config && \
   cd .. && \
   rm -rf nghttp2 nghttp2-$NGHTTP2_VER.tar.xz
 
+# Install Brotli
+RUN git clone --depth 1 --single-branch https://github.com/google/brotli.git && \
+ cd brotli && \
+ mkdir out && cd out && \
+ CC=$DEVKITPPC/bin/powerpc-eabi-gcc \
+ AR=$DEVKITPPC/bin/powerpc-eabi-ar \
+ RANLIB=$DEVKITPPC/bin/powerpc-eabi-ranlib \
+ PKG_CONFIG=$DEVKITPRO/portlibs/wiiu/bin/powerpc-eabi-pkg-config && \
+ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$DEVKITPRO/portlibs/wiiu/ -DBUILD_SHARED_LIBS=OFF -DBROTLI_BUILD_TOOLS=OFF \
+ -DCMAKE_C_FLAGS="-mcpu=750 -meabi -mhard-float -Ofast -ffunction-sections -fdata-sections" \
+ -DCMAKE_CXX_FLAGS="-mcpu=750 -meabi -mhard-float -Ofast -ffunction-sections -fdata-sections" \
+ -DCMAKE_CPP_FLAGS="-L$DEVKITPRO/wut/lib" \
+ -DCMAKE_LIBS="-lwut -lm" \
+ -DCMAKE_C_COMPILER=$DEVKITPPC/bin/powerpc-eabi-gcc \
+ -DCMAKE_CXX_COMPILER=$DEVKITPPC/bin/powerpc-eabi-g++ \
+ .. && \
+ cmake --build . --config Release --target install && \
+ cd ../.. && \
+ rm -rf brotli
+
 # Install libCURL since WUT doesn't ship with the latest version
 RUN curl -LO https://curl.se/download/curl-$CURL_VER.tar.xz && \
  mkdir /curl && \
@@ -66,6 +87,7 @@ RUN curl -LO https://curl.se/download/curl-$CURL_VER.tar.xz && \
 --disable-socketpair \
 --disable-ntlm-wb \
 --with-nghttp2=$DEVKITPRO/portlibs/wiiu/ \
+--with-brotli=$DEVKITPRO/portlibs/wiiu/ \
 --without-libpsl \
 CFLAGS="-mcpu=750 -meabi -mhard-float -Ofast -ffunction-sections -fdata-sections" \
 CXXFLAGS="-mcpu=750 -meabi -mhard-float -Ofast -ffunction-sections -fdata-sections" \
