@@ -89,6 +89,28 @@ RUN curl -LO https://curl.se/download/curl-$CURL_VER.tar.xz && \
 --with-nghttp2=$DEVKITPRO/portlibs/wiiu/ \
 --with-brotli=$DEVKITPRO/portlibs/wiiu/ \
 --without-libpsl \
+--disable-cookies \
+--disable-doh \
+--disable-form-api \
+--disable-http-auth \
+--disable-netrc \
+--disable-progress-meter \
+--disable-ftp \
+--disable-file \
+--disable-ldap \
+--disable-ldaps \
+--disable-rtsp \
+--disable-dict \
+--disable-telnet \
+--disable-tftp \
+--disable-pop3 \
+--disable-imap \
+--disable-smb \
+--disable-smtp \
+--disable-gopher \
+--disable-mqtt \
+--disable-manual \
+--disable-docs \
 CFLAGS="-mcpu=750 -meabi -mhard-float -Ofast -ffunction-sections -fdata-sections" \
 CXXFLAGS="-mcpu=750 -meabi -mhard-float -Ofast -ffunction-sections -fdata-sections" \
 CPPFLAGS="-D__WIIU__ -D__WUT__ -I$DEVKITPRO/wut/include" \
